@@ -55,7 +55,7 @@ ROOT_URLCONF = 'FairSystemProject.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -127,3 +127,6 @@ USE_TZ = False
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
 STATICFILES_DIR = ('static')
+
+LOGIN_REDIRECT_URL = 'home'
+LOGOUT_REDIRECT_URL = 'home'
