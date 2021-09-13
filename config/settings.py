@@ -1,3 +1,5 @@
+# config/settings.py
+
 """
 Django settings for FairSystemProject project.
 
@@ -36,9 +38,19 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'django.contrib.sites',
+
+
+    # 3rd Party
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+
 
     # Local
     'registration',
+    'pages',
+    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -105,6 +117,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Internationalization
 # https://docs.djangoproject.com/en/3.1/topics/i18n/
@@ -130,4 +143,28 @@ STATIC_URL = '/static/'
 STATICFILES_DIR = ('static')
 
 LOGIN_REDIRECT_URL = 'home'
-LOGOUT_REDIRECT_URL = 'home'
+ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
+
+# allauth settings
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+AUTHENTICATION_BACKENDS = (
+    # Needed to login by username in Django admin, regardless of allauth
+    "django.contrib.auth.backends.ModelBackend",
+
+    # allauth specific authentication methods e.g. login by email
+
+    "allauth.account.auth_backends.AuthenticationBackend"
+
+)
+
+SITE_ID = 1
+
+
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_USERNAME_REQUIRED = False
+ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = False
+ACCOUNT_SESSION_REMEMBER = True
+ACCOUNT_AUTHENTICATION_METHOD = 'email'
+ACCOUNT_UNIQUE_EMAIL = True

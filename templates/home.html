@@ -5,12 +5,15 @@
   <title>Home</title>
 {% endblock %}
 {% block body %}
+<div class="container">
   <h1>Home</h1>
 {% if user.is_authenticated %}
-  Hi {{ user.username }}!
-  <p><a href="{% url 'logout' %}">Log Out</a></p>
+  Hi {{ user.email }}!
+  <p><a href="{% url 'account_logout' %}">Log Out</a></p>
 {% else %}
   <p>You are not logged in</p>
-  <a href="{% url 'login' %}">Log in</a>
+  <a href="{% url 'account_login' %}">Log in</a>
+  <a href="{% url 'account_signup' %}">Sign Up</a>
 {% endif %}
+</div>
 {% endblock %}

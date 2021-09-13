@@ -1,3 +1,5 @@
+# config/urls.py
+
 """FairSystemProject URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -19,5 +21,7 @@ from django.urls import path, include  # import include function
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include('registration.urls')),  # registration at the root URL
+    path('', include('pages.urls')),  # pages at the root URL
+    path('accounts/', include('allauth.urls')),
+    path('registration/', include('registration.urls'))
 ]
