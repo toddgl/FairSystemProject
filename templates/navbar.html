@@ -1,0 +1,44 @@
+<!--registration/templates/registration/registration.html -->
+
+{% url 'home' as home_url %}
+{% url 'registration' as registration_url %}
+{% url 'account_logout' as logout_url %}
+{% url 'account_login' as login_url %}
+{% url 'account_signup' as signup_url %}
+
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Fair System</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText" aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarText">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == home_url %} active {%endif%}" aria-current="page" href="{{home_url}}">Home</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link {% if request.path == registration_url %} active {%endif%} " href="{{registration_url}}">Registration</a>
+        </li>
+        {% if user.is_authenticated %}
+          <span class="navbar-text fw-bolder" style = 'color:#ffc107'>
+            Hi {{ user.email }} !
+          </span>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == logout_url %} active {%endif%} " href="{{logout_url}}">Log Out</a>
+          </li>
+        {% else %}
+          <span class="navbar-text fw-bolder" style = 'color:#ffc107'>
+            You are not logged in
+          </span>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == login_url %} active {%endif%}" href="{{login_url}}">Log in</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link {% if request.path == signup_url %} active {%endif%}" href="{{signup_url}}">Sign Up</a>
+          </li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
