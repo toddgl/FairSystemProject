@@ -1,6 +1,7 @@
 <!--registration/templates/registration/registration.html -->
 
 {% url 'home' as home_url %}
+<!-- {% url 'update.get_absolute_url' as update_url %} -->
 {% url 'registration' as registration_url %}
 {% url 'account_logout' as logout_url %}
 {% url 'account_login' as login_url %}
@@ -24,6 +25,9 @@
           <span class="navbar-text fw-bolder" style = 'color:#ffc107'>
             Hi {{ user.email }} !
           </span>
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'accounts:update' %}">Update Profile</a>
+          </li>
           <li class="nav-item">
             <a class="nav-link {% if request.path == logout_url %} active {%endif%} " href="{{logout_url}}">Log Out</a>
           </li>

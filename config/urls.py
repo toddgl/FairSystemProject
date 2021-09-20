@@ -23,5 +23,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pages.urls')),  # pages at the root URL
     path('accounts/', include('allauth.urls')),
-    path('registration/', include('registration.urls'))
+    path('', include('accounts.urls')),
+    path('registration/', include('registration.urls')),
 ]

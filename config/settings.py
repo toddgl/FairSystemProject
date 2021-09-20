@@ -169,5 +169,9 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
 
-#Stop the are you sure you want to logout page being shown
+# Stop the are you sure you want to logout page being shown
 ACCOUNT_LOGOUT_ON_GET = True
+
+ACCOUNT_FORMS = {
+    'signup': 'accounts.forms.CustomSignupForm',
+}
