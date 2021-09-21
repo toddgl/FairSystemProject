@@ -44,7 +44,4 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
             return self.email
-
-    def get_absolute_url(self):
-        from django.core.urlresolvers import reverse
-        return reverse('', kwargs={'pk': self.pk})
+ 
