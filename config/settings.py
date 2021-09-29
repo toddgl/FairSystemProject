@@ -26,7 +26,7 @@ SECRET_KEY = '+x4-e!e)8+mi(73rtn9@px#-@4wo-wp4kf_4y)iy-q&5omzrv%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.78', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.77', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'registration',
     'pages',
     'accounts',
+    'fairs'
 ]
 
 MIDDLEWARE = [
@@ -126,7 +127,7 @@ DATETIME_FORMAT = '%d-%m-%Y %H:%M:%S'
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Pacific/Auckland'
 
 USE_I18N = True
 
@@ -140,7 +141,7 @@ USE_TZ = False
 
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
-STATICFILES_DIR = ('static')
+STATICFILES_DIRS = [BASE_DIR / "static",]
 
 LOGIN_REDIRECT_URL = 'home'
 ACCOUNT_LOGOUT_REDIRECT_URL = 'home'

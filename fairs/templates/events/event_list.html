@@ -1,0 +1,23 @@
+<!-- event/templates/event/event_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+    <h1>Events</h1>
+    {% for event in entry_list %}
+    <article>
+        <h2 class="{{ event.date_created|date:'l' }}">
+        {{ event.date_created|date:'Y-m-d H:i' }}
+        </h2>
+        <h3>
+            <a href="{% url 'event-detail' event.id %}">
+                {{ event.event_name }}
+            </a>
+        </h3>
+        {% empty %}
+        <li>There are no fair events active yet.</li>
+    </article>
+{% endfor %}
+</div>
+{% endblock %}

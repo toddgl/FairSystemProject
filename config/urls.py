@@ -25,4 +25,5 @@ urlpatterns = [
     path('accounts/', include('allauth.urls')),
     path('', include('accounts.urls')),
     path('registration/', include('registration.urls')),
+    path('', include('fairs.urls')),
 ]

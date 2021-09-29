@@ -1,0 +1,20 @@
+<!--events/templates/events/event_detail.html -->
+
+<article>
+    <h2>{{ event.date_created|date:'Y-m-d H:i' }}</h2>
+    <h3>{{ event.event_name }}</h3>
+    <p>{{ event.original_event_date| date:'Y-m-d'}}</p>
+    {% if event.is_cancelled %}
+        <p><strong>The event was Cancelled</stromg></p>
+        <p>{{ event.date_cancelled|date:'Y-m-d H:i' }}</p>    
+    {% else %}
+        <p><strong>The event has not been cancelled</strong></p>
+    {% endif %}
+    {% if event.is_postponed %}
+        <p><strong>The event has been postponed to:</stromg></p>
+        <p>{{ event.postponement_event_date|date:'Y-m-d' }}</p>    
+    {% else %}
+        <p><strong>The event has not been postponed</strong></p>
+    {% endif %}
+</article>
+

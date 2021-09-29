@@ -1,0 +1,23 @@
+<!-- fairs/templates/fairs/fair_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Fairs</h1>
+    {% for fair in fair_list %}
+    <article>
+        <h2 class="{{ fair.date_created|date:'l' }}">
+            {{ fair.date_created|date:'Y-m-d H:i' }}
+        </h2>
+        <h3>
+            <a href="{% url 'fair:fair-detail' fair.id %}">
+                {{ fair.fair_name }}
+            </a>
+        </h3>
+    {% empty %}
+        <li>No fairs active yet.</li>
+    </article>
+    {% endfor %}
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+<!-- templates/account/user_update.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Update user details</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary" >Update</button>
+  </form>
+</div>
+{% endblock %}

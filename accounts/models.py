@@ -38,7 +38,7 @@ class CustomUser(AbstractUser):
     role = models.PositiveSmallIntegerField(
         choices=ROLE_CHOICES, blank=True, null=True, default=3)
     phone = models.CharField(
-        validators=[phone_regex], max_length=13, unique=True)
+        validators=[phone_regex], max_length=13, unique=True, default='(027)1234567')
     created_date = models.DateTimeField(default=timezone.now)
     modified_date = models.DateTimeField(default=timezone.now)
 
