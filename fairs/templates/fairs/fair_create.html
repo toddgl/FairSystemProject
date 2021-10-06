@@ -1,0 +1,15 @@
+<!--fairs/templates/fairs/fair_create.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Create Fair</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Save" >
+    <button type="button" onclick="javascript:history.back()">Cancel</button>
+  </form>
+</div>
+{% endblock %}`

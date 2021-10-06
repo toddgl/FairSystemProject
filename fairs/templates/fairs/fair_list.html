@@ -5,6 +5,10 @@
 {% block body %}
 <div class="container">
   <h1>Fairs</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Fair</button>
+    </form>
+
     {% for fair in fair_list %}
     <article>
         <h2 class="{{ fair.date_created|date:'l' }}">

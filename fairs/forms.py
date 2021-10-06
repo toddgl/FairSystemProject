@@ -51,6 +51,48 @@ class MinimalSplitDateTimeMultiWidget(MultiWidget):
         # making timezone aware
         return make_aware(my_datetime)
 
+class FairCreateForm(ModelForm):
+    """
+    Form for create a new the Fair
+    """
+
+    class Meta:
+        model = Fair
+        fields = ['fair_year', 'fair_name', 'fair_description',
+                  'activation_date', 'is_activated']
+        widgets = {
+            'fair_year': TextInput(attrs={
+                'class': "form-control",
+                'size': '4',
+                'placeholder': 'Fair Year'
+            }),
+            'fair_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 500px;',
+                'placeholder': 'Fair Name'
+            }),
+            'fair_description': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 750px;',
+                'placeholder': 'Fair Description'
+            }),
+            # 'activation_date': AdminSplitDateTime(),
+            'activation_date': MinimalSplitDateTimeMultiWidget(),
+            "is_activated": CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'readonly': 'readonly'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.user = kwargs.pop('user', None)
+        super(FairCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_fair_name(self):
+        fair_name = self.cleaned_data['fair_name']
+        if Fair.objects.filter(user=self.user, fair_name=fair_name).exists():
+            raise forms.ValidationError("This fair has already been created.")
+        return fair_name
 
 class FairDetailForm(ModelForm):
     """

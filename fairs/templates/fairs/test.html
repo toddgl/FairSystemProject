@@ -1,0 +1,23 @@
+
+<!DOCTYPE html>
+<html>
+   <head>
+   </head>
+   <body>
+
+<h1>Test Model Creation</h1>
+
+
+<form method="post">{% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" value="Save">
+    <button type="button" onclick="javascript:history.back()">Cancel</button>
+
+</form>
+
+
+
+
+ </body>
+</html>
+

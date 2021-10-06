@@ -32,6 +32,7 @@
           <li class="nav-item">
             <a class="nav-link {% if request.path == logout_url %} active {%endif%} " href="{{logout_url}}">Log Out</a>
           </li>
+        {% if 'fairs.view_fair' in perms %}
           <li class="nav-item dropdown">
           <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
             Fair Maintenance
@@ -43,6 +44,7 @@
             <li><a class="dropdown-item" href="#">Sites</a></li>
           </ul>
         </li>
+        {% endif %}
         {% else %}
           <span class="navbar-text fw-bolder" style = 'color:#ffc107'>
             You are not logged in

@@ -2,6 +2,8 @@
 
 from django.db import models
 from django.utils import timezone
+from django.urls import reverse
+from accounts.models import CustomUser
 
 
 # Create your models here.
@@ -9,7 +11,7 @@ from django.utils import timezone
 class Fair(models.Model):
     """
     Description: Stores the details of each fair instance
-    Usesa CharField for fair_year because we are going to convert
+    Uses a CharField for fair_year because we are going to convert
     that value to string for converting it to python datetime object.
     """
 
@@ -21,12 +23,16 @@ class Fair(models.Model):
     is_cancelled = models.BooleanField(default=False)
     activation_date = models.DateTimeField(blank=True, default=None, null=True)
     is_activated = models.BooleanField(default=False)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return fair_name
 
     class Meta:
         verbose_name_plural = "Fairs"
+
+    def get_absolute_url(self):
+        return reverse('fairs:fair-detail', args=[self.id])
 
     @property
     def get_fair_year(self):
@@ -51,9 +57,13 @@ class Event(models.Model):
     is_cancelled = models.BooleanField(default=False)
     is_postponed = models.BooleanField(default=False)
     fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
+    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
 
     def __str__(self):
         return event_name
 
     class Meta:
         verbose_name_plural = "Events"
+
+    def get_absolute_url(self):
+        return reverse('fairs:event-detail', args=[self.id])
