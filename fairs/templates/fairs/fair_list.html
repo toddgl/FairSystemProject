@@ -7,21 +7,25 @@
   <h1>Fairs</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Fair</button>
+        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
     </form>
 
     {% for fair in fair_list %}
-    <article>
-        <h2 class="{{ fair.date_created|date:'l' }}">
-            {{ fair.date_created|date:'Y-m-d H:i' }}
-        </h2>
-        <h3>
-            <a href="{% url 'fair:fair-detail' fair.id %}">
-                {{ fair.fair_name }}
-            </a>
-        </h3>
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ fair.fair_name }}</h4>
+                <p class="card-text">
+                    Date created: {{ fair.date_created|date:'Y-m-d H:i' }}
+                </p>
+                <a href="{% url 'fair:fair-detail' fair.id %}" class="card-link">
+                    View and edit Fair Detail
+                </a>
+            </div>
+        </div>
+    </div>
     {% empty %}
-        <li>No fairs active yet.</li>
-    </article>
+        <li>There are no fairs active yet.</li>
     {% endfor %}
 </div>
 {% endblock %}

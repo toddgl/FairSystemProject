@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Fair
+from .models import (
+    Fair,
+    Event,
+)
 
 # Register your models here.
-admin.site.register(Fair)
+myModels = [Fair, Event]  # iterable list
+admin.site.register(myModels)

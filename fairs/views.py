@@ -1,14 +1,13 @@
 # fairs/view.py
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect
 from django.urls import reverse_lazy
-from django.contrib.auth.mixins import PermissionRequiredMixin
-
 from django.views.generic import (
     CreateView,
     ListView,
-    DetailView,
     UpdateView,
 )
+
 from fairs.models import (
     Fair,
     Event,
@@ -16,6 +15,8 @@ from fairs.models import (
 from .forms import (
     FairDetailForm,
     FairCreateForm,
+    EventCreateForm,
+    EventDetailForm,
 )
 
 
@@ -34,7 +35,7 @@ class FairCreateView(PermissionRequiredMixin, CreateView):
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        self.object.user = self.request.user
+        self.object.created_by = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
@@ -46,7 +47,7 @@ class FairCreateView(PermissionRequiredMixin, CreateView):
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(FairCreateView, self).get_form_kwargs(*args, **kwargs)
-        kwargs['user'] = self.request.user
+        kwargs['created_by'] = self.request.user
         return kwargs
 
 
@@ -70,7 +71,6 @@ class FairDetailUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'fairs/fair_detail.html'
     success_url = reverse_lazy('fair:fair-list')
 
-    # success_url = '/'
 
     def get_context_data(self, **kwargs):
         context = super(FairDetailUpdateView, self).get_context_data(**kwargs)
@@ -78,6 +78,39 @@ class FairDetailUpdateView(PermissionRequiredMixin, UpdateView):
         object = self.get_object()
         context['object'] = context['fair'] = object
         return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+class EventCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Event including recording who created it
+    """
+    permission_required = 'fairs.add_event'
+    model = Event
+    form_class = EventCreateForm
+    template_name = 'events/event_create.html'
+    success_url = reverse_lazy('fair:event-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(EventCreateView, self).get_initial(**kwargs)
+        initial['event_name'] = 'My Event'
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EventCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['created_by'] = self.request.user
+        return kwargs
 
 
 class EventListView(PermissionRequiredMixin, ListView):
@@ -90,9 +123,25 @@ class EventListView(PermissionRequiredMixin, ListView):
     queryset = Event.objects.all().order_by("-date_created")
 
 
-class EventDetailView(DetailView):
+class EventDetailUpdateView(PermissionRequiredMixin, UpdateView):
     """
     Display an editable form of the details of an event
     """
+    permission_required = 'fairs.change_event'
     model = Event
+    form_class = EventDetailForm
     template_name = 'events/event_detail.html'
+    success_url = reverse_lazy('fair:event-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(EventDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['fair'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())

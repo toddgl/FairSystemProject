@@ -1,15 +1,20 @@
 # fairs/forms.py
 
-from django.contrib.admin.widgets import AdminSplitDateTime
-from django.contrib.admin import widgets
-from django.forms import ModelForm, TextInput, CheckboxInput
+from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
+from django.forms import (
+    ModelForm,
+    TextInput,
+    CheckboxInput,
+    Select,
+    SelectDateWidget
+)
 from .models import (
     Fair,
     Event,
 )
 from datetime import datetime
 from django.utils.timezone import make_aware
-from django.forms import MultiWidget, DateTimeField
+from django.forms import MultiWidget, DateTimeField, DateField, DateInput, DateTimeInput
 
 
 # nightmare discussion here https://stackoverflow.com/questions/38601/using-django-time-date-widgets-in-custom-form
@@ -51,9 +56,14 @@ class MinimalSplitDateTimeMultiWidget(MultiWidget):
         # making timezone aware
         return make_aware(my_datetime)
 
+class UserFullName(ModelForm):
+
+    def __unicode__(self):
+        return self.get_full_name()
+
 class FairCreateForm(ModelForm):
     """
-    Form for create a new the Fair
+    Form for create a new Fair
     """
 
     class Meta:
@@ -85,12 +95,12 @@ class FairCreateForm(ModelForm):
         }
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.created_by = kwargs.pop('created_by', None)
         super(FairCreateForm, self).__init__(*args, **kwargs)
 
     def clean_fair_name(self):
         fair_name = self.cleaned_data['fair_name']
-        if Fair.objects.filter(user=self.user, fair_name=fair_name).exists():
+        if Fair.objects.filter(created_by=self.created_by, fair_name=fair_name).exists():
             raise forms.ValidationError("This fair has already been created.")
         return fair_name
 
@@ -101,7 +111,7 @@ class FairDetailForm(ModelForm):
 
     class Meta:
         model = Fair
-        fields = ['fair_year', 'fair_name', 'date_created', 'date_cancelled', 'fair_description', 'is_cancelled',
+        fields = ['fair_year', 'fair_name', 'date_cancelled', 'fair_description', 'is_cancelled',
                   'activation_date', 'is_activated']
         widgets = {
             'fair_year': TextInput(attrs={
@@ -119,11 +129,7 @@ class FairDetailForm(ModelForm):
                 'style': 'max-width: 750px;',
                 'placeholder': 'Fair Description'
             }),
-            'date_created': TextInput(attrs={
-                'class': "form-control",
-                'readonly': 'readonly'
-            }),
-            'date_cancelled': TextInput(attrs={
+            'date_cancelled': DateTimeInput(attrs={
                 'class': "form-control",
                 'readonly': 'readonly'
             }),
@@ -139,3 +145,73 @@ class FairDetailForm(ModelForm):
             }),
 
         }
+
+class EventCreateForm(ModelForm):
+    """
+    Form for create a new Fair Event
+    """
+
+    class Meta:
+        model = Event
+        fields = ['fair', 'event_name', 'event_description',
+                  'original_event_date']
+        widgets = {
+            'fair' :  Select(),
+            'event_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 500px;',
+                'placeholder': 'Event Name'
+            }),
+            'event_description': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 750px;',
+                'placeholder': 'Fair Description'
+            }),
+            'original_event_date': SelectDateWidget(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(EventCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_fair_name(self):
+        fair_name = self.cleaned_data['fair_name']
+        if Event.objects.filter(created_by=self.created_by, event_name=event_name).exists():
+            raise forms.ValidationError("This Event has already been created.")
+        return event_name
+
+class EventDetailForm(ModelForm):
+    """
+    Form for viewing and updating the Event model
+    """
+    class Meta:
+        model = Event
+        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated,')
+        # fields = '__all__'
+        widgets = {
+            'fair': Select(),
+             'event_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 500px;',
+                'placeholder': 'Event Name'
+            }),
+            'event_description': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 750px;',
+                'placeholder': 'Fair Description'
+            }),
+            'original_event_date': DateInput(attrs={
+                'class': "form-control",
+                'readonly': 'readonly'
+            }),
+            'date_cancelled': MinimalSplitDateTimeMultiWidget(),
+            'is_cancelled': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'postponement_event_date': SelectDateWidget(),
+            "is_postponed": CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+
+        }
+

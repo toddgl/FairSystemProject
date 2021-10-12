@@ -17,16 +17,18 @@ class Fair(models.Model):
 
     fair_year = models.CharField(max_length=4, default='2022')
     fair_name = models.CharField(max_length=40)
-    date_created = models.DateTimeField(default=timezone.now)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
     date_cancelled = models.DateTimeField(blank=True, default=None, null=True)
     fair_description = models.TextField()
     is_cancelled = models.BooleanField(default=False)
     activation_date = models.DateTimeField(blank=True, default=None, null=True)
     is_activated = models.BooleanField(default=False)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = models.ForeignKey(CustomUser, related_name='fair_created_by', on_delete=models.SET_NULL, blank=True, null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='fair_updated_by', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return fair_name
+        return self.fair_name
 
     class Meta:
         verbose_name_plural = "Fairs"
@@ -49,21 +51,24 @@ class Event(models.Model):
     Description: Stores the details of events associated with fair
     """
     event_name = models.CharField(max_length=40)
-    original_event_date = models.DateTimeField()
-    postponement_event_date = models.DateTimeField(blank=True, default=None, null=True)
-    date_created = models.DateTimeField(default=timezone.now)
+    original_event_date = models.DateField()
+    postponement_event_date = models.DateField(blank=True, default=None, null=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
     date_cancelled = models.DateTimeField(blank=True, default=None, null=True)
     event_description = models.TextField()
     is_cancelled = models.BooleanField(default=False)
     is_postponed = models.BooleanField(default=False)
     fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
-    user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, blank=True, null=True)
+    created_by = models.ForeignKey(CustomUser, related_name='event_created_by', on_delete=models.SET_NULL, blank=True, null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='event_updated_by', on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
-        return event_name
+        return self.event_name
 
     class Meta:
         verbose_name_plural = "Events"
 
     def get_absolute_url(self):
         return reverse('fairs:event-detail', args=[self.id])
+

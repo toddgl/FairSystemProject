@@ -43,5 +43,9 @@ class CustomUser(AbstractUser):
     modified_date = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-            return self.email
+        return self.first_name + ' ' + self.last_name
+
+
+    def __unicode__(self):
+        return '%s' % self.user
  

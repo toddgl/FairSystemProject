@@ -5,19 +5,27 @@
 {% block body %}
 <div class="container">
     <h1>Events</h1>
-    {% for event in entry_list %}
-    <article>
-        <h2 class="{{ event.date_created|date:'l' }}">
-        {{ event.date_created|date:'Y-m-d H:i' }}
-        </h2>
-        <h3>
-            <a href="{% url 'event-detail' event.id %}">
-                {{ event.event_name }}
-            </a>
-        </h3>
-        {% empty %}
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Event</button>
+         <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+    </form>
+    {% for event in event_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">
+                    {{ event.event_name }}</h4>
+                <p class="card-text">
+                    Date created: {{ event.date_created|date:'Y-m-d H:i' }}
+                </p>
+                <a href="{% url 'fair:event-detail' event.id %}" class="card-link">
+                    View and edit Event Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
         <li>There are no fair events active yet.</li>
-    </article>
 {% endfor %}
 </div>
 {% endblock %}
