@@ -72,3 +72,39 @@ class Event(models.Model):
     def get_absolute_url(self):
         return reverse('fairs:event-detail', args=[self.id])
 
+class Zone(models.Model):
+    '''
+    Description: Stores the details of the fair zonnes.
+    '''
+    zone_name = models.CharField(max_length=40)
+    map_pdf = models.FileField(upload_to='media/maps')
+    trestle_source = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.zone_name
+
+    class Meta:
+        verbose_name_plural = "Zones"
+
+    def get_absolute_url(self):
+        return reverse('fairs:zone-detail', args=[self.id])
+
+class Site(models.Model):
+    '''
+    Description: Stores the details of the fair stallholder sites
+    '''
+    site_name = models.CharField(max_length=40)
+    site_size = models.CharField(max_length=5)
+    zone = models.ForeignKey(Zone, on_delete=models.SET_NULL, blank=True, null=True)
+
+    def __str__(self):
+        return self.site_name
+
+    class Meta:
+        verbose_name_plural = "Sites"
+
+    def get_absolute_url(self):
+        return reverse('fair:site-detail', args=[self.id])
+
+
+
