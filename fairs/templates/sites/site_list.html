@@ -1,0 +1,31 @@
+<!-- fairs/templates/sites/site_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Site</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new site</button>
+        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+    </form>
+
+    {% for site in site_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ site.site_name }}</h4>
+                <p class="card-text">
+                    Date created: {{ site.date_created|date:'Y-m-d H:i' }}
+                </p>
+                <a href="{% url 'fair:site-detail' site.id %}" class="card-link">
+                    View and edit Site Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <li>There are no sites active yet.</li>
+    {% endfor %}
+</div>
+{% endblock %}

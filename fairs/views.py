@@ -11,12 +11,20 @@ from django.views.generic import (
 from fairs.models import (
     Fair,
     Event,
+    EventSite,
+    Site,
+    Zone,
+
 )
 from .forms import (
     FairDetailForm,
     FairCreateForm,
     EventCreateForm,
     EventDetailForm,
+    SiteCreateForm,
+    SiteDetailForm,
+    ZoneCreateForm,
+    ZoneDetailForm,
 )
 
 
@@ -38,7 +46,6 @@ class FairCreateView(PermissionRequiredMixin, CreateView):
         self.object.created_by = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
-
 
     def get_initial(self, *args, **kwargs):
         initial = super(FairCreateView, self).get_initial(**kwargs)
@@ -71,7 +78,6 @@ class FairDetailUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'fairs/fair_detail.html'
     success_url = reverse_lazy('fair:fair-list')
 
-
     def get_context_data(self, **kwargs):
         context = super(FairDetailUpdateView, self).get_context_data(**kwargs)
         # Refresh the object from the database in case the form validation changed it
@@ -84,6 +90,7 @@ class FairDetailUpdateView(PermissionRequiredMixin, UpdateView):
         self.object.updated_by = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
 
 class EventCreateView(PermissionRequiredMixin, CreateView):
     """
@@ -100,7 +107,6 @@ class EventCreateView(PermissionRequiredMixin, CreateView):
         self.object.created_by = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
-
 
     def get_initial(self, *args, **kwargs):
         initial = super(EventCreateView, self).get_initial(**kwargs)
@@ -145,3 +151,125 @@ class EventDetailUpdateView(PermissionRequiredMixin, UpdateView):
         self.object.updated_by = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
+class SiteListView(PermissionRequiredMixin, ListView):
+    """
+    List all sites in the system by created date
+    """
+    permission_required = 'fairs.view_site'
+    model = Site
+    template_name = 'sites/site_list.html'
+    queryset = Site.objects.all().order_by("-date_created")
+
+
+class SiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a site
+    """
+    permission_required = 'fairs.change_site'
+    model = Site
+    form_class = SiteDetailForm
+    template_name = 'sites/site_detail.html'
+    success_url = reverse_lazy('fair:site-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(SiteDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['site'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class SiteCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Site including recording who created it
+    """
+    permission_required = 'fairs.add_site'
+    model = Site
+    form_class = SiteCreateForm
+    template_name = 'sites/site_create.html'
+    success_url = reverse_lazy('fair:site-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(SiteCreateView, self).get_initial(**kwargs)
+        initial['site_name'] = 'My Site'
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(SiteCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['created_by'] = self.request.user
+        return kwargs
+
+
+class ZoneListView(PermissionRequiredMixin, ListView):
+    """
+    List all zones in the system by created date
+    """
+    permission_required = 'fairs.view_zone'
+    model = Site
+    template_name = 'zones/zone_list.html'
+    queryset = Zone.objects.all().order_by("-date_created")
+
+
+class ZoneDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a zone
+    """
+    permission_required = 'fairs.change_zone'
+    model = Zone
+    form_class = ZoneDetailForm
+    template_name = 'zones/zone_detail.html'
+    success_url = reverse_lazy('fair:zone-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(ZoneDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['zone'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class ZoneCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Zone including recording who created it
+    """
+    permission_required = 'fairs.add_zone'
+    model = Zone
+    form_class = ZoneCreateForm
+    template_name = 'zones/zone_create.html'
+    success_url = reverse_lazy('fair:zone-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(ZoneCreateView, self).get_initial(**kwargs)
+        initial['zone_name'] = 'My Zone'
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(ZoneCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['created_by'] = self.request.user
+        return kwargs

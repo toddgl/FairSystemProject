@@ -1,0 +1,31 @@
+<!-- fairs/templates/zones/zone_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Zones</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new zone</button>
+        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+    </form>
+
+    {% for zone in zone_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ zone.zone_name }}</h4>
+                <p class="card-text">
+                    Date created: {{ zone.date_created|date:'Y-m-d H:i' }}
+                </p>
+                <a href="{% url 'fair:zone-detail' zone.id %}" class="card-link">
+                    View and edit Zone Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <li>There are no Zones active yet.</li>
+    {% endfor %}
+</div>
+{% endblock %}

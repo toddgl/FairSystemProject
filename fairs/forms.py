@@ -1,14 +1,18 @@
 # fairs/forms.py
 
 from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
+from django import forms
 from django.forms import (
     ModelForm,
     TextInput,
+    FileInput,
     CheckboxInput,
     Select,
     SelectDateWidget
 )
-from .models import (
+from fairs.models import (
+    Zone,
+    Site,
     Fair,
     Event,
 )
@@ -56,14 +60,16 @@ class MinimalSplitDateTimeMultiWidget(MultiWidget):
         # making timezone aware
         return make_aware(my_datetime)
 
+
 class UserFullName(ModelForm):
 
     def __unicode__(self):
         return self.get_full_name()
 
+
 class FairCreateForm(ModelForm):
     """
-    Form for create a new Fair
+    Form for creating a new Fair
     """
 
     class Meta:
@@ -103,6 +109,7 @@ class FairCreateForm(ModelForm):
         if Fair.objects.filter(created_by=self.created_by, fair_name=fair_name).exists():
             raise forms.ValidationError("This fair has already been created.")
         return fair_name
+
 
 class FairDetailForm(ModelForm):
     """
@@ -146,6 +153,7 @@ class FairDetailForm(ModelForm):
 
         }
 
+
 class EventCreateForm(ModelForm):
     """
     Form for create a new Fair Event
@@ -156,7 +164,7 @@ class EventCreateForm(ModelForm):
         fields = ['fair', 'event_name', 'event_description',
                   'original_event_date']
         widgets = {
-            'fair' :  Select(),
+            'fair':  Select(),
             'event_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 500px;',
@@ -174,11 +182,12 @@ class EventCreateForm(ModelForm):
         self.created_by = kwargs.pop('created_by', None)
         super(EventCreateForm, self).__init__(*args, **kwargs)
 
-    def clean_fair_name(self):
-        fair_name = self.cleaned_data['fair_name']
+    def clean_event_name(self):
+        event_name = self.cleaned_data['event_name']
         if Event.objects.filter(created_by=self.created_by, event_name=event_name).exists():
             raise forms.ValidationError("This Event has already been created.")
         return event_name
+
 
 class EventDetailForm(ModelForm):
     """
@@ -186,11 +195,11 @@ class EventDetailForm(ModelForm):
     """
     class Meta:
         model = Event
-        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated,')
+        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
         # fields = '__all__'
         widgets = {
             'fair': Select(),
-             'event_name': TextInput(attrs={
+            'event_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 500px;',
                 'placeholder': 'Event Name'
@@ -215,3 +224,116 @@ class EventDetailForm(ModelForm):
 
         }
 
+
+class SiteCreateForm(ModelForm):
+    """
+    Form for Creating a new site
+    """
+
+    class Meta:
+        model = Site
+        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
+        widgets = {
+            'zone': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 30px;'
+            }),
+            'site_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 30px;',
+                'placeholder': 'Site Name'
+            }),
+            'site_size': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 30px;',
+                'placeholder': 'Site Size'
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(SiteCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_site_name(self):
+        site_name = self.cleaned_data['site_name']
+        if Site.objects.filter(site_name=site_name).exists():
+            raise forms.ValidationError("This Site has already been created.")
+        return site_name
+
+
+class SiteDetailForm(ModelForm):
+    """
+    Form for updating a site
+    """
+
+    class Meta:
+        model = Site
+        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
+        widgets = {
+           'site_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 30px;',
+                'placeholder': 'Site Name'
+           }),
+           'site_size': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 30px;',
+                'placeholder': 'Site Size'
+           }),
+           'zone': Select(attrs={
+               'class': "form-select",
+               'style': 'max-width: 30px;',
+           })
+        }
+
+
+class ZoneCreateForm(ModelForm):
+    """
+    Form for Creating a new zone
+    """
+
+    class Meta:
+        model = Zone
+        fields = ['zone_name', 'map_pdf', 'trestle_source']
+        widgets = {
+            'zone_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 30px;',
+                'placeholder': 'Zone Name'
+            }),
+            'map_pdf': FileInput(),
+            'trestle_source': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(ZoneCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_zone_name(self):
+        zone_name = self.cleaned_data['zone_name']
+        if Zone.objects.filter(zone_name=zone_name).exists():
+            raise forms.ValidationError("This Zone has already been created.")
+        return zone_name
+
+
+class ZoneDetailForm(ModelForm):
+    """
+    Form for updating a zone
+    """
+
+    class Meta:
+        model = Zone
+        fields = ['zone_name', 'map_pdf', 'trestle_source']
+        widgets = {
+            'zone_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 30px;',
+                'placeholder': 'Site Name'
+            }),
+            'map_pdf': FileInput(),
+            'trestle_source': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+        }

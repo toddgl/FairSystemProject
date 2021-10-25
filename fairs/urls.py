@@ -10,9 +10,15 @@ from fairs.views import (
     EventCreateView,
     EventListView,
     EventDetailUpdateView,
+    ZoneCreateView,
+    ZoneListView,
+    ZoneDetailUpdateView,
+    SiteCreateView,
+    SiteListView,
+    SiteDetailUpdateView,
 )
 
-app_name = 'fair' # This is the namespace so you can reverse urls with fair:*
+app_name = 'fair'  # This is the namespace so you can reverse urls with fair:*
 
 urlpatterns = [
 
@@ -20,6 +26,12 @@ urlpatterns = [
     path('fair/<int:pk>', FairDetailUpdateView.as_view(), name='fair-detail'),
     path('event/', EventListView.as_view(), name='event-list'),
     path('event/<int:pk>', EventDetailUpdateView.as_view(), name='event-detail'),
+    path('zone/', ZoneListView.as_view(), name='zone-list'),
+    path('zone/,<int:pk>', ZoneDetailUpdateView.as_view(), name='zone-detail'),
+    path('site/', SiteListView.as_view(), name='site-list'),
+    path('site/,<int:pk>', SiteDetailUpdateView.as_view(), name='site-detail'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
     path('event/actionUrl/', EventCreateView.as_view(), name='actionUrl'),
+    path('zone/actionUrl/', ZoneCreateView.as_view(), name='actionUrl'),
+    path('site/actionUrl/', SiteCreateView.as_view(), name='actionUrl'),
 ]
