@@ -1,0 +1,31 @@
+<!-- fairs/templates/inventoryitems/inventoryitem_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>inventoryitem</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new inventoryitem</button>
+        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+    </form>
+
+    {% for inventoryitem in inventoryitem_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ inventoryitem.item_name }}</h4>
+                <p class="card-text">
+                    Date created: {{ inventoryitem.date_created|date:'Y-m-d H:i' }}
+                </p>
+                <a href="{% url 'fair:inventoryitem-detail' inventoryitem.id %}" class="card-link">
+                    View and edit inventoryitem Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <li>There are no Inventory Items active yet.</li>
+    {% endfor %}
+</div>
+{% endblock %}

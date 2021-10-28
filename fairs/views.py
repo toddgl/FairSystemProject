@@ -14,6 +14,7 @@ from fairs.models import (
     EventSite,
     Site,
     Zone,
+    InventoryItem,
 
 )
 from .forms import (
@@ -25,6 +26,8 @@ from .forms import (
     SiteDetailForm,
     ZoneCreateForm,
     ZoneDetailForm,
+    InventoryItemCreateForm,
+    InventoryItemDetailForm,
 )
 
 
@@ -271,5 +274,66 @@ class ZoneCreateView(PermissionRequiredMixin, CreateView):
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(ZoneCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['created_by'] = self.request.user
+        return kwargs
+
+
+class InventoryItemListView(PermissionRequiredMixin, ListView):
+    """
+    List all inventory items in the system by created date
+    """
+    permission_required = 'fairs.view_inventoryitem'
+    model = InventoryItem
+    template_name = 'inventoryitems/inventoryitem_list.html'
+    queryset = InventoryItem.objects.all().order_by("-date_created")
+
+
+class InventoryItemDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of an inventory item
+    """
+    permission_required = 'fairs.change_inventoryitem'
+    model = InventoryItem
+    form_class = InventoryItemDetailForm
+    template_name = 'inventoryitems/inventoryitem_detail.html'
+    success_url = reverse_lazy('fair:inventoryitem-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventoryItemDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['inventoryitem'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.updated_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class InventoryItemCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Zone including recording who created it
+    """
+    permission_required = 'fairs.add_inventoryitem'
+    model = InventoryItem
+    form_class = InventoryItemCreateForm
+    template_name = 'inventoryitems/inventoryitem_create.html'
+    success_url = reverse_lazy('fair:inventoryitem-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(InventoryItemCreateView, self).get_initial(**kwargs)
+        initial['item_name'] = 'My Item'
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(InventoryItemCreateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['created_by'] = self.request.user
         return kwargs

@@ -4,9 +4,12 @@ from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
 from django import forms
 from django.forms import (
     ModelForm,
+    IntegerField,
+    Textarea,
     TextInput,
     FileInput,
     CheckboxInput,
+    NumberInput,
     Select,
     SelectDateWidget
 )
@@ -15,6 +18,7 @@ from fairs.models import (
     Site,
     Fair,
     Event,
+    InventoryItem
 )
 from datetime import datetime
 from django.utils.timezone import make_aware
@@ -136,7 +140,7 @@ class FairDetailForm(ModelForm):
                 'style': 'max-width: 750px;',
                 'placeholder': 'Fair Description'
             }),
-            'date_cancelled': DateTimeInput(attrs={
+            'date_cancelled': DateInput(attrs={
                 'class': "form-control",
                 'readonly': 'readonly'
             }),
@@ -175,7 +179,7 @@ class EventCreateForm(ModelForm):
                 'style': 'max-width: 750px;',
                 'placeholder': 'Fair Description'
             }),
-            'original_event_date': SelectDateWidget(),
+            'original_event_date': NumberInput(attrs={'type': 'date'}),
         }
 
     def __init__(self, *args, **kwargs):
@@ -236,16 +240,16 @@ class SiteCreateForm(ModelForm):
         widgets = {
             'zone': Select(attrs={
                 'class': "form-select",
-                'style': 'max-width: 30px;'
+                'style': 'max-width: 100px;'
             }),
             'site_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 30px;',
+                'style': 'max-width: 100px;',
                 'placeholder': 'Site Name'
             }),
             'site_size': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 30px;',
+                'style': 'max-width: 100px;',
                 'placeholder': 'Site Size'
             })
         }
@@ -272,17 +276,17 @@ class SiteDetailForm(ModelForm):
         widgets = {
            'site_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 30px;',
+                'style': 'max-width: 100px;',
                 'placeholder': 'Site Name'
            }),
            'site_size': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 30px;',
+                'style': 'max-width: 100px;',
                 'placeholder': 'Site Size'
            }),
            'zone': Select(attrs={
                'class': "form-select",
-               'style': 'max-width: 30px;',
+               'style': 'max-width: 100px;',
            })
         }
 
@@ -298,7 +302,7 @@ class ZoneCreateForm(ModelForm):
         widgets = {
             'zone_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 30px;',
+                'style': 'max-width: 100px;',
                 'placeholder': 'Zone Name'
             }),
             'map_pdf': FileInput(),
@@ -329,11 +333,85 @@ class ZoneDetailForm(ModelForm):
         widgets = {
             'zone_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 30px;',
+                'style': 'max-width: 100px;',
                 'placeholder': 'Site Name'
             }),
             'map_pdf': FileInput(),
             'trestle_source': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
+        }
+
+
+class InventoryItemCreateForm(ModelForm):
+    """
+    Form for creating a new InventoryItem
+    """
+
+    class Meta:
+        model = InventoryItem
+        fields = ['item_name', 'item_description', 'item_quantity', 'site_size']
+        widgets = {
+            'item_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Item Name'
+            }),
+            'item_description': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Please enter the  description'
+            }),
+            'item_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Number of Items'
+            }),
+            'site_size': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Site Size'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(InventoryItemCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_item_name(self):
+        item_name = self.cleaned_data['item_name']
+        if InventoryItem.objects.filter(ztem_name=item_name).exists():
+            raise forms.ValidationError("This Inventory Item has already been created.")
+        return item_name
+
+
+class InventoryItemDetailForm(ModelForm):
+    """
+    Form for updating an InventoryItem
+    """
+
+    class Meta:
+        model = InventoryItem
+        fields = ['item_name', 'item_description', 'item_quantity', 'site_size']
+        widgets = {
+           'item_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Item Name'
+           }),
+           'item_description': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Please enter the  description'
+           }),
+           'item_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Number of Items'
+           }),
+           'site_size': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Site Size'
+           }),
         }

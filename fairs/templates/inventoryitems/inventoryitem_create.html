@@ -1,0 +1,15 @@
+<!--fairs/templates/inventoryitemms/inventoryitem`_create.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Create  Inventory Item</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Save" >
+    <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+  </form>
+</div>
+{% endblock %}`

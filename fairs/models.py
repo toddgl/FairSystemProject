@@ -5,10 +5,10 @@ from django.utils import timezone
 from django.urls import reverse
 from accounts.models import CustomUser
 from django.utils.translation import ugettext_lazy as _
-
-
+from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Create your models here.
+
 
 class Fair(models.Model):
     """
@@ -44,7 +44,7 @@ class Fair(models.Model):
     def get_fair_year(self):
         """
         Format it to datetime object. You need to convert `year`
-        to str if it is `IntergerField`. ex: str(self.year).
+        to str if it is `IntegerField`. ex: str(self.year).
         """
         date = timezone.datetime.strptime('%Y', self.fair_year)
         return date
@@ -137,7 +137,6 @@ class Event(models.Model):
         return reverse('fairs:event-detail', args=[self.id])
 
 
-
 class EventSite(models.Model):
     """
     Description: Junction table for the manytomany relationship between
@@ -172,3 +171,21 @@ class EventSite(models.Model):
         choices=STATUS,
         default=AVAILABLE,
     )
+
+
+class InventoryItem(models.Model):
+    """
+    Description: A reference table for all that items that can be purchased by Stallholders
+    when registering for a fair.  Uses two Joining tables: InvItemFair to capture items prices based on the fair, and
+    InvItemEvent to capture the number of items consumed and available for each fair event
+    """
+    item_name = models.CharField(max_length=100)
+    item_description = models.TextField()
+    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999),],)
+    site_size = models.CharField(max_length=40)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(CustomUser, related_name='item_created_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='item_updated_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
