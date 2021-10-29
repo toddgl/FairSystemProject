@@ -55,6 +55,7 @@ class Zone(models.Model):
     Description: Stores the details of the fair zones.
     """
     zone_name = models.CharField(max_length=40)
+    zone_code = models.CharField(max_length=2, default=None, null=True)
     map_pdf = models.FileField(upload_to='media/maps')
     trestle_source = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
@@ -74,12 +75,45 @@ class Zone(models.Model):
         return reverse('fairs:zone-detail', args=[self.id])
 
 
+class InventoryItem(models.Model):
+    """
+    Description: A reference table for all that items that can be purchased by Stallholders
+    when registering for a fair.  Uses two Joining tables: InvItemFair to capture items prices based on the fair, and
+    InvItemEvent to capture the number of items consumed and available for each fair event
+    """
+    item_name = models.CharField(max_length=100)
+    item_description = models.TextField()
+    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999),],)
+    site_size = models.CharField(max_length=40)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(CustomUser, related_name='item_created_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='item_updated_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+
+    def __str__(self):
+        return self.item_name
+
+    class Meta:
+        verbose_name_plural = "InventoryItems"
+
+    def get_absolute_url(self):
+        return reverse('fairs:inventoryitem-detail', args=[self.id])
+
+
+
 class Site(models.Model):
     """
     Description: Stores the details of the fair stallholder sites
     """
     site_name = models.CharField(max_length=40)
-    site_size = models.CharField(max_length=5)
+    site_size = models.ForeignKey(
+        InventoryItem,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
     zone = models.ForeignKey(
         Zone,
         on_delete=models.SET_NULL,
@@ -88,10 +122,20 @@ class Site(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, related_name='site_created_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
-    updated_by = models.ForeignKey(CustomUser, related_name='site_updated_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
+    created_by = models.ForeignKey(
+        CustomUser,
+        related_name='site_created_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    updated_by = models.ForeignKey(
+        CustomUser,
+        related_name='site_updated_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
 
     def __str__(self):
         return self.site_name
@@ -173,19 +217,3 @@ class EventSite(models.Model):
     )
 
 
-class InventoryItem(models.Model):
-    """
-    Description: A reference table for all that items that can be purchased by Stallholders
-    when registering for a fair.  Uses two Joining tables: InvItemFair to capture items prices based on the fair, and
-    InvItemEvent to capture the number of items consumed and available for each fair event
-    """
-    item_name = models.CharField(max_length=100)
-    item_description = models.TextField()
-    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999),],)
-    site_size = models.CharField(max_length=40)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, related_name='item_created_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
-    updated_by = models.ForeignKey(CustomUser, related_name='item_updated_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)

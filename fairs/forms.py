@@ -240,17 +240,16 @@ class SiteCreateForm(ModelForm):
         widgets = {
             'zone': Select(attrs={
                 'class': "form-select",
-                'style': 'max-width: 100px;'
+                'style': 'max-width: 300px;'
             }),
             'site_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 100px;',
                 'placeholder': 'Site Name'
             }),
-            'site_size': TextInput(attrs={
-                'class': "form-control",
-                'style': 'max-width: 100px;',
-                'placeholder': 'Site Size'
+            'site_size': Select(attrs={
+                'class': "form-select`",
+                'style': 'max-width: 300px;',
             })
         }
 
@@ -279,10 +278,9 @@ class SiteDetailForm(ModelForm):
                 'style': 'max-width: 100px;',
                 'placeholder': 'Site Name'
            }),
-           'site_size': TextInput(attrs={
-                'class': "form-control",
+           'site_size': Select(attrs={
+                'class': "form-select",
                 'style': 'max-width: 100px;',
-                'placeholder': 'Site Size'
            }),
            'zone': Select(attrs={
                'class': "form-select",
@@ -298,12 +296,17 @@ class ZoneCreateForm(ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['zone_name', 'map_pdf', 'trestle_source']
+        fields = ['zone_name', 'zone_code', 'map_pdf', 'trestle_source']
         widgets = {
             'zone_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 100px;',
+                'style': 'max-width: 300px;',
                 'placeholder': 'Zone Name'
+            }),
+            'zone_code': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px; text-transform: uppercase;',
+                'placeholder': 'XX'
             }),
             'map_pdf': FileInput(),
             'trestle_source': CheckboxInput(attrs={
@@ -329,12 +332,17 @@ class ZoneDetailForm(ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['zone_name', 'map_pdf', 'trestle_source']
+        fields = ['zone_name', 'zone_code', 'map_pdf', 'trestle_source']
         widgets = {
             'zone_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 100px;',
+                'style': 'max-width: 300px;',
                 'placeholder': 'Site Name'
+            }),
+            'zone_code': TextInput(attrs={
+                'class': "form-control",
+                'style': 'text-transform: uppercase;',
+                'placeholder': 'XX'
             }),
             'map_pdf': FileInput(),
             'trestle_source': CheckboxInput(attrs={
@@ -354,7 +362,7 @@ class InventoryItemCreateForm(ModelForm):
         widgets = {
             'item_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 100px;',
+                'style': 'max-width: 300px;',
                 'placeholder': 'Item Name'
             }),
             'item_description': Textarea(attrs={
@@ -380,7 +388,7 @@ class InventoryItemCreateForm(ModelForm):
 
     def clean_item_name(self):
         item_name = self.cleaned_data['item_name']
-        if InventoryItem.objects.filter(ztem_name=item_name).exists():
+        if InventoryItem.objects.filter(item_name=item_name).exists():
             raise forms.ValidationError("This Inventory Item has already been created.")
         return item_name
 
@@ -396,7 +404,7 @@ class InventoryItemDetailForm(ModelForm):
         widgets = {
            'item_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 100px;',
+                'style': 'max-width: 300px;',
                 'placeholder': 'Item Name'
            }),
            'item_description': Textarea(attrs={
