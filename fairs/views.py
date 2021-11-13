@@ -28,6 +28,8 @@ from .forms import (
     ZoneDetailForm,
     InventoryItemCreateForm,
     InventoryItemDetailForm,
+    EventSiteDetailForm,
+    EventSiteCreateForm,
 )
 
 
@@ -337,3 +339,60 @@ class InventoryItemCreateView(PermissionRequiredMixin, CreateView):
         kwargs = super(InventoryItemCreateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['created_by'] = self.request.user
         return kwargs
+
+class EventSiteListView(PermissionRequiredMixin, ListView):
+    """
+    List all sites associated with an event order on event
+    """
+    permission_required = 'fairs.view_eventsite'
+    model = EventSite
+    template_name = 'eventsites/eventsite_list.html'
+    queryset = EventSite.objects.all().order_by("-event")
+
+
+class EventSiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a site associated with an event
+    """
+    permission_required = 'fairs.change_eventsite'
+    model = EventSite
+    form_class = EventSiteDetailForm
+    template_name = 'eventsites/eventsite_detail.html'
+    success_url = reverse_lazy('fair:eventsite-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(EventSiteDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['eventsite'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class EventSiteCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Event to Site relationship and its status
+    """
+    permission_required = 'fairs.add_eventsite'
+    model = EventSite
+    form_class = EventSiteCreateForm
+    template_name = 'eventsites/eventsite_create.html'
+    success_url = reverse_lazy('fair:eventsite-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(EventSiteCreateView, self).get_initial(**kwargs)
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EventSiteCreateView, self).get_form_kwargs(*args, **kwargs)
+        return kwargs
+

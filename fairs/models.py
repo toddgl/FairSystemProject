@@ -83,7 +83,7 @@ class InventoryItem(models.Model):
     """
     item_name = models.CharField(max_length=100)
     item_description = models.TextField()
-    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999),],)
+    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ],)
     site_size = models.CharField(max_length=40)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -100,7 +100,6 @@ class InventoryItem(models.Model):
 
     def get_absolute_url(self):
         return reverse('fairs:inventoryitem-detail', args=[self.id])
-
 
 
 class Site(models.Model):
@@ -191,12 +190,14 @@ class EventSite(models.Model):
     ALLOCATED = 2
     PENDING = 3
     BOOKED = 4
+    UNAVAILABLE = 5
 
     STATUS = (
         (AVAILABLE, _('Available to be booked')),
         (ALLOCATED, _('Allocated to a stallholder')),
         (PENDING, _('Pending finalisation of the booking')),
         (BOOKED, _('Booked')),
+        (UNAVAILABLE, _('Not available for this event')),
     )
 
     event = models.ForeignKey(
@@ -216,4 +217,5 @@ class EventSite(models.Model):
         default=AVAILABLE,
     )
 
-
+    class Meta:
+        unique_together = ('event', 'site')

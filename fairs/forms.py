@@ -18,7 +18,8 @@ from fairs.models import (
     Site,
     Fair,
     Event,
-    InventoryItem
+    InventoryItem,
+    EventSite
 )
 from datetime import datetime
 from django.utils.timezone import make_aware
@@ -199,7 +200,7 @@ class EventDetailForm(ModelForm):
     """
     class Meta:
         model = Event
-        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
+        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated', 'sites', 'fair', )
         # fields = '__all__'
         widgets = {
             'fair': Select(),
@@ -244,7 +245,7 @@ class SiteCreateForm(ModelForm):
             }),
             'site_name': TextInput(attrs={
                 'class': "form-control",
-                'style': 'max-width: 100px;',
+                'style': 'max-width: 300px;',
                 'placeholder': 'Site Name'
             }),
             'site_size': Select(attrs={
@@ -280,11 +281,11 @@ class SiteDetailForm(ModelForm):
            }),
            'site_size': Select(attrs={
                 'class': "form-select",
-                'style': 'max-width: 100px;',
+                'style': 'max-width: 300px;',
            }),
            'zone': Select(attrs={
                'class': "form-select",
-               'style': 'max-width: 100px;',
+               'style': 'max-width: 300px;',
            })
         }
 
@@ -423,3 +424,55 @@ class InventoryItemDetailForm(ModelForm):
                 'placeholder': 'Site Size'
            }),
         }
+
+
+class EventSiteDetailForm(ModelForm):
+    """
+    Form for updating an EventSite
+    """
+
+    class Meta:
+        model = EventSite
+        fields = ['event', 'site', 'status']
+        widgets = {
+            'event' : Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'site': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'status': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+        }
+
+
+class EventSiteCreateForm(ModelForm):
+    """
+    Form for Creating a new event site relationship
+    """
+
+    class Meta:
+        model = EventSite
+        exclude = ()
+        widgets = {
+            'event': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'site': Select(attrs={
+                'class': "form-select`",
+                'style': 'max-width: 300px;',
+            }),
+            'status': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(EventSiteCreateForm, self).__init__(*args, **kwargs)
+

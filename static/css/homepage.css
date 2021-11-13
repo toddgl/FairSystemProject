@@ -3,3 +3,7 @@
 .logo{
     margin: 0px 50px;
 }
+ul.errorlist {
+    color: red;
+    font-weight: bold;
+}

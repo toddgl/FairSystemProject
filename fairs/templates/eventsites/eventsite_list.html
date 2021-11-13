@@ -1,0 +1,31 @@
+<!-- fairs/templates/inventoryitems/inventoryitem_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Event Sites</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new event site</button>
+        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+    </form>
+
+    {% for eventsite in eventsite_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ eventsite.event }} - {{ eventsite.site }}</h4>
+                <p class="card-text">
+                    Status: {{ eventsite.status }}
+                </p>
+                <a href="{% url 'fair:eventsite-detail' eventsite.id %}" class="card-link">
+                    View and edit inventoryitem Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <li>There are no sites linked with an event yet.</li>
+    {% endfor %}
+</div>
+{% endblock %}
