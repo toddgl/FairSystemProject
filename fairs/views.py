@@ -347,7 +347,7 @@ class EventSiteListView(PermissionRequiredMixin, ListView):
     permission_required = 'fairs.view_eventsite'
     model = EventSite
     template_name = 'eventsites/eventsite_list.html'
-    queryset = EventSite.objects.all().order_by("-event")
+    queryset = EventSite.objects.all().order_by("site_status")
 
 
 class EventSiteDetailUpdateView(PermissionRequiredMixin, UpdateView):

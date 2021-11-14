@@ -433,9 +433,9 @@ class EventSiteDetailForm(ModelForm):
 
     class Meta:
         model = EventSite
-        fields = ['event', 'site', 'status']
+        fields = ['event', 'site', 'site_status']
         widgets = {
-            'event' : Select(attrs={
+            'event': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
@@ -443,7 +443,7 @@ class EventSiteDetailForm(ModelForm):
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
-            'status': Select(attrs={
+            'site_status': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
@@ -467,7 +467,7 @@ class EventSiteCreateForm(ModelForm):
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
             }),
-            'status': Select(attrs={
+            'site_status': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
@@ -475,4 +475,3 @@ class EventSiteCreateForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(EventSiteCreateForm, self).__init__(*args, **kwargs)
-

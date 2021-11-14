@@ -3,29 +3,37 @@
 {% extends 'base.html' %}
 
 {% block body %}
-<div class="container">
+<div class="container" xmlns="http://www.w3.org/1999/html">
   <h1>Event Sites</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new event site</button>
         <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
     </form>
-
-    {% for eventsite in eventsite_list %}
-    <div class="container mt-3" style="width: 600px;">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">{{ eventsite.event }} - {{ eventsite.site }}</h4>
-                <p class="card-text">
-                    Status: {{ eventsite.status }}
-                </p>
-                <a href="{% url 'fair:eventsite-detail' eventsite.id %}" class="card-link">
-                    View and edit inventoryitem Detail
-                </a>
+    </br>
+    {% regroup eventsite_list by get_site_status_display as site_status_list %}
+    {% for site in site_status_list %}
+    <h5 class="rotary_orange">{{ site.grouper }}</h5>
+        {% for item in site.list %}
+        <div class="container mt-3" style="width: 600px;">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ item.event }} - {{ item.site }}</h4>
+                    <p class="card-text">
+                        Zone: {{ item.site.zone }}
+                        </br>
+                        Site Size: {{ item.site.site_size }}
+                        </br>
+                        Status: {{ item.get_site_status_display }}
+                    </p>
+                    <a href="{% url 'fair:eventsite-detail' item.id %}" class="card-link">
+                        View and edit Event Site Detail
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
-    {% empty %}
-        <li>There are no sites linked with an event yet.</li>
+        {% empty %}
+            <li>There are no sites linked with an event yet.</li>
+        {% endfor %}
     {% endfor %}
 </div>
 {% endblock %}

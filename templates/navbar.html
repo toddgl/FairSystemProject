@@ -23,7 +23,7 @@
           <a class="nav-link {% if request.path == registration_url %} active {%endif%} " href="{{registration_url}}">Registration</a>
         </li>
         {% if user.is_authenticated %}
-          <span class="navbar-text fw-bolder" style = 'color:#ffc107'>
+          <span class="navbar-text fw-bolder" style = 'color:#febd11'>
             Hi {{ user.email }} !
           </span>
           <li class="nav-item">

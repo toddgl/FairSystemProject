@@ -192,7 +192,7 @@ class EventSite(models.Model):
     BOOKED = 4
     UNAVAILABLE = 5
 
-    STATUS = (
+    SITE_STATUS_CHOICE = (
         (AVAILABLE, _('Available to be booked')),
         (ALLOCATED, _('Allocated to a stallholder')),
         (PENDING, _('Pending finalisation of the booking')),
@@ -212,8 +212,8 @@ class EventSite(models.Model):
         verbose_name='site',
         related_name='event_sites'
     )
-    status = models.PositiveSmallIntegerField(
-        choices=STATUS,
+    site_status = models.PositiveSmallIntegerField(
+        choices=SITE_STATUS_CHOICE,
         default=AVAILABLE,
     )
 
