@@ -180,6 +180,31 @@ class Event(models.Model):
         return reverse('fairs:event-detail', args=[self.id])
 
 
+class SiteAvailableManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=1)
+
+
+class SiteAllocatedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=2)
+
+
+class SitePendingManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=3)
+
+
+class SiteBookedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=4)
+
+
+class SiteUnavailableManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=5)
+
+
 class EventSite(models.Model):
     """
     Description: Junction table for the manytomany relationship between
@@ -216,6 +241,13 @@ class EventSite(models.Model):
         choices=SITE_STATUS_CHOICE,
         default=AVAILABLE,
     )
+
+    objects = models.Manager()  # The default manager.
+    site_available = SiteAvailableManager()  # The site status available manager.
+    site_allocated = SiteAllocatedManager()  # The site status allocated manager.
+    site_pending = SitePendingManager()  # The site status pending manager.
+    site_booked = SiteBookedManager()  # The site status booked manager.
+    site_unavailable = SiteUnavailableManager()  # The site status unavailable manager.
 
     class Meta:
         unique_together = ('event', 'site')

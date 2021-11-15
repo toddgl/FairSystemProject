@@ -340,6 +340,7 @@ class InventoryItemCreateView(PermissionRequiredMixin, CreateView):
         kwargs['created_by'] = self.request.user
         return kwargs
 
+
 class EventSiteListView(PermissionRequiredMixin, ListView):
     """
     List all sites associated with an event order on event
@@ -396,3 +397,20 @@ class EventSiteCreateView(PermissionRequiredMixin, CreateView):
         kwargs = super(EventSiteCreateView, self).get_form_kwargs(*args, **kwargs)
         return kwargs
 
+
+class SiteDashboardView(PermissionRequiredMixin, ListView):
+    """
+    Populate the Site Dashboard with counts of the various site statuses
+    """
+    permission_required = 'fairs.view_eventsite'
+    model = EventSite
+    template_name = 'dashboards/dashboard_sites.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['available_counts'] = EventSite.site_available.count()
+        context['allocated_counts'] = EventSite.site_allocated.count()
+        context['pending_counts'] = EventSite.site_pending.count()
+        context['booked_counts'] = EventSite.site_booked.count()
+        context['unavailable_counts'] = EventSite.site_unavailable.count()
+        return context
