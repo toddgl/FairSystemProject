@@ -1,4 +1,4 @@
-<!--templates/account/base.html -->
+<!--templates/dashboard_base.html -->
 {% load static %}
 
 <!DOCTYPE html>
@@ -7,16 +7,20 @@
     <!-- Bootstrap CSS -->
     <!-- CSS only -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.0/font/bootstrap-icons.css">
     <!-- CSS Custom File -->
     <link href="{% static 'css/homepage.css' %}" rel="stylesheet">
     {% block head %}
-    <title>Fair System</title>
+    <title>Dashboard</title>
     {% endblock head %}
   </head>
   <body>
     {% block nav %}
       {% include 'navbar.html' %}
     {% endblock nav %}
+    {% block sidebar %}
+      {% include 'sidebar.html' %}
+    {% endblock sidebar %}
     {% block body %}
       <h1>Base</h1>
     {% endblock %}
