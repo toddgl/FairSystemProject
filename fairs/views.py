@@ -1,11 +1,14 @@
 # fairs/view.py
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.http import HttpResponseRedirect
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
+    FormView,
     ListView,
     UpdateView,
+    View
 )
 
 from fairs.models import (
@@ -30,6 +33,7 @@ from .forms import (
     InventoryItemDetailForm,
     EventSiteDetailForm,
     EventSiteCreateForm,
+    DashboardSiteFilterForm,
 )
 
 
@@ -44,6 +48,7 @@ class FairCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'fairs/fair_create.html'
     # template_name = 'fairs/test.html'
     success_url = reverse_lazy('fair:fair-list')
+
     # success_url = '/'
 
     def form_valid(self, form):
@@ -398,16 +403,34 @@ class EventSiteCreateView(PermissionRequiredMixin, CreateView):
         return kwargs
 
 
-class SiteDashboardView(PermissionRequiredMixin, ListView):
+class SiteDashboardView(PermissionRequiredMixin, FormView):
     """
     Populate the Site Dashboard with counts of the various site statuses
     """
     permission_required = 'fairs.view_eventsite'
     model = EventSite
+    form_class = DashboardSiteFilterForm
     template_name = 'dashboards/dashboard_sites.html'
+    queryset = EventSite.objects.all().order_by("site_status")
+    success_url = reverse_lazy('fair:site-dashboard')
+
+
+    def filter_site(request):
+        events = EventSite.objects.all()
+        # its best practice to call your form instance `form` in the view so that the next line has better readability
+        form = DashboardSiteFilterForm(request.GET)
+        if form.is_valid():
+            event = EventSite.cleaned_data['event_name']
+            zone = EventSite.site.zone.cleaned_data['zone_name']
+            if event:
+                events = EventSite.filter(event_name=event)
+            if zone:
+                events = EventSite.filter(zone=zone)
+        return render(request, 'dashboards/dashboard_sites.html', {'events': events})
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        context['form'] = self.get_form()
         context['available_counts'] = EventSite.site_available.count()
         context['allocated_counts'] = EventSite.site_allocated.count()
         context['pending_counts'] = EventSite.site_pending.count()

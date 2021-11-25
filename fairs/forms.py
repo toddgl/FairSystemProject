@@ -3,7 +3,11 @@
 from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
 from django import forms
 from django.forms import (
+    Form,
     ModelForm,
+    ChoiceField,
+    ModelChoiceField,
+    ModelMultipleChoiceField,
     IntegerField,
     Textarea,
     TextInput,
@@ -11,6 +15,7 @@ from django.forms import (
     CheckboxInput,
     NumberInput,
     Select,
+    SelectMultiple,
     SelectDateWidget
 )
 from fairs.models import (
@@ -45,7 +50,7 @@ class MinimalSplitDateTimeMultiWidget(MultiWidget):
             ]
         super().__init__(widgets, attrs)
 
-    # nabbing from https://docs.djangoproject.com/en/3.1/ref/forms/widgets/#django.forms.MultiWidget.decompress
+    # Nabbed from https://docs.djangoproject.com/en/3.1/ref/forms/widgets/#django.forms.MultiWidget.decompress
     def decompress(self, value):
         if value:
             return [value.date(), value.strftime('%H:%M')]
@@ -169,7 +174,7 @@ class EventCreateForm(ModelForm):
         fields = ['fair', 'event_name', 'event_description',
                   'original_event_date']
         widgets = {
-            'fair':  Select(),
+            'fair': Select(),
             'event_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 500px;',
@@ -198,9 +203,10 @@ class EventDetailForm(ModelForm):
     """
     Form for viewing and updating the Event model
     """
+
     class Meta:
         model = Event
-        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated', 'sites', 'fair', )
+        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated', 'sites', 'fair',)
         # fields = '__all__'
         widgets = {
             'fair': Select(),
@@ -274,19 +280,19 @@ class SiteDetailForm(ModelForm):
         model = Site
         exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
         widgets = {
-           'site_name': TextInput(attrs={
+            'site_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 100px;',
                 'placeholder': 'Site Name'
-           }),
-           'site_size': Select(attrs={
+            }),
+            'site_size': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
-           }),
-           'zone': Select(attrs={
-               'class': "form-select",
-               'style': 'max-width: 300px;',
-           })
+            }),
+            'zone': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            })
         }
 
 
@@ -403,26 +409,26 @@ class InventoryItemDetailForm(ModelForm):
         model = InventoryItem
         fields = ['item_name', 'item_description', 'item_quantity', 'site_size']
         widgets = {
-           'item_name': TextInput(attrs={
+            'item_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Item Name'
-           }),
-           'item_description': Textarea(attrs={
+            }),
+            'item_description': Textarea(attrs={
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Please enter the  description'
-           }),
-           'item_quantity': NumberInput(attrs={
+            }),
+            'item_quantity': NumberInput(attrs={
                 'class': "form_control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Number of Items'
-           }),
-           'site_size': TextInput(attrs={
+            }),
+            'site_size': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 100px;',
                 'placeholder': 'Site Size'
-           }),
+            }),
         }
 
 
@@ -475,3 +481,20 @@ class EventSiteCreateForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(EventSiteCreateForm, self).__init__(*args, **kwargs)
+
+
+class DashboardSiteFilterForm(ModelForm):
+    """
+    Form for selecting filters for the site dashboard
+    """
+
+    event = ModelChoiceField(
+        queryset=Event.objects.all(),
+        widget=Select(attrs={'class': 'form-control'}))
+    zone = ModelMultipleChoiceField(
+        queryset=Zone.objects.all(),
+        widget=SelectMultiple(attrs={'class': 'form-control js-example-disabled-results'}))
+
+    class Meta:
+        model = EventSite
+        fields = ['event', 'zone']

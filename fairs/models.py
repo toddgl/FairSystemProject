@@ -1,5 +1,5 @@
 # fairs/model.py
-
+import datetime
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
@@ -146,6 +146,11 @@ class Site(models.Model):
         return reverse('fairs:site-detail', args=[self.id])
 
 
+class EventFilterManager(models.Manager):
+    def get_queryset(self):
+       return super().get_queryset().filter(original_event_date__gt=datetime.datetime.now())
+
+
 class Event(models.Model):
     """
     Description: Stores the details of events associated with fair
@@ -169,6 +174,9 @@ class Event(models.Model):
                                    null=True)
     updated_by = models.ForeignKey(CustomUser, related_name='event_updated_by', on_delete=models.SET_NULL, blank=True,
                                    null=True)
+
+    objects = models.Manager()
+    filtermgr = EventFilterManager()
 
     def __str__(self):
         return self.event_name
