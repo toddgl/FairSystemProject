@@ -483,18 +483,22 @@ class EventSiteCreateForm(ModelForm):
         super(EventSiteCreateForm, self).__init__(*args, **kwargs)
 
 
-class DashboardSiteFilterForm(ModelForm):
+class DashboardSiteFilterForm(Form):
     """
     Form for selecting filters for the site dashboard
     """
 
     event = ModelChoiceField(
         queryset=Event.objects.all(),
+        empty_label='Show All',
+        required=False,
         widget=Select(attrs={'class': 'form-control'}))
-    zone = ModelMultipleChoiceField(
+    zone = ModelChoiceField(
         queryset=Zone.objects.all(),
-        widget=SelectMultiple(attrs={'class': 'form-control js-example-disabled-results'}))
+        empty_label='Show All',
+        required=False,
+        widget=Select(attrs={'class': 'form-control'}))
 
     class Meta:
         model = EventSite
-        fields = ['event', 'zone']
+        fields = ['event', 'site']

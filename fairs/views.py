@@ -38,6 +38,9 @@ from .forms import (
 
 
 # Create your views here.
+Site = Site
+
+
 class FairCreateView(PermissionRequiredMixin, CreateView):
     """
     Create a fair including recording who created it
@@ -112,15 +115,31 @@ class EventCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'events/event_create.html'
     success_url = reverse_lazy('fair:event-list')
 
+    def generate_event_sites(self, *args, **kwargs):
+        """
+        Create the event site relationship with the just created event and all sites
+        """
+        sites = Site.objects.all()
+        objs = [
+            EventSite(
+                event=self.object,
+                site=site,
+                site_status=1,
+            )
+            for site in sites
+        ]
+        EventSite.objects.bulk_create(objs)
+
     def form_valid(self, form):
         self.object = form.save(commit=False)
         self.object.created_by = self.request.user
         self.object.save()
-        return HttpResponseRedirect(self.get_success_url())
+        self.generate_event_sites()
+        # return HttpResponseRedirect(self.get_success_url())
+        return super(EventCreateView,self).form_valid(form)
 
     def get_initial(self, *args, **kwargs):
         initial = super(EventCreateView, self).get_initial(**kwargs)
-        initial['event_name'] = 'My Event'
         return initial
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -207,15 +226,30 @@ class SiteCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'sites/site_create.html'
     success_url = reverse_lazy('fair:site-list')
 
+    def generate_event_sites(self, *args, **kwargs):
+        """
+        Create the event site relationship with the just created site and all future events
+        """
+        events = Event.filtermgr.all()
+        objs = [
+            EventSite(
+                event=event,
+                site=self.object,
+                site_status=1,
+            )
+            for event in events
+        ]
+        EventSite.objects.bulk_create(objs)
+
     def form_valid(self, form):
         self.object = form.save(commit=False)
         self.object.created_by = self.request.user
         self.object.save()
-        return HttpResponseRedirect(self.get_success_url())
+        self.generate_event_sites()
+        return super(SiteCreateView,self).form_valid(form)
 
     def get_initial(self, *args, **kwargs):
         initial = super(SiteCreateView, self).get_initial(**kwargs)
-        initial['site_name'] = 'My Site'
         return initial
 
     def get_form_kwargs(self, *args, **kwargs):
@@ -414,26 +448,34 @@ class SiteDashboardView(PermissionRequiredMixin, FormView):
     queryset = EventSite.objects.all().order_by("site_status")
     success_url = reverse_lazy('fair:site-dashboard')
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.events = EventSite.objects.all()
 
-    def filter_site(request):
-        events = EventSite.objects.all()
-        # its best practice to call your form instance `form` in the view so that the next line has better readability
-        form = DashboardSiteFilterForm(request.GET)
+    def get_queryset(self, request):
+        """
+        Get the query set based ib the filter form settings
+        """
+        events = self.events
+        form = self.form_class(request.POST)
         if form.is_valid():
-            event = EventSite.cleaned_data['event_name']
-            zone = EventSite.site.zone.cleaned_data['zone_name']
+            event = form.cleaned_data['event']
+            zone = form.cleaned_data['zone']
+            print(zone)
             if event:
-                events = EventSite.filter(event_name=event)
+                events = events.filter(event_name=event)
             if zone:
-                events = EventSite.filter(zone=zone)
-        return render(request, 'dashboards/dashboard_sites.html', {'events': events})
+                events = events.filter(site_zone_name=zone)
+        return events
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['form'] = self.get_form()
+        # context['form'] = self.get_form()
+        events_queryset = self.events
         context['available_counts'] = EventSite.site_available.count()
         context['allocated_counts'] = EventSite.site_allocated.count()
         context['pending_counts'] = EventSite.site_pending.count()
         context['booked_counts'] = EventSite.site_booked.count()
         context['unavailable_counts'] = EventSite.site_unavailable.count()
+        context['total_counts'] = events_queryset.count()
         return context
