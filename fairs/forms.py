@@ -491,11 +491,13 @@ class DashboardSiteFilterForm(Form):
     event = ModelChoiceField(
         queryset=Event.objects.all(),
         empty_label='Show All',
+        label='Events',
         required=False,
         widget=Select(attrs={'class': 'form-control'}))
     zone = ModelChoiceField(
         queryset=Zone.objects.all(),
         empty_label='Show All',
+        label='Site Zones',
         required=False,
         widget=Select(attrs={'class': 'form-control'}))
 

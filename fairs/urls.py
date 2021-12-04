@@ -22,7 +22,7 @@ from fairs.views import (
     InventoryItemCreateView,
     InventoryItemListView,
     InventoryItemDetailUpdateView,
-    SiteDashboardView
+    site_dashboard_view
 )
 
 app_name = 'fair'  # This is the namespace so you can reverse urls with fair:*
@@ -41,7 +41,7 @@ urlpatterns = [
     path('eventsite/,<int:pk>', EventSiteDetailUpdateView.as_view(), name='eventsite-detail'),
     path('inventoryitem/', InventoryItemListView.as_view(), name='inventoryitem-list'),
     path('inventoryitem/,<int:pk>', InventoryItemDetailUpdateView.as_view(), name='inventoryitem-detail'),
-    path('dashboard/', SiteDashboardView.as_view(), name='site-dashboard'),
+    path('dashboard/', site_dashboard_view, name='site-dashboard'),
     path('dashboard/actionUrl/', EventSiteListView.as_view(), name='actionUrl'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
     path('event/actionUrl/', EventCreateView.as_view(), name='actionUrl'),

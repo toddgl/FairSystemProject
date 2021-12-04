@@ -109,12 +109,14 @@ class Site(models.Model):
     site_name = models.CharField(max_length=40)
     site_size = models.ForeignKey(
         InventoryItem,
+        related_name='site_sizes',
         on_delete=models.SET_NULL,
         blank=True,
         null=True
     )
     zone = models.ForeignKey(
         Zone,
+        related_name='zones',
         on_delete=models.SET_NULL,
         blank=True,
         null=True

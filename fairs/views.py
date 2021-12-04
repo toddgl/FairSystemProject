@@ -1,5 +1,6 @@
 # fairs/view.py
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -7,8 +8,7 @@ from django.views.generic import (
     CreateView,
     FormView,
     ListView,
-    UpdateView,
-    View
+    UpdateView
 )
 
 from fairs.models import (
@@ -437,45 +437,51 @@ class EventSiteCreateView(PermissionRequiredMixin, CreateView):
         return kwargs
 
 
-class SiteDashboardView(PermissionRequiredMixin, FormView):
+def site_dashboard_view(request):
     """
     Populate the Site Dashboard with counts of the various site statuses
     """
-    permission_required = 'fairs.view_eventsite'
-    model = EventSite
-    form_class = DashboardSiteFilterForm
-    template_name = 'dashboards/dashboard_sites.html'
-    queryset = EventSite.objects.all().order_by("site_status")
-    success_url = reverse_lazy('fair:site-dashboard')
+    events = EventSite.objects.all()
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.events = EventSite.objects.all()
-
-    def get_queryset(self, request):
-        """
-        Get the query set based ib the filter form settings
-        """
-        events = self.events
-        form = self.form_class(request.POST)
+    if request.POST:
+        form = DashboardSiteFilterForm(request.POST)
         if form.is_valid():
             event = form.cleaned_data['event']
             zone = form.cleaned_data['zone']
-            print(zone)
+            attr_event = 'event'
+            attr_zone = 'site__zone'
+            filter_dict = {
+                attr_event: event,
+                attr_zone: zone
+            }
             if event:
-                events = events.filter(event_name=event)
-            if zone:
-                events = events.filter(site_zone_name=zone)
-        return events
+                form_filter = event_filter = event
+                total_counts = events.filter(**filter_dict).count()
+                available_counts = EventSite.site_available.filter(**filter_dict).count()
+                allocated_counts = EventSite.site_allocated.filter(event=event_filter).count()
+                pending_counts = EventSite.site_pending.filter(event=event_filter).count()
+                booked_counts = EventSite.site_booked.filter(event=event_filter).count()
+                unavailable_counts = EventSite.site_unavailable.filter(event=event_filter).count()
 
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # context['form'] = self.get_form()
-        events_queryset = self.events
-        context['available_counts'] = EventSite.site_available.count()
-        context['allocated_counts'] = EventSite.site_allocated.count()
-        context['pending_counts'] = EventSite.site_pending.count()
-        context['booked_counts'] = EventSite.site_booked.count()
-        context['unavailable_counts'] = EventSite.site_unavailable.count()
-        context['total_counts'] = events_queryset.count()
-        return context
+            if zone:
+                form_filter = zone
+    else:
+        form = DashboardSiteFilterForm()
+        total_counts = events.count()
+        available_counts = EventSite.site_available.count()
+        allocated_counts = EventSite.site_allocated.count()
+        pending_counts = EventSite.site_pending.count()
+        booked_counts = EventSite.site_booked.count()
+        unavailable_counts = EventSite.site_unavailable.count()
+
+        form_filter = ""
+    return TemplateResponse(request, 'dashboards/dashboard_sites.html', {
+        'form': form,
+        'filter': form_filter,
+        'total_counts': total_counts,
+        'available_counts': available_counts,
+        'allocated_counts': allocated_counts,
+        'pending_counts': pending_counts,
+        'booked_counts': booked_counts,
+        'unavailable_counts': unavailable_counts
+     })

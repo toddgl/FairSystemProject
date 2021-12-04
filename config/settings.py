@@ -1,4 +1,4 @@
-# config/settings.py
+# config/base.py
 
 """
 Django settings for FairSystemProject project.
