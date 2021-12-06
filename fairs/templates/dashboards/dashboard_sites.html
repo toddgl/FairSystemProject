@@ -7,68 +7,76 @@
 <main class="col-md-9 ml-sm-auto col-lg-10 px-4">
   <h2>Sites Dashboard</h2>
   <hr>
-  <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" class="btn btn-primary" value="Filter" >
-  </form>
-        <div class="row">
-          <h6>{{ filter }}</h6>
-          <div class="col-sm-4">
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">Available Sites</h5>
-                <p class="card-text">{{ available_counts }}</p>
-                <p class="card-text">{% widthratio available_counts total_counts 100 %} %</p>
-                <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
-              </div>
-            </div>
+      <div class="row">
+        <div class="col-sm-3">
+          <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="submit" class="btn btn-primary" value="Filter" >
+          </form>
+        </div>
+        <div class="col-sm-9">
+          <div class="badge bg-info text-dark text-wrap" style="width: 50rem;"">
+            {{ filter }}
           </div>
-          <div class="col-sm-4">
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">Allocated Sites</h5>
-                <p class="card-text">{{ allocated_counts }}</p>
-                <p class="card-text">{% widthratio allocated_counts total_counts 100 %} %</p>
-                <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
-              </div>
-            </div>
-          </div>
-          <div class="col-sm-4">
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">Pending Sites</h5>
-                <p class="card-text">{{ pending_counts }}</p>
-                <p class="card-text">{% widthratio pending_counts total_counts 100 %} %</p>
-                <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
-              </div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Available Sites</h5>
+              <p class="card-text">{{ available_counts }}</p>
+              <p class="card-text">{% widthratio available_counts total_counts 100 %} %</p>
+              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
-
-        <div class="row">
-          <div class="col-sm-4">
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">Booked Sites</h5>
-                <p class="card-text">{{ booked_counts }}</p>
-                <p class="card-text">{% widthratio booked_counts total_counts 100 %} %</p>
-                <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
-              </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Allocated Sites</h5>
+              <p class="card-text">{{ allocated_counts }}</p>
+              <p class="card-text">{% widthratio allocated_counts total_counts 100 %} %</p>
+              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
-          <div class="col-sm-4">
-            <div class="card text-center">
-              <div class="card-body">
-                <h5 class="card-title">Unavailable Sites</h5>
-                <p class="card-text">{{ unavailable_counts }}</p>
-                <p class="card-text">{% widthratio unavailable_counts total_counts 100 %} %</p>
-                <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
-              </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Pending Sites</h5>
+              <p class="card-text">{{ pending_counts }}</p>
+              <p class="card-text">{% widthratio pending_counts total_counts 100 %} %</p>
+              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
       </div>
+
+      <div class="row">
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Booked Sites</h5>
+              <p class="card-text">{{ booked_counts }}</p>
+              <p class="card-text">{% widthratio booked_counts total_counts 100 %} %</p>
+              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Unavailable Sites</h5>
+              <p class="card-text">{{ unavailable_counts }}</p>
+              <p class="card-text">{% widthratio unavailable_counts total_counts 100 %} %</p>
+              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
    </div>
 </main>
 {% endblock %}

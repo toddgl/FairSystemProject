@@ -442,6 +442,7 @@ def site_dashboard_view(request):
     Populate the Site Dashboard with counts of the various site statuses
     """
     events = EventSite.objects.all()
+    filter_message = 'Showing unfiltered data - from all future fair events and sites in all the zones'
 
     if request.POST:
         form = DashboardSiteFilterForm(request.POST)
@@ -450,21 +451,33 @@ def site_dashboard_view(request):
             zone = form.cleaned_data['zone']
             attr_event = 'event'
             attr_zone = 'site__zone'
-            filter_dict = {
-                attr_event: event,
-                attr_zone: zone
-            }
-            if event:
-                form_filter = event_filter = event
-                total_counts = events.filter(**filter_dict).count()
-                available_counts = EventSite.site_available.filter(**filter_dict).count()
-                allocated_counts = EventSite.site_allocated.filter(event=event_filter).count()
-                pending_counts = EventSite.site_pending.filter(event=event_filter).count()
-                booked_counts = EventSite.site_booked.filter(event=event_filter).count()
-                unavailable_counts = EventSite.site_unavailable.filter(event=event_filter).count()
+            if event and zone:
+                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and zone is' + str(zone)
+                filter_dict = {
+                    attr_event: event,
+                    attr_zone: zone
+                }
+            elif event:
+                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and  all zones'
+                filter_dict = {
+                    attr_event: event,
+                }
+            elif zone:
+                filter_dict = {
+                    attr_zone: zone
+                }
+                filter_message = 'Showing filtered data where the zone is ' + str(zone) + ' and all future events'
+            else:
+                filter_dict = {}
+                filter_message = 'Showing unfiltered data - from all future fair events and sites in all the zones'
 
-            if zone:
-                form_filter = zone
+            total_counts = events.filter(**filter_dict).count()
+            available_counts = EventSite.site_available.filter(**filter_dict).count()
+            allocated_counts = EventSite.site_allocated.filter(**filter_dict).count()
+            pending_counts = EventSite.site_pending.filter(**filter_dict).count()
+            booked_counts = EventSite.site_booked.filter(**filter_dict).count()
+            unavailable_counts = EventSite.site_unavailable.filter(**filter_dict).count()
+
     else:
         form = DashboardSiteFilterForm()
         total_counts = events.count()
@@ -474,10 +487,9 @@ def site_dashboard_view(request):
         booked_counts = EventSite.site_booked.count()
         unavailable_counts = EventSite.site_unavailable.count()
 
-        form_filter = ""
     return TemplateResponse(request, 'dashboards/dashboard_sites.html', {
         'form': form,
-        'filter': form_filter,
+        'filter': filter_message,
         'total_counts': total_counts,
         'available_counts': available_counts,
         'allocated_counts': allocated_counts,
