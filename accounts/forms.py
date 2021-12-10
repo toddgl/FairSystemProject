@@ -2,8 +2,8 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from allauth.account.forms import SignupForm
-from django.forms import TextInput, EmailInput
-from.models import CustomUser
+from django.forms import TextInput, EmailInput, ModelForm
+from.models import CustomUser, Profile
 
 
 class CustomSignupForm(SignupForm):
@@ -87,7 +87,7 @@ class CustomUserCreationForm(UserCreationForm):
         }
 
 
-class CustomUserChangeForm(UserChangeForm):
+class CustomUserChangeForm(ModelForm):
 
     phone = forms.CharField(
         label="Phone Number",
@@ -107,7 +107,7 @@ class CustomUserChangeForm(UserChangeForm):
                 'style': 'max-width: 300px;',
                 'placeholder': 'Name'
                 }),
-            'email': EmailInput(attrs={
+            'email': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Email'
@@ -122,5 +122,49 @@ class CustomUserChangeForm(UserChangeForm):
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Surname'
+            }),
+            'phone': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Contact Phone Number'
+            }),
+        }
+
+
+class ProfileChangeForm(ModelForm):
+
+    class Meta:
+        model = Profile
+        fields = ('address1', 'address2', 'town', 'postcode', 'phone2', 'org_name',)
+        widgets = {
+            'address1': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Address Line One'
+                }),
+            'address2': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Address Line 2'
+            }),
+            'town': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Town or City'
+            }),
+            'postcode': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Postcode'
+            }),
+            'phone2': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Alternative Phone Number'
+            }),
+            'org_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Organisation Name'
             }),
         }

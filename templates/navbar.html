@@ -28,7 +28,7 @@
           </a>
         </li>
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'accounts:update' %}">Update Profile</a>
+            <a class="nav-link" href="{% url 'accounts:user-update' %}">Update Profile</a>
           </li>
           <li class="nav-item">
             <a class="nav-link {% if request.path == logout_url %} active {%endif%} " href="{{logout_url}}">Log Out</a>

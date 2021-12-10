@@ -7,8 +7,31 @@
   <h2>Update user details</h2>
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
+    {{ user_form.as_p }}
     <button type="submit" class="btn btn-primary" >Update</button>
   </form>
+    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#profileModal">Edit Profile</button>
+    <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+</div>
+<!-- User Profile Update modal-->
+<div class="modal fade" tabindex="-1" id="profileModal" aria-labelledby="profileModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Edit Profile</h5>
+         <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ profile_form.as_p }}
+      </div>
+      <div class="modal-footer">
+        <button type="submit" class="btn btn-primary">Save changes</button>
+        </form>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
