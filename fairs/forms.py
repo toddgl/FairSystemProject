@@ -24,7 +24,8 @@ from fairs.models import (
     Fair,
     Event,
     InventoryItem,
-    EventSite
+    EventSite,
+    InventoryItemFair
 )
 from datetime import datetime
 from django.utils.timezone import make_aware
@@ -481,6 +482,58 @@ class EventSiteCreateForm(ModelForm):
 
     def __init__(self, *args, **kwargs):
         super(EventSiteCreateForm, self).__init__(*args, **kwargs)
+
+
+class InventoryItemFairDetailForm(ModelForm):
+    """
+    Form for updating an InventoryItemFair
+    """
+
+    class Meta:
+        model = InventoryItemFair
+        fields = ['fair', 'inventory_item', 'price']
+        widgets = {
+            'fair': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
+            'inventory_item': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'price': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Item Price'
+            }),
+        }
+
+
+class InventoryItemFairCreateForm(ModelForm):
+    """
+        Form for Creating a new inventory item fair relationship including setting the item price
+    """
+    class Meta:
+        model = InventoryItemFair
+        fields = ['fair', 'inventory_item', 'price']
+        widgets = {
+            'fair': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
+            'inventory_item': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'price': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Item Price'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(InventoryItemFairCreateForm, self).__init__(*args, **kwargs)
 
 
 class DashboardSiteFilterForm(Form):

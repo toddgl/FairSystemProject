@@ -18,6 +18,7 @@ from fairs.models import (
     Site,
     Zone,
     InventoryItem,
+    InventoryItemFair,
 
 )
 from .forms import (
@@ -33,6 +34,8 @@ from .forms import (
     InventoryItemDetailForm,
     EventSiteDetailForm,
     EventSiteCreateForm,
+    InventoryItemFairDetailForm,
+    InventoryItemFairCreateForm,
     DashboardSiteFilterForm,
 )
 
@@ -434,6 +437,63 @@ class EventSiteCreateView(PermissionRequiredMixin, CreateView):
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(EventSiteCreateView, self).get_form_kwargs(*args, **kwargs)
+        return kwargs
+
+
+class InventoryItemFairListView(PermissionRequiredMixin, ListView):
+    """
+    List all inventory items associated with a a fair order on inventory_item
+    """
+    permission_required = 'fairs.view_inventoryitemfair'
+    model = InventoryItemFair
+    template_name = 'inventoryitemfairs/inventoryitemfair_list.html'
+    queryset = InventoryItemFair.objects.all().order_by("inventory_item")
+
+
+class InventoryItemFairDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of an inventory item associated with a fair
+    """
+    permission_required = 'fairs.change_inventoryitemfair'
+    model = InventoryItemFair
+    form_class = InventoryItemFairDetailForm
+    template_name = 'inventoryitemfairs/inventoryitemfair_detail.html'
+    success_url = reverse_lazy('fair:inventoryitemfair-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(InventoryItemFairDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['inventoryitemfair'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class InventoryItemFairCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create an InventoryItem to Fair relationship and its price
+    """
+    permission_required = 'fairs.add_inventoryitemfair'
+    model = InventoryItemFair
+    form_class = InventoryItemFairCreateForm
+    template_name = 'inventoryitemfairs/inventoryitemfair_create.html'
+    success_url = reverse_lazy('fair:inventoryitemfair-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(InventoryItemFairCreateView, self).get_initial(**kwargs)
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(InventoryItemFairCreateView, self).get_form_kwargs(*args, **kwargs)
         return kwargs
 
 

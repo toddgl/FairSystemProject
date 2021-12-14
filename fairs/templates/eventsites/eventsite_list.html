@@ -7,7 +7,7 @@
   <h1>Event Sites</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new event site</button>
-        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
     </form>
     </br>
     {% regroup eventsite_list by get_site_status_display as site_status_list %}
@@ -32,7 +32,7 @@
             </div>
         </div>
         {% empty %}
-            <li>There are no sites linked with an event yet.</li>
+            T<div class="alert alert-info" role="alert">here are no sites linked with an event yet.</div>
         {% endfor %}
     {% endfor %}
 </div>

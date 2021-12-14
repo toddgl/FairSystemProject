@@ -22,6 +22,9 @@ from fairs.views import (
     InventoryItemCreateView,
     InventoryItemListView,
     InventoryItemDetailUpdateView,
+    InventoryItemFairListView,
+    InventoryItemFairCreateView,
+    InventoryItemFairDetailUpdateView,
     site_dashboard_view
 )
 
@@ -41,6 +44,8 @@ urlpatterns = [
     path('eventsite/,<int:pk>', EventSiteDetailUpdateView.as_view(), name='eventsite-detail'),
     path('inventoryitem/', InventoryItemListView.as_view(), name='inventoryitem-list'),
     path('inventoryitem/,<int:pk>', InventoryItemDetailUpdateView.as_view(), name='inventoryitem-detail'),
+    path('inventoryitemfair/', InventoryItemFairListView.as_view(), name='inventoryitemfair-list'),
+    path('inventoryitemfair/,<int:pk>', InventoryItemFairDetailUpdateView.as_view(), name='inventoryitemfair-detail'),
     path('dashboard/', site_dashboard_view, name='site-dashboard'),
     path('dashboard/actionUrl/', EventSiteListView.as_view(), name='actionUrl'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
@@ -49,4 +54,5 @@ urlpatterns = [
     path('site/actionUrl/', SiteCreateView.as_view(), name='actionUrl'),
     path('eventsite/actionUrl/', EventSiteCreateView.as_view(), name='actionUrl'),
     path('inventoryitem/actionUrl/', InventoryItemCreateView.as_view(), name='actionUrl'),
+    path('inventoryitemfair/actionUrl/', InventoryItemFairCreateView.as_view(), name='actionUrl'),
 ]

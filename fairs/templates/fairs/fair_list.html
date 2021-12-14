@@ -7,7 +7,7 @@
   <h1>Fairs</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Fair</button>
-        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
     </form>
 
     {% for fair in fair_list %}
@@ -25,7 +25,7 @@
         </div>
     </div>
     {% empty %}
-        <li>There are no fairs active yet.</li>
+        <div class="alert alert-info" role="alert">There are no fairs active yet.</div>
     {% endfor %}
 </div>
 {% endblock %}

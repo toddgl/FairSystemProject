@@ -9,7 +9,7 @@
     {% csrf_token %}
     {{ form.as_p }}
     <input type="submit" class="btn btn-primary" value="Save" >
-    <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+    <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel" >
   </form>
 </div>
 {% endblock %}`

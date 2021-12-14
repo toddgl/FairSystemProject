@@ -10,6 +10,33 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
 
 
+class InventoryItem(models.Model):
+    """
+    Description: A reference table for all that items that can be purchased by Stallholders
+    when registering for a fair.  Uses two Joining tables: InvItemFair to capture items prices based on the fair, and
+    InvItemEvent to capture the number of items consumed and available for each fair event
+    """
+    item_name = models.CharField(max_length=100)
+    item_description = models.TextField()
+    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ],)
+    site_size = models.CharField(max_length=40)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(CustomUser, related_name='item_created_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='item_updated_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+
+    def __str__(self):
+        return self.item_name
+
+    class Meta:
+        verbose_name_plural = "InventoryItems"
+
+    def get_absolute_url(self):
+        return reverse('fairs:inventoryitem-detail', args=[self.id])
+
+
 class Fair(models.Model):
     """
     Description: Stores the details of each fair instance
@@ -30,6 +57,11 @@ class Fair(models.Model):
                                    null=True)
     updated_by = models.ForeignKey(CustomUser, related_name='fair_updated_by', on_delete=models.SET_NULL, blank=True,
                                    null=True)
+    inventory_items = models.ManyToManyField(
+        InventoryItem,
+        through='InventoryItemFair',
+        related_name='fairs'
+    )
 
     def __str__(self):
         return self.fair_name
@@ -75,31 +107,27 @@ class Zone(models.Model):
         return reverse('fairs:zone-detail', args=[self.id])
 
 
-class InventoryItem(models.Model):
+class InventoryItemFair(models.Model):
     """
-    Description: A reference table for all that items that can be purchased by Stallholders
-    when registering for a fair.  Uses two Joining tables: InvItemFair to capture items prices based on the fair, and
-    InvItemEvent to capture the number of items consumed and available for each fair event
+    Description: Junction table for the manytomany relationship between
+    InventoryItem and Fair
     """
-    item_name = models.CharField(max_length=100)
-    item_description = models.TextField()
-    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ],)
-    site_size = models.CharField(max_length=40)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, related_name='item_created_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
-    updated_by = models.ForeignKey(CustomUser, related_name='item_updated_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
+    fair = models.ForeignKey(
+        Fair,
+        on_delete=models.CASCADE,
+        verbose_name='fair',
+        related_name='inventory_item_fair'
+    )
+    inventory_item = models.ForeignKey(
+        InventoryItem,
+        on_delete=models.CASCADE,
+        verbose_name='inventory_items',
+        related_name='inventory_item_fair'
+    )
+    price = models.DecimalField(max_digits=10, decimal_places=2)
 
-    def __str__(self):
-        return self.item_name
-
-    class Meta:
-        verbose_name_plural = "InventoryItems"
-
-    def get_absolute_url(self):
-        return reverse('fairs:inventoryitem-detail', args=[self.id])
+    def __int__(self):
+        return str(self.item) + "$" + str(self.price)
 
 
 class Site(models.Model):
@@ -150,7 +178,7 @@ class Site(models.Model):
 
 class EventFilterManager(models.Manager):
     def get_queryset(self):
-       return super().get_queryset().filter(original_event_date__gt=datetime.datetime.now())
+        return super().get_queryset().filter(original_event_date__gt=datetime.datetime.now())
 
 
 class Event(models.Model):

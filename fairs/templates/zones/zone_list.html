@@ -7,7 +7,7 @@
   <h1>Zones</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new zone</button>
-        <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
     </form>
 
     {% for zone in zone_list %}
@@ -25,7 +25,7 @@
         </div>
     </div>
     {% empty %}
-        <li>There are no Zones active yet.</li>
+    <div class="alert alert-info" role="alert">There are no Zones active yet.</div>
     {% endfor %}
 </div>
 {% endblock %}
