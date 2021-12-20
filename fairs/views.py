@@ -374,7 +374,6 @@ class InventoryItemCreateView(PermissionRequiredMixin, CreateView):
 
     def get_initial(self, *args, **kwargs):
         initial = super(InventoryItemCreateView, self).get_initial(**kwargs)
-        initial['item_name'] = 'My Item'
         return initial
 
     def get_form_kwargs(self, *args, **kwargs):

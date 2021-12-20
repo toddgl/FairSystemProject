@@ -16,10 +16,28 @@ class InventoryItem(models.Model):
     when registering for a fair.  Uses two Joining tables: InvItemFair to capture items prices based on the fair, and
     InvItemEvent to capture the number of items consumed and available for each fair event
     """
+    FAIRSITE = 1
+    POWER = 2
+    HEALTHSAFETY = 3
+    FOODLICENCE = 4
+    TRESTLE = 5
+
+    TYPE_CHOICE = [
+        (FAIRSITE, _('Site')),
+        (POWER, _('PowerPoint')),
+        (HEALTHSAFETY, _('Health & Safety')),
+        (FOODLICENCE, _('Food Licence')),
+        (TRESTLE, _('Trestle'))
+    ]
+
     item_name = models.CharField(max_length=100)
+    item_type = models.PositiveSmallIntegerField(
+        choices=TYPE_CHOICE,
+        default=FAIRSITE
+    )
     item_description = models.TextField()
     item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ],)
-    site_size = models.CharField(max_length=40)
+    site_size = models.CharField(max_length=40, blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(CustomUser, related_name='item_created_by', on_delete=models.SET_NULL, blank=True,
@@ -78,7 +96,7 @@ class Fair(models.Model):
         Format it to datetime object. You need to convert `year`
         to str if it is `IntegerField`. ex: str(self.year).
         """
-        date = timezone.datetime.strptime('%Y', self.fair_year)
+        date = timezone.datetime.strptime('%Y', str(self.fair_year))
         return date
 
 
@@ -112,6 +130,14 @@ class InventoryItemFair(models.Model):
     Description: Junction table for the manytomany relationship between
     InventoryItem and Fair
     """
+    FAIRPRICE = 1
+    DAILYPRICE = 2
+
+    PRICING_CHOICE = [
+        (FAIRPRICE, _('Fair Price')),
+        (DAILYPRICE, _('Daily Price'))
+    ]
+
     fair = models.ForeignKey(
         Fair,
         on_delete=models.CASCADE,
@@ -123,6 +149,10 @@ class InventoryItemFair(models.Model):
         on_delete=models.CASCADE,
         verbose_name='inventory_items',
         related_name='inventory_item_fair'
+    )
+    price_rate = models.PositiveSmallIntegerField(
+        choices=PRICING_CHOICE,
+        default=FAIRPRICE,
     )
     price = models.DecimalField(max_digits=10, decimal_places=2)
 

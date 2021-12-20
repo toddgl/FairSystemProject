@@ -14,6 +14,7 @@ from django.forms import (
     FileInput,
     CheckboxInput,
     NumberInput,
+    RadioSelect,
     Select,
     SelectMultiple,
     SelectDateWidget
@@ -363,25 +364,34 @@ class InventoryItemCreateForm(ModelForm):
     """
     Form for creating a new InventoryItem
     """
+    class Media:
+        js = ('js/item_type.js',)
 
     class Meta:
         model = InventoryItem
-        fields = ['item_name', 'item_description', 'item_quantity', 'site_size']
+        fields = ['item_name', 'item_type', 'item_description', 'item_quantity', 'site_size', ]
+        labels = {
+            'item_type': ('Inventory Item Type')
+        }
         widgets = {
             'item_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Item Name'
             }),
+            'item_type': Select(attrs={
+                'class': "form-check",
+            }),
             'item_description': Textarea(attrs={
                 'class': "form-control",
                 'style': 'max-width: 400px;',
-                'placeholder': 'Please enter the  description'
+                'placeholder': 'Please enter the description'
             }),
             'item_quantity': NumberInput(attrs={
                 'class': "form_control",
                 'style': 'max-width: 400px;',
-                'placeholder': 'Number of Items'
+                'placeholder': 'Number of Items',
+                'label': 'Total Number Available'
             }),
             'site_size': TextInput(attrs={
                 'class': "form-control",
@@ -405,15 +415,24 @@ class InventoryItemDetailForm(ModelForm):
     """
     Form for updating an InventoryItem
     """
+    class Media:
+        js = ('js/item_type.js',)
+
 
     class Meta:
         model = InventoryItem
-        fields = ['item_name', 'item_description', 'item_quantity', 'site_size']
+        fields = ['item_name', 'item_type', 'item_description', 'item_quantity', 'site_size']
+        labels = {
+            'item_type': ('Inventory Item Type')
+        }
         widgets = {
             'item_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Item Name'
+            }),
+            'item_type': Select(attrs={
+                'class': "form-check",
             }),
             'item_description': Textarea(attrs={
                 'class': "form-control",
@@ -423,7 +442,8 @@ class InventoryItemDetailForm(ModelForm):
             'item_quantity': NumberInput(attrs={
                 'class': "form_control",
                 'style': 'max-width: 400px;',
-                'placeholder': 'Number of Items'
+                'placeholder': 'Number of Items',
+                'label': 'Total Number Available'
             }),
             'site_size': TextInput(attrs={
                 'class': "form-control",
@@ -491,7 +511,7 @@ class InventoryItemFairDetailForm(ModelForm):
 
     class Meta:
         model = InventoryItemFair
-        fields = ['fair', 'inventory_item', 'price']
+        fields = ['fair', 'inventory_item', 'price_rate', 'price']
         widgets = {
             'fair': Select(attrs={
                 'class': 'form-select',
@@ -499,6 +519,10 @@ class InventoryItemFairDetailForm(ModelForm):
             }),
             'inventory_item': Select(attrs={
                 'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'price_rate': Select(attrs={
+                'class': 'form-select',
                 'style': 'max-width: 300px;',
             }),
             'price': NumberInput(attrs={
@@ -515,7 +539,7 @@ class InventoryItemFairCreateForm(ModelForm):
     """
     class Meta:
         model = InventoryItemFair
-        fields = ['fair', 'inventory_item', 'price']
+        fields = ['fair', 'inventory_item', 'price_rate', 'price']
         widgets = {
             'fair': Select(attrs={
                 'class': 'form-select',
@@ -523,6 +547,10 @@ class InventoryItemFairCreateForm(ModelForm):
             }),
             'inventory_item': Select(attrs={
                 'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'price_rate': Select(attrs={
+                'class': 'form-select',
                 'style': 'max-width: 300px;',
             }),
             'price': NumberInput(attrs={
