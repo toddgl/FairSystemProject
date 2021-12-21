@@ -10,6 +10,9 @@ from fairs.views import (
     EventCreateView,
     EventListView,
     EventDetailUpdateView,
+    EventPowerCreateView,
+    EventPowerListView,
+    EventPowerDetailUpdateView,
     ZoneCreateView,
     ZoneListView,
     ZoneDetailUpdateView,
@@ -25,6 +28,9 @@ from fairs.views import (
     InventoryItemFairListView,
     InventoryItemFairCreateView,
     InventoryItemFairDetailUpdateView,
+    PowerBoxListView,
+    PowerBoxDetailUpdateView,
+    PowerBoxCreateView,
     site_dashboard_view
 )
 
@@ -46,6 +52,10 @@ urlpatterns = [
     path('inventoryitem/,<int:pk>', InventoryItemDetailUpdateView.as_view(), name='inventoryitem-detail'),
     path('inventoryitemfair/', InventoryItemFairListView.as_view(), name='inventoryitemfair-list'),
     path('inventoryitemfair/,<int:pk>', InventoryItemFairDetailUpdateView.as_view(), name='inventoryitemfair-detail'),
+    path('powerbox/', PowerBoxListView.as_view(), name='powerbox-list'),
+    path('powerbox/,<int:pk>', PowerBoxDetailUpdateView.as_view(), name='powerbox-detail'),
+    path('eventpower/', EventPowerListView.as_view(), name='eventpower-list'),
+    path('eventpower/,<int:pk>', EventPowerDetailUpdateView.as_view(), name='eventpower-detail'),
     path('dashboard/', site_dashboard_view, name='site-dashboard'),
     path('dashboard/actionUrl/', EventSiteListView.as_view(), name='actionUrl'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
@@ -55,4 +65,6 @@ urlpatterns = [
     path('eventsite/actionUrl/', EventSiteCreateView.as_view(), name='actionUrl'),
     path('inventoryitem/actionUrl/', InventoryItemCreateView.as_view(), name='actionUrl'),
     path('inventoryitemfair/actionUrl/', InventoryItemFairCreateView.as_view(), name='actionUrl'),
+    path('powerbox/actionUrl/', PowerBoxCreateView.as_view(), name='actionUrl'),
+    path('eventpower/actionUrl/', EventPowerCreateView.as_view(), name='actionUrl'),
 ]

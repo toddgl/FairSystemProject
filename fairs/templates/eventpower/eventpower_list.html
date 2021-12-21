@@ -1,0 +1,31 @@
+<!-- fairs/templates/eventpower/eventpower_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+  <h1>Event Power Relationships</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new event power relationship</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </form>
+        {% for eventpower in eventpower_list %}
+        <div class="container mt-3" style="width: 600px;">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ eventpower.event }} - {{ eventpower.poer_box }}</h4>
+                    <p class="card-text">
+                        Zone: {{ eventpower.powerbox.zone }}
+                        Power Load: {{ evemtpower.power_load }} Kw
+                    </p>
+                    <a href="{% url 'fair:eventpower-detail' eventpower.id %}" class="card-link">
+                        View and edit Event Site Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+            <div class="alert alert-info" role="alert">here are no Powerboxes linked with an event yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}

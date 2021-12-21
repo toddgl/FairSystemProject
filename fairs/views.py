@@ -19,7 +19,8 @@ from fairs.models import (
     Zone,
     InventoryItem,
     InventoryItemFair,
-
+    PowerBox,
+    EventPower,
 )
 from .forms import (
     FairDetailForm,
@@ -37,6 +38,10 @@ from .forms import (
     InventoryItemFairDetailForm,
     InventoryItemFairCreateForm,
     DashboardSiteFilterForm,
+    PowerBoxCreateForm,
+    PowerBoxUpdateDetailForm,
+    EventPowerCreateForm,
+    EventPowerUpdateDetailForm
 )
 
 
@@ -556,3 +561,119 @@ def site_dashboard_view(request):
         'booked_counts': booked_counts,
         'unavailable_counts': unavailable_counts
      })
+
+
+class PowerBoxCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Powerbox including recording who created it
+    """
+    permission_required = 'fairs.add_powerbox'
+    model = PowerBox
+    form_class = PowerBoxCreateForm
+    template_name = 'powerboxes/powerbox_create.html'
+    success_url = reverse_lazy('fair:powerbox-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(PowerBoxCreateView, self).get_initial(**kwargs)
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(PowerBoxCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['created_by'] = self.request.user
+        return kwargs
+
+
+class PowerBoxDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a PowerBox
+    """
+    permission_required = 'fairs.change_powerbox'
+    model = PowerBox
+    form_class = PowerBoxUpdateDetailForm
+    template_name = 'powerboxes/powerbox_detail.html'
+    success_url = reverse_lazy('fair:powerbox-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(PowerBoxDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['powerbox'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class PowerBoxListView(PermissionRequiredMixin, ListView):
+    """
+    List all power boxes used  in a fair
+    """
+    permission_required = 'fairs.view_powerbox'
+    model = PowerBox
+    template_name = 'powerboxes/powerbox_list.html'
+    queryset = PowerBox.objects.all().order_by('power_box_name')
+
+
+class EventPowerListView(PermissionRequiredMixin, ListView):
+    """
+    List all PowerBoxes associated with an event order on event
+    """
+    permission_required = 'fairs.view_eventpower'
+    model = EventPower
+    template_name = 'eventpower/eventpower_list.html'
+    queryset = EventPower.objects.all().order_by("event")
+
+
+class EventPowerDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a Powerbox associated with an event
+    """
+    permission_required = 'fairs.change_eventpower'
+    model = EventPower
+    form_class = EventPowerUpdateDetailForm
+    template_name = 'eventpower/eventpower_detail.html'
+    success_url = reverse_lazy('fair:eventpower-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(EventPowerDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['eventpower'] = object
+        return context
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+
+class EventPowerCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Event to PowerBox relationship and the power_load variable
+    """
+    permission_required = 'fairs.add_eventsite'
+    model = EventPower
+    form_class = EventPowerCreateForm
+    template_name = 'eventpower/eventpower_create.html'
+    success_url = reverse_lazy('fair:eventpower-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.save()
+        return HttpResponseRedirect(self.get_success_url())
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(EventPowerCreateView, self).get_initial(**kwargs)
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(EventPowerCreateView, self).get_form_kwargs(*args, **kwargs)
+        return kwargs

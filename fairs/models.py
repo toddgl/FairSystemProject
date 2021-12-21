@@ -206,6 +206,30 @@ class Site(models.Model):
         return reverse('fairs:site-detail', args=[self.id])
 
 
+class PowerBox(models.Model):
+    """
+    Description: Store the details of the power boxes used to provide power to stallholders
+    """
+    power_box_name = models.CharField(max_length=100)
+    socket_count = models.IntegerField()
+    max_load = models.DecimalField(max_digits=10, decimal_places=4)
+    zone = models.ForeignKey(
+        Zone,
+        on_delete=models.CASCADE,
+        verbose_name='zone',
+        related_name='powerbox'
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(CustomUser, related_name='powerbox_created_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='powerbox_updated_by', on_delete=models.SET_NULL, blank=True,
+                                   null=True)
+
+    def __str__(self):
+        return self.power_box_name
+
+
 class EventFilterManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(original_event_date__gt=datetime.datetime.now())
@@ -229,6 +253,11 @@ class Event(models.Model):
         Site,
         related_name='events',
         through='EventSite',
+    )
+    power_boxes = models.ManyToManyField(
+        PowerBox,
+        related_name='events',
+        through='EventPower',
     )
     created_by = models.ForeignKey(CustomUser, related_name='event_created_by', on_delete=models.SET_NULL, blank=True,
                                    null=True)
@@ -319,3 +348,26 @@ class EventSite(models.Model):
 
     class Meta:
         unique_together = ('event', 'site')
+
+
+class EventPower(models.Model):
+    """
+    Description: Junction table for the manytomany relationship between
+    Events and PowerBox
+    """
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE,
+        verbose_name='event',
+        related_name='event_power'
+    )
+    power_box = models.ForeignKey(
+        PowerBox,
+        on_delete=models.CASCADE,
+        verbose_name='power_box',
+        related_name='event_power'
+    )
+    power_load = models.DecimalField(max_digits=10, decimal_places=5)
+
+    class Meta:
+        unique_together = ('event', 'power_box')

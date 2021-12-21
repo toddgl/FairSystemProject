@@ -26,7 +26,9 @@ from fairs.models import (
     Event,
     InventoryItem,
     EventSite,
-    InventoryItemFair
+    InventoryItemFair,
+    PowerBox,
+    EventPower,
 )
 from datetime import datetime
 from django.utils.timezone import make_aware
@@ -371,7 +373,7 @@ class InventoryItemCreateForm(ModelForm):
         model = InventoryItem
         fields = ['item_name', 'item_type', 'item_description', 'item_quantity', 'site_size', ]
         labels = {
-            'item_type': ('Inventory Item Type')
+            'item_type': 'Inventory Item Type'
         }
         widgets = {
             'item_name': TextInput(attrs={
@@ -418,12 +420,11 @@ class InventoryItemDetailForm(ModelForm):
     class Media:
         js = ('js/item_type.js',)
 
-
     class Meta:
         model = InventoryItem
         fields = ['item_name', 'item_type', 'item_description', 'item_quantity', 'site_size']
         labels = {
-            'item_type': ('Inventory Item Type')
+            'item_type': 'Inventory Item Type'
         }
         widgets = {
             'item_name': TextInput(attrs={
@@ -585,3 +586,129 @@ class DashboardSiteFilterForm(Form):
     class Meta:
         model = EventSite
         fields = ['event', 'site']
+
+
+class PowerBoxCreateForm(ModelForm):
+    """
+    Form for Creating a new zone
+    """
+
+    class Meta:
+        model = PowerBox
+        fields = ['power_box_name', 'socket_count', 'max_load', 'zone']
+        widgets = {
+            'power_box_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Powerbox Name'
+            }),
+            'socket_count': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Number'
+            }),
+            'max_load': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 100px;',
+                'placeholder': 'Kilowatts'
+            }),
+            'zone': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            })
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(PowerBoxCreateForm, self).__init__(*args, **kwargs)
+
+    def clean_power_box_name(self):
+        power_box_name = self.cleaned_data['power_box_name']
+        if PowerBox.objects.filter(power_box_name=power_box_name).exists():
+            raise forms.ValidationError("This Powerbox has already been created.")
+        return power_box_name
+
+
+class PowerBoxUpdateDetailForm(ModelForm):
+    """
+    Form for updating a powerbox
+    """
+
+    class Meta:
+        model = PowerBox
+        fields = ['power_box_name', 'socket_count', 'max_load', 'zone']
+        widgets = {
+            'power_box_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Powerbox Name'
+            }),
+            'socket_count': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Number'
+            }),
+            'max_load': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 100px;',
+                'placeholder': 'Kilowatts'
+            }),
+            'zone': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            })
+        }
+
+
+class EventPowerUpdateDetailForm(ModelForm):
+    """
+    Form for updating an EventPower Junction table and record power load
+    """
+
+    class Meta:
+        model = EventPower
+        fields = ['event', 'power_box', 'power_load']
+        widgets = {
+            'event': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'power_box': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'power_load': NumberInput(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Kilowatts'
+            }),
+        }
+
+
+class EventPowerCreateForm(ModelForm):
+    """
+    Form for Creating a new event powerbox  relationship
+    """
+
+    class Meta:
+        model = EventPower
+        exclude = ()
+        widgets = {
+            'event': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'power_box': Select(attrs={
+                'class': "form-select`",
+                'style': 'max-width: 300px;',
+            }),
+            'power_load': NumberInput(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Kilowatts'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super(EventPowerCreateForm, self).__init__(*args, **kwargs)
+

@@ -1,0 +1,31 @@
+<!-- fairs/templates/powerboxes/powerbox_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Power Boxes</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new powerbox</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </form>
+
+    {% for powerbox in powerbox_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ powerbox.powerbox_name }}</h4>
+                <p class="card-text">
+                    In Zone: {{ powerbox.zone }}
+                </p>
+                <a href="{% url 'fair:powerbox-detail' powerbox.id %}" class="card-link">
+                    View and edit Powerbox Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <div class="alert alert-info" role="alert">There are no Powerboxes created yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}
