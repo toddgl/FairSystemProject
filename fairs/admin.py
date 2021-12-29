@@ -3,6 +3,7 @@ from .models import (
     Fair,
     Event,
     Site,
+    Location,
     Zone,
     EventSite,
     InventoryItem,
@@ -12,5 +13,6 @@ from .models import (
 )
 
 # Register your models here.
-myModels = [Fair, Event, Site, Zone, EventSite, InventoryItem, InventoryItemFair, PowerBox, EventPower]  # iterable list
+myModels = [Fair, Event, Site, Location, Zone, EventSite, InventoryItem, InventoryItemFair, PowerBox, EventPower]
+# iterable list
 admin.site.register(myModels)

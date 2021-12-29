@@ -16,6 +16,7 @@ from fairs.models import (
     Event,
     EventSite,
     Site,
+    Location,
     Zone,
     InventoryItem,
     InventoryItemFair,
@@ -29,6 +30,8 @@ from .forms import (
     EventDetailForm,
     SiteCreateForm,
     SiteDetailForm,
+    LocationCreateForm,
+    LocationUpdateForm,
     ZoneCreateForm,
     ZoneDetailForm,
     InventoryItemCreateForm,
@@ -46,7 +49,37 @@ from .forms import (
 
 
 # Create your views here.
-Site = Site
+
+class LocationCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Location
+    """
+    permission_required = 'fairs.add_location'
+    model = Location
+    form_class = LocationCreateForm
+    template_name = 'locations/location_create.html'
+    success_url = reverse_lazy('fair:location-list')
+
+
+class LocationListView(PermissionRequiredMixin, ListView):
+    """
+    List all locations
+    """
+    permission_required = "fairs.view_location"
+    model = Location
+    template_name = 'locations/location_list.html'
+    queryset = Location.objects.all()
+
+
+class LocationDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of Fair Locations
+    """
+    permission_required = 'fairs.change_location'
+    model = Location
+    form_class = LocationUpdateForm
+    template_name = 'locations/location_detail.html'
+    success_url = reverse_lazy('fair:location-list')
 
 
 class FairCreateView(PermissionRequiredMixin, CreateView):
@@ -57,10 +90,7 @@ class FairCreateView(PermissionRequiredMixin, CreateView):
     model = Fair
     form_class = FairCreateForm
     template_name = 'fairs/fair_create.html'
-    # template_name = 'fairs/test.html'
     success_url = reverse_lazy('fair:fair-list')
-
-    # success_url = '/'
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
@@ -513,13 +543,37 @@ def site_dashboard_view(request):
         if form.is_valid():
             event = form.cleaned_data['event']
             zone = form.cleaned_data['zone']
+            site_size = form.cleaned_data['site_size']
             attr_event = 'event'
             attr_zone = 'site__zone'
+            attr_site_size = 'site__site_size'
+            if event and zone and site_size:
+                filter_message = 'Showing filtered data where the event is ' + str(event) + 'zone is, ' + str(zone) + ' and site size is ' + str(site_size)
+                filter_dict = {
+                    attr_event: event,
+                    attr_zone: zone,
+                    attr_site_size: site_size
+                }
             if event and zone:
                 filter_message = 'Showing filtered data where the event is ' + str(event) + ' and zone is' + str(zone)
                 filter_dict = {
                     attr_event: event,
                     attr_zone: zone
+                }
+            if event and site_size:
+                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and site size is' + str(
+                    site_size)
+                filter_dict = {
+                    attr_event: event,
+                    attr_site_size: site_size
+                }
+            if zone and site_size:
+                filter_message = 'Showing filtered data where the zone is ' + str(
+                    zone) + ' and site size is' + str(
+                    site_size)
+                filter_dict = {
+                    attr_zone: zone,
+                    attr_site_size: site_size
                 }
             elif event:
                 filter_message = 'Showing filtered data where the event is ' + str(event) + ' and  all zones'
@@ -531,6 +585,11 @@ def site_dashboard_view(request):
                     attr_zone: zone
                 }
                 filter_message = 'Showing filtered data where the zone is ' + str(zone) + ' and all future events'
+            elif site_size:
+                filter_dict = {
+                    attr_site_size: site_size
+                }
+                filter_message = 'Showing filtered data where the site size is ' + str(site_size) + ' and all future events'
             else:
                 filter_dict = {}
                 filter_message = 'Showing unfiltered data - from all future fair events and sites in all the zones'

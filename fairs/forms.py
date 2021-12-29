@@ -20,6 +20,7 @@ from django.forms import (
     SelectDateWidget
 )
 from fairs.models import (
+    Location,
     Zone,
     Site,
     Fair,
@@ -307,8 +308,12 @@ class ZoneCreateForm(ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['zone_name', 'zone_code', 'map_pdf', 'trestle_source']
+        fields = ['location', 'zone_name', 'zone_code', 'map_pdf', 'trestle_source']
         widgets = {
+            'location': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
             'zone_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
@@ -343,8 +348,12 @@ class ZoneDetailForm(ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['zone_name', 'zone_code', 'map_pdf', 'trestle_source']
+        fields = ['location', 'zone_name', 'zone_code', 'map_pdf', 'trestle_source']
         widgets = {
+            'location': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
             'zone_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
@@ -357,7 +366,7 @@ class ZoneDetailForm(ModelForm):
             }),
             'map_pdf': FileInput(),
             'trestle_source': CheckboxInput(attrs={
-                'class': 'form-check-input'
+                'class': 'form-check-input',
             }),
         }
 
@@ -575,13 +584,22 @@ class DashboardSiteFilterForm(Form):
         empty_label='Show All',
         label='Events',
         required=False,
-        widget=Select(attrs={'class': 'form-control'}))
+        widget=Select(attrs={'class': 'form-control'})
+    )
     zone = ModelChoiceField(
         queryset=Zone.objects.all(),
         empty_label='Show All',
         label='Site Zones',
         required=False,
-        widget=Select(attrs={'class': 'form-control'}))
+        widget=Select(attrs={'class': 'form-control'})
+    )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={'class': 'form-control'})
+    )
 
     class Meta:
         model = EventSite
@@ -712,3 +730,42 @@ class EventPowerCreateForm(ModelForm):
     def __init__(self, *args, **kwargs):
         super(EventPowerCreateForm, self).__init__(*args, **kwargs)
 
+
+class LocationCreateForm(ModelForm):
+    """
+    Form for creating a new location
+    """
+
+    class Meta:
+        model = Location
+        fields = ['location_name', ]
+        widgets = {
+            'location_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Location Name'
+            }),
+        }
+
+    def clean_power_location_name(self):
+        location_name = self.cleaned_data['location_name']
+        if Location.objects.filter(location_name=location_name).exists():
+            raise forms.ValidationError("This Location has already been created.")
+        return location_name
+
+
+class LocationUpdateForm(ModelForm):
+    """
+    Form for updating or amending a location
+    """
+
+    class Meta:
+        model = Location
+        exclude = ()
+        widgets = {
+            'location_name': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Location Name'
+            }),
+        }

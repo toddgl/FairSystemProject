@@ -1,4 +1,4 @@
-<!--fairs/templates/sites/site_create.html -->
+<!-- fairs/templates/sites/site_create.html -->
 
 {% extends 'base.html' %}
 
@@ -8,8 +8,8 @@
   <form method="post">
     {% csrf_token %}
     {{ form.as_p }}
-    <input type="submit" class="btn btn-primary" value="Save" >
-    <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel" >
+    <input type="submit" class="btn btn-primary" value="Save">
+    <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel">
   </form>
 </div>
 {% endblock %}`

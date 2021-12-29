@@ -10,6 +10,20 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # Create your models here.
 
 
+class Location(models.Model):
+    """
+    Description: A reference table FK relation for Zone so that Zones and Sites can be created for somewhere other than
+    Martinborough
+    """
+    location_name = models.CharField(max_length=40, blank=True, null=True)
+
+    def __str__(self):
+        return self.location_name
+
+    class Meta:
+        verbose_name_plural = "Locations"
+
+
 class InventoryItem(models.Model):
     """
     Description: A reference table for all that items that can be purchased by Stallholders
@@ -108,6 +122,13 @@ class Zone(models.Model):
     zone_code = models.CharField(max_length=2, default=None, null=True)
     map_pdf = models.FileField(upload_to='media/maps')
     trestle_source = models.BooleanField(default=False)
+    location = models.ForeignKey(
+        Location,
+        related_name='zone_location',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(CustomUser, related_name='zone_created_by', on_delete=models.SET_NULL, blank=True,

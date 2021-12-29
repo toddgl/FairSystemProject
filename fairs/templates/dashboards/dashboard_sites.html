@@ -17,18 +17,35 @@
           </form>
         </div>
         <div class="col-sm-9">
-          <div class="badge bg-info text-dark text-wrap" style="width: 50rem;"">
+          <div class="badge bg-info text-dark text-wrap" style="width: 50rem;">
             {{ filter }}
           </div>
         </div>
       </div>
-      <div class="row">
+  <br>
+  <div class="row">
         <div class="col-sm-4">
           <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
             <div class="card-body">
               <h5 class="card-title">Available Sites</h5>
               <p class="card-text">{{ available_counts }}</p>
-              <p class="card-text">{% widthratio available_counts total_counts 100 %} %</p>
+             <!--  <p class="card-text">{% widthratio available_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart green">
+                  <path class="circle-bg"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                    stroke-dasharray="{% widthratio available_counts total_counts 100 %}, 100"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio available_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
               <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
@@ -38,7 +55,23 @@
             <div class="card-body">
               <h5 class="card-title">Allocated Sites</h5>
               <p class="card-text">{{ allocated_counts }}</p>
-              <p class="card-text">{% widthratio allocated_counts total_counts 100 %} %</p>
+              <!-- <p class="card-text">{% widthratio allocated_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart blue">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio allocated_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio allocated_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
               <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
@@ -48,20 +81,51 @@
             <div class="card-body">
               <h5 class="card-title">Pending Sites</h5>
               <p class="card-text">{{ pending_counts }}</p>
-              <p class="card-text">{% widthratio pending_counts total_counts 100 %} %</p>
+              <!-- <p class="card-text">{% widthratio pending_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart orange">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio pending_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio pending_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
               <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
-      </div>
-
-      <div class="row">
+    </div>
+    <div class="row">
         <div class="col-sm-4">
           <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
             <div class="card-body">
               <h5 class="card-title">Booked Sites</h5>
               <p class="card-text">{{ booked_counts }}</p>
-              <p class="card-text">{% widthratio booked_counts total_counts 100 %} %</p>
+              <!-- <p class="card-text">{% widthratio booked_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart green">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio booked_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio booked_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
               <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
@@ -71,13 +135,27 @@
             <div class="card-body">
               <h5 class="card-title">Unavailable Sites</h5>
               <p class="card-text">{{ unavailable_counts }}</p>
-              <p class="card-text">{% widthratio unavailable_counts total_counts 100 %} %</p>
+              <!-- <p class="card-text">{% widthratio unavailable_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart red">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio unavailable_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio unavailable_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
               <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
       </div>
-    </div>
-   </div>
 </main>
 {% endblock %}
