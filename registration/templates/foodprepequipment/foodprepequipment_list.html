@@ -1,0 +1,33 @@
+<!-- registration/templates/foodprepequipment/foodprepequipment_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Food Preparation Equipment</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new type of food preparation equipment</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </form>
+
+    {% for foodprepequipment in foodprepequipment_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ foodprepequipment.equipment_name }}</h4>
+                <p class="card-text">
+                    Minimum Load: {{ foodprepequipment.power_load_minimum }}
+                    Maximum Load: {{ foodprepequipment.power_load_maximum }}
+                    Load Factor: {{ foodprepequipment.power_load_factor }}%
+                </p>
+                <a href="{% url 'registration:foodprepequipment-detail' foodprepequipment.id %}" class="card-link">
+                    View and edit Food Preparation Equipment Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <div class="alert alert-info" role="alert">There are no Food Preparation Equipment created yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}
