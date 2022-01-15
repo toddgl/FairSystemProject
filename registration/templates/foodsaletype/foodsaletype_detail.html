@@ -1,0 +1,27 @@
+<!--registration/templates/foodsaletype/foodsaletype_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Update Food Sale Type Detail</h2>
+  <div class="badge bg-info text-dark text-wrap" style="width: 30rem;">
+    Record Created by: {{ foodsaletype.created_by }} on {{ foodsaletype.date_created }}
+  </div>
+  {% if not foodsaletype.updated_by %}
+  <p> -- </p>
+  {% else %}
+  <br>
+  <div class="badge bg-info text-dark text-wrap" style="width: 30rem;">
+    Record Updated by {{ foodsaletype.updated_by }} on {{ foodsaletype.date_updated }}
+  </div>
+  <p> </p>
+  {% endif %}
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Update" >
+    <a href="{{ view.get_success_url }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}`

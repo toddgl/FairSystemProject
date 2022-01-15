@@ -43,3 +43,64 @@ class FoodPrepEquipment(models.Model):
     class Meta:
         verbose_name_plural = "FoodPrepEquipments"
 
+
+class FoodSaleType(models.Model):
+    """
+    Description; Model that holds the definition of the various food sale types
+    """
+    food_sale_type = models.CharField(max_length= 150)
+    is_active = models.BooleanField(default=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        CustomUser,
+        related_name='food_stall_type_created_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    updated_by = models.ForeignKey(
+        CustomUser,
+        related_name='food_stall_type_updated_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.food_stall_type
+
+    class Meta:
+        verbose_name_plural = "FoodStallTypes"
+
+
+class StallCategory(models.Model):
+    """
+    Description: Model that holds the definition of Stall Categories
+    """
+    category_name = models.CharField(max_length=150)
+    is_active = models.BooleanField(default=True)
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        CustomUser,
+        related_name='stall_category_created_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    updated_by = models.ForeignKey(
+        CustomUser,
+        related_name='stall_category_updated_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+
+    def __str__(self):
+        return self.category_name
+
+    class Meta:
+        verbose_name_plural = "StallCategory"
+
+

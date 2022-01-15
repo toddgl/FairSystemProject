@@ -1,0 +1,31 @@
+<!-- registration/templates/stallcategory/stallcategory_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h1>Stall Category</h1>
+    <form action='actionUrl' method='GET'>
+        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new stall category</button>
+        <a href="/" class="btn btn-secondary">Cancel</a>
+    </form>
+
+    {% for stallcategory in stallcategory_list %}
+    <div class="container mt-3" style="width: 600px;">
+        <div class="card">
+            <div class="card-body">
+                <h4 class="card-title">{{ stallcategory.category_name }}</h4>
+                <p class="card-text">
+                    Active State: {{ stallcategory.is_active }}
+                </p>
+                <a href="{% url 'registration:stallcategory-detail' stallcategory.id %}" class="card-link">
+                    View and edit Stall Category Detail
+                </a>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+        <div class="alert alert-info" role="alert">There are no Stall Categories created yet.</div>
+    {% endfor %}
+</div>
+{% endblock %}

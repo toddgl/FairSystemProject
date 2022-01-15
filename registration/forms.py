@@ -19,7 +19,9 @@ from django.forms import (
     SelectDateWidget
 )
 from registration.models import (
-    FoodPrepEquipment
+    FoodPrepEquipment,
+    FoodSaleType,
+    StallCategory,
 )
 
 
@@ -91,5 +93,101 @@ class FoodPrepEquipmentUpdateForm(ModelForm):
                 'class': 'form-control',
                 'style': 'max-width: 200px;',
                 'placeholder': 'Percent'
+            }),
+        }
+
+
+class FoodSaleTypeCreationForm(ModelForm):
+    """
+    Form for creating new food sale type
+    """
+    class Meta:
+        model = FoodSaleType
+        fields = ['food_sale_type', 'is_active', ]
+        widgets = {
+            'food_sale_type': TextInput(attrs={
+                'class': "form-control",
+                'size': '400',
+                'placeholder': 'Food Sale Type'
+            }),
+            'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(FoodSaleTypeCreationForm, self).__init__(*args, **kwargs)
+
+    def clean_power_box_name(self):
+        food_sale_type = self.cleaned_data['food_sale_type']
+        if FoodSaleType.objects.filter(food_sale_type=food_sale_type).exists():
+            raise forms.ValidationError("This Food Sale Type has already been created.")
+        return food_sale_type
+
+
+class FoodSaleTypeUpdateForm(ModelForm):
+    """
+    Form for updating food sale type details
+    """
+    class Meta:
+        model = FoodSaleType
+        fields = ['food_sale_type', 'is_active', ]
+        widgets = {
+            'food_sale_type': TextInput(attrs={
+                'class': "form-control",
+                'size': '400',
+                'placeholder': 'Food Sale Type'
+            }),
+            'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
+
+
+class StallCategoryCreationForm(ModelForm):
+    """
+    Form for creating new stall category
+    """
+    class Meta:
+        model = StallCategory
+        fields = ['category_name', 'is_active', ]
+        widgets = {
+            'category_name': TextInput(attrs={
+                'class': "form-control",
+                'size': '400',
+                'placeholder': 'Stall Category Name'
+            }),
+            'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(StallCategoryCreationForm, self).__init__(*args, **kwargs)
+
+    def clean_power_box_name(self):
+        category_name = self.cleaned_data['category_name']
+        if StallCategory.objects.filter(category_name=category_name).exists():
+            raise forms.ValidationError("This  Stall Category has already been created.")
+        return category_name
+
+
+class StallCategoryUpdateForm(ModelForm):
+    """
+    Form for updating stall category details
+    """
+    class Meta:
+        model = StallCategory
+        fields = ['category_name', 'is_active', ]
+        widgets = {
+            'category_name': TextInput(attrs={
+                'class': "form-control",
+                'size': '400',
+                'placeholder': 'Stall Category Name'
+            }),
+            'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
             }),
         }

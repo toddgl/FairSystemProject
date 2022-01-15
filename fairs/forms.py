@@ -109,7 +109,7 @@ class FairCreateForm(ModelForm):
             }),
             # 'activation_date': AdminSplitDateTime(),
             'activation_date': MinimalSplitDateTimeMultiWidget(),
-            "is_activated": CheckboxInput(attrs={
+            'is_activated': CheckboxInput(attrs={
                 'class': 'form-check-input',
                 'readonly': 'readonly'
             }),
