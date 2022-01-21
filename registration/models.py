@@ -196,3 +196,93 @@ class StallRegistration(models.Model):
 
     class Meta:
         verbose_name_plural = "StallRegistrations"
+
+
+class RegistrationComment(models.Model):
+    """
+    Description a model to capture stall holder and convener comments related to a Stall Registration instance.
+    Convener comments can be made private so cannot be seen by Stallholders if required
+    """
+    stall_registration = models.ForeignKey(
+        StallRegistration,
+        verbose_name='stallregistration',
+        related_name='registration_comments',
+        on_delete=models.CASCADE,
+        blank=False,
+        null=False
+    )
+    comment = models.TextField()
+    convener_only_comment = models.BooleanField(default=False)
+    date_created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name='registration_comment_created_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+
+
+class FoodRegistration(models.Model):
+    """
+    Description: An extension of the StallRegistration model that captures via and one-to-one relationship the details
+    regarding the food preparation / sale that is needed for the food licence application.
+    """
+    registration = models.OneToOneField(
+        StallRegistration,
+        related_name='food_registration',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    food_display_method = models.TextField()
+    has_food_certificate = models.BooleanField(default=False)
+    food_registration_certificate = models.FileField(upload_to='media/food_certificates')
+    certificate_expiry_date = models.DateField()
+    food_fair_consumed = models.BooleanField(default=False)
+    food_prep_equipment = models.ManyToManyField(
+        FoodPrepEquipment,
+        related_name='food_registration',
+        through='FoodPrepEquipReq',
+    )
+    food_stall_type = models.ForeignKey(
+        FoodSaleType,
+        related_name='food_registration',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    food_source = models.TextField()
+    has_food_storage_prep = models.BooleanField(default=False)
+    food_storage_prep_method = models.TextField()
+    hygiene_methods = models.TextField()
+
+    class Meta:
+        verbose_name_plural = "FoodRegistrations"
+
+
+class FoodPrepEquipReq(models.Model):
+    """
+    Description a junction table joining FoodRegistration with FoodPrepEquipment used top capture whether the equipment
+    is gas or electrical powered
+    """
+    food_registration = models.ForeignKey(
+        FoodRegistration,
+        on_delete=models.CASCADE,
+        verbose_name='FoodPrepEquipmentRequired',
+        related_name='food_prep_equip_req',
+    )
+    food_prep_equipment = models.ForeignKey(
+        FoodPrepEquipment,
+        on_delete=models.CASCADE,
+        verbose_name='FoodPrepEquipment',
+        related_name='food_prep_equip',
+    )
+    electrical_powered = models.BooleanField(default=False)
+    gas_powered = models.BooleanField(default=False)
+
+    def __int__(self):
+        if self.gas_powered:
+            return str(self.food_prep_equipment) + " is gas Powered"
+        else:
+            return str(self.food_prep_equipment) + " is electrical"

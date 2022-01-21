@@ -178,7 +178,7 @@ class InventoryItemFair(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __int__(self):
-        return str(self.item) + "$" + str(self.price)
+        return str(self.inventory_item) + "$" + str(self.price)
 
 
 class Site(models.Model):
