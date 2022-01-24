@@ -1,0 +1,16 @@
+<!--registration/templates/stallregistration/stallregistration_createupdate.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Create or Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h2>
+  <h6>{{ stallregistration.get_booking_status_display }}</h6>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Save" >
+    <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel" >
+  </form>
+</div>
+{% endblock %}`

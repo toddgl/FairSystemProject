@@ -22,6 +22,7 @@ from registration.models import (
     FoodPrepEquipment,
     FoodSaleType,
     StallCategory,
+    StallRegistration,
 )
 
 
@@ -29,6 +30,7 @@ class FoodPrepEquipmentCreationForm(ModelForm):
     """
     Form for creating new food preparation equipment
     """
+
     class Meta:
         model = FoodPrepEquipment
         fields = ['equipment_name', 'power_load_minimum', 'power_load_maximum', 'power_load_factor', ]
@@ -70,6 +72,7 @@ class FoodPrepEquipmentUpdateForm(ModelForm):
     """
     Form for updating Food Preparation Equipment Details
     """
+
     class Meta:
         model = FoodPrepEquipment
         fields = ['equipment_name', 'power_load_minimum', 'power_load_maximum', 'power_load_factor', ]
@@ -101,6 +104,7 @@ class FoodSaleTypeCreationForm(ModelForm):
     """
     Form for creating new food sale type
     """
+
     class Meta:
         model = FoodSaleType
         fields = ['food_sale_type', 'is_active', ]
@@ -130,6 +134,7 @@ class FoodSaleTypeUpdateForm(ModelForm):
     """
     Form for updating food sale type details
     """
+
     class Meta:
         model = FoodSaleType
         fields = ['food_sale_type', 'is_active', ]
@@ -149,6 +154,7 @@ class StallCategoryCreationForm(ModelForm):
     """
     Form for creating new stall category
     """
+
     class Meta:
         model = StallCategory
         fields = ['category_name', 'is_active', ]
@@ -178,6 +184,7 @@ class StallCategoryUpdateForm(ModelForm):
     """
     Form for updating stall category details
     """
+
     class Meta:
         model = StallCategory
         fields = ['category_name', 'is_active', ]
@@ -188,6 +195,79 @@ class StallCategoryUpdateForm(ModelForm):
                 'placeholder': 'Stall Category Name'
             }),
             'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
+
+
+class StallRegistrationCreateUpdateForm(ModelForm):
+    """
+    Combined form for creating and updating Stall Registrations
+    """
+
+    class Meta:
+        model = StallRegistration
+        fields = [
+                  'event_site',
+                  'stall_manager_name',
+                  'stall_category',
+                  'stall_description',
+                  'products_on_site',
+                  'trestle_required',
+                  'trestle_quantity',
+                  'stall_shelter',
+                  'power_required',
+                  'event_power',
+                  'total_charge',
+                  'selling_food',
+                  ]
+        widgets = {
+            'event_site': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'stall_manager_name': TextInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;'
+            }),
+            'stall_category': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'stall_description': TextInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;'
+            }),
+            'products_on_site': TextInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;'
+            }),
+            'trestle_required': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'trestle_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Number of Trestles',
+                'label': 'Number of trestles required'
+            }),
+            'stall_shelter': TextInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;'
+            }),
+            'power_required': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'event_power': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'total_charge': TextInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;',
+                'readonly': 'readonly'
+            }),
+            'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input',
             }),
         }

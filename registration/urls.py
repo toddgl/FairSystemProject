@@ -11,7 +11,8 @@ from registration.views import (
     FoodSaleTypeDetailUpdateView,
     StallCategoryListView,
     StallCategoryCreateView,
-    StallCategoryDetailUpdateView
+    StallCategoryDetailUpdateView,
+    RegistrationCreateUpdateView
 )
 
 app_name = 'registration'
@@ -31,4 +32,5 @@ urlpatterns = [
     path('stallcategory/', StallCategoryListView.as_view(), name='stallcategory-list'),
     path('stallcategory/,<int:pk>', StallCategoryDetailUpdateView.as_view(), name='stallcategory-detail'),
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
+    path('stallregistration/', RegistrationCreateUpdateView.as_view(), name='stallregistration-detail'),
 ]

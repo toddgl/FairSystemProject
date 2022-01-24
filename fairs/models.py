@@ -370,6 +370,9 @@ class EventSite(models.Model):
     class Meta:
         unique_together = ('event', 'site')
 
+    def __str__(self):
+        return str(self.event) + " - " + str(self.site)
+
 
 class EventPower(models.Model):
     """

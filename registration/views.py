@@ -6,13 +6,18 @@ from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
     ListView,
-    UpdateView
+    UpdateView,
 )
-
+from django.views.generic.detail import (SingleObjectTemplateResponseMixin)
+from django.views.generic.edit import (
+    ModelFormMixin,
+    ProcessFormView
+)
 from registration.models import (
     FoodPrepEquipment,
     FoodSaleType,
     StallCategory,
+    StallRegistration,
 )
 
 from .forms import (
@@ -22,6 +27,7 @@ from .forms import (
     FoodSaleTypeUpdateForm,
     StallCategoryCreationForm,
     StallCategoryUpdateForm,
+    StallRegistrationCreateUpdateForm,
 )
 
 # Create your views here.
@@ -202,3 +208,29 @@ class StallCategoryDetailUpdateView(PermissionRequiredMixin, UpdateView):
         self.object = form.save(commit=False)
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
+
+class RegistrationCreateUpdateView(PermissionRequiredMixin, SingleObjectTemplateResponseMixin, ModelFormMixin,
+                                   ProcessFormView):
+    """
+    Description: A Joint Create and Update view for the stall registration model
+    """
+    permission_required = 'registration.change_stallregistration'
+    model = StallRegistration
+    form_class = StallRegistrationCreateUpdateForm
+    template_name = 'stallregistration/stallregistration_createupdate.html'
+    success_url = reverse_lazy('registration:stallregistration-detail')
+
+    def get_object(self, queryset=None):
+        try:
+            return super(RegistrationCreateUpdateView, self).get_object(queryset)
+        except AttributeError:
+            return None
+
+    def get(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(RegistrationCreateUpdateView, self).get(request, *args, **kwargs)
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        return super(RegistrationCreateUpdateView, self).post(request, *args, **kwargs)

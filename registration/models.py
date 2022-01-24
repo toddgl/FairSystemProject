@@ -172,6 +172,8 @@ class StallRegistration(models.Model):
         blank=True,
         null=True
     )
+    stall_description = models.TextField()
+    products_on_site =models.TextField()
     trestle_required = models.BooleanField(default=False)
     trestle_quantity = models.IntegerField(default=0)
     stall_shelter = models.TextField()
