@@ -208,21 +208,26 @@ class StallRegistrationCreateUpdateForm(ModelForm):
     class Meta:
         model = StallRegistration
         fields = [
-                  'event_site',
-                  'stall_manager_name',
-                  'stall_category',
-                  'stall_description',
-                  'products_on_site',
-                  'trestle_required',
-                  'trestle_quantity',
-                  'stall_shelter',
-                  'power_required',
-                  'event_power',
-                  'total_charge',
-                  'selling_food',
-                  ]
+            'event_site_first',
+            'event_site_second',
+            'stall_manager_name',
+            'stall_category',
+            'stall_description',
+            'products_on_site',
+            'trestle_required',
+            'trestle_quantity',
+            'stall_shelter',
+            'power_required',
+            'event_power',
+            'total_charge',
+            'selling_food',
+          ]
         widgets = {
-            'event_site': Select(attrs={
+            'event_site_first': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'event_site_second': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;'
             }),

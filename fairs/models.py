@@ -242,10 +242,10 @@ class PowerBox(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(CustomUser, related_name='powerbox_created_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
-    updated_by = models.ForeignKey(CustomUser, related_name='powerbox_updated_by', on_delete=models.SET_NULL, blank=True,
-                                   null=True)
+    created_by = models.ForeignKey(CustomUser, related_name='powerbox_created_by',
+                                   on_delete=models.SET_NULL, blank=True, null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='powerbox_updated_by',
+                                   on_delete=models.SET_NULL, blank=True, null=True)
 
     def __str__(self):
         return self.power_box_name
@@ -260,7 +260,19 @@ class Event(models.Model):
     """
     Description: Stores the details of events associated with fair
     """
+    FIRSTEVENT = 1
+    SECONDEVENT = 2
+
+    EVENT_SEQUENCE_CHOICE = [
+        (FIRSTEVENT, _('First Event')),
+        (SECONDEVENT, _('Second Event'))
+    ]
+
     event_name = models.CharField(max_length=40)
+    event_sequence = models.PositiveSmallIntegerField(
+        choices=EVENT_SEQUENCE_CHOICE,
+        default=FIRSTEVENT,
+    )
     original_event_date = models.DateField()
     postponement_event_date = models.DateField(blank=True, default=None, null=True)
     date_created = models.DateTimeField(auto_now_add=True)

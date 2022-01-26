@@ -152,10 +152,18 @@ class StallRegistration(models.Model):
         choices=REGISTRATION_STATUS_CHOICES,
         protected=True,
     )
-    event_site = models.ForeignKey(
+    event_site_first = models.ForeignKey(
         'fairs.EventSite',
-        verbose_name='eventsite',
-        related_name='stall_registrations',
+        verbose_name='eventsitefirst',
+        related_name='event_site_first',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    event_site_second = models.ForeignKey(
+        'fairs.EventSite',
+        verbose_name='eventsitesecond',
+        related_name='event_site_second',
         on_delete=models.SET_NULL,
         blank=True,
         null=True

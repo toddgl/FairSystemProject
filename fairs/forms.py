@@ -176,7 +176,7 @@ class EventCreateForm(ModelForm):
 
     class Meta:
         model = Event
-        fields = ['fair', 'event_name', 'event_description',
+        fields = ['fair', 'event_name', 'event_description', 'event_sequence',
                   'original_event_date']
         widgets = {
             'fair': Select(),
@@ -189,6 +189,10 @@ class EventCreateForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 750px;',
                 'placeholder': 'Fair Description'
+            }),
+            'event_sequence': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
             }),
             'original_event_date': NumberInput(attrs={'type': 'date'}),
         }
@@ -224,6 +228,10 @@ class EventDetailForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 750px;',
                 'placeholder': 'Fair Description'
+            }),
+            'event_sequence': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
             }),
             'original_event_date': DateInput(attrs={
                 'class': "form-control",
