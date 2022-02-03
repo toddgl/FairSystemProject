@@ -1,5 +1,7 @@
 # registration/forms.py
 
+import datetime
+from dynamic_forms import DynamicField, DynamicFormMixin
 from django import forms
 from django.forms import (
     Form,
@@ -24,6 +26,14 @@ from registration.models import (
     StallCategory,
     StallRegistration,
 )
+from fairs.models import (
+    EventSite,
+    InventoryItem,
+    Zone
+)
+
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
 
 
 class FoodPrepEquipmentCreationForm(ModelForm):
@@ -200,79 +210,50 @@ class StallCategoryUpdateForm(ModelForm):
         }
 
 
-class StallRegistrationCreateUpdateForm(ModelForm):
+class StallRegistrationCreateUpdateForm( Form):
     """
     Combined form for creating and updating Stall Registrations
     """
 
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Show All',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
+    event_site_first = ModelChoiceField(
+        queryset= EventSite.site_available_first_event,
+        empty_label='Please Select',
+        label='First Event Sites',
+        required=False,
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;'})
+    )
+    event_site_second = ModelChoiceField(
+        queryset= EventSite.site_available_second_event,
+        empty_label='Please Select',
+        label='Second Event Sites',
+        required=False,
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;'})
+    )
+
     class Meta:
-        model = StallRegistration
         fields = [
+            'zone',
+            'site_size',
             'event_site_first',
             'event_site_second',
-            'stall_manager_name',
-            'stall_category',
-            'stall_description',
-            'products_on_site',
-            'trestle_required',
-            'trestle_quantity',
-            'stall_shelter',
-            'power_required',
-            'event_power',
-            'total_charge',
-            'selling_food',
-          ]
-        widgets = {
-            'event_site_first': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;'
-            }),
-            'event_site_second': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;'
-            }),
-            'stall_manager_name': TextInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;'
-            }),
-            'stall_category': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;'
-            }),
-            'stall_description': TextInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;'
-            }),
-            'products_on_site': TextInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;'
-            }),
-            'trestle_required': CheckboxInput(attrs={
-                'class': 'form-check-input',
-            }),
-            'trestle_quantity': NumberInput(attrs={
-                'class': "form_control",
-                'style': 'max-width: 400px;',
-                'placeholder': 'Number of Trestles',
-                'label': 'Number of trestles required'
-            }),
-            'stall_shelter': TextInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;'
-            }),
-            'power_required': CheckboxInput(attrs={
-                'class': 'form-check-input',
-            }),
-            'event_power': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;'
-            }),
-            'total_charge': TextInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;',
-                'readonly': 'readonly'
-            }),
-            'selling_food': CheckboxInput(attrs={
-                'class': 'form-check-input',
-            }),
-        }
+        ]
+
+
+
+

@@ -26,7 +26,7 @@ SECRET_KEY = '+x4-e!e)8+mi(73rtn9@px#-@4wo-wp4kf_4y)iy-q&5omzrv%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.65', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.79', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -39,14 +39,14 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.sites',
-    'django_htmx',
 
 
     # 3rd Party
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
-
+    'django_htmx',
+    'widget_tweaks',
 
     # Local
     'registration',

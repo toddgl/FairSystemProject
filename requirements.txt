@@ -2,3 +2,5 @@ Django==3.2.7
 django-allauth==0.43.0
 psycopg2==2.9.1
 django-htmx>=1.8.1
+django-forms-dynamic>=0.0.1
+django-widget-tweaks>=1.4.12

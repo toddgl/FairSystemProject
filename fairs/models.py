@@ -7,6 +7,11 @@ from accounts.models import CustomUser
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+
+# Global Variables
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
+
 # Create your models here.
 
 
@@ -287,11 +292,6 @@ class Event(models.Model):
         related_name='events',
         through='EventSite',
     )
-    power_boxes = models.ManyToManyField(
-        PowerBox,
-        related_name='events',
-        through='EventPower',
-    )
     created_by = models.ForeignKey(CustomUser, related_name='event_created_by', on_delete=models.SET_NULL, blank=True,
                                    null=True)
     updated_by = models.ForeignKey(CustomUser, related_name='event_updated_by', on_delete=models.SET_NULL, blank=True,
@@ -314,6 +314,17 @@ class SiteAvailableManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1)
 
+
+class SiteAvailableFirstEventManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=1, event__event_sequence=1,
+                                          event__fair__fair_year__in=[current_year, next_year])
+
+
+class SiteAvailableSecondEventManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(site_status=1, event__event_sequence=2,
+                                             event__fair__fair_year__in=[current_year, next_year])
 
 class SiteAllocatedManager(models.Manager):
     def get_queryset(self):
@@ -378,6 +389,8 @@ class EventSite(models.Model):
     site_pending = SitePendingManager()  # The site status pending manager.
     site_booked = SiteBookedManager()  # The site status booked manager.
     site_unavailable = SiteUnavailableManager()  # The site status unavailable manager.
+    site_available_first_event = SiteAvailableFirstEventManager()  # The site status of available for first event
+    site_available_second_event = SiteAvailableSecondEventManager()  # The site status of avaialble for second event
 
     class Meta:
         unique_together = ('event', 'site')
@@ -402,6 +415,9 @@ class EventPower(models.Model):
         on_delete=models.CASCADE,
         verbose_name='power_box',
         related_name='event_power'
+    )
+    sockets_used = models.IntegerField(
+        default= 0
     )
     power_load = models.DecimalField(max_digits=10, decimal_places=5)
 

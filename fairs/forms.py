@@ -195,6 +195,7 @@ class EventCreateForm(ModelForm):
                 'style': 'max-width: 300px;',
             }),
             'original_event_date': NumberInput(attrs={'type': 'date'}),
+
         }
 
     def __init__(self, *args, **kwargs):
@@ -703,6 +704,11 @@ class EventPowerUpdateDetailForm(ModelForm):
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
+            'sockets_used':  NumberInput(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Count'
+            }),
             'power_load': NumberInput(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
@@ -727,6 +733,11 @@ class EventPowerCreateForm(ModelForm):
             'power_box': Select(attrs={
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
+            }),
+            'sockets_used':  NumberInput(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Count'
             }),
             'power_load': NumberInput(attrs={
                 'class': "form-select",

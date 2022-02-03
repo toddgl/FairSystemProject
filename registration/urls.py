@@ -12,7 +12,7 @@ from registration.views import (
     StallCategoryListView,
     StallCategoryCreateView,
     StallCategoryDetailUpdateView,
-    RegistrationCreateUpdateView
+    stall_registration_view,
 )
 
 app_name = 'registration'
@@ -32,5 +32,5 @@ urlpatterns = [
     path('stallcategory/', StallCategoryListView.as_view(), name='stallcategory-list'),
     path('stallcategory/,<int:pk>', StallCategoryDetailUpdateView.as_view(), name='stallcategory-detail'),
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
-    path('stallregistration/', RegistrationCreateUpdateView.as_view(), name='stallregistration-detail'),
+    path('stallregistration/', stall_registration_view, name='stallregistration-detail'),
 ]
