@@ -348,7 +348,6 @@ class ZoneCreateView(PermissionRequiredMixin, CreateView):
 
     def get_initial(self, *args, **kwargs):
         initial = super(ZoneCreateView, self).get_initial(**kwargs)
-        initial['zone_name'] = 'My Zone'
         return initial
 
     def get_form_kwargs(self, *args, **kwargs):

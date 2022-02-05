@@ -255,20 +255,32 @@ class SiteCreateForm(ModelForm):
     Form for Creating a new site
     """
 
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Please Select',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Please Select',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
     class Meta:
         model = Site
-        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
+        fields = [
+            'site_name',
+            'zone',
+            'site_size',
+        ]
         widgets = {
-            'zone': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;'
-            }),
             'site_name': TextInput(attrs={
-                'class': "form-control",
-                'style': 'max-width: 300px;',
-                'placeholder': 'Site Name'
-            }),
-            'site_size': Select(attrs={
+                'placeholder': 'Site Name',
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
             })
@@ -290,21 +302,33 @@ class SiteDetailForm(ModelForm):
     Form for updating a site
     """
 
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Please Select',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Please Select',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
     class Meta:
         model = Site
-        exclude = ('created_by', 'updated_by', 'date_created', 'date_updated',)
+        fields = [
+            'site_name',
+            'zone',
+            'site_size',
+        ]
         widgets = {
             'site_name': TextInput(attrs={
-                'class': "form-control",
-                'style': 'max-width: 100px;',
-                'placeholder': 'Site Name'
-            }),
-            'site_size': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;',
-            }),
-            'zone': Select(attrs={
-                'class': "form-select",
+                'placeholder': 'Site Name',
+                'class': "form-select`",
                 'style': 'max-width: 300px;',
             })
         }
@@ -366,7 +390,7 @@ class ZoneDetailForm(ModelForm):
             'zone_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
-                'placeholder': 'Site Name'
+                'placeholder': 'Zone Name'
             }),
             'zone_code': TextInput(attrs={
                 'class': "form-control",
@@ -384,6 +408,7 @@ class InventoryItemCreateForm(ModelForm):
     """
     Form for creating a new InventoryItem
     """
+
     class Media:
         js = ('js/item_type.js',)
 
@@ -435,6 +460,7 @@ class InventoryItemDetailForm(ModelForm):
     """
     Form for updating an InventoryItem
     """
+
     class Media:
         js = ('js/item_type.js',)
 
@@ -556,6 +582,7 @@ class InventoryItemFairCreateForm(ModelForm):
     """
         Form for Creating a new inventory item fair relationship including setting the item price
     """
+
     class Meta:
         model = InventoryItemFair
         fields = ['fair', 'inventory_item', 'price_rate', 'price']
@@ -704,7 +731,7 @@ class EventPowerUpdateDetailForm(ModelForm):
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
-            'sockets_used':  NumberInput(attrs={
+            'sockets_used': NumberInput(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Count'
@@ -734,7 +761,7 @@ class EventPowerCreateForm(ModelForm):
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
             }),
-            'sockets_used':  NumberInput(attrs={
+            'sockets_used': NumberInput(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Count'
