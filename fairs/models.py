@@ -1,5 +1,6 @@
 # fairs/model.py
 import datetime
+from django.db.models import Q
 from django.db import models
 from django.utils import timezone
 from django.urls import reverse
@@ -7,10 +8,10 @@ from accounts.models import CustomUser
 from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
-
 # Global Variables
 current_year = datetime.datetime.now().year
 next_year = current_year + 1
+
 
 # Create your models here.
 
@@ -55,7 +56,7 @@ class InventoryItem(models.Model):
         default=FAIRSITE
     )
     item_description = models.TextField()
-    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ],)
+    item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ], )
     site_size = models.CharField(max_length=40, blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
@@ -258,7 +259,7 @@ class PowerBox(models.Model):
 
 class EventFilterManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(original_event_date__gt=datetime.datetime.now())
+        return super().get_queryset().filter(Q(original_event_date__gt=datetime.datetime.now()) | Q(postponement_event_date__gt=datetime.datetime.now()))
 
 
 class Event(models.Model):
@@ -318,13 +319,14 @@ class SiteAvailableManager(models.Manager):
 class SiteAvailableFirstEventManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__event_sequence=1,
-                                          event__fair__fair_year__in=[current_year, next_year])
+                                             event__fair__fair_year__in=[current_year, next_year])
 
 
 class SiteAvailableSecondEventManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__event_sequence=2,
                                              event__fair__fair_year__in=[current_year, next_year])
+
 
 class SiteAllocatedManager(models.Manager):
     def get_queryset(self):
@@ -417,7 +419,7 @@ class EventPower(models.Model):
         related_name='event_power'
     )
     sockets_used = models.IntegerField(
-        default= 0
+        default=0
     )
     power_load = models.DecimalField(max_digits=10, decimal_places=5)
 

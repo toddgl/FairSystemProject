@@ -1,6 +1,7 @@
 # registration/views.py
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
 from django.template.response import TemplateResponse
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
@@ -34,8 +35,10 @@ from .forms import (
     FoodSaleTypeUpdateForm,
     StallCategoryCreationForm,
     StallCategoryUpdateForm,
+    StallRegistrationFilterForm,
     StallRegistrationCreateUpdateForm,
 )
+
 
 # Create your views here.
 
@@ -217,23 +220,29 @@ class StallCategoryDetailUpdateView(PermissionRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+@login_required
+@permission_required('registration.add_stallregistration', raise_exception=True)
+@permission_required('registration.change_stallregistration', raise_exception=True)
 def stall_registration_view(request):
     """
     Populate the stall registration forms in particular provide a filter view of available sites based on
     site size,
     """
     filter_message = 'Showing unfiltered data - of all available sites for the current fair'
+    filterform = StallRegistrationFilterForm()
+    registrationform = StallRegistrationCreateUpdateForm()
     available_first_event_sites = EventSite.site_available_first_event
     available_second_event_sites = EventSite.site_available_second_event
     template_name = 'stallregistration/stallregistration_createupdate.html'
 
     if request.POST:
-        form = StallRegistrationCreateUpdateForm(request.POST)
-        form.fields['event_site_first'].queryset = available_first_event_sites
-        form.fields['event_site_second'].queryset = available_second_event_sites
-        if form.is_valid():
-            zone = form.cleaned_data['zone']
-            site_size = form.cleaned_data['site_size']
+        filterform = StallRegistrationFilterForm(request.POST)
+        registrationform = StallRegistrationCreateUpdateForm(request.POST)
+        registrationform.fields['event_site_first'].queryset = available_first_event_sites
+        registrationform.fields['event_site_second'].queryset = available_second_event_sites
+        if filterform.is_valid():
+            zone = filterform.cleaned_data['zone']
+            site_size = filterform.cleaned_data['site_size']
             attr_zone = 'site__zone'
             attr_site_size = 'site__site_size'
             if zone and site_size:
@@ -254,21 +263,28 @@ def stall_registration_view(request):
                     attr_site_size: site_size
                 }
                 filter_message = 'Showing filtered data where the site size is ' + str(site_size) + 'and all ' \
-                                                                                                         'zones '
+                                                                                                    'zones '
             else:
                 filter_dict = {}
                 filter_message = 'Showing unfiltered data - of all available sites for the current fair'
 
-            form.fields['event_site_first'].queryset = available_first_event_sites.filter(**filter_dict)
-            form.fields['event_site_second'].queryset = available_second_event_sites.filter(**filter_dict)
-            return render(request, template_name, {'form': form})
+            registrationform.fields['event_site_first'].queryset = available_first_event_sites.filter(**filter_dict)
+            registrationform.fields['event_site_second'].queryset = available_second_event_sites.filter(**filter_dict)
+            return TemplateResponse(request, template_name, {
+                'filterform': filterform,
+                'registrationform': registrationform,
+                'filter': filter_message,
+            })
 
         else:
-            return render(request, template_name, {'form': form})
+            return TemplateResponse(request, template_name, {
+                'filterform': filterform,
+                'registrationform': registrationform,
+                'filter': filter_message,
+            })
     else:
-        form = StallRegistrationCreateUpdateForm()
-
-    return TemplateResponse(request, 'stallregistration/stallregistration_createupdate.html', {
-        'form': form,
-        'filter': filter_message,
-     })
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'registrationform': registrationform,
+            'filter': filter_message,
+        })

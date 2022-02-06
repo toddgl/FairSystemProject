@@ -2,6 +2,7 @@
 
 import datetime
 from dynamic_forms import DynamicField, DynamicFormMixin
+from django.urls import reverse_lazy
 from django import forms
 from django.forms import (
     Form,
@@ -210,9 +211,9 @@ class StallCategoryUpdateForm(ModelForm):
         }
 
 
-class StallRegistrationCreateUpdateForm( Form):
+class StallRegistrationFilterForm(Form):
     """
-    Combined form for creating and updating Stall Registrations
+    Filter form for restricting the  dropdown list for available sites based on zone and site size
     """
 
     zone = ModelChoiceField(
@@ -220,7 +221,10 @@ class StallRegistrationCreateUpdateForm( Form):
         empty_label='Show All',
         label='Site Zones',
         required=False,
-        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+        })
     )
 
     site_size = ModelChoiceField(
@@ -231,15 +235,27 @@ class StallRegistrationCreateUpdateForm( Form):
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
 
+    class Meta:
+        fields = [
+            'zone',
+            'site_size',
+        ]
+
+
+class StallRegistrationCreateUpdateForm(Form):
+    """
+    Combined form for creating and updating Stall Registrations
+    """
+
     event_site_first = ModelChoiceField(
-        queryset= EventSite.site_available_first_event,
+        queryset=EventSite.site_available_first_event,
         empty_label='Please Select',
         label='First Event Sites',
         required=False,
         widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;'})
     )
     event_site_second = ModelChoiceField(
-        queryset= EventSite.site_available_second_event,
+        queryset=EventSite.site_available_second_event,
         empty_label='Please Select',
         label='Second Event Sites',
         required=False,
@@ -248,12 +264,6 @@ class StallRegistrationCreateUpdateForm( Form):
 
     class Meta:
         fields = [
-            'zone',
-            'site_size',
             'event_site_first',
             'event_site_second',
         ]
-
-
-
-

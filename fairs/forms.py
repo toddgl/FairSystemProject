@@ -6,6 +6,8 @@ from django.forms import (
     Form,
     ModelForm,
     ChoiceField,
+    DateInput,
+    DateTimeInput,
     ModelChoiceField,
     ModelMultipleChoiceField,
     IntegerField,
@@ -13,6 +15,7 @@ from django.forms import (
     TextInput,
     FileInput,
     CheckboxInput,
+    MultiWidget,
     NumberInput,
     RadioSelect,
     Select,
@@ -33,7 +36,6 @@ from fairs.models import (
 )
 from datetime import datetime
 from django.utils.timezone import make_aware
-from django.forms import MultiWidget, DateTimeField, DateField, DateInput, DateTimeInput
 
 
 # nightmare discussion here https://stackoverflow.com/questions/38601/using-django-time-date-widgets-in-custom-form
@@ -194,7 +196,7 @@ class EventCreateForm(ModelForm):
                 'class': 'form-select',
                 'style': 'max-width: 300px;',
             }),
-            'original_event_date': NumberInput(attrs={'type': 'date'}),
+            'original_event_date': DateInput(attrs={'type': 'date'}),
 
         }
 
@@ -218,6 +220,9 @@ class EventDetailForm(ModelForm):
         model = Event
         exclude = ('created_by', 'updated_by', 'date_created', 'date_updated', 'sites', 'fair',)
         # fields = '__all__'
+        labels = {
+            'postponement_event_date': 'Postponed Event Date'
+        }
         widgets = {
             'fair': Select(),
             'event_name': TextInput(attrs={
@@ -235,14 +240,18 @@ class EventDetailForm(ModelForm):
                 'style': 'max-width: 300px;',
             }),
             'original_event_date': DateInput(attrs={
-                'class': "form-control",
+                'type': 'date',
+                'style': 'max-width: 300px;',
                 'readonly': 'readonly'
             }),
             'date_cancelled': MinimalSplitDateTimeMultiWidget(),
             'is_cancelled': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
-            'postponement_event_date': SelectDateWidget(),
+            'postponement_event_date': DateInput(attrs={
+                'type': 'date',
+                'min': datetime.now().date(),
+            }),
             "is_postponed": CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),

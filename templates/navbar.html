@@ -22,9 +22,11 @@
           <a class="nav-link {% if request.path == registration_url %} active {%endif%} " href="{{registration_url}}">Registration</a>
         </li>
         {% if user.is_authenticated %}
-        <li class="nav-item">
-          <a class="nav-link" href="{% url 'registration:stallregistration-detail' %}">Stall Registration</a>
-        </li>
+          {% if 'registration.add_stallregistration' in perms %}
+          <li class="nav-item">
+            <a class="nav-link" href="{% url 'registration:stallregistration-detail' %}">Stall Registration</a>
+          </li>
+          {% endif %}
         <li class="nav-item">
           <a  class="navbar-text fw-bolder" style = 'color:#febd11'>
             Hi {{ user.email }} !
