@@ -246,9 +246,7 @@ def stall_registration_view(request):
             attr_zone = 'site__zone'
             attr_site_size = 'site__site_size'
             if zone and site_size:
-                filter_message = 'Showing filtered data where the zone is ' + str(
-                    zone) + ' and site size is' + str(
-                    site_size)
+                filter_message = 'Showing filtered data where the zone is ' + str( zone) + ' and site size is a ' + str( site_size)
                 filter_dict = {
                     attr_zone: zone,
                     attr_site_size: site_size
@@ -262,7 +260,7 @@ def stall_registration_view(request):
                 filter_dict = {
                     attr_site_size: site_size
                 }
-                filter_message = 'Showing filtered data where the site size is ' + str(site_size) + 'and all ' \
+                filter_message = 'Showing filtered data where the site size is ' + str(site_size) + ' and all ' \
                                                                                                     'zones '
             else:
                 filter_dict = {}
@@ -270,6 +268,8 @@ def stall_registration_view(request):
 
             registrationform.fields['event_site_first'].queryset = available_first_event_sites.filter(**filter_dict)
             registrationform.fields['event_site_second'].queryset = available_second_event_sites.filter(**filter_dict)
+            if request.htmx:
+                template_name = 'stallregistration/stallregistration_partial.html'
             return TemplateResponse(request, template_name, {
                 'filterform': filterform,
                 'registrationform': registrationform,

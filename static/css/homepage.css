@@ -1,5 +1,12 @@
 /*  static/css/homepage.css */
 
+hr:not([size]) {
+  line-height: 0.1em;
+  height: 2px;
+  color: #005daa;  /* Rotary Azure */
+  border-bottom: 1px solid #005daa;  /* Rotary Azure */
+}
+
 .logo{
     margin: 0px 50px;
 }
@@ -127,4 +134,34 @@ main .card {
   font-family: sans-serif;
   font-size: 0.5em;
   text-anchor: middle;
+}
+
+/* For text in lines */
+
+.title-hr {
+  width: 100%;
+  vertical-align: middle;
+  align-items: center;
+  text-align: start;
+  display: flex;
+}
+
+.title-hr>span {
+  padding: 0 0.4em;
+  font-size: 1.2em;
+  /* color: #00246c  Rotary Royal Blue */
+  color: #005daa  /* Rotary Azure */
+}
+
+.title-hr>.hr {
+  border-bottom: 1px solid #005daa;  /* Rotary Azure */
+  line-height: 0.1em;
+  color: #005daa  /* Rotary Azure */
+  margin: 0.34em 0 0.35em;
+  flex: 1 1 auto;
+}
+
+.title-hr>.hr.fix {
+  flex: 0 1 auto;
+  color: #005daa  /* Rotary Azure */
 }

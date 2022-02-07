@@ -224,6 +224,9 @@ class StallRegistrationFilterForm(Form):
         widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target' : '#replacearea',
         })
     )
 
@@ -232,7 +235,13 @@ class StallRegistrationFilterForm(Form):
         empty_label='Show All',
         label='Site Size',
         required=False,
-        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#replacearea',
+        })
     )
 
     class Meta:

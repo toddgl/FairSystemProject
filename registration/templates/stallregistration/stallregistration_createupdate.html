@@ -6,25 +6,6 @@
 <div class="container">
   <h2>Create or Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h2>
   <h6>{{ stallregistration.get_booking_status_display }}</h6>
-  <div class="row">
-    <div class="col-sm-3">
-      <form method="post">
-        {% csrf_token %}
-        {{ filterform.as_p }}
-        <input type="submit" class="btn btn-primary" value="Filter" >
-      </form>
-    </div>
-    <div class="col-sm-9">
-      <div class="badge bg-info text-dark text-wrap" style="width: 50rem;">
-        {{ filter }}
-      </div>
-    </div>
-  </div>
-  <form method="post" id="registration_data">
-    {% csrf_token %}
-    {{ registrationform.as_p }}
-    <input type="submit" class="btn btn-primary" value="Save" >
-    <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel" >
-  </form>
+  {% include 'stallregistration/stallregistration_partial.html' %}
 </div>
 {% endblock %}`
