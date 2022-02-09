@@ -268,7 +268,7 @@ class StallRegistrationCreateUpdateForm(Form):
         empty_label='Please Select',
         label='Second Event Sites',
         required=False,
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;'})
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', 'disabled': 'disabled'})
     )
 
     class Meta:

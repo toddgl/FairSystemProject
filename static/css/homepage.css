@@ -8,7 +8,7 @@ hr:not([size]) {
 }
 
 .logo{
-    margin: 0px 50px;
+    margin: 0px 40px;
 }
 
 .navbar-inverse {`
@@ -34,6 +34,9 @@ ul.errorlist {
 }
 
 /* Dashboard  */
+.h5, h5 {
+    font-size: 1.07rem;
+}
 .side-navbar {
   width: 180px;
   height: 100%;

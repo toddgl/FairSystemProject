@@ -1,20 +1,10 @@
 <!-- templates/sidebar.html -->
 
-<!-- custom js -->
-<script>
-  var menu_btn = document.querySelector("#menu-btn");
-  var sidebar = document.querySelector("#sidebar");
-  var container = document.querySelector(".my-container");
-  menu_btn.addEventListener("click", () => {
-    sidebar.classList.toggle("active-nav");
-    container.classList.toggle("active-cont");
-  });
-</script>
 
 <div class="container-fluid">
     <div class="row flex-nowrap">
         <!-- Side-Nav -->
-        <div class="side-navbar active-nav d-flex justify-content-between flex-wrap flex-column" id="sidebar">
+        <div class="side-navbar active-nav d-flex justify-content-between flex-wrap flex-column hide" id="sidebar">
             <ul class="nav flex-column text-black w-200">
                 <li href="#" class="nav-link">
                     <i class="bi bi-house"></i>

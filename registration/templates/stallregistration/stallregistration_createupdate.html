@@ -4,7 +4,7 @@
 
 {% block body %}
 <div class="container">
-  <h2>Create or Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h2>
+  <h4>Create or Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
   <h6>{{ stallregistration.get_booking_status_display }}</h6>
   {% include 'stallregistration/stallregistration_partial.html' %}
 </div>
