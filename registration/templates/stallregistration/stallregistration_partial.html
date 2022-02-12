@@ -1,29 +1,10 @@
 <!--registration/templates/stallregistration/stallregistration_partial.html -->
 
-<div id="replacearea">
-  <div class="row">
-    <div class="col-sm-3">
-      <div class="title-hr">
-        <span class="hr fix"></span>
-        <span><strong>Site Filters</strong></span>
-        <span class="hr"></span>
-      </div>
-      <form action="." method="post"  hx-post="." hx-target="#replacearea">
+<div id="registration_data">
+    <form method="post" >
         {% csrf_token %}
-        {{ filterform.as_p }}
-      </form>
-    <hr>
-    </div>
-    <div class="col-sm-9">
-      <div class="badge bg-info text-dark text-wrap" style="width: auto;">
-        {{ filter }}
-      </div>
-    </div>
-  </div>
-  <form method="post" id="registration_data">
-    {% csrf_token %}
-    {{ registrationform.as_p }}
-    <input type="submit" class="btn btn-primary" value="Save" >
-    <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel" >
-  </form>
+        {{ registrationform.as_p }}
+        <input type="submit" class="btn btn-primary" value="Save" >
+        <input type="button" class="btn btn-secondary" onclick="location.href='../'" value="Cancel" >
+    </form>
 </div>

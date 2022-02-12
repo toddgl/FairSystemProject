@@ -226,7 +226,7 @@ class StallRegistrationFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target' : '#replacearea',
+            'hx-target': '#registration_data',
         })
     )
 
@@ -240,7 +240,7 @@ class StallRegistrationFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#replacearea',
+            'hx-target': '#registration_data',
         })
     )
 
@@ -261,14 +261,20 @@ class StallRegistrationCreateUpdateForm(Form):
         empty_label='Please Select',
         label='First Event Sites',
         required=False,
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;'})
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-get': 'find-second-eventsite/',
+            'hx-target': '#registration_data',
+    })
     )
     event_site_second = ModelChoiceField(
         queryset=EventSite.site_available_second_event,
         empty_label='Please Select',
         label='Second Event Sites',
         required=False,
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', 'disabled': 'disabled'})
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })  # removed 'disabled':'disabled'
     )
 
     class Meta:

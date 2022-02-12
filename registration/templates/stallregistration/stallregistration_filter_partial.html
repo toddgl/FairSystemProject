@@ -1,0 +1,23 @@
+<!--registration/templates/stallregistration/stallregistration_filter_partial.html -->
+
+<div id="replacearea">
+  <div class="row">
+    <div class="col-sm-3">
+      <div class="title-hr">
+        <span class="hr fix"></span>
+        <span><strong>Site Filters</strong></span>
+        <span class="hr"></span>
+      </div>
+      <form action="." method="post"  hx-post="." hx-target="#replacearea">
+        {% csrf_token %}
+        {{ filterform.as_p }}
+      </form>
+    <hr>
+    </div>
+    <div class="col-sm-9">
+      <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+        {{ filter }}
+      </div>
+    </div>
+  </div>
+</div>

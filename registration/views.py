@@ -4,7 +4,7 @@ from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.template.response import TemplateResponse
 from django.shortcuts import render
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse
 from django.urls import reverse_lazy
 from django.views.generic import (
     View,
@@ -246,7 +246,8 @@ def stall_registration_view(request):
             attr_zone = 'site__zone'
             attr_site_size = 'site__site_size'
             if zone and site_size:
-                filter_message = 'Showing filtered data where the zone is ' + str( zone) + ' and site size is a ' + str( site_size)
+                filter_message = 'Showing filtered data where the zone is ' + str(zone) + ' and site size is a ' + str(
+                    site_size)
                 filter_dict = {
                     attr_zone: zone,
                     attr_site_size: site_size
@@ -288,3 +289,21 @@ def stall_registration_view(request):
             'registrationform': registrationform,
             'filter': filter_message,
         })
+
+
+def find_second_eventsite(request):
+    """
+    Using the selection of the first event site find the matching second event site for the same site_name
+    """
+    template_name = 'stallregistration/stallregistration_partial.html'
+    registrationform = StallRegistrationCreateUpdateForm()
+    eventsite_first_id = request.GET['event_site_first']
+    eventsite = EventSite.objects.get(id=eventsite_first_id)
+    site_id = eventsite.site_id
+    eventsite_second_qs = EventSite.site_available.filter(site__id=site_id, event__event_sequence=2, event__fair__is_activated=True)
+    # print(eventsite_first_id, site_id, eventsite_second_qs)
+    registrationform.fields['event_site_first'].initial = eventsite_first_id
+    registrationform.fields['event_site_second'].queryset = eventsite_second_qs
+    return TemplateResponse(request, template_name, {
+        'registrationform': registrationform,
+    })

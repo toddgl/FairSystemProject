@@ -359,6 +359,7 @@ class EventSite(models.Model):
     PENDING = 3
     BOOKED = 4
     UNAVAILABLE = 5
+    ARCHIVED = 6
 
     SITE_STATUS_CHOICE = (
         (AVAILABLE, _('Available to be booked')),
@@ -366,6 +367,7 @@ class EventSite(models.Model):
         (PENDING, _('Pending finalisation of the booking')),
         (BOOKED, _('Booked')),
         (UNAVAILABLE, _('Not available for this event')),
+        (ARCHIVED, _('No longer used - was from a previous fair'))
     )
 
     event = models.ForeignKey(

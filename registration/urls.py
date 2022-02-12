@@ -13,6 +13,7 @@ from registration.views import (
     StallCategoryCreateView,
     StallCategoryDetailUpdateView,
     stall_registration_view,
+    find_second_eventsite,
 )
 
 app_name = 'registration'
@@ -34,3 +35,9 @@ urlpatterns = [
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
     path('stallregistration/', stall_registration_view, name='stallregistration-detail'),
 ]
+
+htmx_views = [
+    path('stallregistration/find-second-eventsite/', find_second_eventsite, name='find-second-eventsite'),
+]
+
+urlpatterns += htmx_views
