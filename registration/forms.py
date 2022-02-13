@@ -253,6 +253,18 @@ class StallRegistrationFilterForm(Form):
 
 class StallRegistrationCreateUpdateForm(Form):
     """
+    Form tha provides the filtering for the  event site selections for stall registration
+    """
+
+    class Meta:
+        fields = [
+            'zone',
+            'site_size',
+        ]
+
+
+class StallRegistrationCreateUpdateForm(ModelForm):
+    """
     Combined form for creating and updating Stall Registrations
     """
 
@@ -278,6 +290,7 @@ class StallRegistrationCreateUpdateForm(Form):
     )
 
     class Meta:
+        model = StallRegistration
         fields = [
             'event_site_first',
             'event_site_second',

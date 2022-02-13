@@ -301,9 +301,10 @@ def find_second_eventsite(request):
     eventsite = EventSite.objects.get(id=eventsite_first_id)
     site_id = eventsite.site_id
     eventsite_second_qs = EventSite.site_available.filter(site__id=site_id, event__event_sequence=2, event__fair__is_activated=True)
-    # print(eventsite_first_id, site_id, eventsite_second_qs)
+    eventsite_second_id = eventsite_second_qs.values('id')[0].get('id')
     registrationform.fields['event_site_first'].initial = eventsite_first_id
     registrationform.fields['event_site_second'].queryset = eventsite_second_qs
+    registrationform.fields['event_site_second'].initial = eventsite_second_id
     return TemplateResponse(request, template_name, {
         'registrationform': registrationform,
     })
