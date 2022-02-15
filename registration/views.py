@@ -219,6 +219,8 @@ class StallCategoryDetailUpdateView(PermissionRequiredMixin, UpdateView):
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
+filter_dict = {}
+filter_message = ""
 
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
@@ -228,6 +230,7 @@ def stall_registration_view(request):
     Populate the stall registration forms in particular provide a filter view of available sites based on
     site size,
     """
+    global filter_message
     filter_message = 'Showing unfiltered data - of all available sites for the current fair'
     filterform = StallRegistrationFilterForm()
     registrationform = StallRegistrationCreateUpdateForm()
@@ -297,14 +300,18 @@ def find_second_eventsite(request):
     """
     template_name = 'stallregistration/stallregistration_partial.html'
     registrationform = StallRegistrationCreateUpdateForm()
+    available_first_event_sites = EventSite.site_available_first_event
+    available_second_event_sites = EventSite.site_available_second_event
     eventsite_first_id = request.GET['event_site_first']
     eventsite = EventSite.objects.get(id=eventsite_first_id)
     site_id = eventsite.site_id
-    eventsite_second_qs = EventSite.site_available.filter(site__id=site_id, event__event_sequence=2, event__fair__is_activated=True)
+    eventsite_second_qs = available_second_event_sites.filter(site__id=site_id)
     eventsite_second_id = eventsite_second_qs.values('id')[0].get('id')
+    registrationform.fields['event_site_first'].queryset = available_first_event_sites.filter(**filter_dict)
     registrationform.fields['event_site_first'].initial = eventsite_first_id
     registrationform.fields['event_site_second'].queryset = eventsite_second_qs
     registrationform.fields['event_site_second'].initial = eventsite_second_id
     return TemplateResponse(request, template_name, {
         'registrationform': registrationform,
+        'filter': filter_message,
     })

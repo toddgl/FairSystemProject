@@ -1,4 +1,8 @@
+/accounts/__pycache__/
 /config/__pycache__/
+/fairs/__pycache__/
+/pages/__pycache__/
+/registration/__pycache__/
 .kdev4
 /fairs/migrations/
 /accounts/migrations/

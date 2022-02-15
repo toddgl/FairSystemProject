@@ -18,11 +18,11 @@
             {% csrf_token %}
             {{ form.as_p }}
             <input type="submit" class="btn btn-primary" value="Filter" >
-            <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
           </form>
         </div>
         <div class="col-sm-9">
-          <div class="badge bg-info text-dark text-wrap" style="width: 40rem;">
+          <div class="badge bg-info text-dark text-wrap" style="width: auto;">
             {{ filter }}
           </div>
         </div>

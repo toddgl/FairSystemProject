@@ -1,6 +1,10 @@
 <!--registration/templates/stallregistration/stallregistration_partial.html -->
 
 <div id="registration_data">
+    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+        {{ filter }}
+    </div>
+    <hr>
     <form method="post" >
         {% csrf_token %}
         {{ registrationform.as_p }}

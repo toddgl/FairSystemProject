@@ -547,44 +547,44 @@ def site_dashboard_view(request):
             attr_zone = 'site__zone'
             attr_site_size = 'site__site_size'
             if event and zone and site_size:
-                filter_message = 'Showing filtered data where the event is ' + str(event) + 'zone is, ' + str(zone) + ' and site size is ' + str(site_size)
+                filter_message = 'Showing filtered data where the event is ' + str(event) + 'zone is, ' + str(zone) + ' and site size is a ' + str(site_size)
                 filter_dict = {
                     attr_event: event,
                     attr_zone: zone,
                     attr_site_size: site_size
                 }
-            if event and zone:
-                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and zone is' + str(zone)
+            elif event and zone and not site_size:
+                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and zone is ' + str(zone)
                 filter_dict = {
                     attr_event: event,
                     attr_zone: zone
                 }
-            if event and site_size:
-                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and site size is' + str(
+            elif event and site_size and not zone:
+                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and site size is a ' + str(
                     site_size)
                 filter_dict = {
                     attr_event: event,
                     attr_site_size: site_size
                 }
-            if zone and site_size:
+            elif zone and site_size and not event:
                 filter_message = 'Showing filtered data where the zone is ' + str(
-                    zone) + ' and site size is' + str(
+                    zone) + ' and site size is a ' + str(
                     site_size)
                 filter_dict = {
                     attr_zone: zone,
                     attr_site_size: site_size
                 }
-            elif event:
+            elif event and not zone and not site_size:
                 filter_message = 'Showing filtered data where the event is ' + str(event) + ' and  all zones'
                 filter_dict = {
                     attr_event: event,
                 }
-            elif zone:
+            elif zone and not event and not site_size:
                 filter_dict = {
                     attr_zone: zone
                 }
                 filter_message = 'Showing filtered data where the zone is ' + str(zone) + ' and all future events'
-            elif site_size:
+            elif site_size and not event and not site_size:
                 filter_dict = {
                     attr_site_size: site_size
                 }

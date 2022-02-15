@@ -319,13 +319,13 @@ class SiteAvailableManager(models.Manager):
 class SiteAvailableFirstEventManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__event_sequence=1,
-                                             event__fair__fair_year__in=[current_year, next_year])
+                                             event__fair__fair_year__in=[current_year, next_year], event__fair__is_activated=True)
 
 
 class SiteAvailableSecondEventManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__event_sequence=2,
-                                             event__fair__fair_year__in=[current_year, next_year])
+                                             event__fair__fair_year__in=[current_year, next_year], event__fair__is_activated=True)
 
 
 class SiteAllocatedManager(models.Manager):
