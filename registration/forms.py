@@ -28,6 +28,7 @@ from registration.models import (
     StallRegistration,
 )
 from fairs.models import (
+    EventPower,
     EventSite,
     InventoryItem,
     Zone
@@ -279,7 +280,7 @@ class StallRegistrationCreateUpdateForm(ModelForm):
             'hx-trigger': 'change',
             'hx-get': 'find-second-eventsite/',
             'hx-target': '#registration_data',
-    })
+            })
     )
     event_site_second = ModelChoiceField(
         queryset=EventSite.site_available_second_event,
@@ -288,10 +289,93 @@ class StallRegistrationCreateUpdateForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })  # removed 'disabled':'disabled'
     )
+    stall_category = ModelChoiceField(
+        queryset=StallCategory.objects.filter(is_active=True),
+        empty_label='Please Select',
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+    )
+    event_power_first = ModelChoiceField(
+        queryset=EventPower.objects.all(),
+        empty_label='Please Select',
+        label='First Event Power Box',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+            })
+    )
+    event_power_second = ModelChoiceField(
+        queryset=EventPower.objects.all(),
+        empty_label='Please Select',
+        label='Second Event Power Box',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
 
     class Meta:
         model = StallRegistration
         fields = [
             'event_site_first',
             'event_site_second',
+            'stall_manager_name',
+            'stall_category',
+            'stall_description',
+            'products_on_site',
+            'trestle_required',
+            'trestle_quantity',
+            'stall_shelter',
+            'power_required',
+            'event_power_first',
+            'event_power_second',
+            'total_charge',
+            'selling_food'
         ]
+        labels = {
+            'stall_manager_name': 'Stall manager\'s name',
+            'selling_food': 'Are you selling food?',
+        }
+        widgets = {
+            'stall_manager_name': TextInput(attrs={
+                'placeholder': 'First and last name',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'stall_description': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Outline the purpose of the stall'
+            }),
+            'products_on_site': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Outline of the items being sold at the stall'
+            }),
+            'trestle_required':  CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'trestle_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '4',
+                'step': '1',
+            }),
+            'stall_shelter': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe any shelter to be used in conjunction with the stall'
+            }),
+            'power_required': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'total_charge': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;',
+                'readonly': 'readonly'
+            }),
+            'selling_food': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+        }

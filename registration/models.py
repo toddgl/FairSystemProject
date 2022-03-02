@@ -186,10 +186,18 @@ class StallRegistration(models.Model):
     trestle_quantity = models.IntegerField(default=0)
     stall_shelter = models.TextField()
     power_required = models.BooleanField(default=False)
-    event_power = models.ForeignKey(
+    event_power_first = models.ForeignKey(
         'fairs.EventPower',
-        verbose_name='eventpower',
-        related_name='stall_registrations',
+        verbose_name='eventpowerfirst',
+        related_name='event_power_first',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    event_power_second = models.ForeignKey(
+        'fairs.EventPower',
+        verbose_name='eventpowersecond',
+        related_name='event_power_second',
         on_delete=models.SET_NULL,
         blank=True,
         null=True

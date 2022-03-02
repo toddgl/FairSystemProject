@@ -280,12 +280,6 @@ def stall_registration_view(request):
                 'filter': filter_message,
             })
 
-        else:
-            return TemplateResponse(request, template_name, {
-                'filterform': filterform,
-                'registrationform': registrationform,
-                'filter': filter_message,
-            })
     else:
         return TemplateResponse(request, template_name, {
             'filterform': filterform,

@@ -337,7 +337,7 @@ class SiteDetailForm(ModelForm):
         widgets = {
             'site_name': TextInput(attrs={
                 'placeholder': 'Site Name',
-                'class': "form-select`",
+                'class': "form-control",
                 'style': 'max-width: 300px;',
             })
         }

@@ -1,6 +1,7 @@
 <!--registration/templates/stallregistration/stallregistration_createupdate.html -->
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block body %}
 <div class="container">
@@ -9,4 +10,6 @@
   {% include 'stallregistration/stallregistration_filter_partial.html' %}
   {% include 'stallregistration/stallregistration_partial.html' %}
 </div>
-{% endblock %}`
+<script src="{% static 'js/dialog.js' %}"></script>
+<script src="{% static 'js/hide.js' %}"></script>
+{% endblock %}
