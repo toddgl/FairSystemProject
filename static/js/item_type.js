@@ -1,3 +1,6 @@
+/*  static/js/item_type.js */
+
+
     $(document).ready(function() {
       $('#id_item_type').on('change',function(){
         console.log($(this).val());
