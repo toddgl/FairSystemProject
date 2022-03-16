@@ -26,6 +26,8 @@ from registration.models import (
     FoodSaleType,
     StallCategory,
     StallRegistration,
+    FoodRegistration,
+    FoodPrepEquipReq,
 )
 from fairs.models import (
     EventPower,
@@ -378,4 +380,50 @@ class StallRegistrationCreateUpdateForm(ModelForm):
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
+        }
+
+
+class FoodRegistrationForm(ModelForm):
+    """
+    Form for capturing details need for a food stall registration
+    """
+
+    class Meta:
+        model = FoodRegistration
+        fields = [
+            'food_display_method',
+            'has_food_certificate',
+        ]
+
+
+class FoodPrepEquipReqForm(ModelForm):
+    """
+    Form for populating the junction table between food registration and food preparation equipment
+    """
+    food_prep_equipment = ModelChoiceField(
+        queryset=FoodPrepEquipment.objects.all(),
+        empty_label='Please Select',
+        label='Type of Food Preparation Equipment',
+        required=True,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    class Meta:
+        model = FoodPrepEquipReq
+        exclude = ['food_registration']
+        fields = [
+            'food_registration',
+            'food_prep_equipment',
+            'how_powered',
+        ]
+        widgets = {
+            'how_powered': RadioSelect(attrs={
+                'style': 'display: inline-block',
+            })
+        }
+        error_messages = {
+            'text': {'required': "You can't have an empty list item"}
         }

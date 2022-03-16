@@ -181,7 +181,7 @@ class StallRegistration(models.Model):
         null=True
     )
     stall_description = models.TextField()
-    products_on_site =models.TextField()
+    products_on_site = models.TextField()
     trestle_required = models.BooleanField(default=False)
     trestle_quantity = models.IntegerField(default=0)
     stall_shelter = models.TextField()
@@ -284,6 +284,13 @@ class FoodPrepEquipReq(models.Model):
     Description a junction table joining FoodRegistration with FoodPrepEquipment used top capture whether the equipment
     is gas or electrical powered
     """
+    ELECTRICAL = 'e'
+    GAS = 'g'
+
+    POWERED_CHOICE = [
+        (ELECTRICAL, _('Electric Powered')),
+        (GAS, _('Gas Powered'))
+    ]
     food_registration = models.ForeignKey(
         FoodRegistration,
         on_delete=models.CASCADE,
@@ -296,11 +303,8 @@ class FoodPrepEquipReq(models.Model):
         verbose_name='FoodPrepEquipment',
         related_name='food_prep_equip',
     )
-    electrical_powered = models.BooleanField(default=False)
-    gas_powered = models.BooleanField(default=False)
-
-    def __int__(self):
-        if self.gas_powered:
-            return str(self.food_prep_equipment) + " is gas Powered"
-        else:
-            return str(self.food_prep_equipment) + " is electrical"
+    how_powered = models.CharField(
+        choices=POWERED_CHOICE,
+        max_length=11,
+        default=ELECTRICAL,
+    )

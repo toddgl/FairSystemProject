@@ -1,0 +1,19 @@
+<!--registration/templates/stallregistration/equipmentregistration/equipment_list.html -->
+
+{% for equipment in equipments %}
+<tr id="equipment-{{ equipment.pk }}" class="equipment-row">
+  <td>{{ equipment.food_prep_equipment }}</td>
+  <td>
+    {% if equipment.electical_powered %}
+              Electricity
+            {% elif equipment.gas_powered %}
+              Gas
+            {% else %}
+              Unknown
+            {% endif %}
+  </td>
+  <td>
+    <button class="btn btn-primary btn-sm" hx-get="{% url 'registration:edit-equipment' pk=equipment.pk %}" hx-target="#dialog">Edit</button>
+  </td>
+</tr>
+{% endfor %}

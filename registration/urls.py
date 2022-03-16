@@ -14,6 +14,12 @@ from registration.views import (
     StallCategoryDetailUpdateView,
     stall_registration_view,
     find_second_eventsite,
+    food_registration,
+    display_food_equipment,
+    equipment_list,
+    add_equipment,
+    remove_equipment,
+    edit_equipment,
 )
 
 app_name = 'registration'
@@ -34,6 +40,12 @@ urlpatterns = [
     path('stallcategory/,<int:pk>', StallCategoryDetailUpdateView.as_view(), name='stallcategory-detail'),
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
     path('stallregistration/', stall_registration_view, name='stallregistration-detail'),
+    path('foodregistration',food_registration, name='food_registration'),
+    path('foodequipment/', display_food_equipment, name='food-equipment'),
+    path('foodequipment/list', equipment_list, name='equipment-list'),
+    path('foodequipment/add', add_equipment, name='add-equipment'),
+    path('foodequipment/<int:pk>/remove', remove_equipment, name='remove_equipment'),
+    path('foodequipment/<int:pk>/edit', edit_equipment, name='edit_equipment'),
 ]
 
 htmx_views = [

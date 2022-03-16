@@ -1,10 +1,14 @@
 # registration/views.py
 
+import json
+
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.dispatch.dispatcher import logger
 from django.template.response import TemplateResponse
-from django.shortcuts import render
-from django.http import HttpResponseRedirect, HttpResponse
+from django.shortcuts import render, get_object_or_404
+from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
 from django.views.generic import (
     View,
@@ -22,6 +26,8 @@ from registration.models import (
     FoodSaleType,
     StallCategory,
     StallRegistration,
+    FoodRegistration,
+    FoodPrepEquipReq,
 )
 
 from fairs.models import (
@@ -37,6 +43,8 @@ from .forms import (
     StallCategoryUpdateForm,
     StallRegistrationFilterForm,
     StallRegistrationCreateUpdateForm,
+    FoodRegistrationForm,
+    FoodPrepEquipReqForm,
 )
 
 
@@ -219,8 +227,10 @@ class StallCategoryDetailUpdateView(PermissionRequiredMixin, UpdateView):
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
 
+
 filter_dict = {}
 filter_message = ""
+
 
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
@@ -309,3 +319,94 @@ def find_second_eventsite(request):
         'registrationform': registrationform,
         'filter': filter_message,
     })
+
+def food_registration(request):
+    if request.method == "POST":
+        form = FoodRegistrationForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(status=204, headers={'HX-Trigger': 'foodRegistrationChanged'})
+    else:
+        form = FoodRegistrationForm()
+    return render(request, 'stallregistration/food_registration.html', {
+        'form': form,
+    })
+
+
+@login_required
+@permission_required('registration.add_foodprepequipreq', raise_exception=True)
+@permission_required('registration.change_foodprepequipreq', raise_exception=True)
+@permission_required('registration.delete_foodprepequipreq', raise_exception=True)
+def display_food_equipment(request):
+    return render(request, 'equipmentregistration/equipment_registration.html')
+
+
+def equipment_list(request):
+    return render(request, 'equipmentregistration/equipment_list.html', {
+        'foodprepequipreq': FoodPrepEquipReq.objects.all()
+    })
+
+
+def add_equipment(request):
+    if request.method == "POST":
+        form = FoodPrepEquipReqForm(request.POST)
+        if form.is_valid():
+            equipment =form.save(commit=False)
+            equipment.food_registration = FoodRegistration.objects.get(id=id)
+            equipment = form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "equipmentListChanged": None,
+                        "showMessage": f"{equipment.food_prep_equipment} added."
+                    })
+                })
+        else:
+            print(form)
+            print("Invalid Form")
+            print(form.errors)
+            return render(request, 'equipmentregistration/equipment_form.html',{'form':form})
+    else:
+        form =FoodPrepEquipReqForm()
+    return render(request, 'equipmentregistration/equipment_form.html', {
+        'form': form,
+    })
+
+
+def edit_equipment(request, pk):
+    equipment = get_object_or_404(FoodPrepEquipReq, pk=pk)
+    if request.method == "POST":
+        form = FoodPrepEquipReqForm(request.POST, instance=equipment)
+        if form.is_valid():
+            form.save()
+            return HttpResponse(
+                status=204,
+                headers={
+                    'HX-Trigger': json.dumps({
+                        "equipmentListChanged": None,
+                        "showMessage": f"{equipment.food_prep_equipment} updated."
+                    })
+                }
+            )
+    else:
+        form = FoodPrepEquipReqForm(instance=equipment)
+    return render(request, 'equipmentregistration/equipment_form.html', {
+        'form': form,
+        'equipment': equipment,
+    })
+
+
+@ require_POST
+def remove_equipment(request, pk):
+    equipment = get_object_or_404(FoodPrepEquipReq, pk=pk)
+    equipment.delete()
+    return HttpResponse(
+        status=204,
+        headers={
+            'HX-Trigger': json.dumps({
+                "equipmenteListChanged": None,
+                "showMessage": f"{equipment.food_prep_equipment} deleted."
+            })
+        }
+    )

@@ -9,7 +9,15 @@
   <h6>{{ stallregistration.get_booking_status_display }}</h6>
   {% include 'stallregistration/stallregistration_filter_partial.html' %}
   {% include 'stallregistration/stallregistration_partial.html' %}
+  <button class="btn btn-primary" onclick="location.href='{% url 'registration:food-equipment' %}'">Food Equipment </button>
+
 </div>
+
+<div id="modal" class="modal fade">
+  <div id="dialog" class="modal-dialog" hx-target="this"></div>
+</div>
+
 <script src="{% static 'js/dialog.js' %}"></script>
 <script src="{% static 'js/hide.js' %}"></script>
+
 {% endblock %}

@@ -4,14 +4,10 @@ import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
-from django.core.validators import RegexValidator
 from django.dispatch import receiver
 from django.db.models.signals import post_save
 
 # Create your models here.
-
-phone_regex = RegexValidator(
-    regex=r'/^(\((03|04|06|07|09)\)\d{7})|(\((021|022|025|027|028|029)\)\d{6,8})|((0508|0800|0900)\d{5,8})$/')
 
 
 class CustomUser(AbstractUser):
@@ -39,8 +35,7 @@ class CustomUser(AbstractUser):
                            verbose_name='Public identifier')
     role = models.PositiveSmallIntegerField(
         choices=ROLE_CHOICES, blank=True, null=True, default=3)
-    phone = models.CharField(
-        validators=[phone_regex], max_length=13, unique=True, default='(027)1234567')
+    phone = models.CharField(max_length=13, unique=True)
     created_date = models.DateTimeField(default=timezone.now)
     modified_date = models.DateTimeField(default=timezone.now)
 
@@ -56,17 +51,22 @@ class Profile(models.Model):
     Model linked to Customuser which is called and created when a new user is created
     """
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    address1 = models.CharField(max_length=50, blank=True, null=True)
-    address2 = models.CharField(max_length=50, blank=True, null=True)
-    town = models.CharField(max_length=50, blank=True, null=True)
-    postcode = models.CharField(max_length=10, blank=True, null=True)
-    phone2 = models.CharField(validators=[phone_regex], max_length=13, blank=True, null=True)
-    org_name = models.CharField(max_length=50, blank=True, null=True)
+    address1 = models.CharField(max_length=50, blank=True)
+    address2 = models.CharField(max_length=50, blank=True)
+    town = models.CharField(max_length=50, blank=True)
+    postcode = models.CharField(max_length=10, blank=True)
+    phone2 = models.CharField(max_length=13, blank=True)
+    org_name = models.CharField(max_length=50, blank=True)
+
+    """
+    Hooking the create_user_profile and save_user_profile methods to the User model, whenever a save event occurs.
+    This kind of signal is called post_save.
+    """
 
     @receiver(post_save, sender=CustomUser)
     def create_user_profile(sender, instance, created, **kwargs):
         if created:
-            Profile.objects.create(customuser=instance)
+            Profile.objects.create(user=instance)
 
     @receiver(post_save, sender=CustomUser)
     def save_user_profile(sender, instance, **kwargs):

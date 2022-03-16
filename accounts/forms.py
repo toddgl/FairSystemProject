@@ -4,6 +4,7 @@ from django.contrib.auth.forms import UserCreationForm, UserChangeForm
 from allauth.account.forms import SignupForm
 from django.forms import TextInput, EmailInput, ModelForm
 from.models import CustomUser, Profile
+from django.core.validators import RegexValidator
 
 
 class CustomSignupForm(SignupForm):
@@ -27,11 +28,13 @@ class CustomSignupForm(SignupForm):
         )
 
     phone = forms.CharField(
+        max_length=13,
+        validators=[RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$', message="Enter a valid NewZealand Phone number")],
         label="Phone Number",
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': 'Phone Number'
+            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
         }),
         )
 
@@ -51,11 +54,13 @@ class CustomSignupForm(SignupForm):
 class CustomUserCreationForm(UserCreationForm):
 
     phone = forms.CharField(
+        max_length=13,
+        validators=[RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$', message="Enter a valid NewZealand Phone number")],
         label="Phone Number",
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': 'Phone Number'
+            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
         }),
         )
 
@@ -90,11 +95,13 @@ class CustomUserCreationForm(UserCreationForm):
 class CustomUserChangeForm(ModelForm):
 
     phone = forms.CharField(
+        max_length=13,
+        validators=[RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$', message="Enter a valid NewZealand Phone number")],
         label="Phone Number",
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': 'Phone Number'
+            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
         }),
         )
 
@@ -123,16 +130,21 @@ class CustomUserChangeForm(ModelForm):
                 'style': 'max-width: 300px;',
                 'placeholder': 'Surname'
             }),
-            'phone': TextInput(attrs={
-                'class': "form-control",
-                'style': 'max-width: 300px;',
-                'placeholder': 'Contact Phone Number'
-            }),
         }
 
 
 class ProfileChangeForm(ModelForm):
 
+    phone2 = forms.CharField(
+        max_length=13,
+        validators=[RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$', message="Enter a valid NewZealand Phone number")],
+        label="Alternative Phone Number",
+        widget=forms.TextInput(attrs={
+            'class': "form-control",
+            'style': 'max-width: 300px;',
+            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
+        }),
+    )
     class Meta:
         model = Profile
         fields = ('address1', 'address2', 'town', 'postcode', 'phone2', 'org_name',)
@@ -156,11 +168,6 @@ class ProfileChangeForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Postcode'
-            }),
-            'phone2': TextInput(attrs={
-                'class': "form-control",
-                'style': 'max-width: 300px;',
-                'placeholder': 'Alternative Phone Number'
             }),
             'org_name': TextInput(attrs={
                 'class': "form-control",
