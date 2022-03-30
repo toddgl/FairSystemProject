@@ -1,0 +1,23 @@
+<!--registration/templates/stallregistration/stallregistration_update.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container">
+  <h4>Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
+  <h6>{{ stallregistration.get_booking_status_display }}</h6>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Update" >
+    <a href="{{ view.get_success_url }}" class="btn btn-secondary">Cancel</a>
+  </form>
+  {% if stallregistration.selling_food %}
+    <a href= "{{ registration.food_registration }}" class="btn btn-outline-primary btn-sm" role="button">Edit Food Registration</a>
+  {% endif %}
+</div>
+
+<script src="{% static 'js/hide.js' %}"></script>
+
+{% endblock %}

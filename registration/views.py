@@ -1,11 +1,13 @@
 # registration/views.py
 
 import json
+import datetime
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.dispatch.dispatcher import logger
 from django.template.response import TemplateResponse
+from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.views.decorators.http import require_POST
@@ -32,6 +34,7 @@ from registration.models import (
 
 from fairs.models import (
     EventSite,
+    Event,
 )
 
 from .forms import (
@@ -42,7 +45,8 @@ from .forms import (
     StallCategoryCreationForm,
     StallCategoryUpdateForm,
     StallRegistrationFilterForm,
-    StallRegistrationCreateUpdateForm,
+    StallRegistrationCreateForm,
+    StallRegistrationUpdateForm,
     FoodRegistrationForm,
     FoodPrepEquipReqForm,
 )
@@ -228,6 +232,22 @@ class StallCategoryDetailUpdateView(PermissionRequiredMixin, UpdateView):
         return HttpResponseRedirect(self.get_success_url())
 
 
+@login_required
+@permission_required('registration.view_stallregistration', raise_exception=True)
+def myfair_dashboard_view(request):
+    """
+    Stallholders Myfair dashboard
+    """
+
+    template = "myfair/myfair_dashboard.html"
+    current_fairs = StallRegistration.objects.filter(Q(event_site_first__event__original_event_date__gt=datetime.datetime.now()) | Q(event_site_first__event__postponement_event_date__gt=datetime.datetime.now()))
+    myfair_list = current_fairs.filter(stallholder=request.user)
+
+    return TemplateResponse(request, template, {
+        'registrations': myfair_list
+    })
+
+
 filter_dict = {}
 filter_message = ""
 
@@ -235,7 +255,7 @@ filter_message = ""
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
 @permission_required('registration.change_stallregistration', raise_exception=True)
-def stall_registration_view(request):
+def stall_registration_create(request):
     """
     Populate the stall registration forms in particular provide a filter view of available sites based on
     site size,
@@ -243,14 +263,14 @@ def stall_registration_view(request):
     global filter_message
     filter_message = 'Showing unfiltered data - of all available sites for the current fair'
     filterform = StallRegistrationFilterForm()
-    registrationform = StallRegistrationCreateUpdateForm()
+    registrationform = StallRegistrationCreateForm()
     available_first_event_sites = EventSite.site_available_first_event
     available_second_event_sites = EventSite.site_available_second_event
-    template_name = 'stallregistration/stallregistration_createupdate.html'
+    template_name = 'stallregistration/stallregistration_create.html'
 
     if request.POST:
         filterform = StallRegistrationFilterForm(request.POST)
-        registrationform = StallRegistrationCreateUpdateForm(request.POST)
+        registrationform = StallRegistrationCreateForm(request.POST)
         registrationform.fields['event_site_first'].queryset = available_first_event_sites
         registrationform.fields['event_site_second'].queryset = available_second_event_sites
         if filterform.is_valid():
@@ -303,7 +323,7 @@ def find_second_eventsite(request):
     Using the selection of the first event site find the matching second event site for the same site_name
     """
     template_name = 'stallregistration/stallregistration_partial.html'
-    registrationform = StallRegistrationCreateUpdateForm()
+    registrationform = StallRegistrationCreateForm()
     available_first_event_sites = EventSite.site_available_first_event
     available_second_event_sites = EventSite.site_available_second_event
     eventsite_first_id = request.GET['event_site_first']
@@ -319,6 +339,7 @@ def find_second_eventsite(request):
         'registrationform': registrationform,
         'filter': filter_message,
     })
+
 
 def food_registration(request):
     if request.method == "POST":
@@ -351,7 +372,7 @@ def add_equipment(request):
     if request.method == "POST":
         form = FoodPrepEquipReqForm(request.POST)
         if form.is_valid():
-            equipment =form.save(commit=False)
+            equipment = form.save(commit=False)
             equipment.food_registration = FoodRegistration.objects.get(id=id)
             equipment = form.save()
             return HttpResponse(
@@ -366,9 +387,9 @@ def add_equipment(request):
             print(form)
             print("Invalid Form")
             print(form.errors)
-            return render(request, 'equipmentregistration/equipment_form.html',{'form':form})
+            return render(request, 'equipmentregistration/equipment_form.html', {'form': form})
     else:
-        form =FoodPrepEquipReqForm()
+        form = FoodPrepEquipReqForm()
     return render(request, 'equipmentregistration/equipment_form.html', {
         'form': form,
     })
@@ -405,8 +426,26 @@ def remove_equipment(request, pk):
         status=204,
         headers={
             'HX-Trigger': json.dumps({
-                "equipmenteListChanged": None,
+                "equipmentListChanged": None,
                 "showMessage": f"{equipment.food_prep_equipment} deleted."
             })
         }
     )
+
+
+class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a Stall Registration
+    """
+    permission_required = 'registration.change_stallregistration'
+    model = StallRegistration
+    form_class = StallRegistrationUpdateForm
+    template_name = 'registration/stallregistration_detail.html'
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
+
+    def get_context_data(self, **kwargs):
+        context = super(StallRegistrationUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['stallregistration'] = object
+        return context

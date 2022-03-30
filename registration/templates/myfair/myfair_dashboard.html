@@ -1,0 +1,39 @@
+<!-- templates/myfair_dashboard.html -->
+
+{% extends 'base.html' %}
+{% block head %}
+<!-- Custom css -->
+{% load static %}
+<link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
+  <title>MyFair</title>
+{% endblock %}
+{% block body %}
+<div class="container">
+  <div class="px-5 my-5 text-center">
+    <h1>MyFair Dashboard for  {{ user.first_name }}</h1>
+  </div>
+  <table class="table">
+    <thead>
+      <tr>
+        <th>First Event Site</th>
+        <th>Second Event Site</th>
+        <th>Is a Food Stall</th>
+        <th></th>
+      </tr>
+    </thead>
+    {% for registration in registrations %}
+      <tr id="registration-{{ registration.pk }}" class="registration-row">
+        <td>{{ registration.event_site_first }}</td>
+        <td>{{ registration.event_site_second }}</td>
+        <td>{{ registration.selling_food.value|yesno:"Yes,No" }}</td>
+        <td>
+          <button class="btn btn-primary btn-sm" href="{% url 'registration:stallregistration-detail' pk=registration.pk %}">Edit</button>
+        </td>
+      </tr>
+    </table>
+    {% empty %}
+     <div class="alert alert-info" role="alert">You have no current fair registrations.</div>
+    {% endfor %}
+  <button class="btn btn-primary btn-sm" onclick="location.href='{% url 'registration:stallregistration-create' %}'">Register for a fair stall</button>
+</div>
+{% endblock %}

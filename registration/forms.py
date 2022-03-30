@@ -16,6 +16,7 @@ from django.forms import (
     FileInput,
     CheckboxInput,
     NumberInput,
+    DateInput,
     RadioSelect,
     Select,
     SelectMultiple,
@@ -266,9 +267,9 @@ class StallRegistrationCreateUpdateForm(Form):
         ]
 
 
-class StallRegistrationCreateUpdateForm(ModelForm):
+class StallRegistrationCreateForm(ModelForm):
     """
-    Combined form for creating and updating Stall Registrations
+    Form for creating Stall Registrations
     """
 
     event_site_first = ModelChoiceField(
@@ -383,17 +384,194 @@ class StallRegistrationCreateUpdateForm(ModelForm):
         }
 
 
+class StallRegistrationUpdateForm(ModelForm):
+    """
+    Form for updating Stall Registrations
+    """
+
+    stall_category = ModelChoiceField(
+        queryset=StallCategory.objects.filter(is_active=True),
+        empty_label='Please Select',
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+    )
+    event_power_first = ModelChoiceField(
+        queryset=EventPower.objects.all(),
+        empty_label='Please Select',
+        label='First Event Power Box',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+    event_power_second = ModelChoiceField(
+        queryset=EventPower.objects.all(),
+        empty_label='Please Select',
+        label='Second Event Power Box',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    class Meta:
+        model = StallRegistration
+        fields = [
+            'event_site_first',
+            'event_site_second',
+            'stall_manager_name',
+            'stall_category',
+            'stall_description',
+            'products_on_site',
+            'trestle_required',
+            'trestle_quantity',
+            'stall_shelter',
+            'power_required',
+            'event_power_first',
+            'event_power_second',
+            'total_charge',
+            'selling_food'
+        ]
+        labels = {
+            'event_site_first': 'First Event Site',
+            'event_site_second': 'Second Event Site',
+            'stall_manager_name': 'Stall manager\'s name',
+            'selling_food': 'Are you selling food?',
+        }
+        widgets = {
+            'event_site_first': Select(attrs={
+                'disabled': True
+            }),
+            'event_site_second': Select(attrs={
+                'disabled': True
+            }),
+            'stall_manager_name': TextInput(attrs={
+                'placeholder': 'First and last name',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'stall_description': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Outline the purpose of the stall'
+            }),
+            'products_on_site': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Outline of the items being sold at the stall'
+            }),
+            'trestle_required':  CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'trestle_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '4',
+                'step': '1',
+            }),
+            'stall_shelter': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe any shelter to be used in conjunction with the stall'
+            }),
+            'power_required': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'total_charge': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 300px;',
+                'readonly': 'readonly'
+            }),
+            'selling_food': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+        }
+
+
 class FoodRegistrationForm(ModelForm):
     """
     Form for capturing details need for a food stall registration
     """
 
+    food_stall_type = ModelChoiceField(
+        queryset=FoodSaleType.objects.filter(is_active=True),
+        empty_label='Please Select',
+        label='Food Stall Type',
+        required=True,
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+    ),
+
     class Meta:
         model = FoodRegistration
         fields = [
+            'food_stall_type',
             'food_display_method',
+            'food_fair_consumed',
+            'food_source',
+            "has_food_prep",
+            'food_storage_prep_method',
+            'food_storage_prep',
+            'hygiene_methods',
             'has_food_certificate',
+            'certificate_expiry_date',
+            'food_registration_certificate',
         ]
+        labels = {
+            'food_stall_type': 'Food Stall Type',
+            'food_display_method': 'How will the food bve displayed',
+            'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
+            'food_source': 'Where will you obtain the food from',
+            'has_food_prep': 'Is any storage or preparation of the food to be undertaken after it is obtained by the '
+                             'operator of the food stall?',
+            'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
+            'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
+            'hygiene_methods': 'What arrangements do you have for hand washing',
+            'has_food_certificate': 'Do you have a food registration certificate',
+            'certificate_expiry_date': 'What is the expiry date of the certificate',
+            'food_registration_certificate': 'Please upload your food certificate',
+        }
+        widgets = {
+            'food_display_method':  Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe how the food will be displayed'
+            }),
+            'food_fair_consumed':  CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'food_source':  Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe where the food being sold will be sourced from'
+            }),
+            'has_food_prep': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'food_storage_prep_method': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe where and how will the pre-sale storage or preparation of the food take place'
+            }),
+            'food_storage_prep': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe method and location of Food utensils, appliances and equipment.'
+            }),
+            'hygiene_methods': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe What arrangements have been made for toilet use and washing hands.'
+            }),
+            'has_food_certificate': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'certificate_expiry_date': DateInput(attrs={
+                'class': "form-control",
+                'readonly': 'readonly'
+            }),
+            'food_registration_certificate': FileInput(),
+        }
 
 
 class FoodPrepEquipReqForm(ModelForm):

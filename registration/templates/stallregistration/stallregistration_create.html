@@ -1,0 +1,17 @@
+<!--registration/templates/stallregistration/stallregistration_create.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container">
+  <h4>Create Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
+  <h6>{{ stallregistration.get_booking_status_display }}</h6>
+  {% include 'stallregistration/stallregistration_filter_partial.html' %}
+  {% include 'stallregistration/stallregistration_partial.html' %}
+</div>
+
+<script src="{% static 'js/dialog.js' %}"></script>
+<script src="{% static 'js/hide.js' %}"></script>
+
+{% endblock %}

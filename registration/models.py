@@ -1,13 +1,12 @@
 # registration/model.py
 
-import datetime
-from django.db import models
-from django.utils import timezone
-from django.urls import reverse
 from django.conf import settings  # new
-from django.utils.translation import ugettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
-from django_fsm import FSMField, transition
+from django.db import models
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.utils.translation import ugettext_lazy as _
+from django_fsm import FSMField
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
@@ -218,7 +217,7 @@ class StallRegistration(models.Model):
 
 class RegistrationComment(models.Model):
     """
-    Description a model to capture stall holder and convener comments related to a Stall Registration instance.
+    Description a model to capture stallholder and convener comments related to a Stall Registration instance.
     Convener comments can be made private so cannot be seen by Stallholders if required
     """
     stall_registration = models.ForeignKey(
@@ -271,9 +270,24 @@ class FoodRegistration(models.Model):
         null=True
     )
     food_source = models.TextField()
-    has_food_storage_prep = models.BooleanField(default=False)
+    food_storage_prep = models.TextField()
+    has_food_prep = models.BooleanField(default=False)
     food_storage_prep_method = models.TextField()
     hygiene_methods = models.TextField()
+
+    """
+    Hooking the create_food_registration and save_food_registration methods to the StallRegistration model, whenever 
+    a save event occurs. This kind of signal is called post_save.
+    """
+
+    @receiver(post_save, sender=StallRegistration)
+    def create_food_registration(sender, instance, created, **kwargs):
+        if created:
+            FoodRegistration.objects.create(user=instance)
+
+    @receiver(post_save, sender=StallRegistration)
+    def save_food_registration(sender, instance, **kwargs):
+        instance.foodregistration.save()
 
     class Meta:
         verbose_name_plural = "FoodRegistrations"
@@ -308,3 +322,20 @@ class FoodPrepEquipReq(models.Model):
         max_length=11,
         default=ELECTRICAL,
     )
+
+    """
+    Hooking the create_food_prep_equip_req and save_food_prep_equip_req methods to the FoodRegistration model, whenever 
+    a save event occurs. This kind of signal is called post_save.
+    """
+
+    @receiver(post_save, sender=FoodRegistration)
+    def create_food_prep_equip_req(sender, instance, created, **kwargs):
+        if created and instance.selling_food:
+            FoodPrepEquipReq.objects.create(foodregistration=instance)
+
+    @receiver(post_save, sender=FoodRegistration)
+    def save_food_prep_equip_req(sender, instance, **kwargs):
+        if instance.selling_food:
+            instance.foodprepequipreq.save()
+
+
