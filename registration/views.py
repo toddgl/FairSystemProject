@@ -262,15 +262,14 @@ def stall_registration_create(request):
     """
     global filter_message
     filter_message = 'Showing unfiltered data - of all available sites for the current fair'
-    filterform = StallRegistrationFilterForm()
-    registrationform = StallRegistrationCreateForm()
     available_first_event_sites = EventSite.site_available_first_event
     available_second_event_sites = EventSite.site_available_second_event
     template_name = 'stallregistration/stallregistration_create.html'
+    success_url = reverse_lazy('registration:myfair')
 
-    if request.POST:
-        filterform = StallRegistrationFilterForm(request.POST)
-        registrationform = StallRegistrationCreateForm(request.POST)
+    filterform = StallRegistrationFilterForm(request.POST or None)
+    registrationform = StallRegistrationCreateForm(request.POST or None)
+    if request.htmx:
         registrationform.fields['event_site_first'].queryset = available_first_event_sites
         registrationform.fields['event_site_second'].queryset = available_second_event_sites
         if filterform.is_valid():
@@ -309,6 +308,18 @@ def stall_registration_create(request):
                 'registrationform': registrationform,
                 'filter': filter_message,
             })
+    elif request.method == 'POST':
+        if registrationform.is_valid():
+            stall_registration = registrationform.save(commit=False)
+            """
+            TO DO: Calculate total_cost based on site and power and trestle selections
+            """
+            stall_registration.total_charge = 370.00
+            stall_registration.stallholder = request.user
+            stall_registration.save()
+        else:
+            print(registrationform.errors.as_data()) # here you print errors to terminal
+        return HttpResponseRedirect(reverse_lazy('registration:myfair'))
 
     else:
         return TemplateResponse(request, template_name, {

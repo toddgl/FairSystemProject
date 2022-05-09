@@ -152,6 +152,38 @@ class Zone(models.Model):
         return reverse('fairs:zone-detail', args=[self.id])
 
 
+class FullSitePriceFilterManager(models.Manager):
+    '''
+    Manager that returns the current price of full size fair sites, accessed by calling  InventoryItemFair.fullsitepricemgr.all()
+    '''
+    def get_queryset(self):
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Full Size Fair Site').price
+
+
+class HalfSitePriceFilterManager(models.Manager):
+    '''
+    Manager that returns the current price of half size fair sites, accessed by calling  InventoryItemFair.halfsitepricemgr.all()
+    '''
+    def get_queryset(self):
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Half Size Fair Site').price
+
+
+class TrestlePriceFilterManager(models.Manager):
+    '''
+    Manager that returns the current price of a trestle, accessed by calling  InventoryItemFair.trestlepricemgr.all()
+    '''
+    def get_queryset(self):
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Trestle Table').price
+
+
+class PowerPointPriceFilterManager(models.Manager):
+    '''
+    Manager that returns the current price of site power, accessed by calling  InventoryItemFair.powerpricemgr.all()
+    '''
+    def get_queryset(self):
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Power Point').price
+
+
 class InventoryItemFair(models.Model):
     """
     Description: Junction table for the manytomany relationship between
@@ -182,6 +214,12 @@ class InventoryItemFair(models.Model):
         default=FAIRPRICE,
     )
     price = models.DecimalField(max_digits=10, decimal_places=2)
+
+    objects = models.Manager()
+    fullsitepricemgr = FullSitePriceFilterManager()
+    halfsitepricemgr = HalfSitePriceFilterManager()
+    trestlepricemgr = TrestlePriceFilterManager()
+    powerpricemgr = PowerPointPriceFilterManager()
 
     def __int__(self):
         return str(self.inventory_item) + "$" + str(self.price)
@@ -394,7 +432,7 @@ class EventSite(models.Model):
     site_booked = SiteBookedManager()  # The site status booked manager.
     site_unavailable = SiteUnavailableManager()  # The site status unavailable manager.
     site_available_first_event = SiteAvailableFirstEventManager()  # The site status of available for first event
-    site_available_second_event = SiteAvailableSecondEventManager()  # The site status of avaialble for second event
+    site_available_second_event = SiteAvailableSecondEventManager()  # The site status of available for second event
 
     class Meta:
         unique_together = ('event', 'site')
