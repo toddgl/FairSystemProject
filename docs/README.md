@@ -17,5 +17,5 @@ Under development, only some apsects of the final design will run
 ### Framework Used ###
 
 The system has been build using Django 3.2 and a Postgresql database.  
-This web page provides a good overview on Django:
+This web page provides a good overview on Django :
 https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Introduction - automatic![Django Overview](https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Introduction)
