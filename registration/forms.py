@@ -376,8 +376,7 @@ class StallRegistrationCreateForm(ModelForm):
             'total_charge': NumberInput(attrs={
                 'class': 'form-control',
                 'style': 'max-width: 300px;',
-                'initial': 350.00,
-                'readonly': 'readonly'
+                'disabled': 'disabled',
             }),
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input'
