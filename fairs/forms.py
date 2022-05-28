@@ -658,12 +658,17 @@ class PowerBoxCreateForm(ModelForm):
 
     class Meta:
         model = PowerBox
-        fields = ['power_box_name', 'socket_count', 'max_load', 'zone']
+        fields = ['power_box_name', 'power_box_description','socket_count', 'max_load', 'zone']
         widgets = {
             'power_box_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Powerbox Name'
+            }),
+            'power_box_description': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Powerbox Description'
             }),
             'socket_count': NumberInput(attrs={
                 'class': "form-control",
@@ -699,12 +704,17 @@ class PowerBoxUpdateDetailForm(ModelForm):
 
     class Meta:
         model = PowerBox
-        fields = ['power_box_name', 'socket_count', 'max_load', 'zone']
+        fields = ['power_box_name', 'power_box_description', 'socket_count', 'max_load', 'zone']
         widgets = {
             'power_box_name': TextInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 300px;',
                 'placeholder': 'Powerbox Name'
+            }),
+            'power_box_description': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+                'placeholder': 'Powerbox Description'
             }),
             'socket_count': NumberInput(attrs={
                 'class': "form-control",

@@ -285,6 +285,7 @@ class PowerBox(models.Model):
     Description: Store the details of the power boxes used to provide power to stallholders
     """
     power_box_name = models.CharField(max_length=100)
+    power_box_description = models.TextField()
     socket_count = models.IntegerField()
     max_load = models.DecimalField(max_digits=10, decimal_places=4)
     zone = models.ForeignKey(
