@@ -40,13 +40,13 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
-
     # 3rd Party
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
     'django_htmx',
     'widget_tweaks',
+    'django_extensions',
 
     # Local
     'registration',
@@ -143,9 +143,9 @@ USE_TZ = False
 
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
-STATICFILES_DIRS = [BASE_DIR / "static",]
+STATICFILES_DIRS = [BASE_DIR / 'static',]
 
-MEDIA_ROOT = 'data'
+MEDIA_ROOT = BASE_DIR/'media'
 MEDIA_URL = '/media/'
 
 LOGIN_REDIRECT_URL = 'home'

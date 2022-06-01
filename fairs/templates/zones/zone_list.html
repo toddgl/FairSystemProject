@@ -1,6 +1,7 @@
 <!-- fairs/templates/zones/zone_list.html -->
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block body %}
 <div class="container">
@@ -18,8 +19,11 @@
                 <p class="card-text">
                     Date created: {{ zone.date_created|date:'Y-m-d H:i' }}
                 </p>
-                <a href="{% url 'fair:zone-detail' zone.id %}" class="card-link">
+                <a href="{% url 'fair:zone-detail' zone.id %}" class="btn btn-primary">
                     View and edit Zone Detail
+                </a>
+                <a href="{{ zone.map_pdf.url }}" class="btn btn-primary">
+                    View Zone Map
                 </a>
             </div>
         </div>
