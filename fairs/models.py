@@ -126,7 +126,6 @@ class Zone(models.Model):
     """
     zone_name = models.CharField(max_length=40)
     zone_code = models.CharField(max_length=2, default=None, null=True)
-    map_pdf = models.FileField(upload_to='media/maps')
     trestle_source = models.BooleanField(default=False)
     location = models.ForeignKey(
         Location,
@@ -154,18 +153,22 @@ class Zone(models.Model):
 
 class FullSitePriceFilterManager(models.Manager):
     """
-    Manager that returns the current price of full size fair sites, accessed by calling  InventoryItemFair.fullsitepricemgr.all()
+    Manager that returns the current price of full size fair sites, accessed by calling
+    InventoryItemFair.fullsitepricemgr.all()
     """
     def get_queryset(self):
-        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Full Size Fair Site').price
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
+                                          inventory_item__item_name='Full Size Fair Site').price
 
 
 class HalfSitePriceFilterManager(models.Manager):
     """
-    Manager that returns the current price of half size fair sites, accessed by calling  InventoryItemFair.halfsitepricemgr.all()
+    Manager that returns the current price of half size fair sites, accessed by calling
+    InventoryItemFair.halfsitepricemgr.all()
     """
     def get_queryset(self):
-        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Half Size Fair Site').price
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
+                                          inventory_item__item_name='Half Size Fair Site').price
 
 
 class TrestlePriceFilterManager(models.Manager):
@@ -173,7 +176,8 @@ class TrestlePriceFilterManager(models.Manager):
     Manager that returns the current price of a trestle, accessed by calling  InventoryItemFair.trestlepricemgr.all()
     """
     def get_queryset(self):
-        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Trestle Table').price
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
+                                          inventory_item__item_name='Trestle Table').price
 
 
 class PowerPointPriceFilterManager(models.Manager):
@@ -181,15 +185,46 @@ class PowerPointPriceFilterManager(models.Manager):
     Manager that returns the current price of site power, accessed by calling  InventoryItemFair.powerpricemgr.all()
     """
     def get_queryset(self):
-        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Power Point').price
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
+                                          inventory_item__item_name='Power Point').price
+
+
+class HealthSafetyFoodLicencePriceFilterManager(models.Manager):
+    """
+    Manager that returns the current price of a food licence, accessed by calling
+    InventoryItemFair.foodlicencepriceemgr.all()
+    """
+    def get_queryset(self):
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
+                                          inventory_item__item_name='Health & Safety Food Licence').price
 
 
 class FoodLicencePriceFilterManager(models.Manager):
     """
-    Manager that returns the current price of a food licence, accessed by calling  InventoryItemFair.foodlicencepriceemgr.all()
+    Manager that returns the current price of a food licence, accessed by calling
+    InventoryItemFair.foodlicencepriceemgr.all()
     """
     def get_queryset(self):
-        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True, inventory_item__item_name='Food Licence').price
+        return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
+                                          inventory_item__item_name='Food Licence').price
+
+
+class ZoneMap(models.Model):
+    """
+    Description: A linked model to Zone that supports the saving on Zone Site maps, the map saving functionality was
+    moved from the Zone model so a history of past maps could be recorded against each Zone.
+    """
+    zone = models.ForeignKey(
+        Zone,
+        on_delete=models.CASCADE,
+        verbose_name='zone',
+        related_name='zone_map',
+    )
+    year = models.CharField(max_length=4, default=str(current_year))
+    map_pdf = models.FileField(upload_to='maps/' + str(current_year))
+
+    class Meta:
+        unique_together = ('year', 'map_pdf')
 
 
 class InventoryItemFair(models.Model):
@@ -228,6 +263,7 @@ class InventoryItemFair(models.Model):
     halfsitepricemgr = HalfSitePriceFilterManager()
     trestlepricemgr = TrestlePriceFilterManager()
     powerpricemgr = PowerPointPriceFilterManager()
+    healthsafetyfoodlicencepricemgr = HealthSafetyFoodLicencePriceFilterManager()
     foodlicencepricemgr = FoodLicencePriceFilterManager()
 
     def __int__(self):
@@ -307,7 +343,8 @@ class PowerBox(models.Model):
 
 class EventFilterManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(Q(original_event_date__gt=datetime.datetime.now()) | Q(postponement_event_date__gt=datetime.datetime.now()))
+        return super().get_queryset().filter(Q(original_event_date__gt=datetime.datetime.now()) |
+                                             Q(postponement_event_date__gt=datetime.datetime.now()))
 
 
 class Event(models.Model):
@@ -367,13 +404,15 @@ class SiteAvailableManager(models.Manager):
 class SiteAvailableFirstEventManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__event_sequence=1,
-                                             event__fair__fair_year__in=[current_year, next_year], event__fair__is_activated=True)
+                                             event__fair__fair_year__in=[current_year, next_year],
+                                             event__fair__is_activated=True)
 
 
 class SiteAvailableSecondEventManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__event_sequence=2,
-                                             event__fair__fair_year__in=[current_year, next_year], event__fair__is_activated=True)
+                                             event__fair__fair_year__in=[current_year, next_year],
+                                             event__fair__is_activated=True)
 
 
 class SiteAllocatedManager(models.Manager):

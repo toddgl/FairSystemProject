@@ -7,6 +7,7 @@ from .models import (
     Site,
     Location,
     Zone,
+    ZoneMap,
     EventSite,
     InventoryItem,
     InventoryItemFair,
@@ -15,6 +16,6 @@ from .models import (
 )
 
 # Register your models here.
-myModels = [Fair, Event, Site, Location, Zone, EventSite, InventoryItem, InventoryItemFair, PowerBox, EventPower]
+myModels = [Fair, Event, Site, Location, Zone, ZoneMap, EventSite, InventoryItem, InventoryItemFair, PowerBox, EventPower]
 # iterable list
 admin.site.register(myModels)

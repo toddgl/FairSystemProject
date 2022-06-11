@@ -26,7 +26,7 @@ SECRET_KEY = '+x4-e!e)8+mi(73rtn9@px#-@4wo-wp4kf_4y)iy-q&5omzrv%'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.84', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['192.168.1.77', 'localhost', '127.0.0.1']
 
 
 # Application definition
@@ -66,6 +66,7 @@ MIDDLEWARE = [
     'django_htmx.middleware.HtmxMiddleware',
 ]
 
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [

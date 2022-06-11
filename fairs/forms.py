@@ -25,6 +25,7 @@ from django.forms import (
 from fairs.models import (
     Location,
     Zone,
+    ZoneMap,
     Site,
     Fair,
     Event,
@@ -350,7 +351,7 @@ class ZoneCreateForm(ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['location', 'zone_name', 'zone_code', 'map_pdf', 'trestle_source']
+        fields = ['location', 'zone_name', 'zone_code', 'trestle_source']
         widgets = {
             'location': Select(attrs={
                 'class': "form-select",
@@ -365,10 +366,6 @@ class ZoneCreateForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 100px; text-transform: uppercase;',
                 'placeholder': 'XX'
-            }),
-            'map_pdf': FileInput(),
-            'trestle_source': CheckboxInput(attrs={
-                'class': 'form-check-input'
             }),
         }
 
@@ -390,7 +387,7 @@ class ZoneDetailForm(ModelForm):
 
     class Meta:
         model = Zone
-        fields = ['location', 'zone_name', 'zone_code', 'map_pdf', 'trestle_source']
+        fields = ['location', 'zone_name', 'zone_code', 'trestle_source']
         widgets = {
             'location': Select(attrs={
                 'class': "form-select",
@@ -406,10 +403,36 @@ class ZoneDetailForm(ModelForm):
                 'style': 'text-transform: uppercase;',
                 'placeholder': 'XX'
             }),
+        }
+
+
+class ZoneMapCreateForm(ModelForm):
+    """
+    Form for loading a new zone map
+    """
+
+    class Meta:
+        model = ZoneMap
+        fields = ['zone', 'map_pdf']
+        widgets = {
             'map_pdf': FileInput(),
-            'trestle_source': CheckboxInput(attrs={
-                'class': 'form-check-input',
+        }
+
+
+class ZoneMapDetailForm(ModelForm):
+    """
+    Form for updating an existing zone map
+    """
+    class Meta:
+        model = ZoneMap
+        fields = ['zone', 'year', 'map_pdf']
+        widgets = {
+            'year': TextInput(attrs={
+                'class': "form-control",
+                'size': '4',
+                'placeholder': 'Year'
             }),
+            'map_pdf': FileInput(),
         }
 
 
@@ -658,7 +681,7 @@ class PowerBoxCreateForm(ModelForm):
 
     class Meta:
         model = PowerBox
-        fields = ['power_box_name', 'power_box_description','socket_count', 'max_load', 'zone']
+        fields = ['power_box_name', 'power_box_description', 'socket_count', 'max_load', 'zone']
         widgets = {
             'power_box_name': TextInput(attrs={
                 'class': "form-control",

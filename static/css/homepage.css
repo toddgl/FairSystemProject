@@ -33,6 +33,24 @@ ul.errorlist {
     color: #00246c;
 }
 
+/* Login Form */
+
+.form-outline
+    {
+        margin: 0 auto;
+    }
+.form-outline label
+    {
+        /* tweak to taste */
+        float: left;
+        width: 43%;
+    }
+ .form-outline input
+    {
+        /* tweak to taste */
+        width: 57%;
+    }
+
 /* Dashboard  */
 .h5, h5 {
     font-size: 1.07rem;

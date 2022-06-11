@@ -1,7 +1,10 @@
 # fairs/view.py
+import datetime
+import os
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.template.response import TemplateResponse
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404
+from django.conf import settings
 from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.views.generic import (
@@ -18,6 +21,7 @@ from fairs.models import (
     Site,
     Location,
     Zone,
+    ZoneMap,
     InventoryItem,
     InventoryItemFair,
     PowerBox,
@@ -34,6 +38,8 @@ from .forms import (
     LocationUpdateForm,
     ZoneCreateForm,
     ZoneDetailForm,
+    ZoneMapCreateForm,
+    ZoneMapDetailForm,
     InventoryItemCreateForm,
     InventoryItemDetailForm,
     EventSiteDetailForm,
@@ -46,6 +52,11 @@ from .forms import (
     EventPowerCreateForm,
     EventPowerUpdateDetailForm
 )
+
+# Global Variables
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
+media_root = settings.MEDIA_ROOT
 
 
 # Create your views here.
@@ -145,7 +156,7 @@ class FairDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
 class EventCreateView(PermissionRequiredMixin, CreateView):
     """
-    Create a Event including recording who created it
+    Create an Event including recording who created it
     """
     permission_required = 'fairs.add_event'
     model = Event
@@ -174,7 +185,7 @@ class EventCreateView(PermissionRequiredMixin, CreateView):
         self.object.save()
         self.generate_event_sites()
         # return HttpResponseRedirect(self.get_success_url())
-        return super(EventCreateView,self).form_valid(form)
+        return super(EventCreateView, self).form_valid(form)
 
     def get_initial(self, *args, **kwargs):
         initial = super(EventCreateView, self).get_initial(**kwargs)
@@ -284,7 +295,7 @@ class SiteCreateView(PermissionRequiredMixin, CreateView):
         self.object.created_by = self.request.user
         self.object.save()
         self.generate_event_sites()
-        return super(SiteCreateView,self).form_valid(form)
+        return super(SiteCreateView, self).form_valid(form)
 
     def get_initial(self, *args, **kwargs):
         initial = super(SiteCreateView, self).get_initial(**kwargs)
@@ -354,6 +365,41 @@ class ZoneCreateView(PermissionRequiredMixin, CreateView):
         kwargs = super(ZoneCreateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['created_by'] = self.request.user
         return kwargs
+
+
+class ZoneMapCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Upload a Zone Map
+    """
+    permission_required = 'fairs.add_zone'
+    model = ZoneMap
+    form_class = ZoneMapCreateForm
+    template_name = 'zones/zone_map_create.html'
+    success_url = reverse_lazy('fair:zone-list')
+
+
+class ZoneMapDetailUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a zone map
+    """
+    permission_required = 'fairs.change_zone'
+    model = ZoneMap
+    form_class = ZoneMapDetailForm
+    template_name = 'zones/zone_map_detail.html'
+    success_url = reverse_lazy('fair:zone-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(ZoneMapDetailUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['zone'] = object
+        return context
+
+
+def pdf_view(request, pk):
+    zonemap = ZoneMap.objects.get(zone=pk, year=current_year)
+    pdf_path = os.path.join('media', str(zonemap.map_pdf))
+    return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
 
 
 class InventoryItemListView(PermissionRequiredMixin, ListView):
@@ -451,7 +497,7 @@ class EventSiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
 class EventSiteCreateView(PermissionRequiredMixin, CreateView):
     """
-    Create a Event to Site relationship and its status
+    Create an Event to Site relationship and its status
     """
     permission_required = 'fairs.add_eventsite'
     model = EventSite
@@ -475,7 +521,7 @@ class EventSiteCreateView(PermissionRequiredMixin, CreateView):
 
 class InventoryItemFairListView(PermissionRequiredMixin, ListView):
     """
-    List all inventory items associated with a a fair order on inventory_item
+    List all inventory items associated with a fair order on inventory_item
     """
     permission_required = 'fairs.view_inventoryitemfair'
     model = InventoryItemFair
@@ -547,7 +593,8 @@ def site_dashboard_view(request):
             attr_zone = 'site__zone'
             attr_site_size = 'site__site_size'
             if event and zone and site_size:
-                filter_message = 'Showing filtered data where the event is ' + str(event) + 'zone is, ' + str(zone) + ' and site size is a ' + str(site_size)
+                filter_message = 'Showing filtered data where the event is ' + str(event) + 'zone is, ' + str(
+                    zone) + ' and site size is a ' + str(site_size)
                 filter_dict = {
                     attr_event: event,
                     attr_zone: zone,
@@ -560,7 +607,8 @@ def site_dashboard_view(request):
                     attr_zone: zone
                 }
             elif event and site_size and not zone:
-                filter_message = 'Showing filtered data where the event is ' + str(event) + ' and site size is a ' + str(
+                filter_message = 'Showing filtered data where the event is ' + str(
+                    event) + ' and site size is a ' + str(
                     site_size)
                 filter_dict = {
                     attr_event: event,
@@ -588,7 +636,8 @@ def site_dashboard_view(request):
                 filter_dict = {
                     attr_site_size: site_size
                 }
-                filter_message = 'Showing filtered data where the site size is ' + str(site_size) + ' and all future events'
+                filter_message = 'Showing filtered data where the site size is ' + str(
+                    site_size) + ' and all future events'
             else:
                 filter_dict = {}
                 filter_message = 'Showing unfiltered data - from all future fair events and sites in all the zones'
@@ -618,7 +667,7 @@ def site_dashboard_view(request):
         'pending_counts': pending_counts,
         'booked_counts': booked_counts,
         'unavailable_counts': unavailable_counts
-     })
+    })
 
 
 class PowerBoxCreateView(PermissionRequiredMixin, CreateView):
@@ -715,7 +764,7 @@ class EventPowerDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
 class EventPowerCreateView(PermissionRequiredMixin, CreateView):
     """
-    Create a Event to PowerBox relationship and the power_load variable
+    Create an Event to PowerBox relationship and the power_load variable
     """
     permission_required = 'fairs.add_eventsite'
     model = EventPower
