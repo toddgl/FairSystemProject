@@ -399,7 +399,11 @@ class ZoneMapDetailUpdateView(PermissionRequiredMixin, UpdateView):
 def pdf_view(request, pk):
     zonemap = ZoneMap.objects.get(zone=pk, year=current_year)
     pdf_path = os.path.join('media', str(zonemap.map_pdf))
-    return FileResponse(open(pdf_path, 'rb'), content_type='application/pdf')
+    filename = os.path.basename(pdf_path)
+    response = FileResponse(open(pdf_path, 'rb'))
+    response.headers['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+    response.headers['Content-Type'] = 'application/pdf'
+    return response
 
 
 class InventoryItemListView(PermissionRequiredMixin, ListView):
