@@ -18,7 +18,7 @@
                 <p class="card-text">
                     Date created: {{ inventoryitem.date_created|date:'Y-m-d H:i' }}
                 </p>
-                <a href="{% url 'fair:inventoryitem-detail' inventoryitem.id %}" class="card-link">
+                <a href="{% url 'fair:inventoryitem-detail' inventoryitem.id %}" class="btn btn-primary">
                     View and edit inventoryitem Detail
                 </a>
             </div>

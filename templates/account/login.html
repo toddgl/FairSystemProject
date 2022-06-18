@@ -20,12 +20,12 @@
               <form method="post">
                 {% csrf_token %}
 
-              <div class="form-outline form-white mb-4">
+              <div class="form-outline form-white mb-4 ms-0">
                 {{ form.login }}
                 <label> {{ form.login.label_tag }}</label>
               </div>
 
-              <div class="form-outline form-white mb-4">
+              <div class="form-outline form-white mb-4 ms-0">
                 {{ form.password }}
                 <span>
                   <i class="eye-icon bi bi-eye-slash" onclick="togglePassword()"  ></i>

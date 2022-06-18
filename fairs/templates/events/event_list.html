@@ -18,7 +18,7 @@
                 <p class="card-text">
                     Date created: {{ event.date_created|date:'Y-m-d H:i' }}
                 </p>
-                <a href="{% url 'fair:event-detail' event.id %}" class="card-link">
+                <a href="{% url 'fair:event-detail' event.id %}" class="btn btn-primary">
                     View and edit Event Detail
                 </a>
             </div>

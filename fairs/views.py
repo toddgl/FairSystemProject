@@ -1,11 +1,14 @@
 # fairs/view.py
 import datetime
 import os
+from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.template.response import TemplateResponse
-from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import redirect
+from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
@@ -142,9 +145,9 @@ class FairDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(FairDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['fair'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['fair'] = obj
         return context
 
     def form_valid(self, form):
@@ -219,9 +222,9 @@ class EventDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(EventDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['fair'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['fair'] = obj
         return context
 
     def form_valid(self, form):
@@ -253,9 +256,9 @@ class SiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(SiteDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['site'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['site'] = obj
         return context
 
     def form_valid(self, form):
@@ -329,9 +332,9 @@ class ZoneDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(ZoneDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['zone'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['zone'] = obj
         return context
 
     def form_valid(self, form):
@@ -390,20 +393,28 @@ class ZoneMapDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(ZoneMapDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['zone'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['zone'] = obj
         return context
 
 
 def pdf_view(request, pk):
-    zonemap = ZoneMap.objects.get(zone=pk, year=current_year)
+    """
+    A function to return an uploaded media file for viewing and downloading. Used for Zone maps
+    """
+    try:
+        zonemap = ZoneMap.objects.filter(zone=pk).latest('year')
+    except ObjectDoesNotExist:
+        return HttpResponseNotFound('<h1>Zonemap has not be loaded for this zone</h1>')
     pdf_path = os.path.join('media', str(zonemap.map_pdf))
     filename = os.path.basename(pdf_path)
-    response = FileResponse(open(pdf_path, 'rb'))
-    response.headers['Content-Disposition'] = 'attachment; filename={}'.format(filename)
-    response.headers['Content-Type'] = 'application/pdf'
-    return response
+    if os.path.exists(pdf_path):
+        with open(pdf_path, 'rb') as fh:
+            response = HttpResponse(fh.read(), content_type="application/pdf")
+            response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+            return response
+    raise Http404
 
 
 class InventoryItemListView(PermissionRequiredMixin, ListView):
@@ -428,9 +439,9 @@ class InventoryItemDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(InventoryItemDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['inventoryitem'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['inventoryitem'] = obj
         return context
 
     def form_valid(self, form):
@@ -488,9 +499,9 @@ class EventSiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(EventSiteDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['eventsite'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['eventsite'] = obj
         return context
 
     def form_valid(self, form):
@@ -545,9 +556,9 @@ class InventoryItemFairDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(InventoryItemFairDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['inventoryitemfair'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['inventoryitemfair'] = obj
         return context
 
     def form_valid(self, form):
@@ -712,9 +723,9 @@ class PowerBoxDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(PowerBoxDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['powerbox'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['powerbox'] = obj
         return context
 
     def form_valid(self, form):
@@ -755,9 +766,9 @@ class EventPowerDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(EventPowerDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['eventpower'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['eventpower'] = obj
         return context
 
     def form_valid(self, form):
