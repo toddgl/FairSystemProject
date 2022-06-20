@@ -26,11 +26,9 @@
     {% block nav %}
       {% include 'navbar.html' %}
     {% endblock nav %}
-    {% block messages %}
-      {% include 'messages.html' %}
-    {% endblock messages %}
 
     {% block body %}
+    {% include 'messages.html' %}
       <h1>Base</h1>
     {% endblock %}
     <!-- JavaScript Bundle with Popper -->
