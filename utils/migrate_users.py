@@ -16,7 +16,7 @@ stallholders = pd.read_csv(
 
 # let's create some users with default passwords equal to their username
 for i, row in stallholders.iterrows():
-    if CustomUser.objects.filter(reference_id=row['StallHolderID']).exists:
+    if CustomUser.objects.filter(reference_id=row['StallHolderID']).exists():
         print('Stallholder name {} with legacy ID {} already exists'.format(row['FirstName'], row['StallHolderID']))
 
     else:
