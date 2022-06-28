@@ -4,17 +4,19 @@
 
 {% block body %}
 <div class="container" xmlns="http://www.w3.org/1999/html">
+  <div class="row g-3">
   <h1>Event Sites</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new event site</button>
         <a href="/" class="btn btn-secondary">Cancel</a>
     </form>
-    </br>
+  </div>
+  <div class="row g-3">
     {% regroup eventsite_list by get_site_status_display as site_status_list %}
     {% for site in site_status_list %}
     <h5 class="rotary_orange">{{ site.grouper }}</h5>
         {% for item in site.list %}
-        <div class="container mt-3" style="width: 600px;">
+        <div class="col-12 col-md-6 col-lg-4">
             <div class="card">
                 <div class="card-body">
                     <h4 class="card-title">{{ item.event }} - {{ item.site }}</h4>
@@ -35,5 +37,24 @@
             <div class="alert alert-info" role="alert">There are no sites linked with an event yet.</div>
         {% endfor %}
     {% endfor %}
+    </div>
+    <!-- Pagination -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 </div>
 {% endblock %}
