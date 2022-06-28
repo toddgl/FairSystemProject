@@ -4,28 +4,50 @@
 
 {% block body %}
 <div class="container">
-  <h1>Site</h1>
-    <form action='actionUrl' method='GET'>
-        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new site</button>
-        <a href="/" class="btn btn-secondary">Cancel</a>
-    </form>
+  <div class="row g-3">
+      <h1>Site</h1>
+        <form action='actionUrl' method='GET'>
+            <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new site</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+  </div>
 
-    {% for site in site_list %}
-    <div class="container mt-3" style="width: 600px;">
-        <div class="card">
-            <div class="card-body">
-                <h4 class="card-title">{{ site.site_name }}</h4>
-                <p class="card-text">
-                    Date created: {{ site.date_created|date:'Y-m-d H:i' }}
-                </p>
-                <a href="{% url 'fair:site-detail' site.id %}" class="btn btn-primary">
-                    View and edit Site Detail
-                </a>
+     <div class="row g-3">
+        {% for site in site_list %}
+         <div class="col-12 col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ site.site_name }}</h4>
+                    <p class="card-text">
+                        Date created: {{ site.date_created|date:'Y-m-d H:i' }}
+                    </p>
+                    <a href="{% url 'fair:site-detail' site.id %}" class="btn btn-primary">
+                        View and edit Site Detail
+                    </a>
+                </div>
             </div>
         </div>
+        {% empty %}
+            <div class="alert alert-info" role="alert">There are no sites active yet.</div>
+        {% endfor %}
     </div>
-    {% empty %}
-        <div class="alert alert-info" role="alert">There are no sites active yet.</div>
-    {% endfor %}
+    <!-- Pagination -->
+    <div class="pagination">
+        <span class="step-links">
+            {% if page_obj.has_previous %}
+                <a href="?page=1">&laquo; first</a>
+                <a href="?page={{ page_obj.previous_page_number }}">previous</a>
+            {% endif %}
+
+            <span class="current">
+                Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}">next</a>
+                <a href="?page={{ page_obj.paginator.num_pages }}">last &raquo;</a>
+            {% endif %}
+        </span>
+    </div>
 </div>
 {% endblock %}

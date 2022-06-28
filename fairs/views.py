@@ -2,6 +2,7 @@
 import datetime
 import os
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
@@ -241,7 +242,8 @@ class SiteListView(PermissionRequiredMixin, ListView):
     permission_required = 'fairs.view_site'
     model = Site
     template_name = 'sites/site_list.html'
-    queryset = Site.objects.all().order_by("-date_created")
+    paginate_by = 12
+    queryset = Site.objects.all().order_by("site_name")
 
 
 class SiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
@@ -317,7 +319,8 @@ class ZoneListView(PermissionRequiredMixin, ListView):
     permission_required = 'fairs.view_zone'
     model = Site
     template_name = 'zones/zone_list.html'
-    queryset = Zone.objects.all().order_by("-date_created")
+    paginate_by = 12
+    queryset = Zone.objects.all().order_by("zone_code")
 
 
 class ZoneDetailUpdateView(PermissionRequiredMixin, UpdateView):
