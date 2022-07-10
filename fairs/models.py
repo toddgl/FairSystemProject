@@ -514,3 +514,60 @@ class EventPower(models.Model):
 
     class Meta:
         unique_together = ('event', 'power_box')
+
+class SiteHistory(models.Model):
+    """
+    Description: A model to hold a summary of Stallholder Site History, initially used to store legacy data,
+    but the main purpose is to automatically allocate sites based on site usage history.
+    """
+    stallholder = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='custom_user',
+        related_name='site_history'
+    )
+    year = models.CharField(max_length=4, default='2022')
+    site  = models.ForeignKey(
+        Site,
+        on_delete=models.CASCADE,
+        verbose_name='site',
+        related_name='site_history'
+    )
+    is_skipped = models.BooleanField(default=False)
+    number_events = models.IntegerField()
+
+
+class SiteAllocation(models.Model):
+    """
+    Description: A model to hold teh alloction of sites firstly based on historical Stallholder site preferences plus
+    for the convener to handle request for site moves and allocation of sites to new stallholders
+    """
+    stallholder = models.ForeignKey(
+        CustomUser,
+        on_delete=models.CASCADE,
+        verbose_name='custom_user',
+        related_name='site_allocation'
+    )
+    event_site =  models.ForeignKey(
+        EventSite,
+        on_delete=models.CASCADE,
+        verbose_name='event_site',
+        related_name='site_allocation'
+    )
+    stall_registration = models.ForeignKey(
+        'registration.StallRegistration',
+        verbose_name='stall_registration',
+        related_name='site_allocation',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    event_power = models.ForeignKey(
+        EventPower,
+        verbose_name='event_power',
+        related_name='site_allocation',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+

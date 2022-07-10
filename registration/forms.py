@@ -1,8 +1,6 @@
 # registration/forms.py
 
 import datetime
-from dynamic_forms import DynamicField, DynamicFormMixin
-from django.urls import reverse_lazy
 from django import forms
 from django.forms import (
     Form,

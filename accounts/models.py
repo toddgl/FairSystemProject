@@ -36,7 +36,7 @@ class CustomUser(AbstractUser):
     role = models.PositiveSmallIntegerField(
         choices=ROLE_CHOICES, blank=True, null=True, default=3)
     reference_id = models.CharField(max_length=5, null=True)
-    phone = models.CharField(max_length=13, unique=True)
+    phone = models.CharField(max_length=13, unique=False)
     created_date = models.DateTimeField(default=timezone.now)
     modified_date = models.DateTimeField(default=timezone.now)
 
