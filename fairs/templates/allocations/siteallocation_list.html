@@ -1,0 +1,47 @@
+<!-- fairs/templates/siteallocations/siteallocations_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+{% csrf_token %}
+<div class="d-flex justify-content-between" >
+    <section class="container">
+        <h4>Site Allocations</h4>
+        <form action='actionUrl' method='GET'>
+            <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Site Allocation</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+        {% for siteallocation in allocation_list %}
+        <div class="container mt-3" style="width: 600px;">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        {{ siteallocation.stallholder_first_name }} + " " + {{ siteallocation.stallholder_last_name }}</h4>
+                    <p class="card-text">
+                        Event Name: {{ siteallocation.event_site__event__event_name }}
+                        Site: {{ siteallocation.event_site__sites__site_name }}
+                    </p>
+                    <a href="{% url 'fair:siteallocation-detail' siteallocation.id %}" class="btn btn-primary">
+                        View and edit Site Allocation Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info" role="alert">Select Stallholder filter to display site allocations.</div>
+        {% endfor %}
+
+    </section>
+
+    <section>
+
+
+    </section>
+
+    <section>
+
+        {% include 'search/partials/search_stallholders.html' %}
+
+    </section>
+</div>
+{% endblock %}

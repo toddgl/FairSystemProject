@@ -1,0 +1,19 @@
+<!--templates/search/search_form.html -->
+
+<form class="input-group mb-3" action="/search/" method="GET">
+    <input type="text" name="q" class="form-control" style="max-width: 300px" placeholder="Stall Holder Search" aria-label="Stall Holder Search"
+    hx-get="/search/" hx-trigger="keyup change delay:200ms" hx-include="#search_type"/>
+    <select class="form-select" name="type" style="max-width:170px" id="search_type">
+        {% if request.GET.type == 'name' %}
+            <option value="name" selected> Name</option>
+        {% else %}
+            <option value="name" > Name</option>
+        {% endif %}
+        {% if request.GET.type == 'businees' %}
+        <option value="business" selected> Business Name</option>
+        {% else %}
+        <option value="business" > Busiess Name</option>
+        {% endif %}
+    </select>
+    <input type="submit" class="btn btn-primary" value="Submit" />
+</form>

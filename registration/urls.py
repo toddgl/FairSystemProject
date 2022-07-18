@@ -47,8 +47,8 @@ urlpatterns = [
     path('foodequipment/<int:pk>/edit', edit_equipment, name='edit_equipment'),
 ]
 
-htmx_views = [
+htmx_urlpatterns = [
     path('stallregistration/find-second-eventsite/', find_second_eventsite, name='find-second-eventsite'),
 ]
 
-urlpatterns += htmx_views
+urlpatterns += htmx_urlpatterns

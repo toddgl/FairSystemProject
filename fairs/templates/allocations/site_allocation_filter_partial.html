@@ -1,0 +1,18 @@
+<!--tairs/templates/allocations/site_allocation_filter_partial.html -->
+
+<div id="replacearea">
+  <div class="row">
+    <div class="col-sm-3">
+      <div class="title-hr">
+        <span class="hr fix"></span>
+        <span><strong>Site Allocation Filters</strong></span>
+        <span class="hr"></span>
+      </div>
+      <form action="." method="post"  hx-post="." hx-target="#replacearea">
+        {% csrf_token %}
+        {{ allocationfilterform.as_p }}
+      </form>
+    <hr>
+    </div>
+  </div>
+</div>

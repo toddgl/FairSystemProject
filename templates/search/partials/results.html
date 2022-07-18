@@ -1,0 +1,9 @@
+<!--templates/search/partials/results.html -->
+
+Searched for {{ reguest.GET.q }} under {{ request.GET.type|title }}
+{% for object in queryset %}
+    <li>{{ object.name }}</li>
+    {% empty %}
+    <div class="alert alert-info" role="alert">There are no results found.</div>
+
+{% endfor %}

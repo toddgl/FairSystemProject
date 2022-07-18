@@ -1,0 +1,17 @@
+<!--fairs/templates/allocations/site_allocation_partial.html -->
+
+{% load static %}
+<script src="{% static 'js/hide.js' %}"></script>
+
+<div id="allocation_data">
+    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+        {{ filter }}
+    </div>
+    <hr>
+    <form method="post" >
+        {% csrf_token %}
+        {{ allocationform.as_p }}
+        <input type="submit" class="mt-2 btn btn-primary" value="Save" >
+        <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../home'" value="Cancel" >
+    </form>
+</div>

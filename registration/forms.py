@@ -253,18 +253,6 @@ class StallRegistrationFilterForm(Form):
         ]
 
 
-class StallRegistrationCreateUpdateForm(Form):
-    """
-    Form tha provides the filtering for the  event site selections for stall registration
-    """
-
-    class Meta:
-        fields = [
-            'zone',
-            'site_size',
-        ]
-
-
 class StallRegistrationCreateForm(ModelForm):
     """
     Form for creating Stall Registrations
@@ -281,7 +269,7 @@ class StallRegistrationCreateForm(ModelForm):
             'hx-trigger': 'change',
             'hx-get': 'find-second-eventsite/',
             'hx-target': '#registration_data',
-            })
+        })
     )
     event_site_second = ModelChoiceField(
         queryset=EventSite.site_available_second_event,
@@ -303,7 +291,7 @@ class StallRegistrationCreateForm(ModelForm):
         widget=Select(attrs={
             'class': "form-select",
             'style': 'max-width: 300px;',
-            })
+        })
     )
     event_power_second = ModelChoiceField(
         queryset=EventPower.objects.all(),
@@ -354,7 +342,7 @@ class StallRegistrationCreateForm(ModelForm):
                 'style': 'max-width: 400px;',
                 'placeholder': 'Outline of the items being sold at the stall'
             }),
-            'trestle_required':  CheckboxInput(attrs={
+            'trestle_required': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
             'trestle_quantity': NumberInput(attrs={
@@ -459,7 +447,7 @@ class StallRegistrationUpdateForm(ModelForm):
                 'style': 'max-width: 400px;',
                 'placeholder': 'Outline of the items being sold at the stall'
             }),
-            'trestle_required':  CheckboxInput(attrs={
+            'trestle_required': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
             'trestle_quantity': NumberInput(attrs={
@@ -530,15 +518,15 @@ class FoodRegistrationForm(ModelForm):
             'food_registration_certificate': 'Please upload your food certificate',
         }
         widgets = {
-            'food_display_method':  Textarea(attrs={
+            'food_display_method': Textarea(attrs={
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe how the food will be displayed'
             }),
-            'food_fair_consumed':  CheckboxInput(attrs={
+            'food_fair_consumed': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
-            'food_source':  Textarea(attrs={
+            'food_source': Textarea(attrs={
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe where the food being sold will be sourced from'

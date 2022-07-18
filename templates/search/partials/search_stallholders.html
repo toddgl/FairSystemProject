@@ -1,0 +1,15 @@
+<!--templates/search/partials/search_stallholders.html -->
+
+<div class="d-flex justify-content-end mb-4 me-4">
+    <form>
+        {% csrf_token %}
+        <input type="text"
+               hx-post="{% url 'search:search-stallholders' %}"
+               hx-target="#results"
+               hx-trigger="keyup[target.value.length > 2] changed delay:200ms"
+               name="search"
+               class="form-control-sm me-2"
+               placeholder="Search Stallholders..."/>
+    </form>
+</div>
+<div id="results"></div>

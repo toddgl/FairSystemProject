@@ -20,6 +20,8 @@ from django.urls import path, include  # import include function
 from django.conf import settings
 from django.conf.urls.static import static
 
+from search.views import search_view
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,4 +30,6 @@ urlpatterns = [
     path('', include('accounts.urls')),
     path('registration/', include('registration.urls')),
     path('', include('fairs.urls')),
+    path('',include('search.urls')),
+
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -34,7 +34,10 @@ from fairs.models import (
     InventoryItemFair,
     PowerBox,
     EventPower,
+    SiteAllocation,
 )
+from accounts.models import CustomUser
+from registration.models import StallRegistration
 from datetime import datetime
 from django.utils.timezone import make_aware
 
@@ -857,3 +860,128 @@ class LocationUpdateForm(ModelForm):
                 'placeholder': 'Location Name'
             }),
         }
+
+class SiteAllocationCreateForm(ModelForm):
+    """
+    Form used to create new site allocations
+    """
+
+    stallholder = ModelChoiceField(
+        queryset=CustomUser.stallholdermgr,
+        empty_label='Please Select',
+        label='First Event Sites',
+        required=True,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+
+    )
+
+    event_site = ModelChoiceField(
+        queryset=EventSite.site_available,
+        empty_label='Please Select',
+        label='First Event Sites',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    stall_registration = ModelChoiceField(
+        queryset=StallRegistration.objects.all(),
+        empty_label='Please Select',
+        label='Stall Registration',
+        required=True,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+    class Meta:
+        model = SiteAllocation
+        fields = ('event_site','stall_registration', 'event_power')
+        widgets = {
+            'event_site': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+
+        }
+
+class SiteAllocationUpdateForm(ModelForm):
+    """
+    Form used to update existing Site Allocations
+    """
+
+    event_site = ModelChoiceField(
+        queryset=EventSite.site_available,
+        empty_label='Please Select',
+        label='First Event Sites',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    stall_registration = ModelChoiceField(
+        queryset=StallRegistration.objects.all(),
+        empty_label='Please Select',
+        label='Stall Registration',
+        required=True,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+    class Meta:
+        model = SiteAllocation
+        fields = ('event_site','stall_registration', 'event_power')
+        widgets = {
+            'event_site': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+
+        }
+
+class SiteAllocationFilterForm(Form):
+    """
+    Filter form for restricting the  dropdown lists Site Allocation listing, creation and updating
+    """
+
+    event = ModelChoiceField(
+        queryset=Event.currenteventfiltermgr.all(),
+        empty_label='Show All',
+        label='Event',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#allocation_data',
+        })
+    )
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Show All',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#allocation_data',
+        })
+    )
+
+    class Meta:
+        fields = [
+            'event',
+            'zone',
+        ]
+

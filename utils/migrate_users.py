@@ -41,6 +41,7 @@ with open(os.path.join(dir_name, log_filename + suffix), 'w') as f:
             print('Stallholder name {} with legacy ID {} has been created'.format(row['FirstName'], row['StallHolderID']), file=f)
 
             createduser = CustomUser.objects.get(reference_id=row['StallHolderID'])
-            Profile.objects.filter(user=createduser.pk).update(org_name=row['BusinessName'])
-            print('Profile with user FK {} has been updated with the {} Stallholder business name.'.format(createduser.pk,
+            if len(row['BusinessName']) > 0:
+                Profile.objects.filter(user=createduser.pk).update(org_name=row['BusinessName'])
+                print('Profile with user FK {} has been updated with the {} Stallholder business name.'.format(createduser.pk,
                                                                                                            row['BusinessName']), file=f)

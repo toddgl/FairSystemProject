@@ -156,6 +156,7 @@ class FullSitePriceFilterManager(models.Manager):
     Manager that returns the current price of full size fair sites, accessed by calling
     InventoryItemFair.fullsitepricemgr.all()
     """
+
     def get_queryset(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Full Size Fair Site').price
@@ -166,6 +167,7 @@ class HalfSitePriceFilterManager(models.Manager):
     Manager that returns the current price of half size fair sites, accessed by calling
     InventoryItemFair.halfsitepricemgr.all()
     """
+
     def get_queryset(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Half Size Fair Site').price
@@ -175,6 +177,7 @@ class TrestlePriceFilterManager(models.Manager):
     """
     Manager that returns the current price of a trestle, accessed by calling  InventoryItemFair.trestlepricemgr.all()
     """
+
     def get_queryset(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Trestle Table').price
@@ -184,6 +187,7 @@ class PowerPointPriceFilterManager(models.Manager):
     """
     Manager that returns the current price of site power, accessed by calling  InventoryItemFair.powerpricemgr.all()
     """
+
     def get_queryset(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Power Point').price
@@ -194,6 +198,7 @@ class HealthSafetyFoodLicencePriceFilterManager(models.Manager):
     Manager that returns the current price of a food licence, accessed by calling
     InventoryItemFair.foodlicencepriceemgr.all()
     """
+
     def get_queryset(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Health & Safety Food Licence').price
@@ -204,6 +209,7 @@ class FoodLicencePriceFilterManager(models.Manager):
     Manager that returns the current price of a food licence, accessed by calling
     InventoryItemFair.foodlicencepriceemgr.all()
     """
+
     def get_queryset(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Food Licence').price
@@ -341,7 +347,7 @@ class PowerBox(models.Model):
         return self.power_box_name
 
 
-class EventFilterManager(models.Manager):
+class CurrentEventFilterManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(Q(original_event_date__gt=datetime.datetime.now()) |
                                              Q(postponement_event_date__gt=datetime.datetime.now()))
@@ -384,7 +390,7 @@ class Event(models.Model):
                                    null=True)
 
     objects = models.Manager()
-    filtermgr = EventFilterManager()
+    currenteventfiltermgr = CurrentEventFilterManager()
 
     def __str__(self):
         return self.event_name
@@ -398,7 +404,8 @@ class Event(models.Model):
 
 class SiteAvailableManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(site_status=1)
+        return super().get_queryset().filter(site_status=1, event__fair__fair_year__in=[current_year, next_year],
+                                             event__fair__is_activated=True)
 
 
 class SiteAvailableFirstEventManager(models.Manager):
@@ -515,6 +522,7 @@ class EventPower(models.Model):
     class Meta:
         unique_together = ('event', 'power_box')
 
+
 class SiteHistory(models.Model):
     """
     Description: A model to hold a summary of Stallholder Site History, initially used to store legacy data,
@@ -527,7 +535,7 @@ class SiteHistory(models.Model):
         related_name='site_history'
     )
     year = models.CharField(max_length=4, default='2022')
-    site  = models.ForeignKey(
+    site = models.ForeignKey(
         Site,
         on_delete=models.CASCADE,
         verbose_name='site',
@@ -535,6 +543,12 @@ class SiteHistory(models.Model):
     )
     is_skipped = models.BooleanField(default=False)
     number_events = models.IntegerField()
+
+
+class CurrentSiteAllocationManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(event_site__event__fair__fair_year__in=[current_year, next_year],
+                                             event_site__event__fair__is_activated=True)
 
 
 class SiteAllocation(models.Model):
@@ -548,7 +562,7 @@ class SiteAllocation(models.Model):
         verbose_name='custom_user',
         related_name='site_allocation'
     )
-    event_site =  models.ForeignKey(
+    event_site = models.ForeignKey(
         EventSite,
         on_delete=models.CASCADE,
         verbose_name='event_site',
@@ -570,4 +584,15 @@ class SiteAllocation(models.Model):
         blank=True,
         null=True
     )
+    created_by = models.ForeignKey(CustomUser, related_name='allocation_created_by', on_delete=models.SET_NULL,
+                                   blank=True,
+                                   null=True)
+    updated_by = models.ForeignKey(CustomUser, related_name='allocation_updated_by', on_delete=models.SET_NULL,
+                                   blank=True,
+                                   null=True)
 
+    objects = models.Manager()  # The default manager.
+    currentallocationsmgr = CurrentSiteAllocationManager()  # The current site allocations manager
+
+    class Meta:
+        unique_together = ('stallholder', 'event_site')

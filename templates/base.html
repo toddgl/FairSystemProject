@@ -22,7 +22,7 @@
     <title>Fair System</title>
     {% endblock head %}
   </head>
-  <body>
+  <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
     {% block nav %}
       {% include 'navbar.html' %}
     {% endblock nav %}

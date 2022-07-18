@@ -4,6 +4,7 @@ import os
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.contrib.auth.decorators import login_required, permission_required
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
@@ -23,6 +24,7 @@ from fairs.models import (
     Event,
     EventSite,
     Site,
+    SiteAllocation,
     Location,
     Zone,
     ZoneMap,
@@ -38,6 +40,8 @@ from .forms import (
     EventDetailForm,
     SiteCreateForm,
     SiteDetailForm,
+    SiteAllocationFilterForm,
+    SiteAllocationCreateForm,
     LocationCreateForm,
     LocationUpdateForm,
     ZoneCreateForm,
@@ -284,7 +288,7 @@ class SiteCreateView(PermissionRequiredMixin, CreateView):
         """
         Create the event site relationship with the just created site and all future events
         """
-        events = Event.filtermgr.all()
+        events = Event.currenteventfiltermgr.all()
         objs = [
             EventSite(
                 event=event,
@@ -802,4 +806,55 @@ class EventPowerCreateView(PermissionRequiredMixin, CreateView):
 
     def get_form_kwargs(self, *args, **kwargs):
         kwargs = super(EventPowerCreateView, self).get_form_kwargs(*args, **kwargs)
+        return kwargs
+
+
+filter_dict = {}
+filter_message = ""
+
+
+@login_required
+@permission_required('fairs.add_siteallocation', raise_exception=True)
+@permission_required('fairs.change_siteallocation', raise_exception=True)
+def site_allocation_listview(request):
+    """
+    Populate the site allocation forms in particular provide a filtered view of dropdown boxes
+    based on the stallholder filters,
+    """
+    template_name = 'allocations/siteallocation_list.html'
+    currentallocations = SiteAllocation.currentallocationsmgr
+    stallholderID = request.POST.get('stallholderID')
+    if request.htmx:
+        site_allocations = currentallocations.filter(id=stallholderID)
+        print(site_allocations)
+
+        return TemplateResponse(request, template_name, {'site_allocations': site_allocations})
+    else:
+        return TemplateResponse(request, template_name )
+
+
+
+class SiteAllocationCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Site including recording who created it
+    """
+    permission_required = 'fairs.add_siteallocation'
+    model = SiteAllocation
+    form_class = SiteAllocationCreateForm
+    template_name = 'siteallocation/siteallocation_create.html'
+    success_url = reverse_lazy('fair:siteallocation-list')
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.created_by = self.request.user
+        self.object.save()
+        return super(SiteAllocationCreateView, self).form_valid(form)
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(SiteAllocationCreateView, self).get_initial(**kwargs)
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(SiteAllocationCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['created_by'] = self.request.user
         return kwargs
