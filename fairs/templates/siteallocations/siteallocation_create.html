@@ -1,0 +1,18 @@
+<!--fairs/templates/siteallocations/siteallocation_create.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="d-flex justify-content-between" >
+  <section class="container">
+    <h4>Create Site Allocation</h4>
+    {% include 'siteallocations/siteallocation_filter_partial.html' %}
+    {% include 'siteallocations/siteallocation_partial.html' %}
+  </section>
+
+</div>
+<script src="{% static 'js/dialog.js' %}"></script>
+<script src="{% static 'js/hide.js' %}"></script>
+
+{% endblock %}

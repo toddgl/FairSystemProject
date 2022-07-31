@@ -426,6 +426,7 @@ class ZoneMapDetailForm(ModelForm):
     """
     Form for updating an existing zone map
     """
+
     class Meta:
         model = ZoneMap
         fields = ['zone', 'year', 'map_pdf']
@@ -861,6 +862,7 @@ class LocationUpdateForm(ModelForm):
             }),
         }
 
+
 class SiteAllocationCreateForm(ModelForm):
     """
     Form used to create new site allocations
@@ -869,7 +871,7 @@ class SiteAllocationCreateForm(ModelForm):
     stallholder = ModelChoiceField(
         queryset=CustomUser.stallholdermgr,
         empty_label='Please Select',
-        label='First Event Sites',
+        label='Stall Holder',
         required=True,
         widget=Select(attrs={
             'class': "form-select",
@@ -881,7 +883,7 @@ class SiteAllocationCreateForm(ModelForm):
     event_site = ModelChoiceField(
         queryset=EventSite.site_available,
         empty_label='Please Select',
-        label='First Event Sites',
+        label='Event Sites',
         required=False,
         widget=Select(attrs={
             'class': "form-select",
@@ -899,9 +901,21 @@ class SiteAllocationCreateForm(ModelForm):
             'style': 'max-width: 300px;',
         })
     )
+
+    event_power = ModelChoiceField(
+        queryset=EventPower.objects.all(),
+        empty_label='Please Select',
+        label='Event Power',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
     class Meta:
         model = SiteAllocation
-        fields = ('event_site','stall_registration', 'event_power')
+        fields = ('stallholder', 'event_site', 'stall_registration', 'event_power')
         widgets = {
             'event_site': Select(attrs={
                 'class': "form-select",
@@ -909,6 +923,11 @@ class SiteAllocationCreateForm(ModelForm):
             }),
 
         }
+
+    def __init__(self, *args, **kwargs):
+        self.created_by = kwargs.pop('created_by', None)
+        super(SiteAllocationCreateForm, self).__init__(*args, **kwargs)
+
 
 class SiteAllocationUpdateForm(ModelForm):
     """
@@ -936,9 +955,10 @@ class SiteAllocationUpdateForm(ModelForm):
             'style': 'max-width: 300px;',
         })
     )
+
     class Meta:
         model = SiteAllocation
-        fields = ('event_site','stall_registration', 'event_power')
+        fields = ('event_site', 'stall_registration', 'event_power')
         widgets = {
             'event_site': Select(attrs={
                 'class': "form-select",
@@ -946,6 +966,7 @@ class SiteAllocationUpdateForm(ModelForm):
             }),
 
         }
+
 
 class SiteAllocationFilterForm(Form):
     """

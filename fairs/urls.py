@@ -24,6 +24,7 @@ from fairs.views import (
     ZoneMapCreateView,
     ZoneMapDetailUpdateView,
     pdf_view,
+    site_allocation_create,
     SiteAllocationCreateView,
     site_allocation_listview,
     SiteCreateView,
@@ -44,7 +45,7 @@ from fairs.views import (
     site_dashboard_view
 )
 
-app_name = 'fair'  # This is the namespace so you can reverse urls with fair:*
+app_name = 'fair'  # This is the namespace, so you can reverse urls with fair:*
 
 urlpatterns = [
 
@@ -78,7 +79,8 @@ urlpatterns = [
     path('location/actionUrl/', LocationCreateView.as_view(), name='actionUrl'),
     path('zone/actionUrl/', ZoneCreateView.as_view(), name='actionUrl'),
     path('site/actionUrl/', SiteCreateView.as_view(), name='actionUrl'),
-    path('siteallocation/', site_allocation_listview, name='siteallocation-list'),
+    path('siteallocation/', site_allocation_create, name='siteallocation-create'),
+    path('siteallocation/list/', site_allocation_listview, name='siteallocation-list'),
     path('siteallocation/actionUrl/', SiteAllocationCreateView.as_view(), name='actionUrl'),
     path('eventsite/actionUrl/', EventSiteCreateView.as_view(), name='actionUrl'),
     path('inventoryitem/actionUrl/', InventoryItemCreateView.as_view(), name='actionUrl'),

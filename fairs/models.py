@@ -497,6 +497,11 @@ class EventSite(models.Model):
         return str(self.event) + " - " + str(self.site)
 
 
+class EventPowerCurrentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(event__fair__fair_year__in=[current_year, next_year],
+                                             event__fair__is_activated=True)
+
 class EventPower(models.Model):
     """
     Description: Junction table for the manytomany relationship between
@@ -518,6 +523,9 @@ class EventPower(models.Model):
         default=0
     )
     power_load = models.DecimalField(max_digits=10, decimal_places=5)
+
+    objects = models.Manager()  # The default manager.
+    event_power_current_mgr  = EventPowerCurrentManager()  # The event power status available manager.
 
     class Meta:
         unique_together = ('event', 'power_box')
@@ -592,7 +600,7 @@ class SiteAllocation(models.Model):
                                    null=True)
 
     objects = models.Manager()  # The default manager.
-    currentallocationsmgr = CurrentSiteAllocationManager()  # The current site allocations manager
+    currentallocationsmgr = CurrentSiteAllocationManager()  # The current site siteallocations manager
 
     class Meta:
         unique_together = ('stallholder', 'event_site')

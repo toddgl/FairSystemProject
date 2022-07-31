@@ -821,17 +821,16 @@ def site_allocation_listview(request):
     Populate the site allocation forms in particular provide a filtered view of dropdown boxes
     based on the stallholder filters,
     """
-    template_name = 'allocations/siteallocation_list.html'
+    template_name = 'siteallocations/siteallocation_list.html'
     currentallocations = SiteAllocation.currentallocationsmgr
-    stallholderID = request.POST.get('stallholderID')
+    stallholderID = request.POST.get('stallholder.pk')
     if request.htmx:
         site_allocations = currentallocations.filter(id=stallholderID)
         print(site_allocations)
 
         return TemplateResponse(request, template_name, {'site_allocations': site_allocations})
     else:
-        return TemplateResponse(request, template_name )
-
+        return TemplateResponse(request, template_name)
 
 
 class SiteAllocationCreateView(PermissionRequiredMixin, CreateView):
@@ -841,7 +840,7 @@ class SiteAllocationCreateView(PermissionRequiredMixin, CreateView):
     permission_required = 'fairs.add_siteallocation'
     model = SiteAllocation
     form_class = SiteAllocationCreateForm
-    template_name = 'siteallocation/siteallocation_create.html'
+    template_name = 'siteallocations/siteallocation_create.html'
     success_url = reverse_lazy('fair:siteallocation-list')
 
     def form_valid(self, form):
@@ -858,3 +857,92 @@ class SiteAllocationCreateView(PermissionRequiredMixin, CreateView):
         kwargs = super(SiteAllocationCreateView, self).get_form_kwargs(*args, **kwargs)
         kwargs['created_by'] = self.request.user
         return kwargs
+
+
+power_filter_dict = {}
+event_filter_dict = {}
+filter_message = ""
+
+
+@login_required
+@permission_required('fairs.add_siteallocation', raise_exception=True)
+@permission_required('fairs.change_siteallocation', raise_exception=True)
+def site_allocation_create(request):
+    """
+    Create a site allocation view with filters for events, zones and stallholders to reduce the listings for
+    stallholders, event_sites and event _power.
+    """
+    global filter_message
+    filter_message = 'Showing unfiltered date - of all stallholders, event_sites and event power'
+    template_name = 'siteallocations/siteallocation_create.html'
+    success_url = reverse_lazy('fair:siteallocation-list')
+
+    filterform = SiteAllocationFilterForm(request.POST or None)
+    siteallocationform = SiteAllocationCreateForm(request.POST or None)
+    if request.htmx:
+        siteallocationform.fields['event_site'].queryset = EventSite.site_available
+        siteallocationform.fields['event_power'].queryset = EventPower.event_power_current_mgr
+        if filterform.is_valid():
+            event = filterform.cleaned_data['event']
+            zone = filterform.cleaned_data['zone']
+            attr_zonesite = 'site__zone'
+            attr_eventsite = 'event'
+            attr_powerevent = 'event'
+            attr_powerzone = 'power_box__zone'
+            if event and zone:
+                filter_message = 'Showing filtered data where the event is  ' + str(event) + ' and zone is ' + str(
+                    zone)
+                event_filter_dict = {
+                    attr_zonesite: zone,
+                    attr_eventsite: event
+                }
+                power_filter_dict = {
+                    attr_powerevent: event,
+                    attr_powerzone: zone
+                }
+            elif event:
+                filter_message = 'Showing filtered data where the event is  ' + str(event) + ' and all zones'
+                event_filter_dict = {
+                    attr_eventsite: event
+                }
+                power_filter_dict = {
+                    attr_powerevent: event,
+                }
+            elif zone:
+                filter_message = 'Showing filtered data where the zone is  ' + str(zone) + ' and all events'
+                event_filter_dict = {
+                    attr_zonesite: zone
+                }
+                power_filter_dict = {
+                    attr_powerzone: zone
+                }
+            else:
+                event_filter_dict = {}
+                power_filter_dict = {}
+                filter_message = 'Showing unfiltered data - of all current events and zones'
+            siteallocationform.fields['event_site'].queryset = EventSite.site_available.filter(**event_filter_dict)
+            siteallocationform.fields['event_power'].queryset = EventPower.event_power_current_mgr.filter(
+                **power_filter_dict)
+            if request.htmx:
+                template_name = 'siteallocations/siteallocation_partial.html'
+            return TemplateResponse(request, template_name, {
+                'filterform': filterform,
+                'siteallocationform': siteallocationform,
+                'filter': filter_message,
+            })
+    elif request.method == 'POST':
+        if siteallocationform.is_valid():
+            site_allocation = siteallocationform.save(commit=False)
+            site_allocation.created_by = request.user
+            siteallocationform.save()
+        else:
+            print(
+                siteallocationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+        return HttpResponseRedirect(success_url)
+
+    else:
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'siteallocationform': siteallocationform,
+            'filter': filter_message,
+        })
