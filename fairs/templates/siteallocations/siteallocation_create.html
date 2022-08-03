@@ -4,13 +4,19 @@
 {% load static %}
 
 {% block body %}
-<div class="d-flex justify-content-between" >
-  <section class="container">
+<div class="container" >
+  <div class="row">
     <h4>Create Site Allocation</h4>
-    {% include 'siteallocations/siteallocation_filter_partial.html' %}
-    {% include 'siteallocations/siteallocation_partial.html' %}
-  </section>
-
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      {% include 'siteallocations/siteallocation_filter_partial.html' %}
+      {% include 'siteallocations/siteallocation_partial.html' %}
+    </div>
+    <div class="col-md-6">
+      {% include 'search/partials/search_stallholders.html' %}
+    </div>
+  </div>
 </div>
 <script src="{% static 'js/dialog.js' %}"></script>
 <script src="{% static 'js/hide.js' %}"></script>

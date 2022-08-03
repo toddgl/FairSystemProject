@@ -873,7 +873,7 @@ def site_allocation_create(request):
     stallholders, event_sites and event _power.
     """
     global filter_message
-    filter_message = 'Showing unfiltered date - of all stallholders, event_sites and event power'
+    filter_message = 'Showing unfiltered date of all events and zones'
     template_name = 'siteallocations/siteallocation_create.html'
     success_url = reverse_lazy('fair:siteallocation-list')
 
