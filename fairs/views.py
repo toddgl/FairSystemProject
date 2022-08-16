@@ -42,6 +42,7 @@ from .forms import (
     SiteDetailForm,
     SiteAllocationFilterForm,
     SiteAllocationCreateForm,
+    StallHolderIDForm,
     LocationCreateForm,
     LocationUpdateForm,
     ZoneCreateForm,
@@ -878,6 +879,7 @@ def site_allocation_create(request):
     success_url = reverse_lazy('fair:siteallocation-list')
 
     filterform = SiteAllocationFilterForm(request.POST or None)
+    stallholderform = StallHolderIDForm(request.POST or None)
     siteallocationform = SiteAllocationCreateForm(request.POST or None)
     if request.htmx:
         siteallocationform.fields['event_site'].queryset = EventSite.site_available
@@ -928,11 +930,15 @@ def site_allocation_create(request):
             return TemplateResponse(request, template_name, {
                 'filterform': filterform,
                 'siteallocationform': siteallocationform,
+                'stallholderform': stallholderform,
                 'filter': filter_message,
             })
     elif request.method == 'POST':
-        if siteallocationform.is_valid():
+        if stallholderform.is_valid() and siteallocationform.is_valid():
+            stallholder = stallholderform.cleaned_data['stallholder_id']
+            print(stallholder)
             site_allocation = siteallocationform.save(commit=False)
+            site_allocation.stallholder_id = stallholder
             site_allocation.created_by = request.user
             siteallocationform.save()
         else:
@@ -944,5 +950,22 @@ def site_allocation_create(request):
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'siteallocationform': siteallocationform,
+            'stallholderform': stallholderform,
             'filter': filter_message,
         })
+
+
+def stallholder_select(request):
+    """
+    Capture the stallholder id passed from the Stallholder search app
+    """
+    template_name = 'siteallocations/stallholder_partial.html'
+    # stallholderform = StallHolderIDForm(request.POST or None)
+
+    stallholder_id = request.POST.get('selected_stallholder')
+    print(stallholder_id)
+    # stallholderform.fields['stallholder_id'] = stallholder_id
+    form = StallHolderIDForm(initial={'stallholder_id': stallholder_id})
+    return TemplateResponse(request, template_name, {
+        'stallholderform': form
+    })

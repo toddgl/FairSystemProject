@@ -10,6 +10,7 @@
     <hr>
     <form method="post" >
         {% csrf_token %}
+        {% include 'siteallocations/stallholder_partial.html' %}
         {{ siteallocationform.as_p }}
         <input type="submit" class="mt-2 btn btn-primary" value="Save" >
         <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../'" value="Cancel" >

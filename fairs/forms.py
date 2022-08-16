@@ -868,18 +868,6 @@ class SiteAllocationCreateForm(ModelForm):
     Form used to create new site allocations
     """
 
-    stallholder = ModelChoiceField(
-        queryset=CustomUser.stallholdermgr,
-        empty_label='Please Select',
-        label='Stall Holder',
-        required=True,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-
-    )
-
     event_site = ModelChoiceField(
         queryset=EventSite.site_available,
         empty_label='Please Select',
@@ -895,7 +883,7 @@ class SiteAllocationCreateForm(ModelForm):
         queryset=StallRegistration.objects.all(),
         empty_label='Please Select',
         label='Stall Registration',
-        required=True,
+        required=False,
         widget=Select(attrs={
             'class': "form-select",
             'style': 'max-width: 300px;',
@@ -915,7 +903,7 @@ class SiteAllocationCreateForm(ModelForm):
 
     class Meta:
         model = SiteAllocation
-        fields = ('stallholder', 'event_site', 'stall_registration', 'event_power')
+        fields = ('event_site', 'stall_registration', 'event_power')
         widgets = {
             'event_site': Select(attrs={
                 'class': "form-select",
@@ -1006,3 +994,17 @@ class SiteAllocationFilterForm(Form):
             'zone',
         ]
 
+class StallHolderIDForm(Form):
+    """"
+    Form for capturing Stallholder ID  from the Stallholder search function
+    """
+
+    stallholder_id = forms.CharField(
+        label="Selected Stall holder ID",
+        widget=forms.TextInput(attrs={
+            'class': "form-control",
+            'style': 'max-width: 300px;',
+            'required': False,
+            'placeholder': 'No Stallholder Selected',
+        }),
+    )
