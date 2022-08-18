@@ -1,46 +1,64 @@
 <!-- fairs/templates/siteallocations/siteallocations_list.html -->
 
 {% extends 'base.html' %}
+{% load paginator_tags %}
 
 {% block body %}
-{% csrf_token %}
-<div class="d-flex justify-content-between" >
-    <section class="container">
-        <h4>Site Allocations</h4>
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <div class="row g-3">
+        <h1>Site Allocations</h1>
         <form action='actionUrl' method='GET'>
             <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Site Allocation</button>
             <a href="/" class="btn btn-secondary">Cancel</a>
         </form>
-            {% for siteallocation in site_allocations %}
-            <div class="container mt-3" style="width: 600px;">
-                <div class="card">
-                    <div class="card-body">
-                        <h4 class="card-title">
-                            {{ siteallocation.stallholder_first_name }} + " " + {{ siteallocation.stallholder_last_name }}</h4>
-                        <p class="card-text">
-                            Event Name: {{ siteallocation.event_site__event__event_name }}
-                            Site: {{ siteallocation.event_site__sites__site_name }}
-                        </p>
-                        <a href="{% url 'fair:siteallocation-detail' siteallocation.id %}" class="btn btn-primary">
-                            View and edit Site Allocation Detail
-                        </a>
-                    </div>
+    </div>
+    <div class="row g-3">
+        {% for siteallocation in siteallocation_list %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        Stallholder ID: {{ siteallocation.stallholder.id }} </br> {{ siteallocation.stallholder.first_name }} {{ siteallocation.stallholder.last_name }}</h4>
+                </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item"><strong>Event Name:</strong> {{ siteallocation.event_site.event.event_name }}</li>
+                        <li class="list-group-item"><strong>Site:</strong> {{ siteallocation.event_site.site.site_name }}</li>
+                        <li class="list-group-item"><strong>Registration:</strong> {{ siteallocation.stall_registration.id | default:"--" }}</li>
+                        <li class="list-group-item"><strong>Power:</strong> {{ siteallocation.event_power.power_box.power_box_name | default:"--" }}</li>
+                    </ul>
+                <div class="card-body">
+                    <a href="{% url 'fair:siteallocation-detail' siteallocation.id %}" class="btn btn-primary">
+                        View and edit Site Allocation Detail
+                    </a>
                 </div>
             </div>
-            {% empty %}
-            <div class="alert alert-info" role="alert">Select Stallholder filter to display site allocations.</div>
-            {% endfor %}
-    </section>
-
-    <section>
-
-
-    </section>
-
-    <section>
-
-        {% include 'search/partials/search_stallholders.html' %}
-
-    </section>
+        </div>
+        {% empty %}
+        <div class="alert alert-info" role="alert">There are no sites allocated yet.</div>
+        {% endfor %}
+    </div>
+<!-- Pagination -->
+<nav aria-label="Page navigation">
+    <ul class="pagination">
+        {% get_proper_elided_page_range paginator page_obj.number as page_range %}
+        {% for page_num in page_range %}
+            {% if page_obj.number == page_num %}
+                <li class="active page-item">
+                    <span class="page-link">{{ page_num }}</span>
+                </li>
+            {% else %}
+                {% if page_num == paginator.ELLIPSIS %}
+                    <li class="page-item">
+                        <span class="page-link">{{ paginator.ELLIPSIS }}</span>
+                    </li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
+                    </li>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+    </ul>
+</nav>
 </div>
 {% endblock %}

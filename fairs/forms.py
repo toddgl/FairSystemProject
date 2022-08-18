@@ -944,6 +944,17 @@ class SiteAllocationUpdateForm(ModelForm):
         })
     )
 
+    event_power = ModelChoiceField(
+        queryset=EventPower.objects.all(),
+        empty_label='Please Select',
+        label='Event Power',
+        required=False,
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
     class Meta:
         model = SiteAllocation
         fields = ('event_site', 'stall_registration', 'event_power')

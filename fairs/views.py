@@ -42,6 +42,7 @@ from .forms import (
     SiteDetailForm,
     SiteAllocationFilterForm,
     SiteAllocationCreateForm,
+    SiteAllocationUpdateForm,
     StallHolderIDForm,
     LocationCreateForm,
     LocationUpdateForm,
@@ -230,7 +231,7 @@ class EventDetailUpdateView(PermissionRequiredMixin, UpdateView):
         context = super(EventDetailUpdateView, self).get_context_data(**kwargs)
         # Refresh the obj from the database in case the form validation changed it
         obj = self.get_object()
-        context['obj'] = context['fair'] = obj
+        context['obj'] = context['event'] = obj
         return context
 
     def form_valid(self, form):
@@ -813,6 +814,15 @@ class EventPowerCreateView(PermissionRequiredMixin, CreateView):
 filter_dict = {}
 filter_message = ""
 
+class SiteAllocationListView(PermissionRequiredMixin, ListView):
+    """
+    List all current Site Allocations  in the system by event site
+    """
+    permission_required = 'fairs.change_siteallocation'
+    model = SiteAllocation
+    template_name = 'siteallocations/siteallocation_list.html'
+    paginate_by = 12
+    queryset = SiteAllocation.currentallocationsmgr.all().order_by("event_site")
 
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
@@ -823,47 +833,38 @@ def site_allocation_listview(request):
     based on the stallholder filters,
     """
     template_name = 'siteallocations/siteallocation_list.html'
-    currentallocations = SiteAllocation.currentallocationsmgr
-    stallholderID = request.POST.get('stallholder.pk')
+    currentallocations = SiteAllocation.currentallocationsmgr.all()
     if request.htmx:
         site_allocations = currentallocations.filter(id=stallholderID)
         print(site_allocations)
 
         return TemplateResponse(request, template_name, {'site_allocations': site_allocations})
     else:
-        return TemplateResponse(request, template_name)
+        return TemplateResponse(request, template_name, {'site_allocations': currentallocations})
 
 
-class SiteAllocationCreateView(PermissionRequiredMixin, CreateView):
+class SiteAllocationUpdateView(PermissionRequiredMixin, UpdateView):
     """
-    Create a Site including recording who created it
+    Update a Site Allocation including recording who created it
     """
     permission_required = 'fairs.add_siteallocation'
     model = SiteAllocation
-    form_class = SiteAllocationCreateForm
-    template_name = 'siteallocations/siteallocation_create.html'
+    form_class = SiteAllocationUpdateForm
+    template_name = 'siteallocations/siteallocation_update.html'
     success_url = reverse_lazy('fair:siteallocation-list')
+
+    def get_context_data(self, **kwargs):
+        context = super(SiteAllocationUpdateView, self).get_context_data(**kwargs)
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['siteallocation'] = obj
+        return context
 
     def form_valid(self, form):
         self.object = form.save(commit=False)
-        self.object.created_by = self.request.user
+        self.object.updated_by = self.request.user
         self.object.save()
-        return super(SiteAllocationCreateView, self).form_valid(form)
-
-    def get_initial(self, *args, **kwargs):
-        initial = super(SiteAllocationCreateView, self).get_initial(**kwargs)
-        return initial
-
-    def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super(SiteAllocationCreateView, self).get_form_kwargs(*args, **kwargs)
-        kwargs['created_by'] = self.request.user
-        return kwargs
-
-
-power_filter_dict = {}
-event_filter_dict = {}
-filter_message = ""
-
+        return HttpResponseRedirect(self.get_success_url())
 
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
