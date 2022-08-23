@@ -967,9 +967,48 @@ class SiteAllocationUpdateForm(ModelForm):
         }
 
 
+class SiteAllocationListFilterForm(Form):
+    """
+    Filter form for restricting the  dropdown lists Site Allocation, creation and updating
+    """
+
+    event = ModelChoiceField(
+        queryset=Event.currenteventfiltermgr.all(),
+        empty_label='Show All',
+        label='Event',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#allocation_data',
+        })
+    )
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Show All',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post`': '.',
+            'hx-target': '#allocation_data',
+        })
+    )
+
+    class Meta:
+        fields = [
+            'event',
+            'zone',
+        ]
+
+
 class SiteAllocationFilterForm(Form):
     """
-    Filter form for restricting the  dropdown lists Site Allocation listing, creation and updating
+    Filter form for restricting the  dropdown lists Site Allocation, creation and updating
     """
 
     event = ModelChoiceField(

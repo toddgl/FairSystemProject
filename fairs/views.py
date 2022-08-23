@@ -2,7 +2,7 @@
 import datetime
 import os
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.template.response import TemplateResponse
@@ -40,6 +40,7 @@ from .forms import (
     EventDetailForm,
     SiteCreateForm,
     SiteDetailForm,
+    SiteAllocationListFilterForm,
     SiteAllocationFilterForm,
     SiteAllocationCreateForm,
     SiteAllocationUpdateForm,
@@ -822,7 +823,33 @@ class SiteAllocationListView(PermissionRequiredMixin, ListView):
     model = SiteAllocation
     template_name = 'siteallocations/siteallocation_list.html'
     paginate_by = 12
-    queryset = SiteAllocation.currentallocationsmgr.all().order_by("event_site")
+
+    def get_queryset(self):
+        siteallocation_list = SiteAllocation.currentallocationsmgr.all().order_by("event_site")
+
+        filterform = SiteAllocationListFilterForm(self.request.POST)
+
+        if filterform.is_valid():
+            filters = {}
+
+            event = filterform.cleaned_data['event']
+            zone = filterform.cleaned_data['zone']
+
+            if event:
+                filters['event'] = event
+
+            if zone:
+                filters['site__zone'] =zone
+
+            siteallocation_list = siteallocation_list.filter(**filters)
+
+        return siteallocation_list
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['filterform'] = SiteAllocationFilterForm(self.request.POST)
+
+        return context
 
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
@@ -833,14 +860,47 @@ def site_allocation_listview(request):
     based on the stallholder filters,
     """
     template_name = 'siteallocations/siteallocation_list.html'
-    currentallocations = SiteAllocation.currentallocationsmgr.all()
-    if request.htmx:
-        site_allocations = currentallocations.filter(id=stallholderID)
-        print(site_allocations)
+    filterform = SiteAllocationFilterForm(request.POST or None)
+    allocations = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
 
-        return TemplateResponse(request, template_name, {'site_allocations': site_allocations})
+    if request.htmx:
+        if filterform.is_valid():
+            event = filterform.cleaned_data['event']
+            zone = filterform.cleaned_data['zone']
+            attr_zonesite = 'event_site__site__zone'
+            attr_eventsite = 'event_site__event'
+            if event and zone:
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_eventsite: event
+                }
+            elif event:
+                filter_dict = {
+                    attr_eventsite: event
+                }
+            elif zone:
+                filter_dict = {
+                    attr_zonesite: zone
+                }
+            else:
+                filter_dict = {}
+            allocations = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+            if request.htmx:
+                template_name = 'siteallocations/siteallocation_list_partial.html'
+                paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
+                page_number = request.GET.get('page')
+                page_obj = paginator.get_page(page_number)
+                return TemplateResponse(request, template_name, {
+                    'page_obj': page_obj,
+                })
     else:
-        return TemplateResponse(request, template_name, {'site_allocations': currentallocations})
+        paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
+        page_number = request.GET.get('page')
+        page_obj = paginator.get_page(page_number)
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'page_obj': page_obj,
+        })
 
 
 class SiteAllocationUpdateView(PermissionRequiredMixin, UpdateView):

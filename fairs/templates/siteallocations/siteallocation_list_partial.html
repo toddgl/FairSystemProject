@@ -1,0 +1,31 @@
+<!--fairs/templates/siteallocations/siteallocation_list_partial.html -->
+
+{% load static %}
+
+<div id="allocation_data">
+    <div class="row g-3">
+        {% for siteallocation in page_obj %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">
+                        Stallholder ID: {{ siteallocation.stallholder.id }} </br> {{ siteallocation.stallholder.first_name }} {{ siteallocation.stallholder.last_name }}</h4>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Event Name:</strong> {{ siteallocation.event_site.event.event_name }}</li>
+                    <li class="list-group-item"><strong>Site:</strong> {{ siteallocation.event_site.site.site_name }}</li>
+                    <li class="list-group-item"><strong>Registration:</strong> {{ siteallocation.stall_registration.id | default:"--" }}</li>
+                    <li class="list-group-item"><strong>Power:</strong> {{ siteallocation.event_power.power_box.power_box_name | default:"--" }}</li>
+                </ul>
+                <div class="card-body">
+                    <a href="{% url 'fair:siteallocation-detail' siteallocation.id %}" class="btn btn-primary">
+                        View and edit Site Allocation Detail
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info" role="alert">There are no sites allocated yet.</div>
+        {% endfor %}
+    </div>
+</div>
