@@ -27,7 +27,6 @@ from fairs.views import (
     site_allocation_create,
     SiteAllocationUpdateView,
     site_allocation_listview,
-    SiteAllocationListView,
     SiteCreateView,
     SiteListView,
     SiteDetailUpdateView,

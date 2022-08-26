@@ -815,41 +815,6 @@ class EventPowerCreateView(PermissionRequiredMixin, CreateView):
 filter_dict = {}
 filter_message = ""
 
-class SiteAllocationListView(PermissionRequiredMixin, ListView):
-    """
-    List all current Site Allocations  in the system by event site
-    """
-    permission_required = 'fairs.change_siteallocation'
-    model = SiteAllocation
-    template_name = 'siteallocations/siteallocation_list.html'
-    paginate_by = 12
-
-    def get_queryset(self):
-        siteallocation_list = SiteAllocation.currentallocationsmgr.all().order_by("event_site")
-
-        filterform = SiteAllocationListFilterForm(self.request.POST)
-
-        if filterform.is_valid():
-            filters = {}
-
-            event = filterform.cleaned_data['event']
-            zone = filterform.cleaned_data['zone']
-
-            if event:
-                filters['event'] = event
-
-            if zone:
-                filters['site__zone'] =zone
-
-            siteallocation_list = siteallocation_list.filter(**filters)
-
-        return siteallocation_list
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context['filterform'] = SiteAllocationFilterForm(self.request.POST)
-
-        return context
 
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
@@ -859,40 +824,61 @@ def site_allocation_listview(request):
     Populate the site allocation forms in particular provide a filtered view of dropdown boxes
     based on the stallholder filters,
     """
+    global alert_message
+    alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
-    filterform = SiteAllocationFilterForm(request.POST or None)
+    filterform = SiteAllocationListFilterForm(request.POST or None)
     allocations = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
 
     if request.htmx:
+        stallholder_id = request.POST.get('selected_stallholder')
+        attr_stallholder = 'stallholder'
+        if stallholder_id:
+            filter_dict ={
+                attr_stallholder: stallholder_id
+            }
+            allocations = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+            template_name = 'siteallocations/siteallocation_list_partial.html'
+            paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            return TemplateResponse(request, template_name, {
+                'page_obj': page_obj,
+                'alert_mgr': alert_message,
+            })
         if filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
             attr_zonesite = 'event_site__site__zone'
             attr_eventsite = 'event_site__event'
             if event and zone:
+                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(zone)
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event
                 }
             elif event:
+                alert_message = 'There are no sites allocated where the event is ' + str(event)
                 filter_dict = {
                     attr_eventsite: event
                 }
             elif zone:
+                alert_message = 'There are no sites allocated where the zone is ' + str(zone)
                 filter_dict = {
                     attr_zonesite: zone
                 }
             else:
+                alert_message = 'There are no sites allocated yet.'
                 filter_dict = {}
             allocations = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
-            if request.htmx:
-                template_name = 'siteallocations/siteallocation_list_partial.html'
-                paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
-                page_number = request.GET.get('page')
-                page_obj = paginator.get_page(page_number)
-                return TemplateResponse(request, template_name, {
-                    'page_obj': page_obj,
-                })
+            template_name = 'siteallocations/siteallocation_list_partial.html'
+            paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
+            page_number = request.GET.get('page')
+            page_obj = paginator.get_page(page_number)
+            return TemplateResponse(request, template_name, {
+                'page_obj': page_obj,
+                'alert_mgr': alert_message,
+            })
     else:
         paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
         page_number = request.GET.get('page')
@@ -900,6 +886,7 @@ def site_allocation_listview(request):
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'page_obj': page_obj,
+            'alert_mgr': alert_message,
         })
 
 
@@ -997,7 +984,6 @@ def site_allocation_create(request):
     elif request.method == 'POST':
         if stallholderform.is_valid() and siteallocationform.is_valid():
             stallholder = stallholderform.cleaned_data['stallholder_id']
-            print(stallholder)
             site_allocation = siteallocationform.save(commit=False)
             site_allocation.stallholder_id = stallholder
             site_allocation.created_by = request.user
@@ -1021,11 +1007,8 @@ def stallholder_select(request):
     Capture the stallholder id passed from the Stallholder search app
     """
     template_name = 'siteallocations/stallholder_partial.html'
-    # stallholderform = StallHolderIDForm(request.POST or None)
 
     stallholder_id = request.POST.get('selected_stallholder')
-    print(stallholder_id)
-    # stallholderform.fields['stallholder_id'] = stallholder_id
     form = StallHolderIDForm(initial={'stallholder_id': stallholder_id})
     return TemplateResponse(request, template_name, {
         'stallholderform': form

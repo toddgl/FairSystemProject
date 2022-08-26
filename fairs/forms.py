@@ -994,7 +994,7 @@ class SiteAllocationListFilterForm(Form):
             'class': 'form-select',
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
-            'hx-post`': '.',
+            'hx-post': '.',
             'hx-target': '#allocation_data',
         })
     )
@@ -1044,6 +1044,7 @@ class SiteAllocationFilterForm(Form):
             'zone',
         ]
 
+
 class StallHolderIDForm(Form):
     """"
     Form for capturing Stallholder ID  from the Stallholder search function
@@ -1056,5 +1057,6 @@ class StallHolderIDForm(Form):
             'style': 'max-width: 300px;',
             'required': False,
             'placeholder': 'No Stallholder Selected',
+            'disabled': 'disabled'
         }),
     )
