@@ -1057,6 +1057,6 @@ class StallHolderIDForm(Form):
             'style': 'max-width: 300px;',
             'required': False,
             'placeholder': 'No Stallholder Selected',
-            'disabled': 'disabled'
+            'readonly': 'readonly'
         }),
     )

@@ -5,6 +5,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.views.decorators.http import require_http_methods
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
@@ -16,7 +17,8 @@ from django.views.generic import (
     CreateView,
     FormView,
     ListView,
-    UpdateView
+    UpdateView,
+    DeleteView,
 )
 
 from fairs.models import (
@@ -1013,3 +1015,29 @@ def stallholder_select(request):
     return TemplateResponse(request, template_name, {
         'stallholderform': form
     })
+
+
+@login_required
+@permission_required('fairs.delete_siteallocation', raise_exception=True)
+@require_http_methods(['DELETE'])
+def siteallocataion_delete_view(request, pk):
+    """
+    Remove a site allocation
+    """
+    template_name = 'siteallocations/siteallocation_list_partial.html'
+    obj = get_object_or_404(SiteAllocation, id=pk)
+    obj.delete()
+    allocations = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
+    if not allocations:
+        alert_message = 'There are no sites allocated yet.'
+    else:
+        alert_message = ""
+    paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+    return TemplateResponse(request, template_name, {
+        'page_obj': page_obj,
+        'alert_mgr': alert_message,
+    })
+
+
