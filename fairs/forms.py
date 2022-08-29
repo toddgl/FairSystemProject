@@ -585,6 +585,45 @@ class EventSiteCreateForm(ModelForm):
         super(EventSiteCreateForm, self).__init__(*args, **kwargs)
 
 
+class EventSiteListFilterForm(Form):
+    """
+    Filter form for restricting the  dropdown lists Site Allocation, creation and updating
+    """
+
+    event = ModelChoiceField(
+        queryset=Event.currenteventfiltermgr.all(),
+        empty_label='Show All',
+        label='Event',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#event_site_data',
+        })
+    )
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Show All',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#event_site_data',
+        })
+    )
+
+    class Meta:
+        fields = [
+            'event',
+            'zone',
+        ]
+
+
 class InventoryItemFairDetailForm(ModelForm):
     """
     Form for updating an InventoryItemFair
