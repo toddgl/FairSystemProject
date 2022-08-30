@@ -616,11 +616,33 @@ class EventSiteListFilterForm(Form):
             'hx-target': '#event_site_data',
         })
     )
+    site_status = ChoiceField(
+        label='Site Status',
+        required=False,
+        widget=Select(
+            choices=[
+                ('Show All', ''),
+                ('AVAILABLE', 'Available to be booked'),
+                ('ALLOCATED', 'Allocated to a stallholder'),
+                ('PENDING', 'Pending finalisation of the booking'),
+                ('BOOKED', 'Booked'),
+                ('UNAVAILABLE', 'Not available for this event'),
+                ('ARCHIVED', 'No longer used - was from a previous fair')
+            ],
+            attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#event_site_data',
+        })
+    )
 
     class Meta:
         fields = [
             'event',
             'zone',
+            'site_status',
         ]
 
 

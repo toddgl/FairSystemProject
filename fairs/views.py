@@ -509,10 +509,11 @@ def event_site_listview(request):
     List all the event sites and provide filtered views based on dropdown filters of events and Zones
     """
     global alert_message
+    global filter_dict
     alert_message = 'There are no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
-    eventsites = EventSite.objects.all().order_by("site_status")
+    eventsites = EventSite.objects.all().order_by("site__site_name")
 
     if request.htmx:
         if filterform.is_valid():
@@ -539,7 +540,7 @@ def event_site_listview(request):
             else:
                 alert_message = 'There are no event sites created yet.'
                 filter_dict = {}
-            eventsites = EventSite.objects.filter(**filter_dict).order_by("site_status")
+            eventsites = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
             template_name = 'eventsites/eventsite_list_partial.html'
             paginator = Paginator(eventsites, per_page=6)  # 6 eventsites per page
             page_number = request.GET.get('page', 1)
@@ -557,6 +558,24 @@ def event_site_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
+        eventsites = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
+        template_name = 'eventsites/eventsite_list_partial.html'
+        paginator = Paginator(eventsites, per_page=6)  # 6 eventsites per page
+        page_number = request.GET.get('page')
+        page_range = paginator.get_elided_page_range(number=page_number)
+        try:
+            eventsite_list = paginator.get_page(page_number)
+        except PageNotAnInteger:
+            # If page is not an integer deliver the first page
+            eventsite_list = paginator.page(1)
+        except EmptyPage:
+            # If page is out of range deliver last page of results
+            eventsite_list = paginator.get_page(paginator.num_pages)
+        return TemplateResponse(request, template_name, {
+            'eventsite_list': eventsite_list,
+            'page_range': page_range,
+            'alert_mgr': alert_message,
+        })
     else:
         paginator = Paginator(eventsites, per_page=6)  # 6 eventsites per page
         page_number = request.GET.get('page', 1)
