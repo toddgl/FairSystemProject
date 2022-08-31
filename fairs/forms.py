@@ -618,17 +618,17 @@ class EventSiteListFilterForm(Form):
     )
     site_status = ChoiceField(
         label='Site Status',
+        choices=[
+            ('','Show All'),
+            (1, 'Available'),
+            (2, 'Allocated'),
+            (3,'Pending'),
+            (4, 'Booked'),
+            (5, 'Unavailable'),
+            (6, 'Archived')
+        ],
         required=False,
         widget=Select(
-            choices=[
-                ('Show All', ''),
-                ('AVAILABLE', 'Available to be booked'),
-                ('ALLOCATED', 'Allocated to a stallholder'),
-                ('PENDING', 'Pending finalisation of the booking'),
-                ('BOOKED', 'Booked'),
-                ('UNAVAILABLE', 'Not available for this event'),
-                ('ARCHIVED', 'No longer used - was from a previous fair')
-            ],
             attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',

@@ -519,23 +519,50 @@ def event_site_listview(request):
         if filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
+            status = filterform.cleaned_data['site_status']
             attr_zonesite = 'site__zone'
             attr_eventsite = 'event'
-            if event and zone:
+            attr_sitestatus = 'site_status'
+            if event and zone and status:
                 alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(zone)
                 filter_dict = {
                     attr_zonesite: zone,
-                    attr_eventsite: event
+                    attr_eventsite: event,
+                    attr_sitestatus: status,
+                }
+            elif event and zone:
+                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
+                    zone)
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_eventsite: event,
+                }
+            elif event and status:
+                alert_message = 'There are no event sites  where the event is ' + str(event)
+                filter_dict = {
+                    attr_eventsite: event,
+                    attr_sitestatus: status,
                 }
             elif event:
                 alert_message = 'There are no event sites  where the event is ' + str(event)
                 filter_dict = {
                     attr_eventsite: event
                 }
+            elif zone and status:
+                alert_message = 'There are no event sites where the zone is ' + str(zone)
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_sitestatus: status,
+                }
             elif zone:
                 alert_message = 'There are no event sites where the zone is ' + str(zone)
                 filter_dict = {
                     attr_zonesite: zone
+                }
+            elif status:
+                alert_message = 'There are no event sites with a status of ' + str(status)
+                filter_dict = {
+                    attr_sitestatus: status,
                 }
             else:
                 alert_message = 'There are no event sites created yet.'
@@ -923,11 +950,10 @@ def site_allocation_listview(request):
     based on the stallholder filters,
     """
     global alert_message
-    alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
     allocations = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
-
+    alert_message = 'There are no sites allocated yet.'
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'stallholder'

@@ -27,9 +27,9 @@
                 </div>
             </div>
         </div>
-        {% empty %}
-            <div class="alert alert-info" role="alert">There are no sites linked with an event yet.</div>
         {% endfor %}
+    {% empty %}
+    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
     {% endfor %}
     </div>
 
