@@ -71,6 +71,14 @@ from .forms import (
 current_year = datetime.datetime.now().year
 next_year = current_year + 1
 media_root = settings.MEDIA_ROOT
+site_status_dict = {
+    1: 'Available',
+    2: 'Allocated',
+    3:'Pending',
+    4: 'Booked',
+    5: 'Unavailable',
+    6: 'Archived'
+}
 
 
 # Create your views here.
@@ -508,12 +516,12 @@ def event_site_listview(request):
     """
     List all the event sites and provide filtered views based on dropdown filters of events and Zones
     """
-    global alert_message
-    global filter_dict
     alert_message = 'There are no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
-    eventsites = EventSite.objects.all().order_by("site__site_name")
+    filtered_data = EventSite.objects.all().order_by("site__site_name")
+    cards_per_page = 6
+    global filter_dict
 
     if request.htmx:
         if filterform.is_valid():
@@ -524,7 +532,7 @@ def event_site_listview(request):
             attr_eventsite = 'event'
             attr_sitestatus = 'site_status'
             if event and zone and status:
-                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(zone)
+                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(zone) + ' with a status of ' + str(site_status_dict[int(status)])
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event,
@@ -538,7 +546,7 @@ def event_site_listview(request):
                     attr_eventsite: event,
                 }
             elif event and status:
-                alert_message = 'There are no event sites  where the event is ' + str(event)
+                alert_message = 'There are no event sites  where the event is ' + str(event) + ' with a status of ' + str(site_status_dict[int(status)])
                 filter_dict = {
                     attr_eventsite: event,
                     attr_sitestatus: status,
@@ -549,7 +557,7 @@ def event_site_listview(request):
                     attr_eventsite: event
                 }
             elif zone and status:
-                alert_message = 'There are no event sites where the zone is ' + str(zone)
+                alert_message = 'There are no event sites where the zone is ' + str(zone) + ' with a status of ' + str(site_status_dict[int(status)])
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_sitestatus: status,
@@ -560,67 +568,59 @@ def event_site_listview(request):
                     attr_zonesite: zone
                 }
             elif status:
-                alert_message = 'There are no event sites with a status of ' + str(status)
+                alert_message = 'There are no event sites with a status of ' + str(site_status_dict[int(status)])
                 filter_dict = {
                     attr_sitestatus: status,
                 }
             else:
                 alert_message = 'There are no event sites created yet.'
                 filter_dict = {}
-            eventsites = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
+            filtered_data = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
             template_name = 'eventsites/eventsite_list_partial.html'
-            paginator = Paginator(eventsites, per_page=6)  # 6 eventsites per page
-            page_number = request.GET.get('page', 1)
-            page_range = paginator.get_elided_page_range(number=page_number)
-            try:
-                eventsite_list = paginator.get_page(page_number)
-            except PageNotAnInteger:
-                # If page is not an integer deliver the first page
-                eventsite_list = paginator.page(1)
-            except EmptyPage:
-                # If page is out of range deliver last page of results
-                eventsite_list = paginator.get_page(paginator.num_pages)
+            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+            eventsite_list = page_list
             return TemplateResponse(request, template_name, {
                 'eventsite_list': eventsite_list,
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        eventsites = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
+        filtered_data = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
         template_name = 'eventsites/eventsite_list_partial.html'
-        paginator = Paginator(eventsites, per_page=6)  # 6 eventsites per page
-        page_number = request.GET.get('page')
-        page_range = paginator.get_elided_page_range(number=page_number)
-        try:
-            eventsite_list = paginator.get_page(page_number)
-        except PageNotAnInteger:
-            # If page is not an integer deliver the first page
-            eventsite_list = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range deliver last page of results
-            eventsite_list = paginator.get_page(paginator.num_pages)
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        eventsite_list = page_list
         return TemplateResponse(request, template_name, {
             'eventsite_list': eventsite_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
     else:
-        paginator = Paginator(eventsites, per_page=6)  # 6 eventsites per page
-        page_number = request.GET.get('page', 1)
-        page_range = paginator.get_elided_page_range(number=page_number)
-        try:
-            eventsite_list = paginator.get_page(page_number)
-        except PageNotAnInteger:
-            # If page is not an integer deliver the first page
-            eventsite_list = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range deliver last page of results
-            eventsite_list = paginator.get_page(paginator.num_pages)
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        eventsite_list = page_list
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'eventsite_list': eventsite_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
+
+
+def pagination_data(cards_per_page, filtered_data, request):
+    """
+    Refactored pagination code that is available to all views that included pagination
+    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    """
+    paginator = Paginator(filtered_data, per_page=cards_per_page)
+    page_number = request.GET.get('page', 1)
+    page_range = paginator.get_elided_page_range(number=page_number)
+    try:
+        page_list = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        page_list = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        page_list = paginator.get_page(paginator.num_pages)
+    return page_list, page_range
 
 
 class EventSiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
