@@ -5,7 +5,7 @@
 
 <div id="allocation_data">
     <div class="row g-3">
-        {% for siteallocation in page_obj %}
+        {% for siteallocation in allocation_list %}
         <div class="col-12 col-md-6 col-lg-4">
             <div class="card">
                 <div class="card-body">
@@ -32,27 +32,31 @@
     </div>
 
     <!-- Pagination -->
-    {% if page_obj.has_other_pages %}
+    {% if allocation_list.has_other_pages %}
     <nav aria-label="Page navigation">
         <ul class="pagination">
-            {% get_proper_elided_page_range paginator page_obj.number as page_range %}
-            {% for page_num in page_range %}
-            {% if page_obj.number == page_num %}
-            <li class="active page-item">
-                <span class="page-link">{{ page_num }}</span>
+            {% if allocation_list.has_previous %}
+            <li class="page-item"><a class="page-link"  hx-get="{% url 'fair:siteallocation-list' %}?page={{ allocation_list.previous_page_number }}" hx-trigger="click" hx-target="#allocation_data">&laquo;</a></li>
+            {% else %}
+            <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for i in page_range|default_if_none:allocation_list.paginator.get_elided_page_range %}
+            {% if allocation_list.number == i %}
+            <li class="active page-item"><span class="page-link">{{ i }} </span>
             </li>
             {% else %}
-            {% if page_num == paginator.ELLIPSIS %}
-            <li class="page-item">
-                <span class="page-link">{{ paginator.ELLIPSIS }}</span>
-            </li>
+            {% if i == allocation_list.paginator.ELLIPSIS %}
+            <li class="page-item"><span class="page-link">{{ i }}</span></li>
             {% else %}
-            <li class="page-item">
-                <a class="page-link" href="?page={{ page_num }}">{{ page_num }}</a>
-            </li>
+            <li class="page-item"><a class="page-link" hx-get="{% url 'fair:siteallocation-list' %}?page={{ i }}" hx-trigger="click" hx-target="#allocation_data">{{ i }}</a></li>
             {% endif %}
             {% endif %}
             {% endfor %}
+            {% if allocation_list.has_next %}
+            <li class="page-item"><a class="page-link" hx-get="{% url 'fair:siteallocation-list' %}?page={{ allocation_list.next_page_number }}" hx-trigger="click" hx-target="#allocation_data">&raquo;</a></li>
+            {% else %}
+            <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+            {% endif %}
         </ul>
     </nav>
     {% endif %}

@@ -263,6 +263,30 @@ class EventDetailForm(ModelForm):
         }
 
 
+class SiteListFilterForm(Form):
+    """
+    Filter form for to lost teh sites by Zones
+    """
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Show All',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_data',
+        })
+    )
+
+    class Meta:
+        fields = [
+            'zone',
+        ]
+
+
 class SiteCreateForm(ModelForm):
     """
     Form for Creating a new site
@@ -619,10 +643,10 @@ class EventSiteListFilterForm(Form):
     site_status = ChoiceField(
         label='Site Status',
         choices=[
-            ('','Show All'),
+            ('', 'Show All'),
             (1, 'Available'),
             (2, 'Allocated'),
-            (3,'Pending'),
+            (3, 'Pending'),
             (4, 'Booked'),
             (5, 'Unavailable'),
             (6, 'Archived')
@@ -630,12 +654,12 @@ class EventSiteListFilterForm(Form):
         required=False,
         widget=Select(
             attrs={
-            'class': 'form-select',
-            'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#event_site_data',
-        })
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#event_site_data',
+            })
     )
 
     class Meta:
@@ -983,48 +1007,27 @@ class SiteAllocationUpdateForm(ModelForm):
     Form used to update existing Site Allocations
     """
 
-    event_site = ModelChoiceField(
-        queryset=EventSite.site_available,
-        empty_label='Please Select',
-        label='First Event Sites',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-
-    stall_registration = ModelChoiceField(
-        queryset=StallRegistration.objects.all(),
-        empty_label='Please Select',
-        label='Stall Registration',
-        required=True,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-
-    event_power = ModelChoiceField(
-        queryset=EventPower.objects.all(),
-        empty_label='Please Select',
-        label='Event Power',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-
     class Meta:
         model = SiteAllocation
-        fields = ('event_site', 'stall_registration', 'event_power')
+        fields = ('stallholder', 'event_site', 'stall_registration', 'event_power')
         widgets = {
+            'stallholder': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+                'disabled': 'disabled'
+            }),
             'event_site': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
             }),
-
+            'stall_registration': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'event_power': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
         }
 
 

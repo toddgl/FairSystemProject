@@ -40,6 +40,7 @@ from .forms import (
     FairCreateForm,
     EventCreateForm,
     EventDetailForm,
+    SiteListFilterForm,
     SiteCreateForm,
     SiteDetailForm,
     SiteAllocationListFilterForm,
@@ -74,7 +75,7 @@ media_root = settings.MEDIA_ROOT
 site_status_dict = {
     1: 'Available',
     2: 'Allocated',
-    3:'Pending',
+    3: 'Pending',
     4: 'Booked',
     5: 'Unavailable',
     6: 'Archived'
@@ -262,6 +263,62 @@ class SiteListView(PermissionRequiredMixin, ListView):
     template_name = 'sites/site_list.html'
     paginate_by = 12
     queryset = Site.objects.all().order_by("site_name")
+
+
+@login_required
+@permission_required('fairs.add_site', raise_exception=True)
+@permission_required('fairs.change_site', raise_exception=True)
+def site_listview(request):
+    """
+    List all the sites and provide filtered views based on a dropdown filter of Zones
+    """
+    alert_message = 'There are no sites created yet.'
+    template_name = 'sites/site_list.html'
+    filterform = SiteListFilterForm(request.POST or None)
+    filtered_data = Site.objects.all().order_by("site_name")
+    cards_per_page = 9
+    global filter_dict
+
+    if request.htmx:
+        if filterform.is_valid():
+            zone = filterform.cleaned_data['zone']
+            attr_zonesite = 'zone'
+            if zone:
+                alert_message = 'There are no sites where the zone is ' + str(zone)
+                filter_dict = {
+                    attr_zonesite: zone
+                }
+            else:
+                alert_message = 'There are no event sites created yet.'
+                filter_dict = {}
+            filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
+            template_name = 'sites/site_list_partial.html'
+            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+            site_list = page_list
+            return TemplateResponse(request, template_name, {
+                'site_list': site_list,
+                'page_range': page_range,
+                'alert_mgr': alert_message,
+            })
+        filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
+        template_name = 'sites/site_list_partial.html'
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        site_list = page_list
+        return TemplateResponse(request, template_name, {
+            'site_list': site_list,
+            'page_range': page_range,
+            'alert_mgr': alert_message,
+        })
+    else:
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        site_list = page_list
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'site_list': site_list,
+            'page_range': page_range,
+            'alert_mgr': alert_message,
+        })
+
 
 
 class SiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
@@ -498,17 +555,6 @@ class InventoryItemCreateView(PermissionRequiredMixin, CreateView):
         return kwargs
 
 
-class EventSiteListView(PermissionRequiredMixin, ListView):
-    """
-    List all sites associated with an event order on event
-    """
-    permission_required = 'fairs.view_eventsite'
-    model = EventSite
-    template_name = 'eventsites/eventsite_list.html'
-    paginate_by = 9
-    queryset = EventSite.objects.all().order_by("site_status")
-    
-
 @login_required
 @permission_required('fairs.add_eventsite', raise_exception=True)
 @permission_required('fairs.change_eventsite', raise_exception=True)
@@ -532,7 +578,8 @@ def event_site_listview(request):
             attr_eventsite = 'event'
             attr_sitestatus = 'site_status'
             if event and zone and status:
-                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(zone) + ' with a status of ' + str(site_status_dict[int(status)])
+                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
+                    zone) + ' with a status of ' + str(site_status_dict[int(status)])
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event,
@@ -546,7 +593,8 @@ def event_site_listview(request):
                     attr_eventsite: event,
                 }
             elif event and status:
-                alert_message = 'There are no event sites  where the event is ' + str(event) + ' with a status of ' + str(site_status_dict[int(status)])
+                alert_message = 'There are no event sites  where the event is ' + str(
+                    event) + ' with a status of ' + str(site_status_dict[int(status)])
                 filter_dict = {
                     attr_eventsite: event,
                     attr_sitestatus: status,
@@ -557,7 +605,8 @@ def event_site_listview(request):
                     attr_eventsite: event
                 }
             elif zone and status:
-                alert_message = 'There are no event sites where the zone is ' + str(zone) + ' with a status of ' + str(site_status_dict[int(status)])
+                alert_message = 'There are no event sites where the zone is ' + str(zone) + ' with a status of ' + str(
+                    site_status_dict[int(status)])
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_sitestatus: status,
@@ -949,25 +998,25 @@ def site_allocation_listview(request):
     Populate the site allocation forms in particular provide a filtered view of dropdown boxes
     based on the stallholder filters,
     """
-    global alert_message
+    alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
-    allocations = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
-    alert_message = 'There are no sites allocated yet.'
+    filtered_data = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
+    cards_per_page = 6
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'stallholder'
         if stallholder_id:
-            filter_dict ={
+            filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            allocations = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+            filtered_data = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
             template_name = 'siteallocations/siteallocation_list_partial.html'
-            paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
-            page_number = request.GET.get('page')
-            page_obj = paginator.get_page(page_number)
+            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+            allocation_list = page_list
             return TemplateResponse(request, template_name, {
-                'page_obj': page_obj,
+                'allocation_list': allocation_list,
+                'page_range': page_range,
                 'alert_mgr': alert_message,
             })
         if filterform.is_valid():
@@ -976,7 +1025,8 @@ def site_allocation_listview(request):
             attr_zonesite = 'event_site__site__zone'
             attr_eventsite = 'event_site__event'
             if event and zone:
-                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(zone)
+                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                    zone)
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event
@@ -994,29 +1044,22 @@ def site_allocation_listview(request):
             else:
                 alert_message = 'There are no sites allocated yet.'
                 filter_dict = {}
-            allocations = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+            filtered_data = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
             template_name = 'siteallocations/siteallocation_list_partial.html'
-            paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
-            page_number = request.GET.get('page')
-            page_obj = paginator.get_page(page_number)
+            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+            allocation_list = page_list
             return TemplateResponse(request, template_name, {
-                'page_obj': page_obj,
+                'allocation_list': allocation_list,
+                'page_range': page_range,
                 'alert_mgr': alert_message,
             })
     else:
-        paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
-        page_number = request.GET.get('page')
-        try:
-            page_obj = paginator.get_page(page_number)
-        except PageNotAnInteger:
-            # If page is not an integer deliver the first page
-            page_obj = paginator.page(1)
-        except EmptyPage:
-            # If page is out of range deliver last page of results
-            page_obj = paginator.get_page(paginator.num_pages)
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        allocation_list = page_list
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
-            'page_obj': page_obj,
+            'allocation_list': allocation_list,
+            'page_range': page_range,
             'alert_mgr': alert_message,
         })
 
@@ -1025,7 +1068,7 @@ class SiteAllocationUpdateView(PermissionRequiredMixin, UpdateView):
     """
     Update a Site Allocation including recording who created it
     """
-    permission_required = 'fairs.add_siteallocation'
+    permission_required = 'fairs.change_siteallocation'
     model = SiteAllocation
     form_class = SiteAllocationUpdateForm
     template_name = 'siteallocations/siteallocation_update.html'
@@ -1043,6 +1086,7 @@ class SiteAllocationUpdateView(PermissionRequiredMixin, UpdateView):
         self.object.updated_by = self.request.user
         self.object.save()
         return HttpResponseRedirect(self.get_success_url())
+
 
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
@@ -1168,5 +1212,3 @@ def siteallocataion_delete_view(request, pk):
         'page_obj': page_obj,
         'alert_mgr': alert_message,
     })
-
-

@@ -497,6 +497,7 @@ class EventSite(models.Model):
         return str(self.event) + " - " + str(self.site)
 
 
+
 class EventPowerCurrentManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(event__fair__fair_year__in=[current_year, next_year],
