@@ -272,12 +272,12 @@ def site_listview(request):
     """
     List all the sites and provide filtered views based on a dropdown filter of Zones
     """
+    global filter_dict
     alert_message = 'There are no sites created yet.'
     template_name = 'sites/site_list.html'
     filterform = SiteListFilterForm(request.POST or None)
     filtered_data = Site.objects.all().order_by("site_name")
     cards_per_page = 9
-    global filter_dict
 
     if request.htmx:
         if filterform.is_valid():
@@ -562,12 +562,12 @@ def event_site_listview(request):
     """
     List all the event sites and provide filtered views based on dropdown filters of events and Zones
     """
-    alert_message = 'There are no event sites created yet.'
+    global filter_dict
+    alert_message = 'There ar=e no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
     filtered_data = EventSite.objects.all().order_by("site__site_name")
     cards_per_page = 6
-    global filter_dict
 
     if request.htmx:
         if filterform.is_valid():
@@ -986,18 +986,15 @@ class EventPowerCreateView(PermissionRequiredMixin, CreateView):
         return kwargs
 
 
-filter_dict = {}
-filter_message = ""
-
-
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
 @permission_required('fairs.change_siteallocation', raise_exception=True)
 def site_allocation_listview(request):
     """
     Populate the site allocation forms in particular provide a filtered view of dropdown boxes
-    based on the stallholder filters,
+    based on the stallholder filters
     """
+    global filter_dict
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
@@ -1019,7 +1016,7 @@ def site_allocation_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        if filterform.is_valid():
+        elif filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
             attr_zonesite = 'event_site__site__zone'
@@ -1053,6 +1050,15 @@ def site_allocation_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
+        filtered_data = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+        template_name = 'siteallocations/siteallocation_list_partial.html'
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        allocation_list = page_list
+        return TemplateResponse(request, template_name, {
+            'allocation_list': allocation_list,
+            'page_range': page_range,
+            'alert_mgr': alert_message,
+        })
     else:
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         allocation_list = page_list
@@ -1096,7 +1102,6 @@ def site_allocation_create(request):
     Create a site allocation view with filters for events, zones and stallholders to reduce the listings for
     stallholders, event_sites and event _power.
     """
-    global filter_message
     filter_message = 'Showing unfiltered date of all events and zones'
     template_name = 'siteallocations/siteallocation_create.html'
     success_url = reverse_lazy('fair:siteallocation-list')

@@ -2,7 +2,6 @@
 
 {% load static %}
 {% load paginator_tags %}
-{% csrf_token %}
 
 <div id="event_site_data">
     <div class="row g-3">
@@ -44,8 +43,7 @@
             {% endif %}
             {% for i in page_range|default_if_none:eventsite_list.paginator.get_elided_page_range %}
                 {% if eventsite_list.number == i %}
-                    <li class="active page-item"><span class="page-link">{{ i }} </span>
-                    </li>
+                    <li class="active page-item"><span class="page-link">{{ i }}</span></li>
                 {% else %}
                     {% if i == eventsite_list.paginator.ELLIPSIS %}
                         <li class="page-item"><span class="page-link">{{ i }}</span></li>
