@@ -151,22 +151,6 @@ class StallRegistration(models.Model):
         choices=REGISTRATION_STATUS_CHOICES,
         protected=True,
     )
-    event_site_first = models.ForeignKey(
-        'fairs.EventSite',
-        verbose_name='eventsitefirst',
-        related_name='event_site_first',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    event_site_second = models.ForeignKey(
-        'fairs.EventSite',
-        verbose_name='eventsitesecond',
-        related_name='event_site_second',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
     stallholder = models.ForeignKey(
         settings.AUTH_USER_MODEL,  # new
         on_delete=models.CASCADE
@@ -185,22 +169,6 @@ class StallRegistration(models.Model):
     trestle_quantity = models.IntegerField(default=0)
     stall_shelter = models.TextField()
     power_required = models.BooleanField(default=False)
-    event_power_first = models.ForeignKey(
-        'fairs.EventPower',
-        verbose_name='eventpowerfirst',
-        related_name='event_power_first',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    event_power_second = models.ForeignKey(
-        'fairs.EventPower',
-        verbose_name='eventpowersecond',
-        related_name='event_power_second',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
     total_charge = models.DecimalField(max_digits=8, decimal_places=2)
     selling_food = models.BooleanField(default=False)
 

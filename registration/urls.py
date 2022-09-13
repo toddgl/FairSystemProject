@@ -1,6 +1,5 @@
 # registration/urls.py
 from django.urls import path, include
-from django.views.generic.base import TemplateView  # v1
 
 from registration.views import (
     FoodPrepEquipmentListView,
@@ -12,8 +11,8 @@ from registration.views import (
     StallCategoryListView,
     StallCategoryCreateView,
     StallCategoryDetailUpdateView,
-    stall_registration_create,
-    find_second_eventsite,
+    StallRegistrationCreateView,
+    StallRegistrationUpdateView,
     food_registration,
     display_food_equipment,
     equipment_list,
@@ -37,7 +36,8 @@ urlpatterns = [
     path('stallcategory/', StallCategoryListView.as_view(), name='stallcategory-list'),
     path('stallcategory/,<int:pk>', StallCategoryDetailUpdateView.as_view(), name='stallcategory-detail'),
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
-    path('stallregistration/', stall_registration_create, name='stallregistration-create'),
+    path('stallregistration/', StallRegistrationCreateView.as_view(), name='stallregistration-create'),
+    path('stallregistration/,<int:pk>', StallRegistrationUpdateView.as_view(), name='stallregistration-detail'),
     path('myfair/', myfair_dashboard_view, name='myfair'),
     path('foodregistration',food_registration, name='food_registration'),
     path('foodequipment/', display_food_equipment, name='food-equipment'),
@@ -46,9 +46,3 @@ urlpatterns = [
     path('foodequipment/<int:pk>/remove', remove_equipment, name='remove_equipment'),
     path('foodequipment/<int:pk>/edit', edit_equipment, name='edit_equipment'),
 ]
-
-htmx_urlpatterns = [
-    path('stallregistration/find-second-eventsite/', find_second_eventsite, name='find-second-eventsite'),
-]
-
-urlpatterns += htmx_urlpatterns

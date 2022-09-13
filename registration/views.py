@@ -5,24 +5,18 @@ import datetime
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
-from django.dispatch.dispatcher import logger
 from django.template.response import TemplateResponse
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse
 from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
 from django.views.generic import (
-    View,
     CreateView,
     ListView,
     UpdateView,
 )
-from django.views.generic.detail import (SingleObjectTemplateResponseMixin)
-from django.views.generic.edit import (
-    ModelFormMixin,
-    ProcessFormView
-)
+
 from registration.models import (
     FoodPrepEquipment,
     FoodSaleType,
@@ -32,11 +26,6 @@ from registration.models import (
     FoodPrepEquipReq,
 )
 
-from fairs.models import (
-    EventSite,
-    Event,
-)
-
 from .forms import (
     FoodPrepEquipmentCreationForm,
     FoodPrepEquipmentUpdateForm,
@@ -44,15 +33,23 @@ from .forms import (
     FoodSaleTypeUpdateForm,
     StallCategoryCreationForm,
     StallCategoryUpdateForm,
-    StallRegistrationFilterForm,
-    StallRegistrationCreateForm,
     StallRegistrationUpdateForm,
+    StallRegistrationCreateForm,
     FoodRegistrationForm,
     FoodPrepEquipReqForm,
 )
 
 
 # Create your views here.
+class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
+    """
+    Create a Stall Registration
+    """
+    permission_required = 'registration.add_stallregistration'
+    model = StallRegistration
+    form_class = StallRegistrationCreateForm
+    template_name = 'registration/stallregistration_create.html'
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
 
 
 class FoodPrepEquipmentCreateView(PermissionRequiredMixin, CreateView):
@@ -245,110 +242,6 @@ def myfair_dashboard_view(request):
 
     return TemplateResponse(request, template, {
         'registrations': myfair_list
-    })
-
-
-filter_dict = {}
-filter_message = ""
-
-
-@login_required
-@permission_required('registration.add_stallregistration', raise_exception=True)
-@permission_required('registration.change_stallregistration', raise_exception=True)
-def stall_registration_create(request):
-    """
-    Populate the stall registration forms in particular provide a filter view of available sites based on
-    site size,
-    """
-    global filter_message
-    filter_message = 'Showing unfiltered data - of all available sites for the current fair'
-    available_first_event_sites = EventSite.site_available_first_event
-    available_second_event_sites = EventSite.site_available_second_event
-    template_name = 'stallregistration/stallregistration_create.html'
-    success_url = reverse_lazy('registration:myfair')
-
-    filterform = StallRegistrationFilterForm(request.POST or None)
-    registrationform = StallRegistrationCreateForm(request.POST or None)
-    if request.htmx:
-        registrationform.fields['event_site_first'].queryset = available_first_event_sites
-        registrationform.fields['event_site_second'].queryset = available_second_event_sites
-        if filterform.is_valid():
-            zone = filterform.cleaned_data['zone']
-            site_size = filterform.cleaned_data['site_size']
-            attr_zone = 'site__zone'
-            attr_site_size = 'site__site_size'
-            if zone and site_size:
-                filter_message = 'Showing filtered data where the zone is ' + str(zone) + ' and site size is a ' + str(
-                    site_size)
-                filter_dict = {
-                    attr_zone: zone,
-                    attr_site_size: site_size
-                }
-            elif zone:
-                filter_dict = {
-                    attr_zone: zone
-                }
-                filter_message = 'Showing filtered data where the zone is ' + str(zone) + ' and all site sizes'
-            elif site_size:
-                filter_dict = {
-                    attr_site_size: site_size
-                }
-                filter_message = 'Showing filtered data where the site size is ' + str(site_size) + ' and all ' \
-                                                                                                    'zones '
-            else:
-                filter_dict = {}
-                filter_message = 'Showing unfiltered data - of all available sites for the current fair'
-
-            registrationform.fields['event_site_first'].queryset = available_first_event_sites.filter(**filter_dict)
-            registrationform.fields['event_site_second'].queryset = available_second_event_sites.filter(**filter_dict)
-            if request.htmx:
-                template_name = 'stallregistration/stallregistration_partial.html'
-            return TemplateResponse(request, template_name, {
-                'filterform': filterform,
-                'registrationform': registrationform,
-                'filter': filter_message,
-            })
-    elif request.method == 'POST':
-        if registrationform.is_valid():
-            stall_registration = registrationform.save(commit=False)
-            """
-            TO DO: Calculate total_cost based on site and power and trestle selections
-            """
-            stall_registration.total_charge = 370.00
-            stall_registration.stallholder = request.user
-            stall_registration.save()
-        else:
-            print(registrationform.errors.as_data()) # here you print errors to terminal
-        return HttpResponseRedirect(reverse_lazy('registration:myfair'))
-
-    else:
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'registrationform': registrationform,
-            'filter': filter_message,
-        })
-
-
-def find_second_eventsite(request):
-    """
-    Using the selection of the first event site find the matching second event site for the same site_name
-    """
-    template_name = 'stallregistration/stallregistration_partial.html'
-    registrationform = StallRegistrationCreateForm()
-    available_first_event_sites = EventSite.site_available_first_event
-    available_second_event_sites = EventSite.site_available_second_event
-    eventsite_first_id = request.GET['event_site_first']
-    eventsite = EventSite.objects.get(id=eventsite_first_id)
-    site_id = eventsite.site_id
-    eventsite_second_qs = available_second_event_sites.filter(site__id=site_id)
-    eventsite_second_id = eventsite_second_qs.values('id')[0].get('id')
-    registrationform.fields['event_site_first'].queryset = available_first_event_sites.filter(**filter_dict)
-    registrationform.fields['event_site_first'].initial = eventsite_first_id
-    registrationform.fields['event_site_second'].queryset = eventsite_second_qs
-    registrationform.fields['event_site_second'].initial = eventsite_second_id
-    return TemplateResponse(request, template_name, {
-        'registrationform': registrationform,
-        'filter': filter_message,
     })
 
 

@@ -7,8 +7,18 @@
 <div class="container">
   <h4>Create Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
   <h6>{{ stallregistration.get_booking_status_display }}</h6>
-  {% include 'stallregistration/stallregistration_filter_partial.html' %}
-  {% include 'stallregistration/stallregistration_partial.html' %}
+  <div id="registration_data">
+    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+      {{ filter }}
+    </div>
+    <hr>
+    <form method="post" >
+      {% csrf_token %}
+      {{ registrationform.as_p }}
+      <input type="submit" class="mt-2 btn btn-primary" value="Save" >
+      <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../myfair'" value="Cancel" >
+    </form>
+  </div>
 </div>
 
 <script src="{% static 'js/dialog.js' %}"></script>

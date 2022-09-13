@@ -15,16 +15,12 @@
   <table class="table">
     <thead>
       <tr>
-        <th>First Event Site</th>
-        <th>Second Event Site</th>
         <th>Is a Food Stall</th>
         <th></th>
       </tr>
     </thead>
     {% for registration in registrations %}
       <tr id="registration-{{ registration.pk }}" class="registration-row">
-        <td>{{ registration.event_site_first }}</td>
-        <td>{{ registration.event_site_second }}</td>
         <td>{{ registration.selling_food.value|yesno:"Yes,No" }}</td>
         <td>
           <button class="btn btn-primary btn-sm" href="{% url 'registration:stallregistration-detail' pk=registration.pk %}">Edit</button>

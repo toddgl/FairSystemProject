@@ -1,14 +1,9 @@
 # registration/forms.py
 
-import datetime
 from django import forms
 from django.forms import (
-    Form,
     ModelForm,
-    ChoiceField,
     ModelChoiceField,
-    ModelMultipleChoiceField,
-    IntegerField,
     Textarea,
     TextInput,
     FileInput,
@@ -17,8 +12,6 @@ from django.forms import (
     DateInput,
     RadioSelect,
     Select,
-    SelectMultiple,
-    SelectDateWidget
 )
 from registration.models import (
     FoodPrepEquipment,
@@ -28,15 +21,6 @@ from registration.models import (
     FoodRegistration,
     FoodPrepEquipReq,
 )
-from fairs.models import (
-    EventPower,
-    EventSite,
-    InventoryItem,
-    Zone
-)
-
-current_year = datetime.datetime.now().year
-next_year = current_year + 1
 
 
 class FoodPrepEquipmentCreationForm(ModelForm):
@@ -213,102 +197,20 @@ class StallCategoryUpdateForm(ModelForm):
         }
 
 
-class StallRegistrationFilterForm(Form):
-    """
-    Filter form for restricting the  dropdown list for available sites based on zone and site size
-    """
-
-    zone = ModelChoiceField(
-        queryset=Zone.objects.all(),
-        empty_label='Show All',
-        label='Site Zones',
-        required=False,
-        widget=Select(attrs={
-            'class': 'form-select',
-            'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#registration_data',
-        })
-    )
-
-    site_size = ModelChoiceField(
-        queryset=InventoryItem.objects.filter(item_type=1),
-        empty_label='Show All',
-        label='Site Size',
-        required=False,
-        widget=Select(attrs={
-            'class': 'form-select',
-            'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#registration_data',
-        })
-    )
-
-    class Meta:
-        fields = [
-            'zone',
-            'site_size',
-        ]
-
-
 class StallRegistrationCreateForm(ModelForm):
     """
     Form for creating Stall Registrations
     """
 
-    event_site_first = ModelChoiceField(
-        queryset=EventSite.site_available_first_event,
-        empty_label='Please Select',
-        label='First Event Sites',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-get': 'find-second-eventsite/',
-            'hx-target': '#registration_data',
-        })
-    )
-    event_site_second = ModelChoiceField(
-        queryset=EventSite.site_available_second_event,
-        empty_label='Please Select',
-        label='Second Event Sites',
-        required=False,
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })  # removed 'disabled':'disabled'
-    )
     stall_category = ModelChoiceField(
         queryset=StallCategory.objects.filter(is_active=True),
         empty_label='Please Select',
         widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
     )
-    event_power_first = ModelChoiceField(
-        queryset=EventPower.objects.all(),
-        empty_label='Please Select',
-        label='First Event Power Box',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-    event_power_second = ModelChoiceField(
-        queryset=EventPower.objects.all(),
-        empty_label='Please Select',
-        label='Second Event Power Box',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
 
     class Meta:
         model = StallRegistration
         fields = [
-            'event_site_first',
-            'event_site_second',
             'stall_manager_name',
             'stall_category',
             'stall_description',
@@ -317,8 +219,6 @@ class StallRegistrationCreateForm(ModelForm):
             'trestle_quantity',
             'stall_shelter',
             'power_required',
-            'event_power_first',
-            'event_power_second',
             'total_charge',
             'selling_food'
         ]
@@ -380,32 +280,10 @@ class StallRegistrationUpdateForm(ModelForm):
         empty_label='Please Select',
         widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
     )
-    event_power_first = ModelChoiceField(
-        queryset=EventPower.objects.all(),
-        empty_label='Please Select',
-        label='First Event Power Box',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-    event_power_second = ModelChoiceField(
-        queryset=EventPower.objects.all(),
-        empty_label='Please Select',
-        label='Second Event Power Box',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
 
     class Meta:
         model = StallRegistration
         fields = [
-            'event_site_first',
-            'event_site_second',
             'stall_manager_name',
             'stall_category',
             'stall_description',
@@ -414,24 +292,14 @@ class StallRegistrationUpdateForm(ModelForm):
             'trestle_quantity',
             'stall_shelter',
             'power_required',
-            'event_power_first',
-            'event_power_second',
             'total_charge',
             'selling_food'
         ]
         labels = {
-            'event_site_first': 'First Event Site',
-            'event_site_second': 'Second Event Site',
             'stall_manager_name': 'Stall manager\'s name',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
-            'event_site_first': Select(attrs={
-                'disabled': True
-            }),
-            'event_site_second': Select(attrs={
-                'disabled': True
-            }),
             'stall_manager_name': TextInput(attrs={
                 'placeholder': 'First and last name',
                 'class': "form-control",
