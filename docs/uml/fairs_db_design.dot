@@ -1,6 +1,6 @@
 digraph model_graph {
   // Dotfile by Django-Extensions graph_models
-  // Created: 2022-09-13 20:52
+  // Created: 2022-09-16 15:34
   // Cli Options: -a -g -o fairs_db_design.dot
 
   fontname = "Roboto"
@@ -914,33 +914,9 @@ digraph model_graph {
     
     
       <TR><TD ALIGN="LEFT" BORDER="0">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>event_power_first</B></FONT>
+      <FONT FACE="Roboto"><B>fair</B></FONT>
       </TD><TD ALIGN="LEFT">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>ForeignKey (id)</B></FONT>
-      </TD></TR>
-    
-    
-    
-      <TR><TD ALIGN="LEFT" BORDER="0">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>event_power_second</B></FONT>
-      </TD><TD ALIGN="LEFT">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>ForeignKey (id)</B></FONT>
-      </TD></TR>
-    
-    
-    
-      <TR><TD ALIGN="LEFT" BORDER="0">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>event_site_first</B></FONT>
-      </TD><TD ALIGN="LEFT">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>ForeignKey (id)</B></FONT>
-      </TD></TR>
-    
-    
-    
-      <TR><TD ALIGN="LEFT" BORDER="0">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>event_site_second</B></FONT>
-      </TD><TD ALIGN="LEFT">
-      <FONT COLOR="#7B7B7B" FACE="Roboto"><B>ForeignKey (id)</B></FONT>
+      <FONT FACE="Roboto"><B>ForeignKey (id)</B></FONT>
       </TD></TR>
     
     
@@ -2556,23 +2532,14 @@ digraph model_graph {
   registration_models_StallCategory -> accounts_models_CustomUser
   [label=" updated_by (stall_category_updated_by)"] [arrowhead=none, arrowtail=dot, dir=both];
 
-  registration_models_StallRegistration -> fairs_models_EventSite
-  [label=" event_site_first (event_site_first)"] [arrowhead=none, arrowtail=dot, dir=both];
-
-  registration_models_StallRegistration -> fairs_models_EventSite
-  [label=" event_site_second (event_site_second)"] [arrowhead=none, arrowtail=dot, dir=both];
+  registration_models_StallRegistration -> fairs_models_Fair
+  [label=" fair (stallregistration)"] [arrowhead=none, arrowtail=dot, dir=both];
 
   registration_models_StallRegistration -> accounts_models_CustomUser
   [label=" stallholder (stallregistration)"] [arrowhead=none, arrowtail=dot, dir=both];
 
   registration_models_StallRegistration -> registration_models_StallCategory
   [label=" stall_category (stall_registrations)"] [arrowhead=none, arrowtail=dot, dir=both];
-
-  registration_models_StallRegistration -> fairs_models_EventPower
-  [label=" event_power_first (event_power_first)"] [arrowhead=none, arrowtail=dot, dir=both];
-
-  registration_models_StallRegistration -> fairs_models_EventPower
-  [label=" event_power_second (event_power_second)"] [arrowhead=none, arrowtail=dot, dir=both];
 
   registration_models_RegistrationComment -> registration_models_StallRegistration
   [label=" stall_registration (registration_comments)"] [arrowhead=none, arrowtail=dot, dir=both];

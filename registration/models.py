@@ -8,6 +8,9 @@ from django.dispatch import receiver
 from django.utils.translation import ugettext_lazy as _
 from django_fsm import FSMField
 
+from fairs.models import (
+    Fair
+)
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
 
@@ -151,6 +154,7 @@ class StallRegistration(models.Model):
         choices=REGISTRATION_STATUS_CHOICES,
         protected=True,
     )
+    fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
     stallholder = models.ForeignKey(
         settings.AUTH_USER_MODEL,  # new
         on_delete=models.CASCADE

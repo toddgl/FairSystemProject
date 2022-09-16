@@ -13,6 +13,9 @@ from django.forms import (
     RadioSelect,
     Select,
 )
+from fairs.models import(
+    Fair,
+)
 from registration.models import (
     FoodPrepEquipment,
     FoodSaleType,
@@ -202,6 +205,12 @@ class StallRegistrationCreateForm(ModelForm):
     Form for creating Stall Registrations
     """
 
+    fair = ModelChoiceField(
+        queryset=Fair.objects.filter(is_activated=True),
+        empty_label='Please Select',
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+    )
+
     stall_category = ModelChoiceField(
         queryset=StallCategory.objects.filter(is_active=True),
         empty_label='Please Select',
@@ -211,6 +220,7 @@ class StallRegistrationCreateForm(ModelForm):
     class Meta:
         model = StallRegistration
         fields = [
+            'fair',
             'stall_manager_name',
             'stall_category',
             'stall_description',

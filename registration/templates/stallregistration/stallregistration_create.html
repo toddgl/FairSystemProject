@@ -8,13 +8,18 @@
   <h4>Create Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
   <h6>{{ stallregistration.get_booking_status_display }}</h6>
   <div id="registration_data">
-    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
-      {{ filter }}
+    {% for allocation in allocation_list %}
+    <div class="alert alert-primary" role="alert">
+      Site {{ allocation.event_site.site.site_name }} for the {{ allocation.event_site.event.event_name }} has been allocated to you based on your historical use.
+      <br>
+      Leave a site move request with reasons in Comments if you want this changed.
     </div>
+    {% endfor %}
+    <form>
     <hr>
     <form method="post" >
       {% csrf_token %}
-      {{ registrationform.as_p }}
+      {{ form.as_p }}
       <input type="submit" class="mt-2 btn btn-primary" value="Save" >
       <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../myfair'" value="Cancel" >
     </form>

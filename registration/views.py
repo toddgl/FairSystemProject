@@ -26,6 +26,10 @@ from registration.models import (
     FoodPrepEquipReq,
 )
 
+from fairs.models import (
+    SiteAllocation
+)
+
 from .forms import (
     FoodPrepEquipmentCreationForm,
     FoodPrepEquipmentUpdateForm,
@@ -48,8 +52,33 @@ class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
     permission_required = 'registration.add_stallregistration'
     model = StallRegistration
     form_class = StallRegistrationCreateForm
-    template_name = 'registration/stallregistration_create.html'
+    template_name = 'stallregistration/stallregistration_create.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
+
+    def get_context_data(self, **kwargs):
+        context = super(StallRegistrationCreateView, self).get_context_data(**kwargs)
+        stallholder = self.request.user
+        print(stallholder.id)
+        context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration__isnull=True)
+        return context
+
+
+class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):
+    """
+    Display an editable form of the details of a Stall Registration
+    """
+    permission_required = 'registration.change_stallregistration'
+    model = StallRegistration
+    form_class = StallRegistrationUpdateForm
+    template_name = 'registration/stallregistration_detail.html'
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
+
+    def get_context_data(self, **kwargs):
+        context = super(StallRegistrationUpdateView, self).get_context_data(**kwargs)
+        # Refresh the object from the database in case the form validation changed it
+        object = self.get_object()
+        context['object'] = context['stallregistration'] = object
+        return context
 
 
 class FoodPrepEquipmentCreateView(PermissionRequiredMixin, CreateView):
@@ -237,7 +266,7 @@ def myfair_dashboard_view(request):
     """
 
     template = "myfair/myfair_dashboard.html"
-    current_fairs = StallRegistration.objects.filter(Q(event_site_first__event__original_event_date__gt=datetime.datetime.now()) | Q(event_site_first__event__postponement_event_date__gt=datetime.datetime.now()))
+    current_fairs = StallRegistration.objects.filter(fair__is_activated=True)
     myfair_list = current_fairs.filter(stallholder=request.user)
 
     return TemplateResponse(request, template, {
@@ -336,20 +365,3 @@ def remove_equipment(request, pk):
         }
     )
 
-
-class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):
-    """
-    Display an editable form of the details of a Stall Registration
-    """
-    permission_required = 'registration.change_stallregistration'
-    model = StallRegistration
-    form_class = StallRegistrationUpdateForm
-    template_name = 'registration/stallregistration_detail.html'
-    success_url = reverse_lazy('registration:stallregistration-dashboard')
-
-    def get_context_data(self, **kwargs):
-        context = super(StallRegistrationUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['stallregistration'] = object
-        return context
