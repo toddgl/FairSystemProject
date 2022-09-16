@@ -173,6 +173,7 @@ class FoodSaleTypeListView(PermissionRequiredMixin, ListView):
     permission_required = "registration.view_foodsaletype"
     model = FoodPrepEquipment
     template_name = 'foodsaletype/foodsaletype_list.html'
+    paginate_by = 12
     queryset = FoodSaleType.objects.all()
 
 
@@ -232,6 +233,7 @@ class StallCategoryListView(PermissionRequiredMixin, ListView):
     permission_required = "registration.view_stallcategory"
     model = FoodPrepEquipment
     template_name = 'stallcategory/stallcategory_list.html'
+    paginate_by = 12
     queryset = StallCategory.objects.all().order_by('category_name')
 
 
