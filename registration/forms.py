@@ -15,6 +15,7 @@ from django.forms import (
 )
 from fairs.models import(
     Fair,
+    InventoryItem
 )
 from registration.models import (
     FoodPrepEquipment,
@@ -217,6 +218,13 @@ class StallRegistrationCreateForm(ModelForm):
         widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
     )
 
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Please Select',
+        label='What size Site do you want?',
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
+
     class Meta:
         model = StallRegistration
         fields = [
@@ -225,6 +233,7 @@ class StallRegistrationCreateForm(ModelForm):
             'stall_category',
             'stall_description',
             'products_on_site',
+            'site_size',
             'trestle_required',
             'trestle_quantity',
             'stall_shelter',
@@ -272,7 +281,6 @@ class StallRegistrationCreateForm(ModelForm):
             'total_charge': NumberInput(attrs={
                 'class': 'form-control',
                 'style': 'max-width: 300px;',
-                'disabled': 'disabled',
             }),
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input'

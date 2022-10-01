@@ -151,6 +151,15 @@ class Zone(models.Model):
         return reverse('fairs:zone-detail', args=[self.id])
 
 
+class CurrentInventoryItemFairManager(models.Manager):
+    """
+    Manager that returns the current InventoryItemFair, accessed by calling
+    InventoryItemFair.currentinventoryitemfairmgr.all()
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year], fair__is_activated=True)
+
 class FullSitePriceFilterManager(models.Manager):
     """
     Manager that returns the current price of full size fair sites, accessed by calling
@@ -265,6 +274,7 @@ class InventoryItemFair(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     objects = models.Manager()
+    currentinventoryitemfairmgr =  CurrentInventoryItemFairManager()
     fullsitepricemgr = FullSitePriceFilterManager()
     halfsitepricemgr = HalfSitePriceFilterManager()
     trestlepricemgr = TrestlePriceFilterManager()

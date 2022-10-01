@@ -10,12 +10,15 @@
   <div id="registration_data">
     {% for allocation in allocation_list %}
     <div class="alert alert-primary" role="alert">
-      Site {{ allocation.event_site.site.site_name }} for the {{ allocation.event_site.event.event_name }} has been allocated to you based on your historical use.
+      The {{ allocation.event_site.site.site_size }} - {{ allocation.event_site.site.site_name }} - for the {{ allocation.event_site.event.event_name }} has been allocated to you based on your historical use.
       <br>
       Leave a site move request with reasons in Comments if you want this changed.
     </div>
+    {% empty %}
+    <div class="alert alert-primary" role="alert">
+      You have not been preallocated a stall site, if you have any location preferences please detail these in Comments.
+    </div>
     {% endfor %}
-    <form>
     <hr>
     <form method="post" >
       {% csrf_token %}

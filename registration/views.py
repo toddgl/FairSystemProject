@@ -27,7 +27,8 @@ from registration.models import (
 )
 
 from fairs.models import (
-    SiteAllocation
+    SiteAllocation,
+    InventoryItemFair
 )
 
 from .forms import (
@@ -58,9 +59,44 @@ class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(StallRegistrationCreateView, self).get_context_data(**kwargs)
         stallholder = self.request.user
-        print(stallholder.id)
         context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration__isnull=True)
         return context
+
+    def get_initial(self, *args, **kwargs):
+        initial = super(StallRegistrationCreateView, self).get_initial(**kwargs)
+        return initial
+
+    def get_form_kwargs(self, *args, **kwargs):
+        kwargs = super(StallRegistrationCreateView, self).get_form_kwargs(*args, **kwargs)
+        kwargs['total_charge'] = '220'
+        return kwargs
+
+@login_required
+@permission_required('registration.add_stallregistration', raise_exception=True)
+def stall_registration_create(request):
+    """
+    Create a Stall Registration includes determining the total charge for the stall site based on site size,
+    Trestles based on quantity requested place food licence fees if the food stall flag is set.
+    """
+    stallholder = request.user
+    siteallocation = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
+                                                                             stall_registration__isnull=True).first()
+    context= {}
+    if siteallocation:
+        fair_id =siteallocation.event_site.event.fair.id
+        site_size= siteallocation.event_site.site.site_size_id
+        site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(inventory_item__item_name = siteallocation.event_site.site.site_size).price
+        registrationform = StallRegistrationCreateForm(request.POST or None, initial={'total_charge': site_charge, 'fair': fair_id, 'site_size': site_size})
+        context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration__isnull=True)
+    else:
+        registrationform = StallRegistrationCreateForm(request.POST or None)
+
+
+    template_name = 'stallregistration/stallregistration_create.html'
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
+    context['form'] = registrationform
+
+    return TemplateResponse(request, template_name, context)
 
 
 class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):

@@ -9,7 +9,8 @@ from django.utils.translation import ugettext_lazy as _
 from django_fsm import FSMField
 
 from fairs.models import (
-    Fair
+    Fair,
+    InventoryItem
 )
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
@@ -169,6 +170,12 @@ class StallRegistration(models.Model):
     )
     stall_description = models.TextField()
     products_on_site = models.TextField()
+    site_size = models.ForeignKey(
+        InventoryItem,
+        related_name='site_size_requirement',
+        on_delete=models.SET_NULL,
+        null = True
+    )
     trestle_required = models.BooleanField(default=False)
     trestle_quantity = models.IntegerField(default=0)
     stall_shelter = models.TextField()
