@@ -75,6 +75,15 @@ class InventoryItem(models.Model):
         return reverse('fairs:inventoryitem-detail', args=[self.id])
 
 
+class CurrentFairManager(models.Manager):
+    """
+    Manager that returns the current Fair, accessed by calling
+    Fair.currentfairmgr.all()
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(fair_year__in=[current_year, next_year], is_activated=True).order_by('fair_year')
+
+
 class Fair(models.Model):
     """
     Description: Stores the details of each fair instance
@@ -100,6 +109,8 @@ class Fair(models.Model):
         through='InventoryItemFair',
         related_name='fairs'
     )
+    objects = models.Manager()
+    currentfairmgr = CurrentFairManager()
 
     def __str__(self):
         return self.fair_name
@@ -159,6 +170,7 @@ class CurrentInventoryItemFairManager(models.Manager):
 
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year], fair__is_activated=True)
+
 
 class FullSitePriceFilterManager(models.Manager):
     """
@@ -274,7 +286,7 @@ class InventoryItemFair(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
 
     objects = models.Manager()
-    currentinventoryitemfairmgr =  CurrentInventoryItemFairManager()
+    currentinventoryitemfairmgr = CurrentInventoryItemFairManager()
     fullsitepricemgr = FullSitePriceFilterManager()
     halfsitepricemgr = HalfSitePriceFilterManager()
     trestlepricemgr = TrestlePriceFilterManager()
@@ -507,11 +519,11 @@ class EventSite(models.Model):
         return str(self.event) + " - " + str(self.site)
 
 
-
 class EventPowerCurrentManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(event__fair__fair_year__in=[current_year, next_year],
                                              event__fair__is_activated=True)
+
 
 class EventPower(models.Model):
     """
@@ -536,7 +548,7 @@ class EventPower(models.Model):
     power_load = models.DecimalField(max_digits=10, decimal_places=5)
 
     objects = models.Manager()  # The default manager.
-    event_power_current_mgr  = EventPowerCurrentManager()  # The event power status available manager.
+    event_power_current_mgr = EventPowerCurrentManager()  # The event power status available manager.
 
     class Meta:
         unique_together = ('event', 'power_box')

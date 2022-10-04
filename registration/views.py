@@ -1,5 +1,5 @@
 # registration/views.py
-
+import decimal
 import json
 import datetime
 
@@ -27,6 +27,7 @@ from registration.models import (
 )
 
 from fairs.models import (
+    Fair,
     SiteAllocation,
     InventoryItemFair
 )
@@ -44,6 +45,10 @@ from .forms import (
     FoodPrepEquipReqForm,
 )
 
+# Global Variables
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
+
 
 # Create your views here.
 class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
@@ -59,7 +64,8 @@ class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super(StallRegistrationCreateView, self).get_context_data(**kwargs)
         stallholder = self.request.user
-        context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration__isnull=True)
+        context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
+                                                                                 stall_registration__isnull=True)
         return context
 
     def get_initial(self, *args, **kwargs):
@@ -71,6 +77,7 @@ class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
         kwargs['total_charge'] = '220'
         return kwargs
 
+
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
 def stall_registration_create(request):
@@ -78,25 +85,54 @@ def stall_registration_create(request):
     Create a Stall Registration includes determining the total charge for the stall site based on site size,
     Trestles based on quantity requested place food licence fees if the food stall flag is set.
     """
-    stallholder = request.user
-    siteallocation = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
-                                                                             stall_registration__isnull=True).first()
-    context= {}
-    if siteallocation:
-        fair_id =siteallocation.event_site.event.fair.id
-        site_size= siteallocation.event_site.site.site_size_id
-        site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(inventory_item__item_name = siteallocation.event_site.site.site_size).price
-        registrationform = StallRegistrationCreateForm(request.POST or None, initial={'total_charge': site_charge, 'fair': fair_id, 'site_size': site_size})
-        context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration__isnull=True)
-    else:
-        registrationform = StallRegistrationCreateForm(request.POST or None)
-
-
     template_name = 'stallregistration/stallregistration_create.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
-    context['form'] = registrationform
+    stallholder = request.user
+    siteallocation = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
+                                                                 stall_registration__isnull=True).first()
+    if siteallocation:
+        fair_id = siteallocation.event_site.event.fair.id
+        site_size = siteallocation.event_site.site.site_size_id
+        site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(
+            inventory_item__item_name=siteallocation.event_site.site.site_size).price
+        registrationform = StallRegistrationCreateForm(request.POST or None,
+                                                       initial={'total_charge': site_charge, 'fair': fair_id,
+                                                                'site_size': site_size})
+        allocation_list = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
+                                                                      stall_registration__isnull=True)
+    else:
+        current_fair = Fair.currentfairmgr.all().last()
+        fair_id = current_fair.id
+        registrationform = StallRegistrationCreateForm(request.POST or None, initial={'fair': fair_id})
+        allocation_list = None
 
-    return TemplateResponse(request, template_name, context)
+    if request.htmx:
+        fair_id = request.POST.get('fair')
+        template_name = 'stallregistration/stallregistration_partial.html'
+        site_size = request.POST.get('site_size')
+        if site_size:
+            site_charge = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
+        else:
+            site_charge = decimal.Decimal(0.00)
+        trestle_num = request.POST.get('trestle_quantity')
+        if trestle_num:
+            trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
+            total_trestle_cost = trestle_price * decimal.Decimal(trestle_num)
+        else:
+            total_trestle_cost = decimal.Decimal(0.00)
+        power_req = request.POST.get('power_required')
+        if power_req:
+            power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
+        else:
+            power_price = decimal.Decimal(0.00)
+        total_cost = site_charge + total_trestle_cost + power_price
+        print(total_cost)
+        registrationform.fields['total_charge'].initial = total_cost
+
+    return TemplateResponse(request, template_name, {
+        'allocation_list': allocation_list,
+        'registrationform': registrationform
+    })
 
 
 class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):
@@ -389,7 +425,7 @@ def edit_equipment(request, pk):
     })
 
 
-@ require_POST
+@require_POST
 def remove_equipment(request, pk):
     equipment = get_object_or_404(FoodPrepEquipReq, pk=pk)
     equipment.delete()
@@ -402,4 +438,3 @@ def remove_equipment(request, pk):
             })
         }
     )
-

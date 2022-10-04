@@ -205,3 +205,14 @@ main .card {
     margin-left: -22px;
     cursor: pointer;
 }
+
+/* Form errorlist */
+
+ul li::marker {
+  color: red;
+}
+
+ul .errorlist li {
+  color: red;
+}
+

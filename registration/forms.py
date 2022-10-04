@@ -209,7 +209,13 @@ class StallRegistrationCreateForm(ModelForm):
     fair = ModelChoiceField(
         queryset=Fair.objects.filter(is_activated=True),
         empty_label='Please Select',
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#stallregistration_data',
+        })
     )
 
     stall_category = ModelChoiceField(
@@ -222,7 +228,13 @@ class StallRegistrationCreateForm(ModelForm):
         queryset=InventoryItem.objects.filter(item_type=1),
         empty_label='Please Select',
         label='What size Site do you want?',
-        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#stallregistration_data',
+        })
     )
 
     class Meta:
@@ -262,13 +274,16 @@ class StallRegistrationCreateForm(ModelForm):
                 'placeholder': 'Outline of the items being sold at the stall'
             }),
             'trestle_required': CheckboxInput(attrs={
-                'class': 'form-check-input'
+                'class': 'form-check-input',
             }),
             'trestle_quantity': NumberInput(attrs={
                 'class': "form_control",
                 'min': '0',
                 'max': '4',
                 'step': '1',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
             }),
             'stall_shelter': Textarea(attrs={
                 'class': "form-control",
@@ -276,7 +291,10 @@ class StallRegistrationCreateForm(ModelForm):
                 'placeholder': 'Describe any shelter to be used in conjunction with the stall'
             }),
             'power_required': CheckboxInput(attrs={
-                'class': 'form-check-input'
+                'class': 'form-check-input',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
             }),
             'total_charge': NumberInput(attrs={
                 'class': 'form-control',
