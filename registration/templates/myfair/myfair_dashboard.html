@@ -12,28 +12,38 @@
   <h1>MyFair Dashboard for  {{ user.first_name }}</h1>
     <button class="btn btn-primary btn-sm" onclick="location.href='{% url 'registration:stallregistration-create' %}'">Register for a fair stall</button>
   </form>
-  {% for registration in registrations %}
-  <div class="container mt-3" style="width: 600px;">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Registration ID - {{ registration.pk }}</h4>
-        <ul class="list-group list-group-flush">
-          <li class="list-group-item"><strong>Booking Status:{{ registration.booking_status }}</strong></li>
-          <li class="list-group-item"><strong>Stall Description:</strong> {{ registration.stall_description }}</li>
-          <li class="list-group-item"><strong>Selling Food:</strong> {{ registration.selling_food.value|yesno:"Yes,No" }}</li>
-          <li class="list-group-item"><strong>Requiring Trestles:</strong> {{ registration.trestle_required.value|yesno:"Yes,No" }}</li>
-          <li class="list-group-item"><strong>Requiring Power:</strong> {{ registration.power_required.value|yesno:"Yes,No" }}</li>
-        </ul>
-        <div class="card-body">
-          <a href="{% url 'registration:stallregistration-detail' pk=registration.pk %}" class="btn btn-primary">
-            View and edit Stall Registration Detail
-          </a>
+  <hr>
+  <div class="row">
+    <div class="col-md-7">
+      {% for registration in registrations %}
+      <div class="container mt-3" style="width: 600px;">
+        <div class="card border-primary mb-3">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Registration ID - {{ registration.pk }}</h4>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Booking Status:</strong> {{ registration.booking_status }}</li>
+              <li class="list-group-item"><strong>Site Size:</strong> {{ registration.site_size }}</li>
+              <li class="list-group-item"><strong>Stall Category:</strong> {{ registration.stall_category }}</li>
+              <li class="list-group-item"><strong>Stall Description:</strong> {{ registration.stall_description }}</li>
+              <li class="list-group-item"><strong>Selling Food:</strong> {{ registration.selling_food|yesno:"Yes,No" }}</li>
+              <li class="list-group-item"><strong>Requiring Trestles:</strong> {{ registration.trestle_required|yesno:"Yes,No" }}</li>
+              <li class="list-group-item"><strong>Requiring Power:</strong> {{ registration.power_required|yesno:"Yes,No" }}</li>
+            </ul>
+            <div class="card-body">
+              <a href="{% url 'registration:stallregistration-detail' pk=registration.pk %}" class="btn btn-primary">
+                View and edit Stall Registration Detail
+              </a>
+            </div>
+          </div>
         </div>
+        {% empty %}
+         <div class="alert alert-info" role="alert">You have no current fair registrations.</div>
+        {% endfor %}
       </div>
     </div>
-    {% empty %}
-     <div class="alert alert-info" role="alert">You have no current fair registrations.</div>
-  {% endfor %}
+    <div class="col-md-5">
+      <h4>Messages</h4>
+    </div>
   </div>
 </div>
 {% endblock %}

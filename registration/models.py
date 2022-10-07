@@ -12,6 +12,7 @@ from fairs.models import (
     Fair,
     InventoryItem
 )
+
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
 
@@ -112,23 +113,23 @@ class StallRegistration(models.Model):
     """
     Description: Model to capture stall registrations
     """
-    CREATED = 1
-    SUBMITTED = 2
-    INVOICED = 3
-    MANUALPAYMENT = 4
-    POLIPAYMENT = 5
-    STRIPEPAYMENT = 6
-    PAYMENTCOMPLETED = 7
-    ALLOCATIONREVIEW = 8
-    ALLOCATIONPENDING = 9
-    ALLOCATIONAPPROVED = 10
-    ALLOCATIONREJECTED = 11
-    REFUNDREVIEW = 12
-    REFUNDDONATED = 13
-    REFUNDREJECTED = 14
-    REFUNDAPPROVED = 15
-    BOOKED = 16
-    CANCELLED = 17
+    CREATED = 'Created'
+    SUBMITTED = 'Submitted'
+    INVOICED = 'Invoiced'
+    MANUALPAYMENT = 'Manual Payment'
+    POLIPAYMENT = 'Poli Payment'
+    STRIPEPAYMENT = 'Stripe Payment'
+    PAYMENTCOMPLETED = 'Payment Completed'
+    ALLOCATIONREVIEW = 'Allocation Review'
+    ALLOCATIONPENDING = 'Allocation Pending'
+    ALLOCATIONAPPROVED = 'Allocation Approved'
+    ALLOCATIONCANCELLED = 'Allocation Cancelled'
+    REFUNDREVIEW = 'Refund Review'
+    REFUNDDONATED = 'Refund Donated'
+    REFUNDREJECTED = 'Refund Rejected'
+    REFUNDAPPROVED = 'Refund Approved'
+    BOOKED = 'Booked'
+    CANCELLED = 'Cancelled'
 
     REGISTRATION_STATUS_CHOICES = [
         (CREATED, _('Created')),
@@ -141,7 +142,7 @@ class StallRegistration(models.Model):
         (ALLOCATIONREVIEW, _('Allocation Review')),
         (ALLOCATIONPENDING, _('Allocation Pending')),
         (ALLOCATIONAPPROVED, _('Allocation Approved')),
-        (ALLOCATIONREJECTED, _('Allocation Rejected')),
+        (ALLOCATIONCANCELLED, _('Allocation Rejected')),
         (REFUNDREVIEW, _('Refund Review')),
         (REFUNDDONATED, _('Refund Donated')),
         (REFUNDREJECTED, _('Refund Rejected')),
@@ -174,7 +175,7 @@ class StallRegistration(models.Model):
         InventoryItem,
         related_name='site_size_requirement',
         on_delete=models.SET_NULL,
-        null = True
+        null=True
     )
     trestle_required = models.BooleanField(default=False)
     trestle_quantity = models.IntegerField(default=0)
@@ -189,6 +190,9 @@ class StallRegistration(models.Model):
 
     def __str__(self):
         return self.booking_id
+
+    def booking_status_verbose(self):
+        return dict(StallRegistration.REGISTRATION_STATUS_CHOICES)[self.booking_status]
 
     class Meta:
         verbose_name_plural = "StallRegistrations"
@@ -256,17 +260,19 @@ class FoodRegistration(models.Model):
 
     """
     Hooking the create_food_registration and save_food_registration methods to the StallRegistration model, whenever 
-    a save event occurs. This kind of signal is called post_save.
+    a save event occurs and selling food has been selected. This kind of signal is called post_save.
     """
 
     @receiver(post_save, sender=StallRegistration)
     def create_food_registration(sender, instance, created, **kwargs):
-        if created:
-            FoodRegistration.objects.create(user=instance)
+        if instance.selling_food:
+            if created:
+                FoodRegistration.objects.create(registration=instance)
 
     @receiver(post_save, sender=StallRegistration)
     def save_food_registration(sender, instance, **kwargs):
-        instance.foodregistration.save()
+        if instance.selling_food:
+            instance.foodregistration.save()
 
     class Meta:
         verbose_name_plural = "FoodRegistrations"
@@ -316,5 +322,3 @@ class FoodPrepEquipReq(models.Model):
     def save_food_prep_equip_req(sender, instance, **kwargs):
         if instance.selling_food:
             instance.foodprepequipreq.save()
-
-

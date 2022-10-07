@@ -250,7 +250,6 @@ class StallRegistrationCreateForm(ModelForm):
             'trestle_quantity',
             'stall_shelter',
             'power_required',
-            'total_charge',
             'selling_food'
         ]
         labels = {
@@ -295,10 +294,6 @@ class StallRegistrationCreateForm(ModelForm):
                 'hx-trigger': 'change',
                 'hx-post': '.',
                 'hx-target': '#stallregistration_data',
-            }),
-            'total_charge': NumberInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;',
             }),
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input'

@@ -51,33 +51,6 @@ next_year = current_year + 1
 
 
 # Create your views here.
-class StallRegistrationCreateView(PermissionRequiredMixin, CreateView):
-    """
-    Create a Stall Registration
-    """
-    permission_required = 'registration.add_stallregistration'
-    model = StallRegistration
-    form_class = StallRegistrationCreateForm
-    template_name = 'stallregistration/stallregistration_create.html'
-    success_url = reverse_lazy('registration:stallregistration-dashboard')
-
-    def get_context_data(self, **kwargs):
-        context = super(StallRegistrationCreateView, self).get_context_data(**kwargs)
-        stallholder = self.request.user
-        context['allocation_list'] = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
-                                                                                 stall_registration__isnull=True)
-        return context
-
-    def get_initial(self, *args, **kwargs):
-        initial = super(StallRegistrationCreateView, self).get_initial(**kwargs)
-        return initial
-
-    def get_form_kwargs(self, *args, **kwargs):
-        kwargs = super(StallRegistrationCreateView, self).get_form_kwargs(*args, **kwargs)
-        kwargs['total_charge'] = '220'
-        return kwargs
-
-
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
 def stall_registration_create(request):
@@ -95,9 +68,9 @@ def stall_registration_create(request):
         site_size = siteallocation.event_site.site.site_size_id
         site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(
             inventory_item__item_name=siteallocation.event_site.site.site_size).price
+        total_cost = site_charge
         registrationform = StallRegistrationCreateForm(request.POST or None,
-                                                       initial={'total_charge': site_charge, 'fair': fair_id,
-                                                                'site_size': site_size})
+                                                       initial={ 'fair': fair_id, 'site_size': site_size})
         allocation_list = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
                                                                       stall_registration__isnull=True)
     else:
@@ -105,34 +78,50 @@ def stall_registration_create(request):
         fair_id = current_fair.id
         registrationform = StallRegistrationCreateForm(request.POST or None, initial={'fair': fair_id})
         allocation_list = None
+        total_cost = None
 
     if request.htmx:
         fair_id = request.POST.get('fair')
         template_name = 'stallregistration/stallregistration_partial.html'
-        site_size = request.POST.get('site_size')
-        if site_size:
-            site_charge = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
+        total_cost = get_registration_costs(fair_id, request, total_cost)
+    elif request.method == 'POST':
+        total_cost = get_registration_costs(fair_id, request, total_cost)
+        if registrationform.is_valid():
+            stall_registration = registrationform.save(commit=False)
+            stall_registration.stallholder = stallholder
+            stall_registration.total_charge = total_cost
+            registrationform.save()
         else:
-            site_charge = decimal.Decimal(0.00)
-        trestle_num = request.POST.get('trestle_quantity')
-        if trestle_num:
-            trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
-            total_trestle_cost = trestle_price * decimal.Decimal(trestle_num)
-        else:
-            total_trestle_cost = decimal.Decimal(0.00)
-        power_req = request.POST.get('power_required')
-        if power_req:
-            power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
-        else:
-            power_price = decimal.Decimal(0.00)
-        total_cost = site_charge + total_trestle_cost + power_price
-        print(total_cost)
-        registrationform.fields['total_charge'].initial = total_cost
+            print(
+                registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+        return HttpResponseRedirect(success_url)
 
     return TemplateResponse(request, template_name, {
         'allocation_list': allocation_list,
+        'billing': total_cost,
         'registrationform': registrationform
     })
+
+
+def get_registration_costs(fair_id, request, total_cost):
+    site_size = request.POST.get('site_size')
+    if site_size:
+        site_charge = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
+    else:
+        site_charge = decimal.Decimal(0.00)
+    trestle_num = request.POST.get('trestle_quantity')
+    if trestle_num:
+        trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
+        total_trestle_cost = trestle_price * decimal.Decimal(trestle_num)
+    else:
+        total_trestle_cost = decimal.Decimal(0.00)
+    power_req = request.POST.get('power_required')
+    if power_req:
+        power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
+    else:
+        power_price = decimal.Decimal(0.00)
+    total_cost = site_charge + total_trestle_cost + power_price
+    return total_cost
 
 
 class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):

@@ -3,12 +3,14 @@
 {% load static %}
 
 <div id="stallregistration_data">
-    <form method="post" >
-        {% csrf_token %}
-        {{ registrationform.as_p }}
-        <input type="submit" class="mt-2 btn btn-primary" value="Save" >
-        <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../myfair'" value="Cancel" >
-    </form>
+    {% if billing %}
+        <div class="card-body">
+            <h4 class="card-title">Registration Total Cost</h4>
+            <p class="card-text">
+                $ {{ billing }}
+            </p>
+        </div>
+        <hr>
+    {% endif %}
 </div>
-<script src="{% static 'js/hide.js' %}"></script>
 
