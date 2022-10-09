@@ -71,13 +71,12 @@ def stall_registration_create(request):
         total_cost = site_charge
         registrationform = StallRegistrationCreateForm(request.POST or None,
                                                        initial={ 'fair': fair_id, 'site_size': site_size})
-        allocation_list = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
-                                                                      stall_registration__isnull=True)
+        allocation_item = siteallocation
     else:
         current_fair = Fair.currentfairmgr.all().last()
         fair_id = current_fair.id
         registrationform = StallRegistrationCreateForm(request.POST or None, initial={'fair': fair_id})
-        allocation_list = None
+        allocation_item = None
         total_cost = None
 
     if request.htmx:
@@ -90,14 +89,20 @@ def stall_registration_create(request):
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
             stall_registration.total_charge = total_cost
-            registrationform.save()
+            stall_registration.save()
+            if siteallocation:
+                stall_registration.refresh_from_db()
+                siteallocation.stall_registration_id = stall_registration.id
+                siteallocation.save(update_fields=['stall_registration'])
+            if stall_registration.selling_food:
+                success_url = reverse_lazy('registration:food-registration')
         else:
             print(
                 registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
         return HttpResponseRedirect(success_url)
 
     return TemplateResponse(request, template_name, {
-        'allocation_list': allocation_list,
+        'allocation_item': allocation_item,
         'billing': total_cost,
         'registrationform': registrationform
     })

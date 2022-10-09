@@ -5,6 +5,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.urls import reverse
 from django.utils.translation import ugettext_lazy as _
 from django_fsm import FSMField
 
@@ -154,7 +155,7 @@ class StallRegistration(models.Model):
         default=CREATED,
         verbose_name='Registration State',
         choices=REGISTRATION_STATUS_CHOICES,
-        protected=True,
+        protected=False,
     )
     fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
     stallholder = models.ForeignKey(
@@ -184,18 +185,19 @@ class StallRegistration(models.Model):
     total_charge = models.DecimalField(max_digits=8, decimal_places=2)
     selling_food = models.BooleanField(default=False)
 
-    @property
-    def booking_id(self):
-        return self.id
+    class Meta:
+        verbose_name = "stallregistration"
+        verbose_name_plural = "stallregistrations"
 
     def __str__(self):
         return self.booking_id
 
-    def booking_status_verbose(self):
-        return dict(StallRegistration.REGISTRATION_STATUS_CHOICES)[self.booking_status]
+    def get_absolute_url(self):
+        return reverse('stallregistration-detail', args=[str(self.id)])
 
-    class Meta:
-        verbose_name_plural = "StallRegistrations"
+    @property
+    def booking_id(self):
+        return self.id
 
 
 class RegistrationComment(models.Model):
