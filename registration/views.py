@@ -5,6 +5,7 @@ import datetime
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.template.response import TemplateResponse
 from django.db.models import Q
 from django.shortcuts import render, get_object_or_404
@@ -335,7 +336,15 @@ def myfair_dashboard_view(request):
 
     template = "myfair/myfair_dashboard.html"
     current_fairs = StallRegistration.objects.filter(fair__is_activated=True)
-    myfair_list = current_fairs.filter(stallholder=request.user)
+    try:
+        """
+        Use prefetch_related to bring through the site allocation data associated with the stall registration:w
+        
+        """
+        myfair_list = current_fairs.filter(stallholder=request.user).prefetch_related('site_allocation').all()
+    except ObjectDoesNotExist:
+        myfair_list = current_fairs.filter(stallholder=request.user)
+
 
     return TemplateResponse(request, template, {
         'registrations': myfair_list

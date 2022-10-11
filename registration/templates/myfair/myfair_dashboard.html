@@ -21,6 +21,12 @@
           <div class="card-body">
             <h4 class="card-title text-primary">Registration ID - {{ registration.pk }}</h4>
             <ul class="list-group list-group-flush">
+              {% if registration.site_allocation.event_site.site.zone.zone_name  %}
+                <li class="list-group-item"><strong>Site Location:</strong> {{ registration.site_allocation.event_site.site.zone.zone_name }}</li>
+                <li class="list-group-item"><strong>Site Name:</strong> {{ registration.site_allocation.event_site.site.site_name }}</li>
+              {% else %}
+                <li class="list-group-item"><strong>Site Location:</strong> You have not been allocated a stall site yet.</li>
+              {% endif %}
               <li class="list-group-item"><strong>Booking Status:</strong> {{ registration.booking_status }}</li>
               <li class="list-group-item"><strong>Site Size:</strong> {{ registration.site_size }}</li>
               <li class="list-group-item"><strong>Stall Category:</strong> {{ registration.stall_category }}</li>
