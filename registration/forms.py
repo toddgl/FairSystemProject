@@ -155,15 +155,26 @@ class StallCategoryCreationForm(ModelForm):
     """
     Form for creating new stall category
     """
+    inventory_item = ModelChoiceField(
+        queryset=InventoryItem.objects.all(),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
 
     class Meta:
         model = StallCategory
-        fields = ['category_name', 'is_active', ]
+        fields = ['category_name', 'has_inventory_item', 'inventory_item', 'is_active', ]
         widgets = {
             'category_name': TextInput(attrs={
                 'class': "form-control",
                 'size': '400',
                 'placeholder': 'Stall Category Name'
+            }),
+            'has_inventory_item': CheckboxInput(attrs={
+                'class': 'form-check-input',
             }),
             'is_active': CheckboxInput(attrs={
                 'class': 'form-check-input',
@@ -185,15 +196,26 @@ class StallCategoryUpdateForm(ModelForm):
     """
     Form for updating stall category details
     """
+    inventory_item = ModelChoiceField(
+        queryset=InventoryItem.objects.all(),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
 
     class Meta:
         model = StallCategory
-        fields = ['category_name', 'is_active', ]
+        fields = ['category_name', 'has_inventory_item', 'inventory_item', 'is_active', ]
         widgets = {
             'category_name': TextInput(attrs={
                 'class': "form-control",
                 'size': '400',
                 'placeholder': 'Stall Category Name'
+            }),
+            'has_inventory_item': CheckboxInput(attrs={
+                'class': 'form-check-input',
             }),
             'is_active': CheckboxInput(attrs={
                 'class': 'form-check-input',
@@ -404,7 +426,7 @@ class FoodRegistrationForm(ModelForm):
         ]
         labels = {
             'food_stall_type': 'Food Stall Type',
-            'food_display_method': 'How will the food bve displayed',
+            'food_display_method': 'How will the food be displayed',
             'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
             'food_source': 'Where will you obtain the food from',
             'has_food_prep': 'Is any storage or preparation of the food to be undertaken after it is obtained by the '

@@ -86,6 +86,14 @@ class StallCategory(models.Model):
     """
     category_name = models.CharField(max_length=150)
     is_active = models.BooleanField(default=True)
+    has_inventory_item = models.BooleanField(default=False)
+    inventory_item =  models.ForeignKey(
+        InventoryItem,
+        related_name='inventory_item',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -240,7 +248,7 @@ class FoodRegistration(models.Model):
     food_display_method = models.TextField()
     has_food_certificate = models.BooleanField(default=False)
     food_registration_certificate = models.FileField(upload_to='media/food_certificates')
-    certificate_expiry_date = models.DateField()
+    certificate_expiry_date = models.DateField(blank=True, null=True)
     food_fair_consumed = models.BooleanField(default=False)
     food_prep_equipment = models.ManyToManyField(
         FoodPrepEquipment,
@@ -267,17 +275,13 @@ class FoodRegistration(models.Model):
 
     @receiver(post_save, sender=StallRegistration)
     def create_food_registration(sender, instance, created, **kwargs):
-        if instance.selling_food:
+        if created and StallRegistration.selling_food:
             if created:
                 FoodRegistration.objects.create(registration=instance)
 
-    @receiver(post_save, sender=StallRegistration)
-    def save_food_registration(sender, instance, **kwargs):
-        if instance.selling_food:
-            instance.foodregistration.save()
-
     class Meta:
-        verbose_name_plural = "FoodRegistrations"
+        verbose_name = "foodregistration"
+        verbose_name_plural = "foodregistrations"
 
 
 class FoodPrepEquipReq(models.Model):
@@ -297,12 +301,16 @@ class FoodPrepEquipReq(models.Model):
         on_delete=models.CASCADE,
         verbose_name='FoodPrepEquipmentRequired',
         related_name='food_prep_equip_req',
+        blank=True,
+        null=True
     )
     food_prep_equipment = models.ForeignKey(
         FoodPrepEquipment,
         on_delete=models.CASCADE,
         verbose_name='FoodPrepEquipment',
         related_name='food_prep_equip',
+        blank=True,
+        null=True
     )
     how_powered = models.CharField(
         choices=POWERED_CHOICE,
@@ -317,10 +325,9 @@ class FoodPrepEquipReq(models.Model):
 
     @receiver(post_save, sender=FoodRegistration)
     def create_food_prep_equip_req(sender, instance, created, **kwargs):
-        if created and instance.selling_food:
-            FoodPrepEquipReq.objects.create(foodregistration=instance)
+        if created:
+            FoodPrepEquipReq.objects.create(food_registration=instance)
 
-    @receiver(post_save, sender=FoodRegistration)
-    def save_food_prep_equip_req(sender, instance, **kwargs):
-        if instance.selling_food:
-            instance.foodprepequipreq.save()
+    class Meta:
+        verbose_name = "foodprepequiprequired"
+        verbose_name_plural = "foodprepequiprequirements"

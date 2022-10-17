@@ -22,6 +22,9 @@
                     <p class="card-text">
                         Is Active: {{ stallcategory.is_active|yesno:"Yes,No" }}
                     </p>
+                    <p class="card-text">
+                        Has Inventory Item: {{ stallcategory.has_inventory_item|yesno:"Yes,No" }}
+                    </p>
                     <a href="{% url 'registration:stallcategory-detail' stallcategory.id %}" class="btn btn-primary">
                         View and edit Stall Category Detail
                     </a>
