@@ -111,22 +111,38 @@ def stall_registration_create(request):
 
 def get_registration_costs(fair_id, request, total_cost):
     site_size = request.POST.get('site_size')
+    stall_category = request.POST.get('stall_category')
+
+    if stall_category:
+        category = StallCategory.objects.get(pk=stall_category)
+        if category.has_inventory_item:
+            category_price = InventoryItemFair.objects.get(inventory_item_id=category.inventory_item.id).price
+            price_rate = InventoryItemFair.objects.get(inventory_item_id=category.inventory_item.id).price_rate
+            category_price = category_price * price_rate
+        else:
+            category_price = decimal.Decimal(0.00)
+
     if site_size:
-        site_charge = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
+        site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
+        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price_rate
+        site_price = price_rate * site_price
     else:
-        site_charge = decimal.Decimal(0.00)
+        site_price = decimal.Decimal(0.00)
     trestle_num = request.POST.get('trestle_quantity')
     if trestle_num:
         trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
-        total_trestle_cost = trestle_price * decimal.Decimal(trestle_num)
+        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price_rate
+        total_trestle_cost = price_rate * trestle_price * decimal.Decimal(trestle_num)
     else:
         total_trestle_cost = decimal.Decimal(0.00)
     power_req = request.POST.get('power_required')
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
+        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price_rate
+        power_price = price_rate * power_price
     else:
         power_price = decimal.Decimal(0.00)
-    total_cost = site_charge + total_trestle_cost + power_price
+    total_cost = category_price + site_price + total_trestle_cost + power_price
     return total_cost
 
 

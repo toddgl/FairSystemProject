@@ -24,6 +24,9 @@
       </div>
   </div>
   <div class="row">
+    {% if registrationform.non_field_errors %}
+      <div class="alert alert-info" role="alert">{{ registrationform.non_field_errors }}</div>
+    {% endif %}
     <div class="col-md-6">
       {% include 'stallregistration/stallregistration_partial.html' %}
       <form method="post" >

@@ -1,6 +1,7 @@
 # registration/forms.py
 
 from django import forms
+from django.core.exceptions import ValidationError
 from django.forms import (
     ModelForm,
     ModelChoiceField,
@@ -243,7 +244,13 @@ class StallRegistrationCreateForm(ModelForm):
     stall_category = ModelChoiceField(
         queryset=StallCategory.objects.filter(is_active=True),
         empty_label='Please Select',
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#stallregistration_data',
+        })
     )
 
     site_size = ModelChoiceField(
@@ -321,6 +328,19 @@ class StallRegistrationCreateForm(ModelForm):
                 'class': 'form-check-input'
             }),
         }
+    def clean(self):
+            cleaned_data = super().clean()
+            stall_category = cleaned_data.get('stall_category')
+            selling_food = cleaned_data.get('selling_food')
+
+            if stall_category and selling_food:
+                # Only do something if both fields are valid so far.
+                if "Food" not in stall_category:
+                    raise ValidationError(
+                        "You must select a Stall category of either:"
+                        "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
+                        "If you are selling any type of food item"
+                    )
 
 
 class StallRegistrationUpdateForm(ModelForm):
