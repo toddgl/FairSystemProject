@@ -565,7 +565,7 @@ class EventSiteDetailForm(ModelForm):
 
     class Meta:
         model = EventSite
-        fields = ['event', 'site', 'site_status']
+        fields = ['event', 'site', 'site_status', 'notes']
         widgets = {
             'event': Select(attrs={
                 'class': "form-select",
@@ -578,6 +578,11 @@ class EventSiteDetailForm(ModelForm):
             'site_status': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
+            }),
+            'notes': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 750px;',
+                'placeholder': 'Notes'
             }),
         }
 
@@ -602,6 +607,11 @@ class EventSiteCreateForm(ModelForm):
             'site_status': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
+            }),
+            'notes': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 750px;',
+                'placeholder': 'Notes'
             }),
         }
 
@@ -667,6 +677,7 @@ class EventSiteListFilterForm(Form):
             'event',
             'zone',
             'site_status',
+            'notes',
         ]
 
 

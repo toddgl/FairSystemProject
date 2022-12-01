@@ -18,6 +18,7 @@
                     <li class="list-group-item"><strong>Zone:</strong> {{ item.site.zone }}</li>
                     <li class="list-group-item"><strong>Site Size:</strong> {{ item.site.site_size }}</li>
                     <li class="list-group-item"><strong>Status:</strong> {{ item.get_site_status_display }}</li>
+                    <li class="list-group-item"><strong>Notes:</strong> {{ item.notes }}</li>
                 </ul>
                 <div class="card-body">
                     <a href="{% url 'fair:eventsite-detail' item.id %}" class="btn btn-primary">

@@ -25,6 +25,7 @@ from registration.models import (
     StallRegistration,
     FoodRegistration,
     FoodPrepEquipReq,
+    RegistrationComment,
 )
 
 from fairs.models import (
@@ -44,6 +45,8 @@ from .forms import (
     StallRegistrationCreateForm,
     FoodRegistrationForm,
     FoodPrepEquipReqForm,
+    RegistrationCommentForm,
+    CommentReplyForm,
 )
 
 # Global Variables
@@ -71,7 +74,7 @@ def stall_registration_create(request):
             inventory_item__item_name=siteallocation.event_site.site.site_size).price
         total_cost = site_charge
         registrationform = StallRegistrationCreateForm(request.POST or None,
-                                                       initial={ 'fair': fair_id, 'site_size': site_size})
+                                                       initial={'fair': fair_id, 'site_size': site_size})
         allocation_item = siteallocation
     else:
         current_fair = Fair.currentfairmgr.all().last()
@@ -83,9 +86,9 @@ def stall_registration_create(request):
     if request.htmx:
         fair_id = request.POST.get('fair')
         template_name = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(fair_id, request, total_cost)
+        total_cost = get_registration_costs(fair_id, request)
     elif request.method == 'POST':
-        total_cost = get_registration_costs(fair_id, request, total_cost)
+        total_cost = get_registration_costs(fair_id, request)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
@@ -109,7 +112,7 @@ def stall_registration_create(request):
     })
 
 
-def get_registration_costs(fair_id, request, total_cost):
+def get_registration_costs(fair_id, request):
     site_size = request.POST.get('site_size')
     stall_category = request.POST.get('stall_category')
 
@@ -146,22 +149,40 @@ def get_registration_costs(fair_id, request, total_cost):
     return total_cost
 
 
-class StallRegistrationUpdateView(PermissionRequiredMixin, UpdateView):
-    """
-    Display an editable form of the details of a Stall Registration
-    """
-    permission_required = 'registration.change_stallregistration'
-    model = StallRegistration
-    form_class = StallRegistrationUpdateForm
-    template_name = 'registration/stallregistration_detail.html'
+@login_required
+@permission_required('registration.add_stallregistration', raise_exception=True)
+def stall_registration_update_view(request, pk):
+    template = 'stallregistration/stallregistration_update.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
 
-    def get_context_data(self, **kwargs):
-        context = super(StallRegistrationUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['stallregistration'] = object
-        return context
+    obj = get_object_or_404(StallRegistration, id=pk)
+    total_cost = obj.total_charge
+    registrationform = StallRegistrationUpdateForm(request.POST or None, instance=obj)
+    siteallocation = SiteAllocation.currentallocationsmgr.filter(stall_registration=pk).first()
+
+    if siteallocation:
+        allocation_item = siteallocation
+        fair_id = siteallocation.event_site.event.fair.id
+    else:
+        current_fair = Fair.currentfairmgr.all().last()
+        fair_id = current_fair.id
+
+    if request.htmx:
+        template = 'stallregistration/stallregistration_partial.html'
+        total_cost = get_registration_costs(fair_id, request)
+    elif request.method == 'POST':
+        total_cost = get_registration_costs(fair_id, request)
+        if registrationform.is_valid():
+            stall_registration = registrationform.save(commit=False)
+            stall_registration.total_charge = total_cost
+            stall_registration.save()
+            return HttpResponseRedirect(success_url)
+
+    return TemplateResponse(request, template, {
+        'allocation_item': allocation_item,
+        'billing': total_cost,
+        'registrationform': registrationform
+    })
 
 
 class FoodPrepEquipmentCreateView(PermissionRequiredMixin, CreateView):
@@ -352,18 +373,70 @@ def myfair_dashboard_view(request):
 
     template = "myfair/myfair_dashboard.html"
     current_fairs = StallRegistration.objects.filter(fair__is_activated=True)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    # list of active parent comments
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_active=True, comment_parent__isnull=True)
     try:
-        """
-        Use prefetch_related to bring through the site allocation data associated with the stall registration:w
-        
-        """
+        # Use prefetch_related to bring through the site allocation data associated with the stall registration
         myfair_list = current_fairs.filter(stallholder=request.user).prefetch_related('site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = current_fairs.filter(stallholder=request.user)
 
-
+    if request.method == 'POST':
+        # comment has been added
+        commentform = RegistrationCommentForm(request.POST)
+        replyform = CommentReplyForm(request.POST)
+        if replyform.is_valid():
+            parent_obj = None
+            # get parent comment id from hidden input
+            try:
+                # id integer e.g. 15
+                parent_id = int(request.POST.get('parent_id'))
+            except Exception:
+                parent_id = None
+            # if parent_id has been submitted get parent_obj id
+            if parent_id:
+                parent_obj = RegistrationComment.objects.get(id=parent_id)
+                # if parent object exist
+                if parent_obj:
+                    # create reply comment object
+                    reply_comment = replyform.save(commit=False)
+                    # assign parent_obj to reply comment
+                    reply_comment.comment_parent = parent_obj
+                    # assign comment_type to replycomment
+                    reply_comment.comment_type = parent_obj.comment_type
+                    # assign user to created.by
+                    reply_comment.created_by = request.user
+                    # save
+                    reply_comment.save()
+                    return TemplateResponse(request, template, {
+                        'registrations': myfair_list,
+                        'comments': comments,
+                        'commentform': commentform,
+                        'replyform': replyform,
+                    })
+        elif commentform.is_valid():
+            # normal comment
+            # create comment object but do not save to database
+            new_comment = commentform.save(commit=False)
+            # assign stallholder to the comment
+            new_comment.stallholder = request.user
+            # assign user to created.by
+            new_comment.created_by = request.user
+            # save
+            new_comment.save()
+            return TemplateResponse(request, template, {
+                'registrations': myfair_list,
+                'comments': comments,
+                'commentform': commentform,
+                'replyform': replyform,
+            })
     return TemplateResponse(request, template, {
-        'registrations': myfair_list
+        'registrations': myfair_list,
+        'comments': comments,
+        'commentform': commentform,
+        'replyform': replyform,
     })
 
 

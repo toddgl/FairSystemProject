@@ -8,10 +8,11 @@ from .models import (
     FoodPrepEquipReq,
     StallRegistration,
     StallCategory,
+    CommentType,
     RegistrationComment,
 )
 
 # Register your models here.
-myModels = [FoodPrepEquipment, FoodSaleType, FoodRegistration, FoodPrepEquipReq, StallRegistration, StallCategory,  RegistrationComment]
+myModels = [FoodPrepEquipment, FoodSaleType, FoodRegistration, FoodPrepEquipReq, StallRegistration, StallCategory,  CommentType, RegistrationComment]
 # iterable list
 admin.site.register(myModels)

@@ -14,7 +14,7 @@ from django.forms import (
     RadioSelect,
     Select,
 )
-from fairs.models import(
+from fairs.models import (
     Fair,
     InventoryItem
 )
@@ -25,6 +25,8 @@ from registration.models import (
     StallRegistration,
     FoodRegistration,
     FoodPrepEquipReq,
+    RegistrationComment,
+    CommentType,
 )
 
 
@@ -328,25 +330,37 @@ class StallRegistrationCreateForm(ModelForm):
                 'class': 'form-check-input'
             }),
         }
-    def clean(self):
-            cleaned_data = super().clean()
-            stall_category = cleaned_data.get('stall_category')
-            selling_food = cleaned_data.get('selling_food')
 
-            if stall_category and selling_food:
-                # Only do something if both fields are valid so far.
-                if "Food" not in stall_category:
-                    raise ValidationError(
-                        "You must select a Stall category of either:"
-                        "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
-                        "If you are selling any type of food item"
-                    )
+    def clean(self):
+        cleaned_data = super().clean()
+        stall_category = cleaned_data.get('stall_category')
+        selling_food = cleaned_data.get('selling_food')
+
+        if stall_category and selling_food:
+            # Only do something if both fields are valid so far.
+            if "Food" not in stall_category:
+                raise ValidationError(
+                    "You must select a Stall category of either:"
+                    "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
+                    "If you are selling any type of food item"
+                )
 
 
 class StallRegistrationUpdateForm(ModelForm):
     """
     Form for updating Stall Registrations
     """
+    fair = ModelChoiceField(
+        queryset=Fair.objects.filter(is_activated=True),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#stallregistration_data',
+        })
+    )
 
     stall_category = ModelChoiceField(
         queryset=StallCategory.objects.filter(is_active=True),
@@ -354,18 +368,32 @@ class StallRegistrationUpdateForm(ModelForm):
         widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
     )
 
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Please Select',
+        label='What size Site do you want?',
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#stallregistration_data',
+        })
+    )
+
     class Meta:
         model = StallRegistration
         fields = [
+            'fair',
             'stall_manager_name',
             'stall_category',
             'stall_description',
             'products_on_site',
+            'site_size',
             'trestle_required',
             'trestle_quantity',
             'stall_shelter',
             'power_required',
-            'total_charge',
             'selling_food'
         ]
         labels = {
@@ -396,6 +424,9 @@ class StallRegistrationUpdateForm(ModelForm):
                 'min': '0',
                 'max': '4',
                 'step': '1',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
             }),
             'stall_shelter': Textarea(attrs={
                 'class': "form-control",
@@ -403,17 +434,29 @@ class StallRegistrationUpdateForm(ModelForm):
                 'placeholder': 'Describe any shelter to be used in conjunction with the stall'
             }),
             'power_required': CheckboxInput(attrs={
-                'class': 'form-check-input'
-            }),
-            'total_charge': NumberInput(attrs={
-                'class': 'form-control',
-                'style': 'max-width: 300px;',
-                'readonly': 'readonly'
+                'class': 'form-check-input',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
             }),
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        stall_category = cleaned_data.get('stall_category')
+        selling_food = cleaned_data.get('selling_food')
+
+        if stall_category and selling_food:
+            # Only do something if both fields are valid so far.
+            if "Food" not in stall_category:
+                raise ValidationError(
+                    "You must select a Stall category of either:"
+                    "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
+                    "If you are selling any type of food item"
+                )
 
 
 class FoodRegistrationForm(ModelForm):
@@ -531,4 +574,52 @@ class FoodPrepEquipReqForm(ModelForm):
         }
         error_messages = {
             'text': {'required': "You can't have an empty list item"}
+        }
+
+
+class RegistrationCommentForm(ModelForm):
+    """
+    Form for capturing Stallholder comments typically associated with stall registration
+    """
+
+    comment_type = ModelChoiceField(
+        queryset=CommentType.objects.filter(is_active=True),
+        empty_label='Please Select',
+        label='Comment Type',
+        required=True,
+        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+    )
+
+    class Meta:
+        model = RegistrationComment
+        fields = [
+            'comment_type',
+            'comment'
+        ]
+        labels = {
+            'comment_type': 'Comment Type'
+        }
+        widgets = {
+            'comment': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Detail your query / request or comment'
+            }),
+        }
+
+class CommentReplyForm(ModelForm):
+    """
+    Form for capturing replies to comments typically associated with stall registration
+    """
+    class Meta:
+        model = RegistrationComment
+        fields = [
+            'comment'
+        ]
+        widgets = {
+            'comment': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Detail your reply'
+            }),
         }

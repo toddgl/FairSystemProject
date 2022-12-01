@@ -1,0 +1,74 @@
+<!--registration/templates/stallregistration/registration_comments.html -->
+
+
+<!-- Button trigger create comment modal -->
+<button type="button" class="mt-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#commentcreate">Create Comment</button>
+
+
+<!-- Comment with nested comments -->
+{% for comment in comments %}
+    <div class="w-100">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex flex-row align-items-center"> <span class="mr-2">{{ comment.created_by }}</span> <small class="c-badge">{{ comment.comment_type }}</small> </div> <small>{{ comment.date_created|timesince }} ago</small>
+        </div>
+        <p class="text-justify comment-text mb-0">{{ comment.comment|linebreaks }}</p>
+
+        {% for reply in comment.replies.all %}
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="d-flex flex-row align-items-center"> <span class="mr-2">Reply by {{ reply.created_by }}</span>  </div> <small>{{ reply.date_created|timesince }} ago</small>
+            </div>
+            <p class="text-justify comment-text mb-0">{{ reply.comment|linebreaks }}</p>
+        {% endfor %}
+        <!-- Button trigger add reply modal -->
+        <div class="d-flex flex-row user-feed"><span class="reply-icon ml-3"><i class="bi bi-reply-fill text-primary" style="font-size: 2.5rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</span> </div>
+        <!-- Add Reply Modal -->
+        <div class="modal fade" id="reply-{{comment.id }}"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="reply-{{ comment.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="replycreatelabel">Reply to Comment</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="." method="post">
+                            {% csrf_token %}
+                            {{ replyform.as_p }}
+                            <!-- Hidden input for parent comment.id -->
+                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                             <div class="modal-footer">
+                                <button type="submit" class="mt-2 btn btn-primary">Save</button>
+                                <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                             </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% empty %}
+    <div class="alert alert-info" role="alert">There are no comments yet.</div>
+{% endfor %}
+
+<!-- Add Comment Modal -->
+<div class="modal fade" id="commentcreate"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentcreate" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title" id="commentcreatelabel">Add a Comment</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form action="." method="post">
+                    {% csrf_token %}
+                    {{ commentform.as_p }}
+                    <div class="modal-footer">
+                        <button type="submit" class="mt-2 btn btn-primary">Add New Comment</button>
+                        <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -87,7 +87,7 @@ class StallCategory(models.Model):
     category_name = models.CharField(max_length=150)
     is_active = models.BooleanField(default=True)
     has_inventory_item = models.BooleanField(default=False)
-    inventory_item =  models.ForeignKey(
+    inventory_item = models.ForeignKey(
         InventoryItem,
         related_name='inventory_item',
         on_delete=models.SET_NULL,
@@ -208,22 +208,45 @@ class StallRegistration(models.Model):
         return self.id
 
 
+class CommentType(models.Model):
+    """
+    Description of a Model to set Comment Types these types are used to make it easier for the Convener
+    to identify comments for action, e.g. Site move request
+    """
+    type_name = models.CharField(max_length=150)
+    is_active = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.type_name
+
+    class Meta:
+        # sort comments in alphabetical order by default
+        ordering = ('type_name',)
+        verbose_name_plural = "CommentTypes"
+
+
 class RegistrationComment(models.Model):
     """
     Description a model to capture stallholder and convener comments related to a Stall Registration instance.
     Convener comments can be made private so cannot be seen by Stallholders if required
     """
-    stall_registration = models.ForeignKey(
-        StallRegistration,
-        verbose_name='stallregistration',
-        related_name='registration_comments',
+    stallholder = models.ForeignKey(
+        settings.AUTH_USER_MODEL,  # new
+        null=True,
         on_delete=models.CASCADE,
-        blank=False,
-        null=False
+        related_name='comments'
     )
-    comment = models.TextField()
+    comment_type = models.ForeignKey(
+        CommentType,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='comment_types'
+    )
+    comment = models.TextField(null=True)
     convener_only_comment = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    is_active = models.BooleanField(default=True)
     created_by = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='registration_comment_created_by',
@@ -231,6 +254,20 @@ class RegistrationComment(models.Model):
         blank=True,
         null=True
     )
+    comment_parent = models.ForeignKey(
+        'self',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='replies'
+    )
+
+    class Meta:
+        # sort comments in chronological order by default
+        ordering = ('date_created',)
+
+    def __str__(self):
+        return 'Comment by {}'.format(str(self.created_by))
 
 
 class FoodRegistration(models.Model):
@@ -274,7 +311,7 @@ class FoodRegistration(models.Model):
     """
 
     @receiver(post_save, sender=StallRegistration)
-    def create_food_registration(sender, instance, created, **kwargs):
+    def create_food_registration(self, instance, created, **kwargs):
         if created and StallRegistration.selling_food:
             if created:
                 FoodRegistration.objects.create(registration=instance)
@@ -324,7 +361,7 @@ class FoodPrepEquipReq(models.Model):
     """
 
     @receiver(post_save, sender=FoodRegistration)
-    def create_food_prep_equip_req(sender, instance, created, **kwargs):
+    def create_food_prep_equip_req(self, instance, created, **kwargs):
         if created:
             FoodPrepEquipReq.objects.create(food_registration=instance)
 

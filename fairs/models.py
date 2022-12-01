@@ -502,6 +502,7 @@ class EventSite(models.Model):
         choices=SITE_STATUS_CHOICE,
         default=AVAILABLE,
     )
+    notes = models.TextField(null=True)
 
     objects = models.Manager()  # The default manager.
     site_available = SiteAvailableManager()  # The site status available manager.
