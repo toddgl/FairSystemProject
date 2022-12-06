@@ -376,12 +376,27 @@ def myfair_dashboard_view(request):
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     # list of active parent comments
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_active=True, comment_parent__isnull=True)
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_active=True, comment_parent__isnull=True, fair=current_fair.id)
     try:
         # Use prefetch_related to bring through the site allocation data associated with the stall registration
         myfair_list = current_fairs.filter(stallholder=request.user).prefetch_related('site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = current_fairs.filter(stallholder=request.user)
+
+    if request.htmx:
+        comment_template = 'stallregistration/registration_comments.html'
+        commentform = RegistrationCommentForm(request.POST or None)
+        replyform = CommentReplyForm(request.POST or None)
+        parent_id = int(request.POST.get('parent_id'))
+        comments = RegistrationComment.objects.filter(stallholder=request.user, is_active=True,
+                                                      comment_parent__isnull=True, fair=current_fair.id)
+        print(parent_id)
+        return TemplateResponse(request, comment_template, {
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+        })
 
     if request.method == 'POST':
         # comment has been added
@@ -408,6 +423,8 @@ def myfair_dashboard_view(request):
                     reply_comment.comment_type = parent_obj.comment_type
                     # assign user to created.by
                     reply_comment.created_by = request.user
+                    # assign current fair to fair
+                    reply_comment.fair_id = current_fair.id
                     # save
                     reply_comment.save()
                     return TemplateResponse(request, template, {
@@ -424,6 +441,8 @@ def myfair_dashboard_view(request):
             new_comment.stallholder = request.user
             # assign user to created.by
             new_comment.created_by = request.user
+            # assign current fair to fair
+            new_comment.fair_id = current_fair.id
             # save
             new_comment.save()
             return TemplateResponse(request, template, {

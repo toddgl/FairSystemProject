@@ -267,6 +267,10 @@ body {
     cursor: pointer;
 }
 
+.archive-icon {
+    cursor: pointer;
+}
+
 .modal-footer {
   .btn + .btn {
     margin-top: 0;

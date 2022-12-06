@@ -19,6 +19,8 @@ from django.contrib import admin
 from django.urls import path, include  # import include function
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.staticfiles.storage import staticfiles_storage
+from django.views.generic.base import RedirectView
 
 from search.views import search_view
 
@@ -31,5 +33,6 @@ urlpatterns = [
     path('registration/', include('registration.urls')),
     path('', include('fairs.urls')),
     path('',include('search.urls')),
+    path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

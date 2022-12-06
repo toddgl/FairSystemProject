@@ -6,6 +6,7 @@
 
 
 <!-- Comment with nested comments -->
+<div id="comment_data">
 {% for comment in comments %}
     <div class="w-100">
         <div class="d-flex justify-content-between align-items-center">
@@ -13,14 +14,20 @@
         </div>
         <p class="text-justify comment-text mb-0">{{ comment.comment|linebreaks }}</p>
 
+        <!-- Button trigger add reply modal  and archive comment and replies-->
+        <div class="d-flex flex-row user-feed">
+            <p class="archive-icon ms-3"><i class="bi bi-archive-fill text-danger" style="font-size:1.7rem;" data-bs-toggle="modal" data-bs-target="#archive-{{ comment.id }}"></i>Archive Comment</p>
+            <p class="reply-icon ms-3"><i class="bi bi-reply-fill text-primary" style="font-size: 1.7rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</p>
+        </div>
+
         {% for reply in comment.replies.all %}
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex flex-row align-items-center"> <span class="mr-2">Reply by {{ reply.created_by }}</span>  </div> <small>{{ reply.date_created|timesince }} ago</small>
             </div>
             <p class="text-justify comment-text mb-0">{{ reply.comment|linebreaks }}</p>
         {% endfor %}
-        <!-- Button trigger add reply modal -->
-        <div class="d-flex flex-row user-feed"><span class="reply-icon ml-3"><i class="bi bi-reply-fill text-primary" style="font-size: 2.5rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</span> </div>
+        <hr>
+    </div>
         <!-- Add Reply Modal -->
         <div class="modal fade" id="reply-{{comment.id }}"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="reply-{{ comment.id }}" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -45,30 +52,52 @@
             </div>
         </div>
 
-    </div>
-{% empty %}
-    <div class="alert alert-info" role="alert">There are no comments yet.</div>
-{% endfor %}
-
-<!-- Add Comment Modal -->
-<div class="modal fade" id="commentcreate"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentcreate" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title" id="commentcreatelabel">Add a Comment</h4>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form action="." method="post">
-                    {% csrf_token %}
-                    {{ commentform.as_p }}
-                    <div class="modal-footer">
-                        <button type="submit" class="mt-2 btn btn-primary">Add New Comment</button>
-                        <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <!-- Archive Comment Modal -->
+        <div class="modal fade" id="archive-{{comment.id }}"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="archive-{{ comment.id }}" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="archivecommetnlabel">Archive Comment</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                </form>
+                    <div class="modal-body">
+                        <p>Are you sure you want to achive this comment and its replies?</p>
+                        <p>They are not deleted just not displayed.</p>
+                        <form hx-post="." hx-target="#comment_data">
+                            <!-- Hidden input for parent comment.id -->
+                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
+                            <div class="modal-footer">
+                                <button type="submit" class="mt-2 btn btn-primary">Archive</button>
+                                <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
             </div>
         </div>
+        {% empty %}
+        <div class="alert alert-info" role="alert">There are no comments yet.</div>
+        {% endfor %}
     </div>
-</div>
+        <!-- Add Comment Modal -->
+        <div class="modal fade" id="commentcreate"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentcreate" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h4 class="modal-title" id="commentcreatelabel">Add a Comment</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <form action="." method="post">
+                            {% csrf_token %}
+                            {{ commentform.as_p }}
+                            <div class="modal-footer">
+                                <button type="submit" class="mt-2 btn btn-primary">Add New Comment</button>
+                                <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
 

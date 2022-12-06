@@ -994,7 +994,7 @@ def site_allocation_listview(request):
     Populate the site allocation forms in particular provide a filtered view of dropdown boxes
     based on the stallholder filters
     """
-    global filter_dict
+    filter_dict ={}
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)

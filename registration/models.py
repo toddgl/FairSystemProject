@@ -6,7 +6,7 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.urls import reverse
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django_fsm import FSMField
 
 from fairs.models import (
@@ -261,6 +261,8 @@ class RegistrationComment(models.Model):
         blank=True,
         related_name='replies'
     )
+    fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
+    is_done = models.BooleanField(default=False)
 
     class Meta:
         # sort comments in chronological order by default

@@ -5,7 +5,7 @@ from django.db import models
 from django.utils import timezone
 from django.urls import reverse
 from accounts.models import CustomUser
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Global Variables
