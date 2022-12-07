@@ -8,7 +8,7 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.response import TemplateResponse
 from django.db.models import Q
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.http import HttpResponseRedirect, HttpResponse
 from django.views.decorators.http import require_POST
 from django.urls import reverse_lazy
@@ -384,20 +384,6 @@ def myfair_dashboard_view(request):
     except ObjectDoesNotExist:
         myfair_list = current_fairs.filter(stallholder=request.user)
 
-    if request.htmx:
-        comment_template = 'stallregistration/registration_comments.html'
-        commentform = RegistrationCommentForm(request.POST or None)
-        replyform = CommentReplyForm(request.POST or None)
-        parent_id = int(request.POST.get('parent_id'))
-        comments = RegistrationComment.objects.filter(stallholder=request.user, is_active=True,
-                                                      comment_parent__isnull=True, fair=current_fair.id)
-        print(parent_id)
-        return TemplateResponse(request, comment_template, {
-            'comments': comments,
-            'commentform': commentform,
-            'replyform': replyform,
-        })
-
     if request.method == 'POST':
         # comment has been added
         commentform = RegistrationCommentForm(request.POST)
@@ -457,6 +443,24 @@ def myfair_dashboard_view(request):
         'commentform': commentform,
         'replyform': replyform,
     })
+
+def archive_comments(request, pk):
+    """
+    Function called from the stall holder comments page to set
+    the is_archived flag on the parent comments instance and its sibling replies
+    """
+    # set the is_active flag to false on the parent comment
+    comment_parent = RegistrationComment.objects.get(pk=pk)
+    comment_parent.is_active = False
+    comment_parent.save()
+    # if there are replies set is_active flag on these to false also
+    if RegistrationComment.objects.filter(comment_parent=pk).exists():
+        replies = RegistrationComment.objects.filter(comment_parent=pk)
+        for reply in replies:
+            reply.is_active = False
+            reply.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 def food_registration(request):

@@ -16,8 +16,8 @@
 
         <!-- Button trigger add reply modal  and archive comment and replies-->
         <div class="d-flex flex-row user-feed">
-            <p class="archive-icon ms-3"><i class="bi bi-archive-fill text-danger" style="font-size:1.7rem;" data-bs-toggle="modal" data-bs-target="#archive-{{ comment.id }}"></i>Archive Comment</p>
-            <p class="reply-icon ms-3"><i class="bi bi-reply-fill text-primary" style="font-size: 1.7rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</p>
+            <a class="archive-icon ms-3" href="{% url 'registration:archive' comment.id %}"><span><i class="bi bi-archive-fill text-danger" style="font-size:1.7rem;" ></i>Archive Comment</span></a>
+            <a href="#" class="reply-icon ms-3"><i class="bi bi-reply-fill text-primary" style="font-size: 1.7rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</a>
         </div>
 
         {% for reply in comment.replies.all %}
@@ -52,29 +52,6 @@
             </div>
         </div>
 
-        <!-- Archive Comment Modal -->
-        <div class="modal fade" id="archive-{{comment.id }}"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="archive-{{ comment.id }}" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="archivecommetnlabel">Archive Comment</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Are you sure you want to achive this comment and its replies?</p>
-                        <p>They are not deleted just not displayed.</p>
-                        <form hx-post="." hx-target="#comment_data">
-                            <!-- Hidden input for parent comment.id -->
-                            <input type="hidden" name="parent_id" value="{{ comment.id }}">
-                            <div class="modal-footer">
-                                <button type="submit" class="mt-2 btn btn-primary">Archive</button>
-                                <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
         {% empty %}
         <div class="alert alert-info" role="alert">There are no comments yet.</div>
         {% endfor %}

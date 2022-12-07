@@ -20,6 +20,7 @@ from registration.views import (
     remove_equipment,
     edit_equipment,
     myfair_dashboard_view,
+    archive_comments,
 )
 
 app_name = 'registration'
@@ -45,4 +46,5 @@ urlpatterns = [
     path('foodequipment/add', add_equipment, name='add-equipment'),
     path('foodequipment/<int:pk>/remove', remove_equipment, name='remove_equipment'),
     path('foodequipment/<int:pk>/edit', edit_equipment, name='edit_equipment'),
+    path('registration/comment/<int:pk>/',  archive_comments, name='archive'),
 ]
