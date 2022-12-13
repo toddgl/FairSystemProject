@@ -3,6 +3,9 @@
 from django import forms
 from django.core.exceptions import ValidationError
 from django.forms import (
+    BooleanField,
+    ChoiceField,
+    Form,
     ModelForm,
     ModelChoiceField,
     Textarea,
@@ -577,6 +580,44 @@ class FoodPrepEquipReqForm(ModelForm):
         }
 
 
+class CommentFilterForm(Form):
+    """
+    Filter form to enable historical and archived comments to be viewed
+    """
+    fair = ModelChoiceField(
+        queryset=Fair.objects.all(),
+        empty_label= Fair.currentfairmgr.all().last(),
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+        })
+    )
+    is_archived = BooleanField(
+        required=False,
+        widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+            'checked': False
+        })
+    )
+
+    class Meta:
+        fields = [
+            'fair',
+            'is_archived'
+        ]
+        labels = {
+            'fair':'Select Past Fairs',
+            'is_archived': 'Show Archived Comments'
+        }
+
+
 class RegistrationCommentForm(ModelForm):
     """
     Form for capturing Stallholder comments typically associated with stall registration
@@ -607,10 +648,12 @@ class RegistrationCommentForm(ModelForm):
             }),
         }
 
+
 class CommentReplyForm(ModelForm):
     """
     Form for capturing replies to comments typically associated with stall registration
     """
+
     class Meta:
         model = RegistrationComment
         fields = [

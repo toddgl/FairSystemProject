@@ -46,6 +46,7 @@ from .forms import (
     FoodRegistrationForm,
     FoodPrepEquipReqForm,
     RegistrationCommentForm,
+    CommentFilterForm,
     CommentReplyForm,
 )
 
@@ -372,7 +373,9 @@ def myfair_dashboard_view(request):
     """
 
     template = "myfair/myfair_dashboard.html"
+    filter_message= 'Showing current comments of the current fair'
     current_fairs = StallRegistration.objects.filter(fair__is_activated=True)
+    commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     # list of active parent comments
@@ -384,6 +387,44 @@ def myfair_dashboard_view(request):
     except ObjectDoesNotExist:
         myfair_list = current_fairs.filter(stallholder=request.user)
 
+    if request.htmx:
+        template = 'stallregistration/registration_comments.html'
+        comments = RegistrationComment.objects.filter(stallholder=request.user,
+                                                      comment_parent__isnull=True)
+        if commentfilterform.is_valid():
+            archive_flag = commentfilterform.cleaned_data['is_archived']
+            fair = commentfilterform.cleaned_data['fair']
+            attr_archive = 'is_active'
+            attr_fair = 'fair'
+            if archive_flag and fair:
+                filter_message = 'Showing all (archived and current) comments for the ' + str(fair)
+                comment_filter_dict = {
+                    attr_fair: fair
+                }
+            elif archive_flag:
+                filter_message = 'Showing all (archived and current) comments for the current fair'
+                comment_filter_dict = {
+                    attr_fair: current_fair.id
+                }
+            elif fair:
+                filter_message = 'Showing current comments for the ' + str(fair) + 'fair'
+                comment_filter_dict = {
+                    attr_archive: True,
+                    attr_fair: fair
+                }
+            else:
+                comment_filter_dict = {
+                    attr_archive: True,
+                    attr_fair: current_fair.id
+                }
+                print(comment_filter_dict)
+                filter_message = 'Showing current comments of the current fair'
+            filter_comments = comments.all().filter(**comment_filter_dict)
+            return TemplateResponse(request, template, {
+                'commentfilterform': commentfilterform,
+                'comments': filter_comments,
+                'filter': filter_message,
+            })
     if request.method == 'POST':
         # comment has been added
         commentform = RegistrationCommentForm(request.POST)
@@ -415,9 +456,11 @@ def myfair_dashboard_view(request):
                     reply_comment.save()
                     return TemplateResponse(request, template, {
                         'registrations': myfair_list,
+                        'commentfilterform': commentfilterform,
                         'comments': comments,
                         'commentform': commentform,
                         'replyform': replyform,
+                        'filter': filter_message,
                     })
         elif commentform.is_valid():
             # normal comment
@@ -433,15 +476,19 @@ def myfair_dashboard_view(request):
             new_comment.save()
             return TemplateResponse(request, template, {
                 'registrations': myfair_list,
+                'commentfilterform': commentfilterform,
                 'comments': comments,
                 'commentform': commentform,
                 'replyform': replyform,
+                'filter': filter_message,
             })
     return TemplateResponse(request, template, {
         'registrations': myfair_list,
+        'commentfilterform': commentfilterform,
         'comments': comments,
         'commentform': commentform,
         'replyform': replyform,
+        'filter': filter_message,
     })
 
 def archive_comments(request, pk):

@@ -1,0 +1,25 @@
+<!--registration/templates/stallregistration/registration_comments_filter.html -->
+
+<!-- Comment Filter -->
+<div class="row">
+    <div class="col-md-9">
+        <div class="title-hr">
+            <span class="hr fix"></span>
+            <span><strong>Comment Filters</strong></span>
+            <span class="hr"></span>
+        </div>
+        <form>
+            {% csrf_token %}
+            {{ commentfilterform.as_p }}
+        </form>
+        <hr>
+    </div>
+</div>
+
+
+<!-- Button trigger create comment modal -->
+<button type="button" class="mt-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#commentcreate">Create Comment</button>
+
+
+<!-- Comment with nested comments -->
+{% include 'stallregistration/registration_comments.html' %}

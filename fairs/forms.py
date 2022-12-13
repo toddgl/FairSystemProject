@@ -265,7 +265,7 @@ class EventDetailForm(ModelForm):
 
 class SiteListFilterForm(Form):
     """
-    Filter form for to lost teh sites by Zones
+    Filter form for to list the sites by Zones
     """
     zone = ModelChoiceField(
         queryset=Zone.objects.all(),
