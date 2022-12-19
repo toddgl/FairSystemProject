@@ -10,13 +10,20 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div class="d-flex flex-row align-items-center"> <span class="mr-2">{{ comment.created_by }}</span> <small class="c-badge">{{ comment.comment_type }}</small> </div> <small>{{ comment.date_created|timesince }} ago</small>
             </div>
+            {% if not comment.is_active %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-row align-items-center"> <span class="badge bg-warning text-dark">This comment has been archived</span></div>
+                </div>
+            {% endif %}
             <p class="text-justify comment-text mb-0">{{ comment.comment|linebreaks }}</p>
 
-            <!-- Button trigger add reply modal  and archive comment and replies-->
-            <div class="d-flex flex-row user-feed">
-                <a class="archive-icon ms-3" href="{% url 'registration:archive' comment.id %}"><span><i class="bi bi-archive-fill text-danger" style="font-size:1.7rem;" ></i>Archive Comment</span></a>
-                <a href="#" class="reply-icon ms-3"><i class="bi bi-reply-fill text-primary" style="font-size: 1.7rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</a>
-            </div>
+            <!-- If Comment is active show Button trigger add reply modal  and archive comment and replies-->
+            {% if comment.is_active %}
+                <div class="d-flex flex-row user-feed">
+                    <a class="archive-icon ms-3" href="{% url 'registration:archive' comment.id %}"><span><i class="bi bi-archive-fill text-danger" style="font-size:1.7rem;" ></i>Archive Comment</span></a>
+                    <p class="reply-icon ms-3"><i class="bi bi-reply-fill text-primary" style="font-size: 1.7rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</p>
+                </div>
+            {% endif %}
 
             {% for reply in comment.replies.all %}
                 <div class="d-flex justify-content-between align-items-center">
@@ -54,25 +61,4 @@
             <div class="alert alert-info" role="alert">There are no comments yet.</div>
             {% endfor %}
     </div>
-        <!-- Add Comment Modal -->
-        <div class="modal fade" id="commentcreate"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentcreate" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="commentcreatelabel">Add a Comment</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="." method="post">
-                            {% csrf_token %}
-                            {{ commentform.as_p }}
-                            <div class="modal-footer">
-                                <button type="submit" class="mt-2 btn btn-primary">Add New Comment</button>
-                                <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 

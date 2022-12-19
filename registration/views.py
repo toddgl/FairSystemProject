@@ -417,15 +417,16 @@ def myfair_dashboard_view(request):
                     attr_archive: True,
                     attr_fair: current_fair.id
                 }
-                print(comment_filter_dict)
                 filter_message = 'Showing current comments of the current fair'
             filter_comments = comments.all().filter(**comment_filter_dict)
             return TemplateResponse(request, template, {
                 'commentfilterform': commentfilterform,
+                'replyform': replyform,
+                'commentform': commentform,
                 'comments': filter_comments,
                 'filter': filter_message,
             })
-    if request.method == 'POST':
+    elif request.method == 'POST':
         # comment has been added
         commentform = RegistrationCommentForm(request.POST)
         replyform = CommentReplyForm(request.POST)
@@ -462,27 +463,31 @@ def myfair_dashboard_view(request):
                         'replyform': replyform,
                         'filter': filter_message,
                     })
-        elif commentform.is_valid():
-            # normal comment
-            # create comment object but do not save to database
-            new_comment = commentform.save(commit=False)
-            # assign stallholder to the comment
-            new_comment.stallholder = request.user
-            # assign user to created.by
-            new_comment.created_by = request.user
-            # assign current fair to fair
-            new_comment.fair_id = current_fair.id
-            # save
-            new_comment.save()
-            return TemplateResponse(request, template, {
-                'registrations': myfair_list,
-                'commentfilterform': commentfilterform,
-                'comments': comments,
-                'commentform': commentform,
-                'replyform': replyform,
-                'filter': filter_message,
-            })
-    return TemplateResponse(request, template, {
+            elif commentform.is_valid():
+                # normal comment
+                # create comment object but do not save to database
+                new_comment = commentform.save(commit=False)
+                # assign stallholder to the comment
+                new_comment.stallholder = request.user
+                # assign user to created.by
+                new_comment.created_by = request.user
+                # assign current fair to fair
+                new_comment.fair_id = current_fair.id
+                # save
+                new_comment.save()
+            else:
+                print(
+                    commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+        return TemplateResponse(request, template, {
+            'registrations': myfair_list,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': filter_message,
+        })
+    else:
+        return TemplateResponse(request, template, {
         'registrations': myfair_list,
         'commentfilterform': commentfilterform,
         'comments': comments,
