@@ -11,6 +11,7 @@ from registration.views import (
     StallCategoryListView,
     StallCategoryCreateView,
     StallCategoryDetailUpdateView,
+    stall_registration_listview,
     stall_registration_create,
     stall_registration_update_view,
     food_registration,
@@ -28,6 +29,7 @@ app_name = 'registration'
 urlpatterns = [
     path('',
          include('django.contrib.auth.urls')),  # v1
+    path('stallregistration/list/', stall_registration_listview, name='stallregistration-list'),
     path('foodprepequipment/', FoodPrepEquipmentListView.as_view(), name='foodprepequipment-list'),
     path('foodprepequipment/,<int:pk>', FoodPrepEquipmentDetailUpdateView.as_view(), name='foodprepequipment-detail'),
     path('foodprepequipment/actionUrl/', FoodPrepEquipmentCreateView.as_view(), name='actionUrl'),
@@ -37,7 +39,7 @@ urlpatterns = [
     path('stallcategory/', StallCategoryListView.as_view(), name='stallcategory-list'),
     path('stallcategory/,<int:pk>', StallCategoryDetailUpdateView.as_view(), name='stallcategory-detail'),
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
-    path('stallregistration/', stall_registration_create, name='stallregistration-create'),
+    path('stallregistration/create/', stall_registration_create, name='stallregistration-create'),
     path('stallregistration/,<int:pk>/', stall_registration_update_view, name='stallregistration-detail'),
     path('myfair/', myfair_dashboard_view, name='stallregistration-dashboard'),
     path('foodregistration',food_registration, name='food-registration'),

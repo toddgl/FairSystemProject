@@ -45,7 +45,8 @@ from fairs.views import (
     PowerBoxListView,
     PowerBoxDetailUpdateView,
     PowerBoxCreateView,
-    site_dashboard_view
+    site_dashboard_view,
+    stall_registration_dashboard_view,
 )
 
 app_name = 'fair'  # This is the namespace, so you can reverse urls with fair:*
@@ -75,7 +76,9 @@ urlpatterns = [
     path('powerbox/,<int:pk>', PowerBoxDetailUpdateView.as_view(), name='powerbox-detail'),
     path('eventpower/', EventPowerListView.as_view(), name='eventpower-list'),
     path('eventpower/,<int:pk>', EventPowerDetailUpdateView.as_view(), name='eventpower-detail'),
-    path('dashboard/', site_dashboard_view, name='site-dashboard'),
+    path('dashboard/site/', site_dashboard_view, name='site-dashboard'),
+    path('dashboard/registrations/', stall_registration_dashboard_view, name='registration-dashboard'),
+    path('registration/management/', site_dashboard_view, name='stallregistration-list'),
     path('dashboard/actionUrl/', site_allocation_listview, name='actionUrl'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
     path('event/actionUrl/', EventCreateView.as_view(), name='actionUrl'),

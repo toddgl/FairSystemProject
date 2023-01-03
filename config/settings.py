@@ -14,6 +14,13 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 
 from pathlib import Path
 
+import environ
+
+# Initialise environment variables
+env = environ.Env()
+environ.Env.read_env()
+
+
 # Build paths inside the project using pathlib
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -21,12 +28,13 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = '+x4-e!e)8+mi(73rtn9@px#-@4wo-wp4kf_4y)iy-q&5omzrv%'
+#SECRET_KEY = '+x4-e!e)8+mi(73rtn9@px#-@4wo-wp4kf_4y)iy-q&5omzrv%'
+SECRET_KEY = env('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.81', 'localhost', '127.0.0.1', ]
+ALLOWED_HOSTS = ['192.168.1.79', 'localhost', '127.0.0.1', ]
 
 
 
@@ -96,9 +104,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'fairsystem_db',
-        'USER': 'glenn',
-        'PASSWORD': 'skyhawk1',
+        'NAME': env('DATABASE_NAME'),
+        'USER': env('DATABASE_USER'),
+        'PASSWORD': env('DATABASE_PASS'),
         'HOST': '',
         'PORT': '',
     }

@@ -1,4 +1,4 @@
-<!-- fairs/templates/dashboards/dashboard_sites.html -->
+<!-- fairs/templates/dashboards/dashboard_registrations.html -->
 
 {% extends 'dashboard_base.html' %}
 
@@ -10,7 +10,7 @@
     <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
   </nav>
   <!--End Top Nav -->
-  <h4>Sites Dashboard</h4>
+  <h4>Registration Dashboard</h4>
   <hr>
       <div class="row">
         <div class="col-sm-3">
@@ -32,9 +32,9 @@
         <div class="col-sm-4">
           <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
             <div class="card-body">
-              <h5 class="card-title">Available Sites</h5>
-              <p class="card-text">{{ available_counts }}</p>
-             <!--  <p class="card-text">{% widthratio available_counts total_counts 100 %} %</p> -->
+              <h5 class="card-title">Selling Food</h5>
+              <p class="card-text">{{ selling_food_counts }}</p>
+             <!--  <p class="card-text">{% widthratio selling_food_counts total_counts 100 %} %</p> -->
               <div class="single-chart ">
                 <svg viewBox="0 0 36 36" class="circular-chart green">
                   <path class="circle-bg"
@@ -43,24 +43,24 @@
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path class="circle"
-                    stroke-dasharray="{% widthratio available_counts total_counts 100 %}, 100"
+                    stroke-dasharray="{% widthratio selling_food_counts total_counts 100 %}, 100"
                     d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
-                  <text x="18" y="20.35" class="percentage">{% widthratio available_counts total_counts 100 %}%</text>
+                  <text x="18" y="20.35" class="percentage">{% widthratio selling_food_counts total_counts 100 %}%</text>
                 </svg>
               </div>
-              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}?site_status=1" role="button">View</a>
+              <a class = "btn btn-primary" href="{% url 'fair:stallregistration-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
         <div class="col-sm-4">
           <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
             <div class="card-body">
-              <h5 class="card-title">Allocated Sites</h5>
-              <p class="card-text">{{ allocated_counts }}</p>
-              <!-- <p class="card-text">{% widthratio allocated_counts total_counts 100 %} %</p> -->
+              <h5 class="card-title">Created Registrations</h5>
+              <p class="card-text">{{ created_counts }}</p>
+              <!-- <p class="card-text">{% widthratio created_counts total_counts 100 %} %</p> -->
               <div class="single-chart ">
                 <svg viewBox="0 0 36 36" class="circular-chart blue">
                   <path class="circle-bg"
@@ -69,15 +69,15 @@
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path class="circle"
-                        stroke-dasharray="{% widthratio allocated_counts total_counts 100 %}, 100"
+                        stroke-dasharray="{% widthratio created_counts total_counts 100 %}, 100"
                         d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
-                  <text x="18" y="20.35" class="percentage">{% widthratio allocated_counts total_counts 100 %}%</text>
+                  <text x="18" y="20.35" class="percentage">{% widthratio created_counts total_counts 100 %}%</text>
                 </svg>
               </div>
-              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}?site_status=2" role="button">View</a>
+              <a class = "btn btn-primary" href="{% url 'fair:stallregistration-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
@@ -85,8 +85,8 @@
           <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
             <div class="card-body">
               <h5 class="card-title">Pending Sites</h5>
-              <p class="card-text">{{ pending_counts }}</p>
-              <!-- <p class="card-text">{% widthratio pending_counts total_counts 100 %} %</p> -->
+              <p class="card-text">{{ submitted_counts }}</p>
+              <!-- <p class="card-text">{% widthratio submittee_counts total_counts 100 %} %</p> -->
               <div class="single-chart ">
                 <svg viewBox="0 0 36 36" class="circular-chart orange">
                   <path class="circle-bg"
@@ -95,15 +95,15 @@
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
                   <path class="circle"
-                        stroke-dasharray="{% widthratio pending_counts total_counts 100 %}, 100"
+                        stroke-dasharray="{% widthratio submitted_counts total_counts 100 %}, 100"
                         d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
                       a 15.9155 15.9155 0 0 1 0 -31.831"
                   />
-                  <text x="18" y="20.35" class="percentage">{% widthratio pending_counts total_counts 100 %}%</text>
+                  <text x="18" y="20.35" class="percentage">{% widthratio submitted_counts total_counts 100 %}%</text>
                 </svg>
               </div>
-              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}?site_status=3" role="button">View</a>
+              <a class = "btn btn-primary" href="{% url 'fair:stallregistration-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
@@ -112,11 +112,37 @@
         <div class="col-sm-4">
           <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
             <div class="card-body">
-              <h5 class="card-title">Booked Sites</h5>
+              <h5 class="card-title">Invoiced Registrations</h5>
+              <p class="card-text">{{ invoiced_counts }}</p>
+              <!-- <p class="card-text">{% widthratio invoiced_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart green">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio invoiced_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio invoiced_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
+              <a class = "btn btn-primary" href="{% url 'fair:stallregistration-list' %}" role="button">View</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Booked Registrations</h5>
               <p class="card-text">{{ booked_counts }}</p>
               <!-- <p class="card-text">{% widthratio booked_counts total_counts 100 %} %</p> -->
               <div class="single-chart ">
-                <svg viewBox="0 0 36 36" class="circular-chart green">
+                <svg viewBox="0 0 36 36" class="circular-chart red">
                   <path class="circle-bg"
                         d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
@@ -131,36 +157,36 @@
                   <text x="18" y="20.35" class="percentage">{% widthratio booked_counts total_counts 100 %}%</text>
                 </svg>
               </div>
-              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}?site_status=4" role="button">View</a>
+              <a class = "btn btn-primary" href="{% url 'fair:stallregistration-list' %}" role="button">View</a>
             </div>
           </div>
         </div>
-        <div class="col-sm-4">
-          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
-            <div class="card-body">
-              <h5 class="card-title">Unavailable Sites</h5>
-              <p class="card-text">{{ unavailable_counts }}</p>
-              <!-- <p class="card-text">{% widthratio unavailable_counts total_counts 100 %} %</p> -->
-              <div class="single-chart ">
-                <svg viewBox="0 0 36 36" class="circular-chart red">
-                  <path class="circle-bg"
-                        d="M18 2.0845
+      <div class="col-sm-4">
+        <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+          <div class="card-body">
+            <h5 class="card-title">Cancelled Registrations</h5>
+            <p class="card-text">{{ cancelled_counts }}</p>
+            <!-- <p class="card-text">{% widthratio cancelled_counts total_counts 100 %} %</p> -->
+            <div class="single-chart ">
+              <svg viewBox="0 0 36 36" class="circular-chart red">
+                <path class="circle-bg"
+                      d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
                       a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <path class="circle"
-                        stroke-dasharray="{% widthratio unavailable_counts total_counts 100 %}, 100"
-                        d="M18 2.0845
+                />
+                <path class="circle"
+                      stroke-dasharray="{% widthratio cancelled_counts total_counts 100 %}, 100"
+                      d="M18 2.0845
                       a 15.9155 15.9155 0 0 1 0 31.831
                       a 15.9155 15.9155 0 0 1 0 -31.831"
-                  />
-                  <text x="18" y="20.35" class="percentage">{% widthratio unavailable_counts total_counts 100 %}%</text>
-                </svg>
-              </div>
-              <a class = "btn btn-primary" href="{% url 'fair:eventsite-list' %}?site_status=5" role="button">View</a>
+                />
+                <text x="18" y="20.35" class="percentage">{% widthratio cancelled_counts total_counts 100 %}%</text>
+              </svg>
             </div>
+            <a class = "btn btn-primary" href="{% url 'fair:stallregistration-list' %}" role="button">View</a>
           </div>
         </div>
+      </div>
       </div>
 </main>
 </div>

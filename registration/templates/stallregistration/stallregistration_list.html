@@ -1,0 +1,24 @@
+<!-- registration/templates/stallregistration/stallregistration_list.html -->
+
+{% extends 'base.html' %}
+{% load paginator_tags %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div class="row g-3">
+        <h1>Stall Registrations</h1>
+        <div class="row">
+            <div class="col-md-6">
+              {% include 'stallregistration/stallregistration_filter_partial.html' %}
+            </div>
+            <div class="col-md-6">
+              {% include 'search/partials/search_stallholders_list.html' %}
+            </div>
+          </div>
+        <form>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+    </div>
+    {% include 'stallregistration/stallregistration_list_partial.html' %}
+</div>
+{% endblock %}

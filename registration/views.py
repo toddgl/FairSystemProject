@@ -4,6 +4,7 @@ import json
 import datetime
 
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required, permission_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.template.response import TemplateResponse
@@ -48,6 +49,7 @@ from .forms import (
     RegistrationCommentForm,
     CommentFilterForm,
     CommentReplyForm,
+    StallRegistrationFilterForm,
 )
 
 # Global Variables
@@ -56,6 +58,115 @@ next_year = current_year + 1
 
 
 # Create your views here.
+def pagination_data(cards_per_page, filtered_data, request):
+    """
+    Refactored pagination code that is available to all views that included pagination
+    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    """
+    paginator = Paginator(filtered_data, per_page=cards_per_page)
+    page_number = request.GET.get('page', 1)
+    page_range = paginator.get_elided_page_range(number=page_number)
+    try:
+        page_list = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        page_list = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        page_list = paginator.get_page(paginator.num_pages)
+    return page_list, page_range
+
+
+@login_required
+@permission_required('registration.change_stallregistration', raise_exception=True)
+def stall_registration_listview(request):
+    """
+    List stall registration used by the Fair Conveners in the view and management of stall registrations
+    """
+    filter_dict = {}
+    request.session['target'] = 'registration:stallregistration-list'
+    alert_message = 'There are no stall registrations yet.'
+    template_name = 'stallregistration/stallregistration_list.html'
+    filterform = StallRegistrationFilterForm(request.POST or None )
+    booking_status=request.GET.get('booking_status', '')
+    if booking_status:
+        filtered_data = StallRegistration.registrationcurrentmgr.all().filter(booking_stqtus=booking_status).order_by('stall_category')
+    else:
+        filtered_data = StallRegistration.registrationcurrentmgr.all().order_by('stall_category')
+    cards_per_page = 6
+
+    if request.htmx:
+        stallholder_id = request.POST.get('selected_stallholder')
+        attr_stallholder = 'stallholder'
+        if stallholder_id:
+            filter_dict = {
+                attr_stallholder: stallholder_id
+            }
+            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category")
+            template_name = 'stallregistration/stallregistration_list_partial.html'
+            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+            stallregistration_list = page_list
+            return TemplateResponse(request, template_name, {
+                'stallregistration_list': stallregistration_list,
+                'page_range': page_range,
+                'alert_mgr': alert_message,
+            })
+        elif filterform.is_valid():
+            fair = filterform.cleaned_data['fair']
+            site_size = filterform.cleaned_data['site_size']
+            attr_fair = 'fair'
+            attr_site_size = 'site_size'
+            if fair and site_size:
+                alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
+                filtered_data = StallRegistration.objects.all().order_by('stall_category')
+                filter_dict = {
+                    attr_fair: fair,
+                    attr_site_size: site_size,
+                }
+            elif fair:
+                alert_message = 'There are no stall registrations where the fair is ' + str(fair)
+                filtered_data = StallRegistration.objects.all().order_by('stall_category')
+                filter_dict = {
+                    attr_fair: fair,
+                }
+            elif site_size:
+                alert_message = 'There are no stall registrations where the site size is ' + str(site_size)
+                filter_dict = {
+                    attr_site_size: site_size,
+                }
+            else:
+                alert_message = 'There are no stall registration created yet'
+                filter_dict = {}
+            filtered_data = filtered_data.filter(**filter_dict).order_by('stall_category')
+            template_name = 'stallregistration/stallregistration_list_partial.html'
+            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+            stallregistration_list = page_list
+            return TemplateResponse(request, template_name, {
+                'stallregistration_list': stallregistration_list,
+                'page_range': page_range,
+                'alert_mgr': alert_message,
+            })
+        filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category")
+        template_name = 'stallregistration/stallregistration_list_partial.html'
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        stallregistration_list = page_list
+        return TemplateResponse(request, template_name, {
+            'stallregistration_list': stallregistration_list,
+            'page_range': page_range,
+            'alert_mgr': alert_message,
+        })
+    else:
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        stallregistration_list = page_list
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'stallregistration_list': stallregistration_list,
+            'page_range': page_range,
+            'alert_mgr': alert_message,
+        })
+
+
+
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
 def stall_registration_create(request):
@@ -85,6 +196,7 @@ def stall_registration_create(request):
         total_cost = None
 
     if request.htmx:
+        print('htmx detected in stall _registration_create')
         fair_id = request.POST.get('fair')
         template_name = 'stallregistration/stallregistration_partial.html'
         total_cost = get_registration_costs(fair_id, request)
@@ -151,7 +263,7 @@ def get_registration_costs(fair_id, request):
 
 
 @login_required
-@permission_required('registration.add_stallregistration', raise_exception=True)
+@permission_required('registration.change_stallregistration', raise_exception=True)
 def stall_registration_update_view(request, pk):
     template = 'stallregistration/stallregistration_update.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
@@ -605,3 +717,8 @@ def remove_equipment(request, pk):
             })
         }
     )
+
+
+
+
+

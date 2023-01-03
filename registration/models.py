@@ -1,5 +1,6 @@
 # registration/model.py
 
+import datetime
 from django.conf import settings  # new
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -15,6 +16,10 @@ from fairs.models import (
 )
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
+
+# Global Variables
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
 
 
 class FoodPrepEquipment(models.Model):
@@ -118,6 +123,72 @@ class StallCategory(models.Model):
         verbose_name_plural = "StallCategories"
 
 
+# StallRegistration Managers
+
+class RegistrationCurrentManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current Fairs
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True)
+
+
+class RegistrationSellingFoodManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that are selling food
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, selling_food=True)
+
+
+class RegistrationCreatedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is created
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Created')
+
+
+class RegistrationSubmittedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is submitted
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Submitted')
+
+class RegistrationInvoicedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is invoiced
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Invoiced')
+
+class RegistrationBookedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is booked
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Booked')
+
+class RegistrationCancelledManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is cancelled
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Cancelled')
+
 class StallRegistration(models.Model):
     """
     Description: Model to capture stall registrations
@@ -193,12 +264,23 @@ class StallRegistration(models.Model):
     total_charge = models.DecimalField(max_digits=8, decimal_places=2)
     selling_food = models.BooleanField(default=False)
 
+    objects = models.Manager()
+    registrationcurrentmgr = RegistrationCurrentManager()
+    sellingfoodmgr = RegistrationSellingFoodManager()
+    registrationcreatedmgr = RegistrationCreatedManager()
+    registrationsubmittedmgr = RegistrationSubmittedManager()
+    registrationinvoicedmgr = RegistrationInvoicedManager()
+    registrationbookedmgr = RegistrationBookedManager()
+    registrationcancelledmgr = RegistrationCancelledManager()
+
+
+
     class Meta:
         verbose_name = "stallregistration"
         verbose_name_plural = "stallregistrations"
 
     def __str__(self):
-        return self.booking_id
+        return str(self.booking_id)
 
     def get_absolute_url(self):
         return reverse('stallregistration-detail', args=[str(self.id)])

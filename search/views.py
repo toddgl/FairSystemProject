@@ -24,11 +24,15 @@ def stallholder_search_view(request):
     Search for Stallholders
     """
     search_text = request.POST.get('search')
+    target = request.session['target']
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(email__icontains=search_text))
-    context = {'results': results}
+    context = {
+        'results': results,
+        'target':target
+    }
     return render(request, 'search/partials/stallholder_results.html', context)
 
 
@@ -37,9 +41,13 @@ def stallholder_list_search_view(request):
     Search for Stallholders customised for the stallholder list display
     """
     search_text = request.POST.get('search')
+    target = request.session['target']
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(email__icontains=search_text))
-    context = {'results': results}
+    context = {
+        'results': results,
+        'target': target
+    }
     return render(request, 'search/partials/stallholder_list_results.html', context)

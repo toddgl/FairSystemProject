@@ -35,6 +35,11 @@ from fairs.models import (
     PowerBox,
     EventPower,
 )
+
+from registration.models import (
+    StallRegistration,
+)
+
 from .forms import (
     FairDetailForm,
     FairCreateForm,
@@ -65,7 +70,8 @@ from .forms import (
     PowerBoxCreateForm,
     PowerBoxUpdateDetailForm,
     EventPowerCreateForm,
-    EventPowerUpdateDetailForm
+    EventPowerUpdateDetailForm,
+    DashboardRegistrationFilterForm,
 )
 
 # Global Variables
@@ -563,10 +569,14 @@ def event_site_listview(request):
     List all the event sites and provide filtered views based on dropdown filters of events and Zones
     """
     global filter_dict
-    alert_message = 'There ar=e no event sites created yet.'
+    alert_message = 'There are no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
-    filtered_data = EventSite.objects.all().order_by("site__site_name")
+    site_status=request.GET.get('site_status','')
+    if site_status:
+        filtered_data = EventSite.objects.all().filter(site_status=site_status).order_by("site__site_name")
+    else:
+        filtered_data = EventSite.objects.all().order_by("site__site_name")
     cards_per_page = 6
 
     if request.htmx:
@@ -995,6 +1005,7 @@ def site_allocation_listview(request):
     based on the stallholder filters
     """
     filter_dict ={}
+    request.session['target'] = 'fair:siteallocation-list'
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
@@ -1217,3 +1228,69 @@ def siteallocataion_delete_view(request, pk):
         'page_obj': page_obj,
         'alert_mgr': alert_message,
     })
+
+
+def stall_registration_dashboard_view(request):
+    """
+    Populate the Stall Registration dashboard with counts of a selected group of registration statuuses
+    """
+    stall_registrations = StallRegistration.objects.all()
+    filter_message = 'Showing unfiltered data - from all current and future fairs and site sizes'
+
+    if request.POST:
+        form = DashboardRegistrationFilterForm(request.POST)
+        if form.is_valid():
+            fair = form.cleaned_data['fair']
+            site_size = form.cleaned_data['site_size']
+            attr_fair = 'fair'
+            attr_site_size = 'site_size'
+            if fair and site_size:
+                filter_message = 'Showing filtered data where the fair is ' + str(fair) + ' site size is ' + str(site_size)
+                filter_dict = {
+                    attr_fair: fair,
+                    attr_site_size: site_size
+                }
+            elif fair and not site_size:
+                filter_message = 'Showing filtered data where fair is ' + str(fair) + ' and all site sizes'
+                filter_dict = {
+                    attr_fair: fair,
+                }
+            elif site_size and not fair:
+                filter_message = 'Showing filtered data where site size is ' + str(site_size) + ' and all fairs'
+                filter_dict = {
+                    attr_site_size: site_size
+                }
+            else:
+                filter_dict = {}
+                filter_message = 'Showing unfiltered data - from all current and future fairs and site sizes'
+
+            total_counts = stall_registrations.filter(**filter_dict).count()
+            selling_food_counts = StallRegistration.sellingfoodmgr.filter(**filter_dict).count()
+            created_counts = StallRegistration.registrationcreatedmgr.filter(**filter_dict).count()
+            submitted_counts = StallRegistration.registrationsubmittedmgr.filter(**filter_dict).count()
+            invoiced_counts = StallRegistration.registrationinvoicedmgr.filter(**filter_dict).count()
+            booked_counts = StallRegistration.registrationbookedmgr.filter(**filter_dict).count()
+            cancelled_counts = StallRegistration. registrationcancelledmgr.filter(**filter_dict).count()
+
+    else:
+        form = DashboardRegistrationFilterForm()
+        total_counts = stall_registrations.count()
+        selling_food_counts = StallRegistration.sellingfoodmgr.count()
+        created_counts = StallRegistration.registrationcreatedmgr.count()
+        submitted_counts = StallRegistration.registrationsubmittedmgr.count()
+        invoiced_counts = StallRegistration.registrationinvoicedmgr.count()
+        booked_counts = StallRegistration.registrationbookedmgr.count()
+        cancelled_counts = StallRegistration.registrationcancelledmgr.count()
+
+    return TemplateResponse(request, 'dashboards/dashboard_registrations.html', {
+        'form': form,
+        'filter': filter_message,
+        'total_counts': total_counts,
+        'selling_food_counts': selling_food_counts,
+        'created_counts': created_counts,
+        'submitted_counts': submitted_counts,
+        'invoiced_counts': invoiced_counts,
+        'booked_counts': booked_counts,
+        'cancelled_counts': cancelled_counts
+    })
+

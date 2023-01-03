@@ -1096,7 +1096,7 @@ class SiteAllocationFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
         })
     )
     zone = ModelChoiceField(
@@ -1109,7 +1109,7 @@ class SiteAllocationFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
         })
     )
 
@@ -1135,3 +1135,24 @@ class StallHolderIDForm(Form):
             'readonly': 'readonly'
         }),
     )
+
+class DashboardRegistrationFilterForm(Form):
+    """
+    Form for selecting filters for the registration dashboard
+    """
+    fair = ModelChoiceField(
+        queryset=Fair.objects.all(),
+        empty_label='Show All',
+        label='Fairs',
+        required=False,
+        widget=Select(attrs={'class': 'form-control'})
+    )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={'class': 'form-control'})
+    )
+
+

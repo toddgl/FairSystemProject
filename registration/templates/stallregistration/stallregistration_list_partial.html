@@ -1,0 +1,60 @@
+<!-- registration/templates/stallregistration/stallregistration_partial_list.html -->
+
+{% load static %}
+{% load paginator_tags %}
+
+<div id="list_data">
+    <div class="row g-3">
+    {% regroup stallregistration_list by get_booking_status_display as stallregistration_status_list %}
+    {% for stallregistration in stallregistration_status_list %}
+    <h5 class="rotary_orange">{{ stallregistration.grouper }}</h5>
+        {% for item in stallregistration.list %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card">
+                <div class="card-body">
+                    <h4 class="card-title">{{ item.fair }} - {{ item.stallholder.name }}</h4>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Registraion ID:</strong> {{ item.id }}</li>
+                    <li class="list-group-item"><strong>Stall Category:</strong> {{ item.stall_category }}</li>
+                    <li class="list-group-item"><strong>Site Size:</strong> {{ item.site_size }}</li>
+                    <li class="list-group-item"><strong>Status:</strong> {{ item.get_stallregistration_status_display }}</li>
+                    <li class="list-group-item"><strong>Description:</strong> {{ item.stall_description }}</li>
+                </ul>
+            </div>
+        </div>
+        {% endfor %}
+    {% empty %}
+    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+    {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if stallregistration_list.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if stallregistration_list.has_previous %}
+                <li class="page-item"><a class="page-link"  hx-get="{% url 'registration:stallregistration-list' %}?page={{ stallregistration_list.previous_page_number }}" hx-trigger="click" hx-target="stallregistration_data">&laquo;</a></li>
+            {% else %}
+                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for i in page_range|default_if_none:stallregistration_list.paginator.get_elided_page_range %}
+                {% if stallregistration_list.number == i %}
+                    <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                    {% if i == stallregistration_list.paginator.ELLIPSIS %}
+                        <li class="page-item"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ i }}" hx-trigger="click" hx-target="#stallregistration_data">{{ i }}</a></li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            {% if stallregistration_list.has_next %}
+                <li class="page-item"><a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ stallregistration_list.next_page_number }}" hx-trigger="click" hx-target="#stallregistration_data">&raquo;</a></li>
+            {% else %}
+                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>

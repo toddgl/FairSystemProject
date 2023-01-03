@@ -666,3 +666,36 @@ class CommentReplyForm(ModelForm):
                 'placeholder': 'Detail your reply'
             }),
         }
+
+
+class StallRegistrationFilterForm(Form):
+    """
+    Filter form for listing stall registrations by Fair
+    """
+    fair = ModelChoiceField(
+        queryset=Fair.objects.all(),
+        empty_label='Show All',
+        label='Fairs',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-control',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#list_data',
+        })
+    )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-control',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#list_data',
+        })
+    )
+
