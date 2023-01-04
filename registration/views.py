@@ -1,24 +1,28 @@
 # registration/views.py
+import datetime
 import decimal
 import json
-import datetime
 
-from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
-from django.template.response import TemplateResponse
-from django.db.models import Q
-from django.shortcuts import render, get_object_or_404, redirect
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import HttpResponseRedirect, HttpResponse
-from django.views.decorators.http import require_POST
+from django.shortcuts import render, get_object_or_404, redirect
+from django.template.response import TemplateResponse
 from django.urls import reverse_lazy
+from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
     ListView,
     UpdateView,
 )
 
+from fairs.models import (
+    Fair,
+    SiteAllocation,
+    InventoryItemFair
+)
 from registration.models import (
     FoodPrepEquipment,
     FoodSaleType,
@@ -28,13 +32,6 @@ from registration.models import (
     FoodPrepEquipReq,
     RegistrationComment,
 )
-
-from fairs.models import (
-    Fair,
-    SiteAllocation,
-    InventoryItemFair
-)
-
 from .forms import (
     FoodPrepEquipmentCreationForm,
     FoodPrepEquipmentUpdateForm,
@@ -84,6 +81,7 @@ def stall_registration_listview(request):
     List stall registration used by the Fair Conveners in the view and management of stall registrations
     """
     filter_dict = {}
+    global stallholder
     request.session['target'] = 'registration:stallregistration-list'
     alert_message = 'There are no stall registrations yet.'
     template_name = 'stallregistration/stallregistration_list.html'
@@ -99,6 +97,7 @@ def stall_registration_listview(request):
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'stallholder'
         if stallholder_id:
+            stallholder = stallholder_id
             filter_dict = {
                 attr_stallholder: stallholder_id
             }
@@ -116,12 +115,34 @@ def stall_registration_listview(request):
             site_size = filterform.cleaned_data['site_size']
             attr_fair = 'fair'
             attr_site_size = 'site_size'
-            if fair and site_size:
+            if fair and site_size and stallholder:
+                alert_message = 'There are no stall registrations where the fair is ' + str(
+                fair) + ' and site size is ' + str(site_size) + ' stallholder ID is ' + str(stallholder)
+                filtered_data = StallRegistration.objects.all().order_by('stall_category')
+                filter_dict = {
+                    attr_fair: fair,
+                    attr_site_size: site_size,
+                    attr_stallholder: stallholder
+                }
+            elif fair and site_size:
                 alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
                 filtered_data = StallRegistration.objects.all().order_by('stall_category')
                 filter_dict = {
                     attr_fair: fair,
                     attr_site_size: site_size,
+                }
+            elif fair and stallholder:
+                alert_message = 'There are no stall registrations where the fair is ' + str(fair)  + ' stallholder ID is ' + str(stallholder)
+                filtered_data = StallRegistration.objects.all().order_by('stall_category')
+                filter_dict = {
+                    attr_fair: fair,
+                    attr_stallholder: stallholder
+                }
+            elif site_size and stallholder:
+                alert_message = 'There are no stall registrations where the site size is ' + str(site_size)  + ' stallholder ID is ' + str(stallholder)
+                filter_dict = {
+                    attr_site_size: site_size,
+                    attr_stallholder: stallholder
                 }
             elif fair:
                 alert_message = 'There are no stall registrations where the fair is ' + str(fair)
@@ -158,6 +179,7 @@ def stall_registration_listview(request):
     else:
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list
+        stallholder = ''
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'stallregistration_list': stallregistration_list,
