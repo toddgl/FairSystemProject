@@ -1005,6 +1005,7 @@ def site_allocation_listview(request):
     based on the stallholder filters
     """
     filter_dict ={}
+    global stallholder
     request.session['target'] = 'fair:siteallocation-list'
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
@@ -1015,6 +1016,7 @@ def site_allocation_listview(request):
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'stallholder'
         if stallholder_id:
+            stallholder = stallholder_id
             filter_dict = {
                 attr_stallholder: stallholder_id
             }
@@ -1032,12 +1034,32 @@ def site_allocation_listview(request):
             zone = filterform.cleaned_data['zone']
             attr_zonesite = 'event_site__site__zone'
             attr_eventsite = 'event_site__event'
-            if event and zone:
+            if event and zone and stallholder:
+                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                    zone) + ' stallholder ID is ' + str(stallholder)
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_eventsite: event,
+                    attr_stallholder: stallholder
+                }
+            elif event and zone:
                 alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
                     zone)
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event
+                }
+            elif event and stallholder:
+                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' stallholder ID is ' + str(stallholder)
+                filter_dict = {
+                    attr_eventsite: event,
+                    attr_stallholder: stallholder
+                }
+            elif zone and stallholder:
+                alert_message = 'There are no sites allocated where the zone is ' + str(zone) + ' stallholder ID is ' + str(stallholder)
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_stallholder: stallholder
                 }
             elif event:
                 alert_message = 'There are no sites allocated where the event is ' + str(event)
@@ -1073,6 +1095,7 @@ def site_allocation_listview(request):
     else:
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         allocation_list = page_list
+        stallholder = ''
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'allocation_list': allocation_list,
