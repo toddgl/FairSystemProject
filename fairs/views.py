@@ -1253,11 +1253,14 @@ def siteallocataion_delete_view(request, pk):
     })
 
 
+@login_required
+@permission_required('fairs.view_siteallocation', raise_exception=True)
 def stall_registration_dashboard_view(request):
     """
     Populate the Stall Registration dashboard with counts of a selected group of registration statuuses
     """
     stall_registrations = StallRegistration.objects.all()
+    template_name = 'dashboards/dashboard_registrations.html'
     filter_message = 'Showing unfiltered data - from all current and future fairs and site sizes'
 
     if request.POST:
@@ -1305,7 +1308,7 @@ def stall_registration_dashboard_view(request):
         booked_counts = StallRegistration.registrationbookedmgr.count()
         cancelled_counts = StallRegistration.registrationcancelledmgr.count()
 
-    return TemplateResponse(request, 'dashboards/dashboard_registrations.html', {
+    return TemplateResponse(request, template_name, {
         'form': form,
         'filter': filter_message,
         'total_counts': total_counts,
@@ -1316,4 +1319,20 @@ def stall_registration_dashboard_view(request):
         'booked_counts': booked_counts,
         'cancelled_counts': cancelled_counts
     })
+
+@login_required
+@permission_required('fairs.view_fair', raise_exception=True)
+def setup_process_dashboard_view(request):
+    """
+    A dashboared that guides the convener throught the steps to set up and initiate adn new fair
+    """
+    template_name = "dashboards/dashboard_management_process.html"
+    context = {}
+
+    context['last_history_year'] = '2022'
+    context['last_site_update_date'] = '20th Feb 2022'
+    context['latest_fair_name'] = 'Martinborough Fair 2022'
+
+    return TemplateResponse(request, template_name, context)
+
 

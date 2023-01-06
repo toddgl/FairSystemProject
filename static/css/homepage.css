@@ -288,3 +288,14 @@ a {
     margin-top: 12px;
 }
 
+/* Activities Dashboard */
+
+.stepper {
+  .line {
+    width: 2px;
+    background-color: lightgrey !important;
+  }
+  .lead {
+    font-size: 1.1rem;
+  }
+}
