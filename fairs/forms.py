@@ -280,6 +280,19 @@ class SiteListFilterForm(Form):
             'hx-target': '#site_data',
         })
     )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_data',
+        })
+    )
 
     class Meta:
         fields = [

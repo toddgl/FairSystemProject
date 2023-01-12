@@ -12,7 +12,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.generic import (
     CreateView,
     FormView,
@@ -34,11 +34,14 @@ from fairs.models import (
     InventoryItemFair,
     PowerBox,
     EventPower,
+    SiteHistory
 )
 
 from registration.models import (
     StallRegistration,
 )
+
+from utils import site_allocation
 
 from .forms import (
     FairDetailForm,
@@ -76,6 +79,7 @@ from .forms import (
 
 # Global Variables
 current_year = datetime.datetime.now().year
+current_month = datetime.datetime.now().month
 next_year = current_year + 1
 media_root = settings.MEDIA_ROOT
 site_status_dict = {
@@ -288,11 +292,24 @@ def site_listview(request):
     if request.htmx:
         if filterform.is_valid():
             zone = filterform.cleaned_data['zone']
+            site_size = filterform.cleaned_data['site_size']
             attr_zonesite = 'zone'
-            if zone:
+            attr_site_size = 'site_size'
+            if zone and site_size:
+                alert_message = 'There are no sites where the zone is ' + str(zone) + ' the site size is ' + str(site_size)
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_site_size: site_size
+                }
+            elif zone:
                 alert_message = 'There are no sites where the zone is ' + str(zone)
                 filter_dict = {
                     attr_zonesite: zone
+                }
+            elif site_size:
+                alert_message = 'There are no sites where the site size is ' + str(site_size)
+                filter_dict = {
+                    attr_site_size: site_size
                 }
             else:
                 alert_message = 'There are no event sites created yet.'
@@ -1232,7 +1249,7 @@ def stallholder_select(request):
 @login_required
 @permission_required('fairs.delete_siteallocation', raise_exception=True)
 @require_http_methods(['DELETE'])
-def siteallocataion_delete_view(request, pk):
+def siteallocation_delete_view(request, pk):
     """
     Remove a site allocation
     """
@@ -1324,15 +1341,75 @@ def stall_registration_dashboard_view(request):
 @permission_required('fairs.view_fair', raise_exception=True)
 def setup_process_dashboard_view(request):
     """
-    A dashboared that guides the convener throught the steps to set up and initiate adn new fair
+    A dashboard that guides the convener through the steps to set up and initiate adn new fair
     """
     template_name = "dashboards/dashboard_management_process.html"
-    context = {}
 
-    context['last_history_year'] = '2022'
-    context['last_site_update_date'] = '20th Feb 2022'
-    context['latest_fair_name'] = 'Martinborough Fair 2022'
+    # Status of site history records
+    latest_history = SiteHistory.objects.latest('year')
+    if int(latest_history.year) < current_year and current_month > 5:
+        bgcolor1 = 'bg-danger'
+    else:
+        bgcolor1 = 'bg-success'
 
-    return TemplateResponse(request, template_name, context)
+    #Status of site data
+    latest_amended_site = Site.objects.filter(date_updated__isnull=False).latest('date_updated')
+    if int(latest_amended_site.date_updated.year) < current_year and current_month > 5:
+        bgcolor2 = 'bg-danger'
+    else:
+        bgcolor2 = 'bg-success'
+
+    # Status of Fair Data
+    current_fair = Fair.currentfairmgr.last()
+    if current_fair:
+        if int(current_fair.fair_year) < current_year and current_month > 5:
+            bgcolor3 = 'bg-danger'
+        else:
+            bgcolor3 = 'bg-success'
+        latest_fair_name = current_fair.fair_name
+    else:
+        latest_fair_name =  None
+        bgcolor3 = 'bg-danger'
+
+    # Status of Fair Events
+    current_events = Event.currenteventfiltermgr.all()
+    if current_fair:
+        if int(current_fair.fair_year) < current_year and current_month > 5:
+            bgcolor4 = 'bg-danger'
+        elif current_events:
+            bgcolor4 = 'bg-success'
+    else:
+        bgcolor4 = 'bg-danger'
+
+    # Status of Site Allocations and running of siteallocation script
+    current_siteallocations = SiteAllocation.currentallocationsmgr.all()
+    if current_siteallocations:
+        bgcolor5 = 'bg-success'
+        has_current_siteallocations = True
+    else:
+        has_current_siteallocations = False
+        bgcolor5 = 'bg-danger'
+
+    if request.method == 'POST' and 'run_script' in request.POST:
+        # call function
+        site_allocation()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
+
+    context = {
+        'last_history_year': latest_history.year,
+        'latest_amended_site': latest_amended_site.site_name,
+        'date_latest_amended_site': latest_amended_site.date_updated,
+        'latest_fair_name': latest_fair_name,
+        'bgcolor1': bgcolor1,
+        'bgcolor2': bgcolor2,
+        'bgcolor3': bgcolor3,
+        'bgcolor4': bgcolor4,
+        'bgcolor5': bgcolor5,
+        'current_events': current_events,
+        'has_current_siteallocations': has_current_siteallocations
+    }
+
+    return TemplateResponse(request, template_name, context )
 
 

@@ -17,7 +17,7 @@
           </div>
         <form action='actionUrl' method='GET'>
             <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Site Allocation</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'fair:setup-dashboard' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
     {% include 'siteallocations/siteallocation_list_partial.html' %}

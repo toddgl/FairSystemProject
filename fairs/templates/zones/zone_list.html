@@ -11,7 +11,8 @@
       <h1>Zones</h1>
         <form action='actionUrl' method='GET'>
             <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new zone</button>
-            <a href="/" class="btn btn-secondary">Cancel</a>
+            <a href="{% url 'fair:zonemap-create' %}" class="btn btn-primary">Add a Zonemap</a>
+            <a href="{% url 'fair:setup-dashboard' %}" class="btn btn-secondary">Cancel</a>
         </form>
     </div>
     <div class="row g-3">

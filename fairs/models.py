@@ -50,7 +50,10 @@ class InventoryItem(models.Model):
         (TRESTLE, _('Trestle'))
     ]
 
-    item_name = models.CharField(max_length=100)
+    item_name = models.CharField(
+        max_length=100,
+        unique=True
+    )
     item_type = models.PositiveSmallIntegerField(
         choices=TYPE_CHOICE,
         default=FAIRSITE
@@ -92,7 +95,10 @@ class Fair(models.Model):
     """
 
     fair_year = models.CharField(max_length=4, default='2022')
-    fair_name = models.CharField(max_length=40)
+    fair_name = models.CharField(
+        max_length=40,
+        unique=True
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     date_cancelled = models.DateTimeField(blank=True, default=None, null=True)
@@ -135,7 +141,10 @@ class Zone(models.Model):
     """
     Description: Stores the details of the fair zones.
     """
-    zone_name = models.CharField(max_length=40)
+    zone_name = models.CharField(
+        max_length=40,
+        unique=True
+    )
     zone_code = models.CharField(max_length=2, default=None, null=True)
     trestle_source = models.BooleanField(default=False)
     location = models.ForeignKey(
@@ -302,7 +311,10 @@ class Site(models.Model):
     """
     Description: Stores the details of the fair stallholder sites
     """
-    site_name = models.CharField(max_length=40)
+    site_name = models.CharField(
+        max_length=40,
+        unique= True
+    )
     site_size = models.ForeignKey(
         InventoryItem,
         related_name='site_sizes',
@@ -348,7 +360,10 @@ class PowerBox(models.Model):
     """
     Description: Store the details of the power boxes used to provide power to stallholders
     """
-    power_box_name = models.CharField(max_length=100)
+    power_box_name = models.CharField(
+        max_length=100,
+        unique=True
+    )
     power_box_description = models.TextField()
     socket_count = models.IntegerField()
     max_load = models.DecimalField(max_digits=10, decimal_places=4)
@@ -387,7 +402,10 @@ class Event(models.Model):
         (SECONDEVENT, _('Second Event'))
     ]
 
-    event_name = models.CharField(max_length=40)
+    event_name = models.CharField(
+        max_length=40,
+        unique=True
+    )
     event_sequence = models.PositiveSmallIntegerField(
         choices=EVENT_SEQUENCE_CHOICE,
         default=FIRSTEVENT,
@@ -622,6 +640,7 @@ class SiteAllocation(models.Model):
     updated_by = models.ForeignKey(CustomUser, related_name='allocation_updated_by', on_delete=models.SET_NULL,
                                    blank=True,
                                    null=True)
+    on_hold = models.BooleanField(default=False) # Used to lock SiteAllocation when deleting unregistered allocations
 
     objects = models.Manager()  # The default manager.
     currentallocationsmgr = CurrentSiteAllocationManager()  # The current site siteallocations manager

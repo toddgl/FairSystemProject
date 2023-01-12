@@ -15,7 +15,7 @@
   <div class="stepper d-flex flex-column mt-5 ml-2">
     <div class="d-flex mb-1" >
       <div class="d-flex flex-column pr-4 justify-content-center" >
-        <div class="rounded-circle py-2 px-3 bg-primary text-white mb-1">1</div>
+        <div class="rounded-circle py-2 px-3 {{ bgcolor1 }} text-white mb-1">1</div>
       </div>
       <div class="d-flex flex-column justify-content-start" style="padding-left:3rem" >
         <div class="card ml-20" style="min-width: 50rem;">
@@ -24,8 +24,6 @@
           </div>
           <div class="card-body">
             <p class="card-text">The last year of archived stall registration is {{ last_history_year }}</p>
-            <a href="#" class="card-link">Card link</a>
-            <a href="#" class="card-link">Another link</a>
           </div>
         </div>
       </div>
@@ -33,7 +31,7 @@
     <hr>
     <div class="d-flex mb-1" >
       <div class="d-flex flex-column pr-4 align-items-center">
-        <div class="rounded-circle py-2 px-3 bg-primary text-white mb-1">2</div>
+        <div class="rounded-circle py-2 px-3 {{bgcolor2 }} text-white mb-1">2</div>
       </div>
       <div class="d-flex flex-column justify-content-start" style="padding-left:3rem" >
         <div class="card ml-20" style="min-width: 50rem;">
@@ -41,15 +39,16 @@
             <h4>Update Sites and upload new Zone site maps</h4>
           </div>
           <div class="card-body">
-            <p class="card-text">The last time the sites were updated was {{ last_site_update_date }}</p>
+            <p class="card-text">The last time the sites were updated was {{ latest_amended_site }} on {{ date_latest_amended_site |date:'d-m-Y H:i'}}</p>
             <a class=" btn btn-primary" href="{% url 'fair:site-list' %}" role="Button">View Sites</a>
+            <a class=" btn btn-primary" href="{% url 'fair:zone-list' %}" role="Button">View Zones and Upload Maps</a>
           </div>
         </div>
       </div>
     </div>
     <div class="d-flex mb-1" style="height: 200px;">
       <div class="d-flex flex-column pr-4 align-items-center">
-        <div class="rounded-circle py-2 px-3 bg-primary text-white mb-1">3</div>
+        <div class="rounded-circle py-2 px-3 {{ bgcolor3 }} text-white mb-1">3</div>
       </div>
       <div class="d-flex flex-column justify-content-start" style="padding-left:3rem" >
         <div class="card ml-20" style="min-width: 50rem;">
@@ -57,8 +56,63 @@
             <h4>Create a New Fair</h4>
           </div>
           <div class="card-body">
-            <p class="card-text">TThe latest Fair is {{ latest_fair_name }}</p>
-            <a class="btn btn-primary" href="{% url 'fair:fair-list' %}" role="button">Fairs</a>
+            {% if latest_fair_name %}
+              <p class="card-text">The latest active Fair is {{ latest_fair_name }}</p>
+            {% else %}
+              <p class="card-text">There are no current active fairs setup.</p>
+            {% endif %}
+            <a class="btn btn-primary" href="{% url 'fair:fair-list' %}" role="button">View and Add Fairs</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex mb-1" style="height: 200px;">
+      <div class="d-flex flex-column pr-4 align-items-center">
+        <div class="rounded-circle py-2 px-3 {{ bgcolor4 }} text-white mb-1">3</div>
+      </div>
+      <div class="d-flex flex-column justify-content-start" style="padding-left:3rem" >
+        <div class="card ml-20" style="min-width: 50rem;">
+          <div class="card-header text-primary">
+            <h4>Create New Events</h4>
+          </div>
+          <div class="card-body">
+            {% if latest_fair_name and current_events %}
+              <p class="card-text">The latest active Fair is {{ latest_fair_name }} and the events are:</p>
+              {% for event in current_events %}
+                {{ event.event_name }}
+              {% endfor %}
+            {% elif latest_fair_name %}
+              <p class="card-text">The latest active Fair is {{ latest_fair_name }} but there are no events set up</p>
+            {% else %}
+              <p class="card-text">There are no current active fairs or events setup.</p>
+            {% endif %}
+            <a class="btn btn-primary" href="{% url 'fair:event-list' %}" role="button">View and Add Events</a>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="d-flex mb-1" style="height: 200px;">
+      <div class="d-flex flex-column pr-4 align-items-center">
+        <div class="rounded-circle py-2 px-3 {{ bgcolor5 }} text-white mb-1">3</div>
+      </div>
+      <div class="d-flex flex-column justify-content-start" style="padding-left:3rem" >
+        <div class="card ml-20" style="min-width: 50rem;">
+          <div class="card-header text-primary">
+            <h4>Create Site Allocations based on Registration History</h4>
+          </div>
+          <div class="card-body">
+            {% if has_current_siteallocations %}
+              <p class="card-text">Site Allocations have been created</p>
+            {% elif latest_fair_name and not has_current_siteallocations %}
+              <p class="card-text">There are no site allocations setup for {{ latest_fair_name }}.</p>
+              <form method="post">
+                {% csrf_token %}
+                <button class= "bth btn-primary" type="submit" name="run_script">Run Site Allocation</button>
+              </form>
+            {% else %}
+              <p class="card-text">There are no site allocations setup.</p>
+            {% endif %}
+            <a class="btn btn-primary" href="{% url 'fair:siteallocation-list' %}" role="button">View and Add Site Allocations</a>
           </div>
         </div>
       </div>

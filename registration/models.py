@@ -263,6 +263,10 @@ class StallRegistration(models.Model):
     power_required = models.BooleanField(default=False)
     total_charge = models.DecimalField(max_digits=8, decimal_places=2)
     selling_food = models.BooleanField(default=False)
+    vehicle_on_site = models.BooleanField(default=False)
+    vehicle_width = models.FloatField(null=True, blank=True)
+    vehicle_length = models.FloatField(null=True, blank=True)
+    vehicle_image = models.ImageField(null=True, upload_to='vehicles/' + str(current_year))
 
     objects = models.Manager()
     registrationcurrentmgr = RegistrationCurrentManager()
