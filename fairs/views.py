@@ -201,7 +201,7 @@ class EventCreateView(PermissionRequiredMixin, CreateView):
         """
         Create the event site relationship with the just created event and all sites
         """
-        sites = Site.objects.all()
+        sites = Site.objects.filter(is_active=True) # Only create EvewntSite instances for sites that are active
         objs = [
             EventSite(
                 event=self.object,

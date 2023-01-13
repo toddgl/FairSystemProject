@@ -297,6 +297,7 @@ class SiteListFilterForm(Form):
     class Meta:
         fields = [
             'zone',
+            'site_size'
         ]
 
 
@@ -327,6 +328,7 @@ class SiteCreateForm(ModelForm):
             'site_name',
             'zone',
             'site_size',
+            'is_active',
         ]
         widgets = {
             'site_name': TextInput(attrs={
@@ -374,6 +376,7 @@ class SiteDetailForm(ModelForm):
             'site_name',
             'zone',
             'site_size',
+            'is_active',
         ]
         widgets = {
             'site_name': TextInput(attrs={

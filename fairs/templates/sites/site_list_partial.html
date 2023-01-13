@@ -12,7 +12,15 @@
                 <div class="card-body">
                     <h4 class="card-title">{{ site.site_name }}</h4>
                     <p class="card-text">
-                        Date created: {{ site.date_created|date:'Y-m-d H:i' }}
+                        <ul class="list-group list-group-flush">
+                            {% if site.updated_by %}
+                                <li class="list-group-item">Date updated: {{ site.date_updated|date:'Y-m-d H:i' }}</li>
+                            {% else %}
+                                <li class="list-group-item">Date created: {{ site.date_created|date:'Y-m-d H:i' }}</li>
+                            {% endif %}
+                            <li class="list-group-item">Site Size: {{ site.site_size }}</li>
+                            <li class="list-group-item">Active Site : {{site.is_active|yesno|title }}</li>
+                          </ul>
                     </p>
                     <a href="{% url 'fair:site-detail' site.id %}" class="btn btn-primary">
                         View and edit Site Detail
