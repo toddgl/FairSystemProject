@@ -239,7 +239,6 @@ a {
 
 .form-control {
     height: 48px;
-    border-radius: 25px;
 }
 
 .form-control:focus {

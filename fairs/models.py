@@ -346,6 +346,7 @@ class Site(models.Model):
         blank=True,
         null=True
     )
+    site_note = models.TextField(null=True, blank=True, default=None)
 
     def __str__(self):
         return self.site_name

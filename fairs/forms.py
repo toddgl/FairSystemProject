@@ -321,6 +321,10 @@ class SiteCreateForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
+    site_note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class':'form-control', 'style': 'max-width: 400px;','placeholder':'Please enter a note if required'})
+    )
 
     class Meta:
         model = Site
@@ -328,6 +332,7 @@ class SiteCreateForm(ModelForm):
             'site_name',
             'zone',
             'site_size',
+            'site_note',
             'is_active',
         ]
         widgets = {
@@ -335,7 +340,7 @@ class SiteCreateForm(ModelForm):
                 'placeholder': 'Site Name',
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
-            })
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -369,6 +374,10 @@ class SiteDetailForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
+    site_note = forms.CharField(
+        required=False,
+        widget=forms.Textarea(attrs={'class':'form-control', 'style': 'max-width: 400px;','placeholder':'Please enter a note if required'})
+    )
 
     class Meta:
         model = Site
@@ -376,6 +385,7 @@ class SiteDetailForm(ModelForm):
             'site_name',
             'zone',
             'site_size',
+            'site_note',
             'is_active',
         ]
         widgets = {
@@ -509,7 +519,7 @@ class InventoryItemCreateForm(ModelForm):
                 'placeholder': 'Please enter the description'
             }),
             'item_quantity': NumberInput(attrs={
-                'class': "form_control",
+                'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Number of Items',
                 'label': 'Total Number Available'
@@ -561,7 +571,7 @@ class InventoryItemDetailForm(ModelForm):
                 'placeholder': 'Please enter the  description'
             }),
             'item_quantity': NumberInput(attrs={
-                'class': "form_control",
+                'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Number of Items',
                 'label': 'Total Number Available'

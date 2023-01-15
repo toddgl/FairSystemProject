@@ -8,7 +8,11 @@
     <div class="row g-3 ">
         {% for site in site_list %}
         <div class="col-12 col-md-6 col-lg-4">
-            <div class="card">
+            {% if site.is_active %}
+            <div class="card border border-2 border-success mb-3" style="max-width: 18rem;">
+            {% else %}
+            <div class="card border border-2 border-danger mb-3" style="max-width: 18rem;">
+            {% endif %}
                 <div class="card-body">
                     <h4 class="card-title">{{ site.site_name }}</h4>
                     <p class="card-text">
@@ -19,6 +23,7 @@
                                 <li class="list-group-item">Date created: {{ site.date_created|date:'Y-m-d H:i' }}</li>
                             {% endif %}
                             <li class="list-group-item">Site Size: {{ site.site_size }}</li>
+                            <li class="list-group-item">Note: {{ site.site_note }}</li>
                             <li class="list-group-item">Active Site : {{site.is_active|yesno|title }}</li>
                           </ul>
                     </p>

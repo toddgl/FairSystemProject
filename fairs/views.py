@@ -201,7 +201,7 @@ class EventCreateView(PermissionRequiredMixin, CreateView):
         """
         Create the event site relationship with the just created event and all sites
         """
-        sites = Site.objects.filter(is_active=True) # Only create EvewntSite instances for sites that are active
+        sites = Site.objects.filter(is_active=True) # Only create EventSite instances for sites that are active
         objs = [
             EventSite(
                 event=self.object,
@@ -753,7 +753,7 @@ class InventoryItemFairListView(PermissionRequiredMixin, ListView):
     permission_required = 'fairs.view_inventoryitemfair'
     model = InventoryItemFair
     template_name = 'inventoryitemfairs/inventoryitemfair_list.html'
-    queryset = InventoryItemFair.objects.all().order_by("inventory_item")
+    queryset = InventoryItemFair.currentinventoryitemfairmgr.order_by("inventory_item")
 
 
 class InventoryItemFairDetailUpdateView(PermissionRequiredMixin, UpdateView):
