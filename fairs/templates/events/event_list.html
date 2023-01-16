@@ -7,7 +7,7 @@
     <h1>Events</h1>
     <form action='actionUrl' method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Event</button>
-        <a href="/" class="btn btn-secondary">Cancel</a>
+        <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
     </form>
     {% for event in event_list %}
     <div class="container mt-3" style="width: 600px;">

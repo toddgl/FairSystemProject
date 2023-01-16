@@ -1381,14 +1381,23 @@ def setup_process_dashboard_view(request):
     else:
         bgcolor4 = 'bg-danger'
 
+    # Status of Inventory Item Pricing
+    current_pricing = InventoryItemFair.currentinventoryitemfairmgr.order_by("inventory_item")
+    if current_pricing:
+        bgcolor5 = 'bg-success'
+        has_current_pricing = True
+    else:
+        has_current_pricing = False
+        bgcolor5 = 'bg-danger'
+
     # Status of Site Allocations and running of siteallocation script
     current_siteallocations = SiteAllocation.currentallocationsmgr.all()
     if current_siteallocations:
-        bgcolor5 = 'bg-success'
+        bgcolor6 = 'bg-success'
         has_current_siteallocations = True
     else:
         has_current_siteallocations = False
-        bgcolor5 = 'bg-danger'
+        bgcolor6 = 'bg-danger'
 
     if request.method == 'POST' and 'run_script' in request.POST:
         # call function
@@ -1406,8 +1415,10 @@ def setup_process_dashboard_view(request):
         'bgcolor3': bgcolor3,
         'bgcolor4': bgcolor4,
         'bgcolor5': bgcolor5,
+        'bgcolor6': bgcolor6,
         'current_events': current_events,
-        'has_current_siteallocations': has_current_siteallocations
+        'has_current_siteallocations': has_current_siteallocations,
+        'has_current_pricing': has_current_pricing,
     }
 
     return TemplateResponse(request, template_name, context )

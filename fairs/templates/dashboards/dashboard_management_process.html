@@ -101,9 +101,12 @@
             <h4>Set Fair Prices</h4>
           </div>
           <div class="card-body">
-            <p class="card-text">The last time the sites were updated was {{ latest_amended_site }} on {{ date_latest_amended_site |date:'d-m-Y H:i'}}</p>
-            <a class=" btn btn-primary" href="{% url 'fair:site-list' %}" role="Button">View Sites</a>
-            <a class=" btn btn-primary" href="{% url 'fair:zone-list' %}" role="Button">View Zones and Upload Maps</a>
+            {% if has_current_pricing %}
+            <p class="card-text">Fair prices have been created</p>
+            {% elif latest_fair_name and not has_current_pricing %}
+            <p class="card-text">There are no prices setup for {{ latest_fair_name }}.</p>
+            {% endif %}
+            <a class=" btn btn-primary" href="{% url 'fair:inventoryitemfair-list' %}" role="Button">View Pricing</a>
           </div>
         </div>
       </div>
@@ -136,6 +139,7 @@
       </div>
     </div>
   </div>
+ </div>
 </main>
 
 {% endblock %}
