@@ -106,6 +106,7 @@ class Fair(models.Model):
     is_cancelled = models.BooleanField(default=False)
     activation_date = models.DateTimeField(blank=True, default=None, null=True)
     is_activated = models.BooleanField(default=False)
+    allocation_email_date = models.DateTimeField(blank=True, default=None, null=True)
     created_by = models.ForeignKey(CustomUser, related_name='fair_created_by', on_delete=models.SET_NULL, blank=True,
                                    null=True)
     updated_by = models.ForeignKey(CustomUser, related_name='fair_updated_by', on_delete=models.SET_NULL, blank=True,
@@ -115,6 +116,7 @@ class Fair(models.Model):
         through='InventoryItemFair',
         related_name='fairs'
     )
+
     objects = models.Manager()
     currentfairmgr = CurrentFairManager()
 
@@ -444,6 +446,11 @@ class Event(models.Model):
         return reverse('fairs:event-detail', args=[self.id])
 
 
+class EventSiteCurrentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(event__fair__fair_year__in=[current_year, next_year],
+                                             event__fair__is_activated=True)
+
 class SiteAvailableManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(site_status=1, event__fair__fair_year__in=[current_year, next_year],
@@ -525,6 +532,7 @@ class EventSite(models.Model):
     notes = models.TextField(null=True)
 
     objects = models.Manager()  # The default manager.
+    eventsitecurrentmgr = EventSiteCurrentManager() # All sites for the current fair
     site_available = SiteAvailableManager()  # The site status available manager.
     site_allocated = SiteAllocatedManager()  # The site status allocated manager.
     site_pending = SitePendingManager()  # The site status pending manager.

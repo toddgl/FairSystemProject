@@ -807,7 +807,7 @@ def site_dashboard_view(request):
     """
     Populate the Site Dashboard with counts of the various site statuses
     """
-    events = EventSite.objects.all()
+    events = EventSite.eventsitecurrentmgr.all()
     filter_message = 'Showing unfiltered data - from all future fair events and sites in all the zones'
 
     if request.POST:
@@ -1405,6 +1405,17 @@ def setup_process_dashboard_view(request):
         # return user to required page
         return HttpResponseRedirect(reverse('fair:setup-dashboard'))
 
+    # State of the email notification to existing stallholder that sites have been pre-allocated them
+    if current_fair:
+        if current_fair.allocation_email_date:
+            bgcolor7 = 'bg-success'
+            email_date = current_fair.allocation_email_date
+        else:
+            bgcolor7 = 'bg-danger'
+    else:
+        bgcolor7 = 'bg-danger'
+        email_date = None
+
     context = {
         'last_history_year': latest_history.year,
         'latest_amended_site': latest_amended_site.site_name,
@@ -1416,9 +1427,11 @@ def setup_process_dashboard_view(request):
         'bgcolor4': bgcolor4,
         'bgcolor5': bgcolor5,
         'bgcolor6': bgcolor6,
+        'bgcolor7': bgcolor7,
         'current_events': current_events,
         'has_current_siteallocations': has_current_siteallocations,
         'has_current_pricing': has_current_pricing,
+        'email_date': email_date,
     }
 
     return TemplateResponse(request, template_name, context )

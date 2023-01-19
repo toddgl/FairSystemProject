@@ -774,7 +774,7 @@ class DashboardSiteFilterForm(Form):
     """
 
     event = ModelChoiceField(
-        queryset=Event.objects.all(),
+        queryset=Event.currenteventfiltermgr.all(),
         empty_label='Show All',
         label='Events',
         required=False,

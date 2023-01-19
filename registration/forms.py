@@ -586,7 +586,6 @@ class CommentFilterForm(Form):
     """
     fair = ModelChoiceField(
         queryset=Fair.objects.all(),
-        empty_label= Fair.currentfairmgr.all().last(),
         required=False,
         widget=Select(attrs={
             'class': 'form-select',
