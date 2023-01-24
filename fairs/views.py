@@ -41,7 +41,10 @@ from registration.models import (
     StallRegistration,
 )
 
-from utils import site_allocation
+from utils import (
+    site_allocation,
+    site_allocation_emails,
+)
 
 from .forms import (
     FairDetailForm,
@@ -1415,6 +1418,12 @@ def setup_process_dashboard_view(request):
     else:
         bgcolor7 = 'bg-danger'
         email_date = None
+
+    if request.method == 'POST' and 'create_emails' in request.POST:
+        # call function
+        site_allocation_emails()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
 
     context = {
         'last_history_year': latest_history.year,

@@ -34,7 +34,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.87', 'localhost', '127.0.0.1', ]
+ALLOWED_HOSTS = ['192.168.1.79', 'localhost', '127.0.0.1', ]
 
 
 
@@ -62,7 +62,8 @@ INSTALLED_APPS = [
     'pages',
     'accounts',
     'fairs',
-    'search'
+    'search',
+    'CustomDBLogger'
 ]
 
 MIDDLEWARE = [
@@ -166,6 +167,8 @@ ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
+EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
+
 AUTHENTICATION_BACKENDS = (
     # Needed to login by username in Django admin, regardless of allauth
     "django.contrib.auth.backends.ModelBackend",
@@ -199,3 +202,33 @@ ACCOUNT_FORMS = {
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
+        },
+        'simple': {
+            'format': '%(levelname)s %(asctime)s %(message)s'
+        },
+    },
+    'handlers': {
+        'db_log': {
+            'level': 'DEBUG',
+            'class': 'CustomDBLogger.db_log_handler.DatabaseLogHandler'
+        },
+    },
+    'loggers': {
+        'db': {
+            'handlers': ['db_log'],
+            'level': 'DEBUG'
+        },
+        'django.request': { # logging 500 errors to database
+            'handlers': ['db_log'],
+            'level': 'ERROR',
+            'propagate': False,
+        }
+    }
+}

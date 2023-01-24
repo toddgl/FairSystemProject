@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ subject }}</title>
+</head>
+<body>
+    <h1>{{ subject }}</h1>
+    <div style="background-color: bisque;padding:20px;">
+        <p>Hi {{ stallholder }},</p>
+        <br>
+        <p>You have been pre-allocated a site at the upcoming {{ fair }} based on your previous fair site allocations.  Please log into the Martinborough Fair system to secure this site before {{ fair.activation_date|date:"D j M Y" to secure this site.</p>
+        <p>If you are not intending to attend the {{ fair}} please advise the <a href="mailto:convener@martinboroughfair.org.nz">convener</a> by email so the site can be released for other stallholders.</p>
+        <p><em>Fair Convener</em></p>
+    </div>
+</body>
+</html>
