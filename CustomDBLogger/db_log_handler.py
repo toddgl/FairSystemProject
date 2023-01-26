@@ -23,7 +23,8 @@ class DatabaseLogHandler(logging.Handler):
             'logger_name': record.name,
             'level': record.levelno,
             'msg': msg,
-            'trace': trace
+            'trace': trace,
+            'custom_category': record.custom_category
         }
 
         StatusLog.objects.create(**kwargs)
