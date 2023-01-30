@@ -19,12 +19,17 @@ class DatabaseLogHandler(logging.Handler):
         else:
             msg = record.getMessage()
 
+        if hasattr(record, 'custom_category'):
+            custom_category = record.custom_category
+        else:
+            custom_category = None
+
         kwargs = {
             'logger_name': record.name,
             'level': record.levelno,
             'msg': msg,
             'trace': trace,
-            'custom_category': record.custom_category
+            'custom_category': custom_category
         }
 
         StatusLog.objects.create(**kwargs)

@@ -8,6 +8,7 @@ db_logger = logging.getLogger('db')
 
 print('This is a test of the logger')
 
+db_logger.info('this is a info log without the custom_categoiy')
 db_logger.info('this is a info log', extra={'custom_category':'Email'})
 db_logger.warning('This is  a warning log', extra={'custom_category':'History Migration'})
 

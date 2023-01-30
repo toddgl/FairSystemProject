@@ -1,5 +1,5 @@
 # fairs/model.py
-import datetime
+from datetime import date, datetime
 from django.db.models import Q
 from django.db import models
 from django.utils import timezone
@@ -9,7 +9,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 # Global Variables
-current_year = datetime.datetime.now().year
+current_year = datetime.now().year
 next_year = current_year + 1
 
 
@@ -135,8 +135,14 @@ class Fair(models.Model):
         Format it to datetime object. You need to convert `year`
         to str if it is `IntegerField`. ex: str(self.year).
         """
-        date = timezone.datetime.strptime('%Y', str(self.fair_year))
+        date = datetime.strptime(self.fair_year, '%Y')
         return date
+
+    @property
+    def has_reached_activation_date(self):
+        if datetime.now() >= self.activation_date:
+            return True
+        return False
 
 
 class Zone(models.Model):
@@ -390,8 +396,8 @@ class PowerBox(models.Model):
 
 class CurrentEventFilterManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(Q(original_event_date__gt=datetime.datetime.now()) |
-                                             Q(postponement_event_date__gt=datetime.datetime.now()))
+        return super().get_queryset().filter(Q(original_event_date__gt=datetime.now()) |
+                                             Q(postponement_event_date__gt=datetime.now()))
 
 
 class Event(models.Model):

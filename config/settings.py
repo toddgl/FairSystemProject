@@ -34,7 +34,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.79', 'localhost', '127.0.0.1', ]
+ALLOWED_HOSTS = ['192.168.1.78', 'localhost', '127.0.0.1', ]
 
 
 
@@ -205,7 +205,7 @@ MESSAGE_STORAGE = 'django.contrib.messages.storage.session.SessionStorage'
 
 LOGGING = {
     'version': 1,
-    'disable_existing_loggers': False,
+    'disable_existing_loggers': True,
     'formatters': {
         'verbose': {
             'format': '%(levelname)s %(asctime)s %(module)s %(process)d %(thread)d %(message)s'
@@ -223,7 +223,7 @@ LOGGING = {
     'loggers': {
         'db': {
             'handlers': ['db_log'],
-            'level': 'DEBUG'
+            'level': 'INFO'
         },
         'django.request': { # logging 500 errors to database
             'handlers': ['db_log'],

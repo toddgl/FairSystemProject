@@ -30,6 +30,6 @@ if site_allocations:
         try:
             mail.send(fail_silently=False)
         except BadHeaderError:              # If mail's Subject is not properly formatted.
-            db_logger.error('Invalid header found on ' + site_allocation.stallholder.email)
+            db_logger.error('Invalid header found on ' + site_allocation.stallholder.email, extra={'custom_category':'Email'})
         except SMTPException as e:          # It will catch other errors related to SMTP.
-            db_logger.exception ('There was an error sending an email.'+ e)
+            db_logger.error('There was an error sending an email.'+ e,  extra={'custom_category':'Email'})

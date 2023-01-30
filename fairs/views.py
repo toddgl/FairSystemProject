@@ -44,6 +44,7 @@ from registration.models import (
 from utils import (
     site_allocation,
     site_allocation_emails,
+    delete_unregistered_allocations,
 )
 
 from .forms import (
@@ -1365,6 +1366,7 @@ def setup_process_dashboard_view(request):
     # Status of Fair Data
     current_fair = Fair.currentfairmgr.last()
     if current_fair:
+        has_reached_activation_date = True
         if int(current_fair.fair_year) < current_year and current_month > 5:
             bgcolor3 = 'bg-danger'
         else:
@@ -1372,11 +1374,12 @@ def setup_process_dashboard_view(request):
         latest_fair_name = current_fair.fair_name
     else:
         latest_fair_name =  None
+        has_reached_activation_date = False
         bgcolor3 = 'bg-danger'
 
     # Status of Fair Events
     current_events = Event.currenteventfiltermgr.all()
-    if current_fair:
+    if current_events:
         if int(current_fair.fair_year) < current_year and current_month > 5:
             bgcolor4 = 'bg-danger'
         elif current_events:
@@ -1415,6 +1418,7 @@ def setup_process_dashboard_view(request):
             email_date = current_fair.allocation_email_date
         else:
             bgcolor7 = 'bg-danger'
+            email_date = None
     else:
         bgcolor7 = 'bg-danger'
         email_date = None
@@ -1422,6 +1426,21 @@ def setup_process_dashboard_view(request):
     if request.method == 'POST' and 'create_emails' in request.POST:
         # call function
         site_allocation_emails()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
+
+    # Delete unregistered site allocations before the Fair is open to new registrations
+    unregistered_allocations = SiteAllocation.currentallocationsmgr.filter(stall_registration__isnull=True, on_hold=False)
+    if unregistered_allocations:
+        bgcolor8 = 'bg-danger'
+    elif not current_fair:
+        bgcolor8 = 'bg-danger'
+    else:
+        bgcolor8 = 'bg-success'
+
+    if request.method == 'POST' and 'delete_allocations' in request.POST:
+        # call function
+        delete_unregistered_allocations()
         # return user to required page
         return HttpResponseRedirect(reverse('fair:setup-dashboard'))
 
@@ -1437,10 +1456,13 @@ def setup_process_dashboard_view(request):
         'bgcolor5': bgcolor5,
         'bgcolor6': bgcolor6,
         'bgcolor7': bgcolor7,
+        'bgcolor8': bgcolor8,
         'current_events': current_events,
         'has_current_siteallocations': has_current_siteallocations,
         'has_current_pricing': has_current_pricing,
         'email_date': email_date,
+        'unregistered_allocations': unregistered_allocations,
+        'reached_activation_date': has_reached_activation_date
     }
 
     return TemplateResponse(request, template_name, context )

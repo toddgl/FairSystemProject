@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddField(
             model_name='fair',
-            name='is_activated',
+            name='is_active',
             field=models.BooleanField(default=False),
         ),
     ]
