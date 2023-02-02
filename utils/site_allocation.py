@@ -29,25 +29,30 @@ Process the stallholder site series for each current future event to create new 
 to make sure that the EventSite site_status is set to Available this should be sufficient to prevent duplicates from 
 being created without resorting to test for duplicates before a save 
 """
-count = 4
 events = Event.currenteventfiltermgr.all()
 for event in events:
+    count = 4
     while count > 0:
         year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id']) == count
         year_sites = [i for i, j in year_series.items() if j == True]
-        db_logger.info(count, year_sites, extra={'custom_category':'Site Allocation'} )
+        db_logger.info(str(count) + ' ' +str(year_sites), extra={'custom_category':'Site Allocation'} )
         for stallholder, site in year_sites:
-            eventsite = EventSite.objects.get(event_id=event.id, site_id=site)
-            if eventsite.site_status == 1:
-                SiteAllocation.objects.create(
-                    stallholder_id=stallholder,
-                    event_site_id=eventsite.id,
-                    created_by_id=3,
-                )
-                db_logger.info('SiteAllocation for Stallholder ID {} Event Name {} and Site name {} has been '
-                      'created'.format(stallholder, event.event_name, eventsite.site.site_name),  extra={'custom_category':'Site Allocation'})
+            if EventSite.objects.filter(event_id=event.id, site_id=site).exists():
+                eventsite = EventSite.objects.get(event_id=event.id, site_id=site)
+                if eventsite.site_status == 1:
+                    SiteAllocation.objects.create(
+                        stallholder_id=stallholder,
+                        event_site_id=eventsite.id,
+                        created_by_id=3,
+                    )
+                else:
+                    db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
+                        event.event_name) + ' and Site name' + str(
+                        eventsite.site.site_name) + 'has not been created, as the EventSite was not Available.',
+                                      extra={'custom_category': 'Site Allocation'})
             else:
-                db_logger.info('SiteAllocation for Stallholder ID {} Event Name {} and Site name {} has not been created, '
-                      'the EventSite was not Available'.format(stallholder, event.event_name,
-                                                               eventsite.site.site_name), extra={'custom_category':'Site Allocation'})
+                db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
+                    event.event_name) + ' and Site name' + str(
+                    eventsite.site.site_name) + 'has not been created, as the EventSite was not Available.',
+                          extra={'custom_category': 'Site Allocation'})
         count = count - 1

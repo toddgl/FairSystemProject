@@ -46,7 +46,7 @@
         </div>
       </div>
     </div>
-    <div class="d-flex mb-1" style="height: 200px;">
+    <div class="d-flex mb-1" style="height: auto;">
       <div class="d-flex flex-column pr-4 align-items-center">
         <div class="rounded-circle py-2 px-3 {{ bgcolor3 }} text-white mb-1">3</div>
       </div>
@@ -66,7 +66,7 @@
         </div>
       </div>
     </div>
-    <div class="d-flex mb-1" style="height: 200px;">
+    <div class="d-flex mb-1" style="height: auto;">
       <div class="d-flex flex-column pr-4 align-items-center">
         <div class="rounded-circle py-2 px-3 {{ bgcolor4 }} text-white mb-1">4</div>
       </div>
@@ -79,7 +79,7 @@
             {% if latest_fair_name and current_events %}
               <p class="card-text">The latest active Fair is {{ latest_fair_name }} and the events are:</p>
               {% for event in current_events %}
-                {{ event.event_name }}
+              <p>{{ event.event_name }}</p>
               {% endfor %}
             {% elif latest_fair_name %}
               <p class="card-text">The latest active Fair is {{ latest_fair_name }} but there are no events set up</p>
@@ -111,7 +111,7 @@
         </div>
       </div>
     </div>
-    <div class="d-flex mb-1" style="height: 200px;">
+    <div class="d-flex mb-1" style="height: auto;">
       <div class="d-flex flex-column pr-4 align-items-center">
         <div class="rounded-circle py-2 px-3 {{ bgcolor6 }} text-white mb-1">6</div>
       </div>
@@ -127,7 +127,7 @@
               <p class="card-text">There are no site allocations setup for {{ latest_fair_name }}.</p>
               <form method="post">
                 {% csrf_token %}
-                <button class= "bth btn-primary" type="submit" name="run_script">Run Site Allocation</button>
+                <button class= "bth btn-primary mb-1" type="submit" name="run_script">Run Site Allocation</button>
               </form>
             {% else %}
               <p class="card-text">There are no site allocations setup.</p>
@@ -137,7 +137,7 @@
         </div>
       </div>
     </div>
-    <div class="d-flex mb-1" style="height: 200px;">
+    <div class="d-flex mb-1" style="height: auto;">
       <div class="d-flex flex-column pr-4 align-items-center">
         <div class="rounded-circle py-2 px-3 {{bgcolor7 }} text-white mb-1">7</div>
       </div>
@@ -163,7 +163,7 @@
         </div>
       </div>
     </div>
-    <div class="d-flex mb-1" style="height: 200px;">
+    <div class="d-flex mb-1" style="height: auto;">
       <div class="d-flex flex-column pr-4 align-items-center">
         <div class="rounded-circle py-2 px-3 {{bgcolor8 }} text-white mb-1">8</div>
       </div>

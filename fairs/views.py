@@ -41,11 +41,12 @@ from registration.models import (
     StallRegistration,
 )
 
-from utils import (
-    site_allocation,
+from utils.site_allocation_tools import (
+    site_allocations,
     site_allocation_emails,
-    delete_unregistered_allocations,
+    delete_unregistered_allocations
 )
+
 
 from .forms import (
     FairDetailForm,
@@ -590,15 +591,15 @@ def event_site_listview(request):
     List all the event sites and provide filtered views based on dropdown filters of events and Zones
     """
     global filter_dict
+    cards_per_page = 6
     alert_message = 'There are no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
     site_status=request.GET.get('site_status','')
     if site_status:
-        filtered_data = EventSite.objects.all().filter(site_status=site_status).order_by("site__site_name")
+        filtered_data = EventSite.eventsitecurrentmgr.filter(site_status=site_status).order_by("site__site_name")
     else:
-        filtered_data = EventSite.objects.all().order_by("site__site_name")
-    cards_per_page = 6
+        filtered_data = EventSite.eventsitecurrentmgr.order_by("site__site_name")
 
     if request.htmx:
         if filterform.is_valid():
@@ -655,7 +656,7 @@ def event_site_listview(request):
             else:
                 alert_message = 'There are no event sites created yet.'
                 filter_dict = {}
-            filtered_data = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
+            filtered_data = EventSite.eventsitecurrentmgr.filter(**filter_dict).order_by("site__site_name")
             template_name = 'eventsites/eventsite_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             eventsite_list = page_list
@@ -664,7 +665,7 @@ def event_site_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        filtered_data = EventSite.objects.filter(**filter_dict).order_by("site__site_name")
+        filtered_data = EventSite.eventsitecurrentmgr.filter(**filter_dict).order_by("site__site_name")
         template_name = 'eventsites/eventsite_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         eventsite_list = page_list
@@ -1053,6 +1054,7 @@ def site_allocation_listview(request):
         elif filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
+            print(event, zone)
             attr_zonesite = 'event_site__site__zone'
             attr_eventsite = 'event_site__event'
             if event and zone and stallholder:
@@ -1405,11 +1407,6 @@ def setup_process_dashboard_view(request):
         has_current_siteallocations = False
         bgcolor6 = 'bg-danger'
 
-    if request.method == 'POST' and 'run_script' in request.POST:
-        # call function
-        site_allocation()
-        # return user to required page
-        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
 
     # State of the email notification to existing stallholder that sites have been pre-allocated them
     if current_fair:
@@ -1423,11 +1420,6 @@ def setup_process_dashboard_view(request):
         bgcolor7 = 'bg-danger'
         email_date = None
 
-    if request.method == 'POST' and 'create_emails' in request.POST:
-        # call function
-        site_allocation_emails()
-        # return user to required page
-        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
 
     # Delete unregistered site allocations before the Fair is open to new registrations
     unregistered_allocations = SiteAllocation.currentallocationsmgr.filter(stall_registration__isnull=True, on_hold=False)
@@ -1438,7 +1430,17 @@ def setup_process_dashboard_view(request):
     else:
         bgcolor8 = 'bg-success'
 
-    if request.method == 'POST' and 'delete_allocations' in request.POST:
+    if request.method == 'POST' and 'run_script' in request.POST:
+        # call function
+        site_allocations()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
+    elif request.method == 'POST' and 'create_emails' in request.POST:
+        # call function
+        site_allocation_emails()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
+    elif request.method == 'POST' and 'delete_allocations' in request.POST:
         # call function
         delete_unregistered_allocations()
         # return user to required page

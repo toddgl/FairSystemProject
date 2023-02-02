@@ -1083,7 +1083,7 @@ class SiteAllocationListFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
         })
     )
     zone = ModelChoiceField(
@@ -1096,7 +1096,7 @@ class SiteAllocationListFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
         })
     )
 
