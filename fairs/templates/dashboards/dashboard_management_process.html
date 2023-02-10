@@ -12,6 +12,7 @@
   <!--End Top Nav -->
   <h4>Fair Setup Workflow and Status</h4>
   <hr>
+  <div> class="loader"></div>
   <div class="stepper d-flex flex-column mt-5 ml-2">
     <div class="d-flex mb-1" >
       <div class="d-flex flex-column pr-4 justify-content-center" >
@@ -165,7 +166,7 @@
     </div>
     <div class="d-flex mb-1" style="height: auto;">
       <div class="d-flex flex-column pr-4 align-items-center">
-        <div class="rounded-circle py-2 px-3 {{bgcolor8 }} text-white mb-1">8</div>
+        <div class="rounded-circle py-2 px-3 {{ bgcolor8 }} text-white mb-1">8</div>
       </div>
       <div class="d-flex flex-column justify-content-start" style="padding-left:3rem" >
         <div class="card ml-20" style="min-width: 50rem;">
@@ -174,8 +175,8 @@
           </div>
           <div class="card-body">
             <p class="card-text">The purpose of this action is to free up any pre-allocated sites that have not been taken up by the stallholder by the Fair activation date.</p>
-            {% if unregistered_allocationa and reached_activation_date %}
-            <p class="card-text">There are currently {{ unregistered_allocations }} unregistered allocations that can be freed for general stall registrations.<br>
+            {% if unregistered_allocations and reached_activation_date %}
+            <p class="card-text">There are currently {{ count_unregistered_allocations }} unregistered allocations that can be freed for general stall registrations.<br><br>
               <strong>Note:</strong>To prevent all the unregistered site allocations from being deleted set the <strong>On Hold Flag</strong> on those unregistered site allocations you want to retain prior to pressing the delete unregistered site allocation button.</p>
               <form method="post">
                 {% csrf_token %}

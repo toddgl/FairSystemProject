@@ -1054,16 +1054,43 @@ def site_allocation_listview(request):
         elif filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
-            print(event, zone)
+            on_hold = filterform.cleaned_data['on_hold']
             attr_zonesite = 'event_site__site__zone'
             attr_eventsite = 'event_site__event'
-            if event and zone and stallholder:
+            attr_onhold = 'on_hold'
+            if event and zone and stallholder and on_hold:
                 alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                    zone) + ' stallholder ID is ' + str(stallholder) + ' that are on hold'
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_eventsite: event,
+                    attr_stallholder: stallholder,
+                    attr_onhold: on_hold
+                }
+            elif event and zone and stallholder:
+                alert_message = 'There are no sites allocated where the event is ' + str(
+                    event) + ' and zone is ' + str(
                     zone) + ' stallholder ID is ' + str(stallholder)
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event,
                     attr_stallholder: stallholder
+                }
+            elif event and zone and on_hold:
+                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                    zone)  + ' that are on hold'
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_eventsite: event,
+                    attr_onhold: on_hold
+                }
+            elif event and stallholder and on_hold:
+                alert_message = 'There are no sites allocated where the event is ' + str(
+                    event) + ' stallholder ID is ' + str(stallholder)  + ' that are on hold'
+                filter_dict = {
+                    attr_eventsite: event,
+                    attr_stallholder: stallholder,
+                    attr_onhold: on_hold
                 }
             elif event and zone:
                 alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
@@ -1071,6 +1098,12 @@ def site_allocation_listview(request):
                 filter_dict = {
                     attr_zonesite: zone,
                     attr_eventsite: event
+                }
+            elif event and on_hold:
+                alert_message = 'There are no sites allocated where the event is ' + str(event)  + ' that are on hold'
+                filter_dict = {
+                    attr_eventsite: event,
+                    attr_onhold: on_hold
                 }
             elif event and stallholder:
                 alert_message = 'There are no sites allocated where the event is ' + str(event) + ' stallholder ID is ' + str(stallholder)
@@ -1084,6 +1117,19 @@ def site_allocation_listview(request):
                     attr_zonesite: zone,
                     attr_stallholder: stallholder
                 }
+            elif zone and on_hold:
+                alert_message = 'There are no sites allocated where the zone is ' + str(
+                    zone) + ' that are on hold'
+                filter_dict = {
+                    attr_zonesite: zone,
+                    attr_onhold: on_hold
+                }
+            elif stallholder and on_hold:
+                alert_message = 'There are no sites allocated where the stallholder ID is ' + str(stallholder)  + ' that are on hold'
+                filter_dict = {
+                    attr_stallholder: stallholder,
+                    attr_onhold: on_hold
+                }
             elif event:
                 alert_message = 'There are no sites allocated where the event is ' + str(event)
                 filter_dict = {
@@ -1093,6 +1139,11 @@ def site_allocation_listview(request):
                 alert_message = 'There are no sites allocated where the zone is ' + str(zone)
                 filter_dict = {
                     attr_zonesite: zone
+                }
+            elif on_hold:
+                alert_message = 'There are no sites allocated that are on hold'
+                filter_dict = {
+                    attr_onhold: on_hold
                 }
             else:
                 alert_message = 'There are no sites allocated yet.'
@@ -1423,6 +1474,7 @@ def setup_process_dashboard_view(request):
 
     # Delete unregistered site allocations before the Fair is open to new registrations
     unregistered_allocations = SiteAllocation.currentallocationsmgr.filter(stall_registration__isnull=True, on_hold=False)
+    count_unregistered_allocations = unregistered_allocations.count()
     if unregistered_allocations:
         bgcolor8 = 'bg-danger'
     elif not current_fair:
@@ -1464,6 +1516,7 @@ def setup_process_dashboard_view(request):
         'has_current_pricing': has_current_pricing,
         'email_date': email_date,
         'unregistered_allocations': unregistered_allocations,
+        'count_unregistered_allocations': count_unregistered_allocations,
         'reached_activation_date': has_reached_activation_date
     }
 

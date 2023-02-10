@@ -218,7 +218,6 @@ def stall_registration_create(request):
         total_cost = None
 
     if request.htmx:
-        print('htmx detected in stall _registration_create')
         fair_id = request.POST.get('fair')
         template_name = 'stallregistration/stallregistration_partial.html'
         total_cost = get_registration_costs(fair_id, request)
@@ -231,7 +230,7 @@ def stall_registration_create(request):
             stall_registration.save()
             if siteallocation:
                 stall_registration.refresh_from_db()
-                siteallocation.stall_registration_id = stall_registration.id
+                siteallocation.stall_registration = stall_registration
                 siteallocation.save(update_fields=['stall_registration'])
             if stall_registration.selling_food:
                 success_url = reverse_lazy('registration:food-registration')

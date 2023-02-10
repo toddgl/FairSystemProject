@@ -3,6 +3,7 @@
 from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
 from django import forms
 from django.forms import (
+    BooleanField,
     Form,
     ModelForm,
     ChoiceField,
@@ -1046,12 +1047,12 @@ class SiteAllocationUpdateForm(ModelForm):
 
     class Meta:
         model = SiteAllocation
-        fields = ('stallholder', 'event_site', 'stall_registration', 'event_power')
+        fields = ('stallholder', 'event_site', 'stall_registration', 'event_power', 'on_hold')
         widgets = {
             'stallholder': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
-                'disabled': 'disabled'
+                'readonly': 'readonly'
             }),
             'event_site': Select(attrs={
                 'class': "form-select",
@@ -1099,11 +1100,22 @@ class SiteAllocationListFilterForm(Form):
             'hx-target': '#list_data',
         })
     )
+    on_hold = BooleanField(
+        required=False,
+        widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#list_data',
+            'checked': False
+        })
+    )
 
     class Meta:
         fields = [
             'event',
             'zone',
+            'on_hold'
         ]
 
 
@@ -1136,7 +1148,7 @@ class SiteAllocationFilterForm(Form):
             'hx-trigger': 'change',
             'hx-post': '.',
             'hx-target': '#list_data',
-        })
+        }),
     )
 
     class Meta:

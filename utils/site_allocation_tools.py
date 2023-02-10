@@ -68,8 +68,8 @@ def site_allocations():
     to make sure that the EventSite site_status is set to Available this should be sufficient to prevent duplicates from 
     being created without resorting to test for duplicates before a save 
     """
-    count = 4
     events = Event.currenteventfiltermgr.all()
+    count = 4
     for event in events:
         while count > 0:
             year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id']) == count
@@ -84,18 +84,18 @@ def site_allocations():
                             event_site_id=eventsite.id,
                             created_by_id=3,
                         )
-                        db_logger.info('SiteAllocation for Stallholder ID' + str(stallholder) + ' Event Name' + str(
-                            event.event_name) + ' and Site name ' + str(eventsite.site.site_name) + ' has been '
-                                                                                                    'created',
-                                       extra={'custom_category': 'Site Allocation'})
+                        eventsite.site_status = 2
+                        eventsite.save()
                     else:
-                        db_logger.info('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
-                            event.event_name) + ' and Site name has not been created, as the EventSite was not Available.',
-                                       extra={'custom_category': 'Site Allocation'})
+                        db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
+                            event.event_name) + ' and Site name' + str(
+                            eventsite.site.site_name) + 'has not been created, as the EventSite was not Available.',
+                                          extra={'custom_category': 'Site Allocation'})
                 else:
-                    db_logger.info('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
-                        event.event_name) + ' and Site name has not been created, as the EventSite was not Available.',
-                                   extra={'custom_category': 'Site Allocation'})
+                    db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
+                        event.event_name) + ' and Site name' + str(
+                        eventsite.site.site_name) + 'has not been created, as the EventSite was not Available.',
+                                      extra={'custom_category': 'Site Allocation'})
             count = count - 1
 
 def delete_unregistered_allocations():
@@ -106,6 +106,9 @@ def delete_unregistered_allocations():
     processing information is recorded in the CustomDBLogger table which can be viewed using Django Admin
     """
     unregistered_allocations = SiteAllocation.objects.filter(stall_registration__isnull=True, on_hold=False)
+    eventsite = unregistered_allocations.event_site
+    eventsite.site_status = 1
+    eventsite.save()
     if unregistered_allocations:
         try:
             unregistered_allocations.delete()

@@ -398,11 +398,6 @@ class FoodRegistration(models.Model):
     a save event occurs and selling food has been selected. This kind of signal is called post_save.
     """
 
-    @receiver(post_save, sender=StallRegistration)
-    def create_food_registration(self, instance, created, **kwargs):
-        if created and StallRegistration.selling_food:
-            if created:
-                FoodRegistration.objects.create(registration=instance)
 
     class Meta:
         verbose_name = "foodregistration"

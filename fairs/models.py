@@ -1,12 +1,12 @@
 # fairs/model.py
-from datetime import date, datetime
+from datetime import datetime
 from django.db.models import Q
 from django.db import models
-from django.utils import timezone
 from django.urls import reverse
 from accounts.models import CustomUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 # Global Variables
 current_year = datetime.now().year
@@ -625,7 +625,7 @@ class SiteAllocation(models.Model):
     stallholder = models.ForeignKey(
         CustomUser,
         on_delete=models.CASCADE,
-        verbose_name='custom_user',
+        verbose_name='stallholder',
         related_name='site_allocation'
     )
     event_site = models.ForeignKey(
@@ -660,6 +660,7 @@ class SiteAllocation(models.Model):
 
     objects = models.Manager()  # The default manager.
     currentallocationsmgr = CurrentSiteAllocationManager()  # The current site siteallocations manager
+
 
     class Meta:
         unique_together = ('stallholder', 'event_site')

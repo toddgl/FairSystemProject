@@ -33,11 +33,12 @@
         {% csrf_token %}
         {{ registrationform.as_p }}
         <input type="submit" class="mt-2 btn btn-primary" value="Save" >
-        <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../myfair'" value="Cancel" >
+        <a type="button" class="mt-2 ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
       </form>
     </div>
     <div class="col-md-6">
       <h4>Comments</h4>
+      {% include 'stallregistration/registration_comments_filter.html' %}
     </div>
   </div>
 </div>
