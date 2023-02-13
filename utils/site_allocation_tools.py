@@ -106,14 +106,15 @@ def delete_unregistered_allocations():
     processing information is recorded in the CustomDBLogger table which can be viewed using Django Admin
     """
     unregistered_allocations = SiteAllocation.objects.filter(stall_registration__isnull=True, on_hold=False)
-    eventsite = unregistered_allocations.event_site
-    eventsite.site_status = 1
-    eventsite.save()
     if unregistered_allocations:
-        try:
-            unregistered_allocations.delete()
-        except Exception as e:          # It will catch other errors related to the delete call.
-            db_logger.error('There was an error deleting the unregistered site allocations.'+ e,  extra={'custom_category':'Site Allocations'})
+        for allocation in unregistered_allocations:
+            eventsite = allocation.event_site
+            eventsite.site_status = 1
+            try:
+                allocation.delete()
+                eventsite.save()
+            except Exception as e:          # It will catch other errors related to the delete call.
+                db_logger.error('There was an error deleting the unregistered site allocations.'+ e,  extra={'custom_category':'Site Allocations'})
 
 
 

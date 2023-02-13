@@ -16,6 +16,7 @@
                     <li class="list-group-item"><strong>Event Name:</strong> {{ siteallocation.event_site.event.event_name }}</li>
                     <li class="list-group-item"><strong>Site:</strong> {{ siteallocation.event_site.site.site_name }}</li>
                     <li class="list-group-item"><strong>Registration ID:</strong> {{ siteallocation.stall_registration.id | default:"--" }}</li>
+                    <li class="list-group-item"><strong>Stall Category:</strong> {{ siteallocation.stall_registration.stall_category | default:"--" }}</li>
                     <li class="list-group-item"><strong>Power:</strong> {{ siteallocation.event_power.power_box.power_box_name | default:"--" }}</li>
                     <li class="list-group-item"><strong>On Hold:</strong> {{ siteallocation.on_hold|yesno }}</li>
                 </ul>

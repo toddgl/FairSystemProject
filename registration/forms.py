@@ -130,7 +130,7 @@ class FoodSaleTypeCreationForm(ModelForm):
         self.created_by = kwargs.pop('created_by', None)
         super(FoodSaleTypeCreationForm, self).__init__(*args, **kwargs)
 
-    def clean_power_box_name(self):
+    def clean_food_sale_type_name(self):
         food_sale_type = self.cleaned_data['food_sale_type']
         if FoodSaleType.objects.filter(food_sale_type=food_sale_type).exists():
             raise forms.ValidationError("This Food Sale Type has already been created.")
@@ -191,7 +191,7 @@ class StallCategoryCreationForm(ModelForm):
         self.created_by = kwargs.pop('created_by', None)
         super(StallCategoryCreationForm, self).__init__(*args, **kwargs)
 
-    def clean_power_box_name(self):
+    def clean_stall_category_name(self):
         category_name = self.cleaned_data['category_name']
         if StallCategory.objects.filter(category_name=category_name).exists():
             raise forms.ValidationError("This  Stall Category has already been created.")
