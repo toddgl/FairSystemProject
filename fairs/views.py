@@ -1,6 +1,7 @@
 # fairs/view.py
 import datetime
 import os
+import logging
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -95,6 +96,7 @@ site_status_dict = {
     5: 'Unavailable',
     6: 'Archived'
 }
+db_logger = logging.getLogger('db')
 
 
 # Create your views here.
@@ -1311,17 +1313,25 @@ def siteallocation_delete_view(request, pk):
     Remove a site allocation
     """
     template_name = 'siteallocations/siteallocation_list_partial.html'
-    obj = get_object_or_404(SiteAllocation, id=pk)
-    obj.delete()
-    allocations = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
-    if not allocations:
+    allocation = get_object_or_404(SiteAllocation, id=pk)
+    eventsite = allocation.event_site
+    eventsite.site_status = 1
+    try:
+        allocation.delete()
+        eventsite.save()
+    except Exception as e:  # It will catch other errors related to the delete call.
+        db_logger.error('There was an error deleting the unregistered site allocation.' + e,
+                        extra={'custom_category': 'Site Allocations'})
+    allocation_list = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
+    if not allocation_list:
         alert_message = 'There are no sites allocated yet.'
     else:
         alert_message = ""
-    paginator = Paginator(allocations, per_page=6)  # 6 allocations per page
+    paginator = Paginator(allocation_list, per_page=6)  # 6 allocations per page
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     return TemplateResponse(request, template_name, {
+        'allocation_list': allocation_list,
         'page_obj': page_obj,
         'alert_mgr': alert_message,
     })

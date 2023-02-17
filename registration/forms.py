@@ -276,6 +276,7 @@ class StallRegistrationCreateForm(ModelForm):
         fields = [
             'fair',
             'stall_manager_name',
+            'manager_vehicle_registration',
             'stall_category',
             'stall_description',
             'products_on_site',
@@ -283,16 +284,26 @@ class StallRegistrationCreateForm(ModelForm):
             'trestle_required',
             'trestle_quantity',
             'stall_shelter',
+            'vehicle_on_site',
+            'vehicle_length',
+            'vehicle_width',
+            'vehicle_image',
             'power_required',
             'selling_food'
         ]
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
+            'manager_vehicle_registration': 'Manager\'s vehicle registration',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
             'stall_manager_name': TextInput(attrs={
                 'placeholder': 'First and last name',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'manager_vehicle_registration': TextInput(attrs={
+                'placeholder': 'Rego',
                 'class': "form-control",
                 'style': 'max-width: 300px;',
             }),
@@ -320,9 +331,25 @@ class StallRegistrationCreateForm(ModelForm):
             }),
             'stall_shelter': Textarea(attrs={
                 'class': "form-control",
-                'style': 'max-width: 400px;',
+                'style': 'max-width: 400px; height: 75px;',
                 'placeholder': 'Describe any shelter to be used in conjunction with the stall'
             }),
+            'vehicle_on_site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'vehicle_length': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_width': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_image': FileInput(),
             'power_required': CheckboxInput(attrs={
                 'class': 'form-check-input',
                 'hx-trigger': 'change',
@@ -389,6 +416,7 @@ class StallRegistrationUpdateForm(ModelForm):
         fields = [
             'fair',
             'stall_manager_name',
+            'manager_vehicle_registration',
             'stall_category',
             'stall_description',
             'products_on_site',
@@ -396,16 +424,26 @@ class StallRegistrationUpdateForm(ModelForm):
             'trestle_required',
             'trestle_quantity',
             'stall_shelter',
+            'vehicle_on_site',
+            'vehicle_length',
+            'vehicle_width',
+            'vehicle_image',
             'power_required',
             'selling_food'
         ]
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
+            'manager_vehicle_registration': 'Manager\'s vehicle registration',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
             'stall_manager_name': TextInput(attrs={
                 'placeholder': 'First and last name',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'manager_vehicle_registration': TextInput(attrs={
+                'placeholder': 'Rego',
                 'class': "form-control",
                 'style': 'max-width: 300px;',
             }),
@@ -436,6 +474,22 @@ class StallRegistrationUpdateForm(ModelForm):
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe any shelter to be used in conjunction with the stall'
             }),
+            'vehicle_on_site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'vehicle_length': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_width': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_image': FileInput(),
             'power_required': CheckboxInput(attrs={
                 'class': 'form-check-input',
                 'hx-trigger': 'change',

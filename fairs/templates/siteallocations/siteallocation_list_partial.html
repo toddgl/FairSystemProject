@@ -24,7 +24,7 @@
                     <a href="{% url 'fair:siteallocation-detail' siteallocation.id %}" class="btn btn-primary">
                         View and edit Site Allocation Detail
                     </a>
-                    <a class = "btn btn-danger" hx-delete="{% url 'fair:siteallocation-remove' siteallocation.id %}" hx-target="#allocation_data" hx-confirm="Are you sure you wish to delete?"><i class="bi bi-trash-fill"></i></a>
+                    <a class = "btn btn-danger" hx-delete="{% url 'fair:siteallocation-remove' siteallocation.id %}" hx-target="#list_data" hx-confirm="Are you sure you wish to delete?"><i class="bi bi-trash-fill"></i></a>
                 </div>
             </div>
         </div>

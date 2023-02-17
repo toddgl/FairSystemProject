@@ -242,6 +242,7 @@ class StallRegistration(models.Model):
         on_delete=models.CASCADE
     )
     stall_manager_name = models.CharField(max_length=150)
+    manager_vehicle_registration = models.CharField(null=True, blank=True, max_length=7)
     stall_category = models.ForeignKey(
         StallCategory,
         related_name='stall_registrations',
@@ -259,14 +260,14 @@ class StallRegistration(models.Model):
     )
     trestle_required = models.BooleanField(default=False)
     trestle_quantity = models.IntegerField(default=0)
-    stall_shelter = models.TextField()
+    stall_shelter = models.TextField(null=True, blank=True)
     power_required = models.BooleanField(default=False)
     total_charge = models.DecimalField(max_digits=8, decimal_places=2)
     selling_food = models.BooleanField(default=False)
     vehicle_on_site = models.BooleanField(default=False)
-    vehicle_width = models.FloatField(null=True, blank=True)
-    vehicle_length = models.FloatField(null=True, blank=True)
-    vehicle_image = models.ImageField(null=True, upload_to='vehicles/' + str(current_year))
+    vehicle_width = models.FloatField(default=0)
+    vehicle_length = models.FloatField(default=0)
+    vehicle_image = models.ImageField(blank=True, null=True, upload_to='vehicles/' + str(current_year))
 
     objects = models.Manager()
     registrationcurrentmgr = RegistrationCurrentManager()
@@ -276,8 +277,6 @@ class StallRegistration(models.Model):
     registrationinvoicedmgr = RegistrationInvoicedManager()
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
-
-
 
     class Meta:
         verbose_name = "stallregistration"

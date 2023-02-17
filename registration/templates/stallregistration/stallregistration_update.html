@@ -29,7 +29,7 @@
     {% endif %}
     <div class="col-md-6">
       {% include 'stallregistration/stallregistration_partial.html' %}
-      <form method="post">
+      <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         {{ registrationform.as_p }}
         <input type="submit" class="btn btn-primary" value="Update" >
@@ -41,6 +41,7 @@
     </div>
     <div class="col-md-6">
       <h4>Comments</h4>
+      {% include 'stallregistration/registration_comments_filter.html' %}
     </div>
   </div>
 </div>

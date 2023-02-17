@@ -80,18 +80,17 @@ def stall_registration_listview(request):
     """
     List stall registration used by the Fair Conveners in the view and management of stall registrations
     """
-    filter_dict = {}
+    global filter_dict
     global stallholder
-    request.session['target'] = 'registration:stallregistration-list'
+    cards_per_page = 6
     alert_message = 'There are no stall registrations yet.'
     template_name = 'stallregistration/stallregistration_list.html'
     filterform = StallRegistrationFilterForm(request.POST or None )
     booking_status=request.GET.get('booking_status', '')
     if booking_status:
-        filtered_data = StallRegistration.registrationcurrentmgr.all().filter(booking_status=booking_status).order_by('stall_category')
+        filtered_data = StallRegistration.registrationcurrentmgr.filter(booking_status=booking_status).order_by('stall_category')
     else:
-        filtered_data = StallRegistration.registrationcurrentmgr.all().order_by('stall_category')
-    cards_per_page = 6
+        filtered_data = StallRegistration.registrationcurrentmgr.order_by('stall_category')
 
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
