@@ -268,11 +268,7 @@ a {
     font-size: 13px;
 }
 
-.reply-icon {
-    cursor: pointer;
-}
-
-.archive-icon {
+.icon {
     cursor: pointer;
 }
 

@@ -47,7 +47,10 @@ from fairs.views import (
     PowerBoxCreateView,
     site_dashboard_view,
     stall_registration_dashboard_view,
-    setup_process_dashboard_view
+    setup_process_dashboard_view,
+    messages_dashboard_view,
+    set_message_to_done,
+    set_message_to_active
 )
 
 app_name = 'fair'  # This is the namespace, so you can reverse urls with fair:*
@@ -80,6 +83,7 @@ urlpatterns = [
     path('dashboard/process/', setup_process_dashboard_view, name='setup-dashboard'),
     path('dashboard/site/', site_dashboard_view, name='site-dashboard'),
     path('dashboard/registrations/', stall_registration_dashboard_view, name='registration-dashboard'),
+    path('dashboard/messages/', messages_dashboard_view, name='messages-dashboard'),
     path('registration/management/', site_dashboard_view, name='stallregistration-list'),
     path('dashboard/actionUrl/', site_allocation_listview, name='actionUrl'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
@@ -97,4 +101,7 @@ urlpatterns = [
     path('inventoryitemfair/actionUrl/', InventoryItemFairCreateView.as_view(), name='actionUrl'),
     path('powerbox/actionUrl/', PowerBoxCreateView.as_view(), name='actionUrl'),
     path('eventpower/actionUrl/', EventPowerCreateView.as_view(), name='actionUrl'),
+    path('fair/comment/done/<int:pk>/', set_message_to_done, name='is-done'),
+    path('fair/comment/active/<int:pk>/', set_message_to_active, name='is-active'),
+
 ]

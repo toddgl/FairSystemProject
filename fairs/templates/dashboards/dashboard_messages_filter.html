@@ -1,0 +1,61 @@
+<!-- fairs/templates/dashboards/dashboard_messages_filer.html -->
+
+{% extends 'dashboard_base.html' %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <h4>Messages</h4>
+    <hr>
+    <!-- Comment Filter -->
+    <div class="row">
+        <div class="col-md-9">
+            <div class="title-hr">
+                <span class="hr fix"></span>
+                <span><strong>Message Filters</strong></span>
+                <span class="hr"></span>
+            </div>
+            <form>
+                {% csrf_token %}
+                {{ commentfilterform.as_p }}
+            </form>
+            <hr>
+        </div>
+    </div>
+
+
+    <!-- Button trigger create comment modal -->
+    <button type="button" class="mt-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#commentcreate">Create Comment</button>
+
+
+    <!-- Comment with nested comments -->
+    {% include 'dashboards/dashboard_messages.html' %}
+
+    <!-- Add Comment Modal -->
+    <div class="modal fade" id="commentcreate"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentcreate" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title" id="commentcreatelabel">Add a Comment</h4>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="." method="post">
+                        {% csrf_token %}
+                        {{ commentform.as_p }}
+                        <div class="modal-footer">
+                            <button type="submit" class="mt-2 btn btn-primary">Add New Comment</button>
+                            <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

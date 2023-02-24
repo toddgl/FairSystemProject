@@ -8,17 +8,17 @@
     {% for comment in comments %}
         <div class="w-100">
             <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex flex-row align-items-center"> <span class="mr-2">{{ comment.created_by }}</span> <small class="c-badge">{{ comment.comment_type }}</small> </div> <small>{{ comment.date_created|timesince }} ago</small>
+                <div class="d-flex flex-row align-items-center"> <span class="mr-2">{{ comment.created_by }}</span> <small class="badge bg-dark text-white">{{ comment.comment_type }}</small> </div> <small>{{ comment.date_created|timesince }} ago</small>
             </div>
-            {% if not comment.is_active %}
+            {% if comment.is_archived %}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-row align-items-center"> <span class="badge bg-warning text-dark">This comment has been archived</span></div>
                 </div>
             {% endif %}
             <p class="text-justify comment-text mb-0">{{ comment.comment|linebreaks }}</p>
 
-            <!-- If Comment is active show Button trigger add reply modal  and archive comment and replies-->
-            {% if comment.is_active %}
+            <!-- If Comment is not archived show Button trigger add reply modal  and archive comment and replies-->
+            {% if not comment.is_archived %}
                 <div class="d-flex flex-row user-feed">
                     <a class="archive-icon ms-3" href="{% url 'registration:archive' comment.id %}"><span><i class="bi bi-archive-fill text-danger" style="font-size:1.7rem;" ></i>Archive Comment</span></a>
                     <p class="reply-icon ms-3"><i class="bi bi-reply-fill text-primary" style="font-size: 1.7rem;" data-bs-toggle="modal" data-bs-target="#reply-{{ comment.id }}"></i>Reply</p>

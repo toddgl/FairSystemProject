@@ -6,9 +6,13 @@
         <!-- Side-Nav -->
         <div class="side-navbar active-nav d-flex justify-content-between flex-wrap flex-column hide" id="sidebar">
             <ul class="nav flex-column text-black w-200">
+                <li><a href="{% url 'fair:messages-dashboard' %}" class="nav-link" >
+                    <i class="bi bi-inbox-fill"></i>
+                    <span class="mx-2">Messages</span></a>
+                </li>
                 <li><a href="{% url 'fair:setup-dashboard' %}" class="nav-link" >
                     <i class="bi bi-activity"></i>
-                    <span class="mx-2">Fair Setup</span></a>
+                    <span class="mx-2">Setup</span></a>
                 </li>
                 <li><a href="{% url 'fair:site-dashboard' %}" class="nav-link" >
                     <i class="bi bi-bricks"></i>
@@ -17,10 +21,6 @@
                 <li><a href="{% url 'fair:registration-dashboard' %}" class="nav-link">
                     <i class="bi bi-file-person"></i>
                     <span class="mx-2">Registrations</span></a>
-                </li>
-                <li><a href="#" class="nav-link" >
-                    <i class="bi bi-inbox-fill"></i>
-                    <span class="mx-2">Inbox</span></a>
                 </li>
                 <li><a href="#" class="nav-link" >
                     <i class="bi bi-power"></i>

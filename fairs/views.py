@@ -40,6 +40,7 @@ from fairs.models import (
 
 from registration.models import (
     StallRegistration,
+    RegistrationComment
 )
 
 from utils.site_allocation_tools import (
@@ -82,6 +83,13 @@ from .forms import (
     EventPowerUpdateDetailForm,
     DashboardRegistrationFilterForm,
 )
+
+from registration.forms import (
+    CommentFilterForm,
+    RegistrationCommentForm,
+    CommentReplyForm
+)
+
 
 # Global Variables
 current_year = datetime.datetime.now().year
@@ -1532,4 +1540,165 @@ def setup_process_dashboard_view(request):
 
     return TemplateResponse(request, template_name, context )
 
+
+@login_required
+@permission_required('fairs.view_fair', raise_exception=True)
+def messages_dashboard_view(request):
+    """
+    A dashboard that allows the convener to monitor and respond to stallholder messages
+    """
+    template = "dashboards/dashboard_messages_filter.html"
+    filter_message= 'Showing current comments of the current fair'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    # list of active parent comments
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter( is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
+    if request.htmx:
+        template = 'dashboards/dashboard_messages.html'
+        comments = RegistrationComment.objects.filter( comment_parent__isnull=True)
+        if commentfilterform.is_valid():
+            archive_flag = commentfilterform.cleaned_data['is_archived']
+            fair = commentfilterform.cleaned_data['fair']
+            attr_archive = 'is_archived'
+            attr_fair = 'fair'
+            if archive_flag and fair:
+                filter_message = 'Showing all (archived and current) messages for the ' + str(fair)
+                message_filter_dict = {
+                    attr_fair: fair
+                }
+            elif archive_flag:
+                filter_message = 'Showing all (archived and current) messages for the current fair'
+                message_filter_dict = {
+                    attr_fair: current_fair.id
+                }
+            elif fair:
+                filter_message = 'Showing current messages for the ' + str(fair)
+                message_filter_dict = {
+                    attr_archive: False,
+                    attr_fair: fair
+                }
+            else:
+                message_filter_dict = {
+                    attr_archive: False,
+                    attr_fair: current_fair.id
+                }
+                filter_message = 'ELSE: Showing current messages of the current fair'
+            filter_comments = comments.all().filter(**message_filter_dict)
+        return TemplateResponse(request, template, {
+            'commentfilterform': commentfilterform,
+            'replyform': replyform,
+            'commentform': commentform,
+            'comments': filter_comments,
+            'filter': filter_message,
+        })
+    elif request.method == 'POST':
+        # comment has been added
+        commentform = RegistrationCommentForm(request.POST)
+        replyform = CommentReplyForm(request.POST)
+        if replyform.is_valid():
+            parent_obj = None
+            # get parent comment id from hidden input
+            try:
+                # id integer e.g. 15
+                parent_id = int(request.POST.get('parent_id'))
+            except Exception:
+                parent_id = None
+            # if parent_id has been submitted get parent_obj id
+            if parent_id:
+                parent_obj = RegistrationComment.objects.get(id=parent_id)
+                # if parent object exist
+                if parent_obj:
+                    # create reply comment object
+                    reply_comment = replyform.save(commit=False)
+                    # assign parent_obj to reply comment
+                    reply_comment.comment_parent = parent_obj
+                    # assign comment_type to replycomment
+                    reply_comment.comment_type = parent_obj.comment_type
+                    # assign user to created.by
+                    reply_comment.created_by = request.user
+                    # assign current fair to fair
+                    reply_comment.fair_id = current_fair.id
+                    # save
+                    reply_comment.save()
+                    return TemplateResponse(request, template, {
+                        'commentfilterform': commentfilterform,
+                        'comments': comments,
+                        'commentform': commentform,
+                        'replyform': replyform,
+                        'filter': filter_message,
+                    })
+            elif commentform.is_valid():
+                # normal comment
+                # create comment object but do not save to database
+                new_comment = commentform.save(commit=False)
+                # assign stallholder to the comment
+                new_comment.stallholder = request.user
+                # assign user to created.by
+                new_comment.created_by = request.user
+                # assign current fair to fair
+                new_comment.fair_id = current_fair.id
+                # save
+                new_comment.save()
+            else:
+                print(
+                    commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+        return TemplateResponse(request, template, {
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': filter_message,
+        })
+    else:
+        return TemplateResponse(request, template, {
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': filter_message,
+    })
+
+
+def set_message_to_done(request, pk):
+    """
+    Function called from the conveners messages page to set
+    the is_done flag on the parent comments instance and its sibling replies
+    """
+    # set the is_done flag to false on the parent comment
+    comment_parent = RegistrationComment.objects.get(pk=pk)
+    comment_parent.is_done = True
+    comment_parent.is_active = False
+    comment_parent.save()
+    # if there are replies set is_active flag on these to false also
+    if RegistrationComment.objects.filter(comment_parent=pk).exists():
+        replies = RegistrationComment.objects.filter(comment_parent=pk)
+        for reply in replies:
+            reply.is_done = True
+            reply.is_active = False
+            reply.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+def set_message_to_active(request, pk):
+    """
+    Function called from the conveners messages page to set
+    the is_active flag on the parent comments instance and its sibling replies
+    """
+    # set the is_active flag to false on the parent comment
+    comment_parent = RegistrationComment.objects.get(pk=pk)
+    comment_parent.is_active = True
+    comment_parent.is_done = False
+    comment_parent.save()
+    # if there are replies set is_active flag on these to false also
+    if RegistrationComment.objects.filter(comment_parent=pk).exists():
+        replies = RegistrationComment.objects.filter(comment_parent=pk)
+        for reply in replies:
+            reply.is_active = True
+            reply.is_done = False
+            reply.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
 

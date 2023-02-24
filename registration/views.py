@@ -512,7 +512,7 @@ def myfair_dashboard_view(request):
     replyform = CommentReplyForm(request.POST or None)
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_active=True, comment_parent__isnull=True, fair=current_fair.id)
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
     try:
         # Use prefetch_related to bring through the site allocation data associated with the stall registration
         myfair_list = current_fairs.filter(stallholder=request.user).prefetch_related('site_allocation').all()
@@ -526,7 +526,7 @@ def myfair_dashboard_view(request):
         if commentfilterform.is_valid():
             archive_flag = commentfilterform.cleaned_data['is_archived']
             fair = commentfilterform.cleaned_data['fair']
-            attr_archive = 'is_active'
+            attr_archive = 'is_archived'
             attr_fair = 'fair'
             if archive_flag and fair:
                 filter_message = 'Showing all (archived and current) comments for the ' + str(fair)
@@ -541,23 +541,23 @@ def myfair_dashboard_view(request):
             elif fair:
                 filter_message = 'Showing current comments for the ' + str(fair) + 'fair'
                 comment_filter_dict = {
-                    attr_archive: True,
+                    attr_archive: False,
                     attr_fair: fair
                 }
             else:
                 comment_filter_dict = {
-                    attr_archive: True,
+                    attr_archive: False,
                     attr_fair: current_fair.id
                 }
                 filter_message = 'Showing current comments of the current fair'
-            filter_comments = comments.all().filter(**comment_filter_dict)
-            return TemplateResponse(request, template, {
-                'commentfilterform': commentfilterform,
-                'replyform': replyform,
-                'commentform': commentform,
-                'comments': filter_comments,
-                'filter': filter_message,
-            })
+        filter_comments = comments.all().filter(**comment_filter_dict)
+        return TemplateResponse(request, template, {
+            'commentfilterform': commentfilterform,
+            'replyform': replyform,
+            'commentform': commentform,
+            'comments': filter_comments,
+            'filter': filter_message,
+        })
     elif request.method == 'POST':
         # comment has been added
         commentform = RegistrationCommentForm(request.POST)
@@ -633,15 +633,15 @@ def archive_comments(request, pk):
     Function called from the stall holder comments page to set
     the is_archived flag on the parent comments instance and its sibling replies
     """
-    # set the is_active flag to false on the parent comment
+    # set the is_archived flag to false on the parent comment
     comment_parent = RegistrationComment.objects.get(pk=pk)
-    comment_parent.is_active = False
+    comment_parent.is_archived = True
     comment_parent.save()
     # if there are replies set is_active flag on these to false also
     if RegistrationComment.objects.filter(comment_parent=pk).exists():
         replies = RegistrationComment.objects.filter(comment_parent=pk)
         for reply in replies:
-            reply.is_active = False
+            reply.is_archived = True
             reply.save()
 
     return redirect(request.META.get('HTTP_REFERER'))
