@@ -38,7 +38,10 @@ from fairs.models import (
     SiteAllocation,
 )
 from accounts.models import CustomUser
-from registration.models import StallRegistration
+from registration.models import (
+    StallRegistration,
+    CommentType
+)
 from datetime import datetime
 from django.utils.timezone import make_aware
 
@@ -1192,5 +1195,78 @@ class DashboardRegistrationFilterForm(Form):
         required=False,
         widget=Select(attrs={'class': 'form-control'})
     )
+
+
+class MessageFilterForm(Form):
+    """
+    Filter form to enable historical and archived comments to be viewed
+    """
+    fair = ModelChoiceField(
+        queryset=Fair.objects.all(),
+        required=False,
+        label = 'Select Fairs',
+    widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+        })
+    )
+    comment_type = ModelChoiceField(
+        queryset=CommentType.objects.all(),
+        required=False,
+        label = 'Select Message Type',
+    widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+        })
+    )
+    is_active = BooleanField(
+        required=False,
+        label = 'Show messages under action',
+    widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+            'checked': False
+        })
+    )
+    is_done = BooleanField(
+        required=False,
+        label = 'Show messages that have been resolved',
+    widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+            'checked': False
+        })
+    )
+    is_archived = BooleanField(
+        required=False,
+        label = 'Show Archived Comments',
+    widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#comment_data',
+            'checked': False
+        })
+    )
+
+    class Meta:
+        fields = (
+            'fair',
+            'comment_type',
+            'is_active',
+            'is_done',
+            'is_archived',
+        )
+
 
 

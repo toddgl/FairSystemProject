@@ -539,7 +539,7 @@ def myfair_dashboard_view(request):
                     attr_fair: current_fair.id
                 }
             elif fair:
-                filter_message = 'Showing current comments for the ' + str(fair) + 'fair'
+                filter_message = 'Showing current comments for the ' + str(fair)
                 comment_filter_dict = {
                     attr_archive: False,
                     attr_fair: fair

@@ -82,6 +82,7 @@ from .forms import (
     EventPowerCreateForm,
     EventPowerUpdateDetailForm,
     DashboardRegistrationFilterForm,
+    MessageFilterForm
 )
 
 from registration.forms import (
@@ -1549,7 +1550,7 @@ def messages_dashboard_view(request):
     """
     template = "dashboards/dashboard_messages_filter.html"
     filter_message= 'Showing current comments of the current fair'
-    commentfilterform = CommentFilterForm(request.POST or None)
+    messagefilterform = MessageFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     # list of active parent comments
@@ -1558,20 +1559,81 @@ def messages_dashboard_view(request):
     if request.htmx:
         template = 'dashboards/dashboard_messages.html'
         comments = RegistrationComment.objects.filter( comment_parent__isnull=True)
-        if commentfilterform.is_valid():
-            archive_flag = commentfilterform.cleaned_data['is_archived']
-            fair = commentfilterform.cleaned_data['fair']
-            attr_archive = 'is_archived'
+        if messagefilterform.is_valid():
+            fair = messagefilterform.cleaned_data['fair']
+            comment_type = messagefilterform.cleaned_data['comment_type']
+            active_flag = messagefilterform.cleaned_data['is_active']
+            resolved_flag = messagefilterform.cleaned_data['is_done']
+            archive_flag = messagefilterform.cleaned_data['is_archived']
             attr_fair = 'fair'
-            if archive_flag and fair:
+            attr_comment_type = 'comment_type'
+            attr_active = 'is_active'
+            attr_resolved = 'is_done'
+            attr_archive = 'is_archived'
+            if comment_type and fair and archive_flag:
+                filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_archive: True,
+                }
+            elif comment_type and fair and active_flag:
+                filter_message = 'Showing all the messages that are under action of comment type ' + str(
+                    comment_type) + ' for the ' + str(fair)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_active: True,
+                    attr_archive: False,
+                }
+            elif comment_type and fair and resolved_flag:
+                filter_message = 'Showing all the messages that are resolved of comment type ' + str(
+                    comment_type) + ' for the ' + str(fair)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_resolved: True,
+                    attr_archive: False,
+                }
+            elif comment_type and fair:
+                filter_message = 'Showing all the current messages of comment type ' + str(
+                    comment_type) + ' for the ' + str(fair)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_archive: False,
+                }
+            elif comment_type and archive_flag:
+                filter_message = 'Showing all the archived messages of the current fair of comment type ' + str( comment_type)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_archive: True,
+                }
+            elif comment_type and active_flag:
+                filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(comment_type)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_active: True,
+                }
+            elif comment_type and resolved_flag:
+                filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(comment_type)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_comment_type: comment_type,
+                    attr_resolved: True,
+                }
+            elif archive_flag and fair:
+                filter_message = 'Showing all archived messages for the ' + str(fair)
+                message_filter_dict = {
+                    attr_fair: fair,
+                    attr_archive: True,
+                }
+            elif archive_flag and fair:
                 filter_message = 'Showing all (archived and current) messages for the ' + str(fair)
                 message_filter_dict = {
-                    attr_fair: fair
-                }
-            elif archive_flag:
-                filter_message = 'Showing all (archived and current) messages for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id
+                    attr_fair: fair,
                 }
             elif fair:
                 filter_message = 'Showing current messages for the ' + str(fair)
@@ -1579,15 +1641,41 @@ def messages_dashboard_view(request):
                     attr_archive: False,
                     attr_fair: fair
                 }
+            elif comment_type:
+                filter_message = 'Showing all the messages of comment types of ' + str(comment_type) + ' for the current fair'
+                message_filter_dict = {
+                    attr_fair: current_fair.id,
+                    attr_comment_type: comment_type,
+                    attr_archive: False,
+                }
+            elif active_flag:
+                filter_message = 'Showing all the messages that are under action for the current fair'
+                message_filter_dict = {
+                    attr_fair: current_fair.id,
+                    attr_active: True,
+                    attr_archive: False,
+                }
+            elif resolved_flag:
+                filter_message = 'Showing all the messages that are resolved for the current fair'
+                message_filter_dict = {
+                    attr_fair: current_fair.id,
+                    attr_resolved: True,
+                    attr_archive: False,
+                }
+            elif archive_flag:
+                filter_message = 'Showing all (archived and current) messages for the current fair'
+                message_filter_dict = {
+                    attr_fair: current_fair.id
+                }
             else:
                 message_filter_dict = {
                     attr_archive: False,
                     attr_fair: current_fair.id
                 }
-                filter_message = 'ELSE: Showing current messages of the current fair'
+                filter_message = 'Showing current messages of the current fair'
             filter_comments = comments.all().filter(**message_filter_dict)
         return TemplateResponse(request, template, {
-            'commentfilterform': commentfilterform,
+            'messagefilterform': messagefilterform,
             'replyform': replyform,
             'commentform': commentform,
             'comments': filter_comments,
@@ -1623,7 +1711,7 @@ def messages_dashboard_view(request):
                     # save
                     reply_comment.save()
                     return TemplateResponse(request, template, {
-                        'commentfilterform': commentfilterform,
+                        'messagefilterform': messagefilterform,
                         'comments': comments,
                         'commentform': commentform,
                         'replyform': replyform,
@@ -1645,7 +1733,7 @@ def messages_dashboard_view(request):
                 print(
                     commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
         return TemplateResponse(request, template, {
-            'commentfilterform': commentfilterform,
+            'messagefilterform': messagefilterform,
             'comments': comments,
             'commentform': commentform,
             'replyform': replyform,
@@ -1653,7 +1741,7 @@ def messages_dashboard_view(request):
         })
     else:
         return TemplateResponse(request, template, {
-            'commentfilterform': commentfilterform,
+            'messagefilterform': messagefilterform,
             'comments': comments,
             'commentform': commentform,
             'replyform': replyform,
