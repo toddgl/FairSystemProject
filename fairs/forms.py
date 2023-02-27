@@ -1205,56 +1205,56 @@ class MessageFilterForm(Form):
         queryset=Fair.objects.all(),
         required=False,
         label = 'Select Fairs',
-    widget=Select(attrs={
+        widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#comment_data',
+            'hx-target': '#message_data',
         })
     )
     comment_type = ModelChoiceField(
         queryset=CommentType.objects.all(),
         required=False,
         label = 'Select Message Type',
-    widget=Select(attrs={
+        widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#comment_data',
+            'hx-target': '#message_data',
         })
     )
     is_active = BooleanField(
         required=False,
         label = 'Show messages under action',
-    widget=CheckboxInput(attrs={
+        widget=CheckboxInput(attrs={
             'class': 'form-check-input',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#comment_data',
+            'hx-target': '#message_data',
             'checked': False
         })
     )
     is_done = BooleanField(
         required=False,
         label = 'Show messages that have been resolved',
-    widget=CheckboxInput(attrs={
+        widget=CheckboxInput(attrs={
             'class': 'form-check-input',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#comment_data',
+            'hx-target': '#message_data',
             'checked': False
         })
     )
     is_archived = BooleanField(
         required=False,
         label = 'Show Archived Comments',
-    widget=CheckboxInput(attrs={
+        widget=CheckboxInput(attrs={
             'class': 'form-check-input',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#comment_data',
+            'hx-target': '#message_data',
             'checked': False
         })
     )

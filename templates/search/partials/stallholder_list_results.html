@@ -13,6 +13,7 @@
                   <th scope="col">First Name</th>
                   <th scope="col">Last Name</th>
                   <th scope="col">Business Name</th>
+                  <th scope="col">Phone</th>
                   <th scope="col">Email</th>
                 </tr >
             </thead>
@@ -24,6 +25,7 @@
                     <td>{{ stallholder.first_name }}</td>
                     <td>{{ stallholder.last_name }}</td>
                     <td>{{ stallholder.profile.org_name | default_if_none:"&nbsp;" }}</td>
+                    <td>{{ stallholder.phone }}</td>
                     <td>{{ stallholder.email }}</td>
                 </tr>
                 {% endfor %}

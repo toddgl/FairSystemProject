@@ -15,6 +15,10 @@
         <hr>
         <!-- Comment Filter -->
         <div class="row">
+            {% include 'search/partials/search_stallholders.html' %}
+            <hr>
+        </div>
+        <div class="row">
             <div class="col-md-4">
                 <div class="container mt-5 mb-5">
                     <div class="title-hr">
@@ -31,8 +35,6 @@
             </div>
             <div class="col-md-8">
                 <div class="container mt-5 mb-5">
-                    <!-- Button trigger create comment modal -->
-                    <button type="button" class="mt-2 btn btn-primary" data-bs-toggle="modal" data-bs-target="#commentcreate">Create Comment</button>
                     <!-- Comment with nested comments -->
                     {% include 'dashboards/dashboard_messages.html' %}
                 </div>

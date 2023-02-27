@@ -1062,7 +1062,7 @@ def site_allocation_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        elif filterform.is_valid():
+        if filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
             on_hold = filterform.cleaned_data['on_hold']
@@ -1548,6 +1548,8 @@ def messages_dashboard_view(request):
     """
     A dashboard that allows the convener to monitor and respond to stallholder messages
     """
+    global stallholder
+    request.session['message'] = 'fair:messages-dashboard'
     template = "dashboards/dashboard_messages_filter.html"
     filter_message= 'Showing current comments of the current fair'
     messagefilterform = MessageFilterForm(request.POST or None)
@@ -1559,6 +1561,21 @@ def messages_dashboard_view(request):
     if request.htmx:
         template = 'dashboards/dashboard_messages.html'
         comments = RegistrationComment.objects.filter( comment_parent__isnull=True)
+        stallholder_id = request.POST.get('selected_stallholder')
+        attr_stallholder = 'stallholder'
+        if stallholder_id:
+            stallholder = stallholder_id
+            message_filter_dict = {
+                attr_stallholder: stallholder_id
+            }
+            filter_comments = comments.all().filter(**message_filter_dict)
+            return TemplateResponse(request, template, {
+                'messagefilterform': messagefilterform,
+                'replyform': replyform,
+                'commentform': commentform,
+                'comments': filter_comments,
+                'filter': filter_message,
+            })
         if messagefilterform.is_valid():
             fair = messagefilterform.cleaned_data['fair']
             comment_type = messagefilterform.cleaned_data['comment_type']

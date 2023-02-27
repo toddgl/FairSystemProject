@@ -24,14 +24,14 @@ def stallholder_search_view(request):
     Search for Stallholders
     """
     search_text = request.POST.get('search')
-    target = request.session['target']
+    message = request.session['message']
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(email__icontains=search_text))
     context = {
         'results': results,
-        'target':target
+        'message': message
     }
     return render(request, 'search/partials/stallholder_results.html', context)
 
