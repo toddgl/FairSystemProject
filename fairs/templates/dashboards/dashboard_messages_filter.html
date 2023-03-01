@@ -1,6 +1,7 @@
 <!-- fairs/templates/dashboards/dashboard_messages_filer.html -->
 
 {% extends 'dashboard_base.html' %}
+{% load static %}
 
 {% block body %}
 
@@ -64,4 +65,5 @@
             </div>
         </div>
 </main>
+<script src="{% static 'js/message_filter_hide.js' %}"></script>
 {% endblock %}

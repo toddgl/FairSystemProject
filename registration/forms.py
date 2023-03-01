@@ -735,7 +735,7 @@ class StallRegistrationFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#list_data',
+            'hx-target': '#stallregistration_data',
         })
     )
     site_size = ModelChoiceField(
@@ -748,7 +748,7 @@ class StallRegistrationFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#list_data',
+            'hx-target': '#stallregistration_data',
         })
     )
 

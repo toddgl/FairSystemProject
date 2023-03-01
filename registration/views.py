@@ -80,9 +80,10 @@ def stall_registration_listview(request):
     """
     List stall registration used by the Fair Conveners in the view and management of stall registrations
     """
-    global filter_dict
+    filter_dict ={}
     global stallholder
     cards_per_page = 6
+    request.session['registration'] = 'registration:stallregistration-list'
     alert_message = 'There are no stall registrations yet.'
     template_name = 'stallregistration/stallregistration_list.html'
     filterform = StallRegistrationFilterForm(request.POST or None )
@@ -109,7 +110,8 @@ def stall_registration_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        elif filterform.is_valid():
+        if filterform.is_valid():
+            print('Stall  Reggistrion Stallholder:',stallholder)
             fair = filterform.cleaned_data['fair']
             site_size = filterform.cleaned_data['site_size']
             attr_fair = 'fair'
@@ -117,7 +119,6 @@ def stall_registration_listview(request):
             if fair and site_size and stallholder:
                 alert_message = 'There are no stall registrations where the fair is ' + str(
                 fair) + ' and site size is ' + str(site_size) + ' stallholder ID is ' + str(stallholder)
-                filtered_data = StallRegistration.objects.all().order_by('stall_category')
                 filter_dict = {
                     attr_fair: fair,
                     attr_site_size: site_size,
@@ -132,7 +133,6 @@ def stall_registration_listview(request):
                 }
             elif fair and stallholder:
                 alert_message = 'There are no stall registrations where the fair is ' + str(fair)  + ' stallholder ID is ' + str(stallholder)
-                filtered_data = StallRegistration.objects.all().order_by('stall_category')
                 filter_dict = {
                     attr_fair: fair,
                     attr_stallholder: stallholder
@@ -145,7 +145,6 @@ def stall_registration_listview(request):
                 }
             elif fair:
                 alert_message = 'There are no stall registrations where the fair is ' + str(fair)
-                filtered_data = StallRegistration.objects.all().order_by('stall_category')
                 filter_dict = {
                     attr_fair: fair,
                 }
@@ -157,7 +156,7 @@ def stall_registration_listview(request):
             else:
                 alert_message = 'There are no stall registration created yet'
                 filter_dict = {}
-            filtered_data = filtered_data.filter(**filter_dict).order_by('stall_category')
+            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by('stall_category')
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list

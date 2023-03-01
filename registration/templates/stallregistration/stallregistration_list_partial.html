@@ -3,7 +3,7 @@
 {% load static %}
 {% load paginator_tags %}
 
-<div id="list_data">
+<div id="stallregistration_data">
     <div class="row g-3">
     {% regroup stallregistration_list by get_booking_status_display as stallregistration_status_list %}
     {% for stallregistration in stallregistration_status_list %}
