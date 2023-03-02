@@ -82,13 +82,12 @@ from .forms import (
     EventPowerCreateForm,
     EventPowerUpdateDetailForm,
     DashboardRegistrationFilterForm,
-    MessageFilterForm
+    MessageFilterForm,
+    MessageReplyForm,
 )
 
 from registration.forms import (
     CommentFilterForm,
-    RegistrationCommentForm,
-    CommentReplyForm
 )
 
 
@@ -1555,8 +1554,7 @@ def messages_dashboard_view(request):
     template = "dashboards/dashboard_messages_filter.html"
     filter_message= 'Showing current comments of the current fair'
     messagefilterform = MessageFilterForm(request.POST or None)
-    commentform = RegistrationCommentForm(request.POST or None)
-    replyform = CommentReplyForm(request.POST or None)
+    replyform = MessageReplyForm(request.POST or None)
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter( is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
@@ -1577,7 +1575,6 @@ def messages_dashboard_view(request):
             return TemplateResponse(request, template, {
                 'messagefilterform': messagefilterform,
                 'replyform': replyform,
-                'commentform': commentform,
                 'comments': filter_comments,
                 'filter': filter_message,
             })
@@ -1839,14 +1836,12 @@ def messages_dashboard_view(request):
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
             'replyform': replyform,
-            'commentform': commentform,
             'comments': filter_comments,
             'filter': filter_message,
         })
     elif request.method == 'POST':
         # comment has been added
-        commentform = RegistrationCommentForm(request.POST)
-        replyform = CommentReplyForm(request.POST)
+        replyform = MessageReplyForm(request.POST)
         if replyform.is_valid():
             parent_obj = None
             # get parent comment id from hidden input
@@ -1875,37 +1870,20 @@ def messages_dashboard_view(request):
                     return TemplateResponse(request, template, {
                         'messagefilterform': messagefilterform,
                         'comments': comments,
-                        'commentform': commentform,
                         'replyform': replyform,
                         'filter': filter_message,
                     })
-            elif commentform.is_valid():
-                # normal comment
-                # create comment object but do not save to database
-                new_comment = commentform.save(commit=False)
-                # assign stallholder to the comment
-                new_comment.stallholder = request.user
-                # assign user to created.by
-                new_comment.created_by = request.user
-                # assign current fair to fair
-                new_comment.fair_id = current_fair.id
-                # save
-                new_comment.save()
-            else:
-                print(
-                    commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
             'comments': comments,
-            'commentform': commentform,
             'replyform': replyform,
             'filter': filter_message,
         })
     else:
+        stallholder = ''
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
             'comments': comments,
-            'commentform': commentform,
             'replyform': replyform,
             'filter': filter_message,
     })

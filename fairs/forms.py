@@ -40,6 +40,7 @@ from fairs.models import (
 from accounts.models import CustomUser
 from registration.models import (
     StallRegistration,
+    RegistrationComment,
     CommentType
 )
 from datetime import datetime
@@ -1260,13 +1261,44 @@ class MessageFilterForm(Form):
     )
 
     class Meta:
-        fields = (
+        fields = [
             'fair',
             'comment_type',
             'is_active',
             'is_done',
             'is_archived',
+        ]
+
+
+class MessageReplyForm(ModelForm):
+    """
+    Form for capturing replies to comments typically associated with stall registration
+    """
+    convener_only_comment = BooleanField(
+        required=False,
+        label="Convener Only Note",
+        widget=forms.CheckboxInput(attrs={
+            'class': "form-check-input",
+            'checked': False,
+        })
+    )
+
+    class Meta:
+        model = RegistrationComment
+        fields = (
+            'convener_only_comment',
+            'comment'
         )
+        labels = {
+            'convener_only_comment' : 'Reply or convener note',
+        }
+        widgets = {
+            'comment': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Detail your reply or note'
+            }),
+        }
 
 
 

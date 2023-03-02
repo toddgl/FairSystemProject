@@ -42,28 +42,6 @@
             </div>
         </div>
     </div>
-
-        <!-- Add Comment Modal -->
-        <div class="modal fade" id="commentcreate"  data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="commentcreate" aria-hidden="true">
-            <div class="modal-dialog modal-dialog-centered">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h4 class="modal-title" id="commentcreatelabel">Add a Comment</h4>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <form action="." method="post">
-                            {% csrf_token %}
-                            {{ commentform.as_p }}
-                            <div class="modal-footer">
-                                <button type="submit" class="mt-2 btn btn-primary">Add New Comment</button>
-                                <button type="button" class="mt-2 btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            </div>
-        </div>
 </main>
 <script src="{% static 'js/message_filter_hide.js' %}"></script>
 {% endblock %}
