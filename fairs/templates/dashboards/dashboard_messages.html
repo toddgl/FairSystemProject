@@ -52,7 +52,7 @@
             {% for reply in comment.replies.all %}
                 <div class="d-flex justify-content-between align-items-center">
                 {% if reply.convener_only_comment %}
-                    <div class="d-flex flex-row align-items-center"> <span class="me-4">Reply by {{ reply.created_by }}</span> <small class="badge bg-danger text-white me-4">Convener Note</small> </div> <small>{{ reply.date_created|timesince }} ago</small>
+                    <div class="d-flex flex-row align-items-center"> <span class="me-4">Note by {{ reply.created_by }}</span> <small class="badge bg-danger text-white me-4">Convener Note</small> </div> <small>{{ reply.date_created|timesince }} ago</small>
                 {% else %}
                     <div class="d-flex flex-row align-items-center"> <span class="me-4">Reply by {{ reply.created_by }}</span>  </div> <small>{{ reply.date_created|timesince }} ago</small>
                 {% endif %}

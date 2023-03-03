@@ -199,6 +199,8 @@ def stall_registration_create(request):
     stallholder = request.user
     siteallocation = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
                                                                  stall_registration__isnull=True).first()
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter(stallholder=stallholder.id,  is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     if siteallocation:
         fair_id = siteallocation.event_site.event.fair.id
         site_size = siteallocation.event_site.site.site_size_id
@@ -237,10 +239,13 @@ def stall_registration_create(request):
                 registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
         return HttpResponseRedirect(success_url)
 
+    filter_message = 'Showing current comments of the current fair'
     return TemplateResponse(request, template_name, {
         'allocation_item': allocation_item,
         'billing': total_cost,
-        'registrationform': registrationform
+        'registrationform': registrationform,
+        'comments': comments,
+        'filter': filter_message
     })
 
 
@@ -291,6 +296,8 @@ def stall_registration_update_view(request, pk):
     total_cost = obj.total_charge
     registrationform = StallRegistrationUpdateForm(request.POST or None, instance=obj)
     siteallocation = SiteAllocation.currentallocationsmgr.filter(stall_registration=pk).first()
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter(stallholder=obj.stallholder,  is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
 
     if siteallocation:
         allocation_item = siteallocation
@@ -310,10 +317,13 @@ def stall_registration_update_view(request, pk):
             stall_registration.save()
             return HttpResponseRedirect(success_url)
 
+    filter_message = 'Showing current comments of the current fair'
     return TemplateResponse(request, template, {
         'allocation_item': allocation_item,
         'billing': total_cost,
-        'registrationform': registrationform
+        'registrationform': registrationform,
+        'comments': comments,
+        'filter': filter_message
     })
 
 
@@ -511,7 +521,7 @@ def myfair_dashboard_view(request):
     replyform = CommentReplyForm(request.POST or None)
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     try:
         # Use prefetch_related to bring through the site allocation data associated with the stall registration
         myfair_list = current_fairs.filter(stallholder=request.user).prefetch_related('site_allocation').all()
@@ -520,7 +530,7 @@ def myfair_dashboard_view(request):
 
     if request.htmx:
         template = 'stallregistration/registration_comments.html'
-        comments = RegistrationComment.objects.filter(stallholder=request.user,
+        comments = RegistrationComment.objects.filter(stallholder=request.user, convener_only_comment=False,
                                                       comment_parent__isnull=True)
         if commentfilterform.is_valid():
             archive_flag = commentfilterform.cleaned_data['is_archived']
@@ -618,6 +628,7 @@ def myfair_dashboard_view(request):
             'filter': filter_message,
         })
     else:
+        stallholder = ''
         return TemplateResponse(request, template, {
         'registrations': myfair_list,
         'commentfilterform': commentfilterform,
