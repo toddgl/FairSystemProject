@@ -7,9 +7,19 @@
     <hr>
     {% for comment in comments %}
         <div class="w-100">
-            <div class="d-flex justify-content-between align-items-center">
-                <div class="d-flex flex-row align-items-center"> <span class="mr-2">{{ comment.created_by }}</span> <small class="badge bg-dark text-white">{{ comment.comment_type }}</small> </div> <small>{{ comment.date_created|timesince }} ago</small>
-            </div>
+            {% if comment.is_active %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> <i class="bi bi-cart-check-fill text-secondary">Under Action</i> </div> <small>{{ comment.date_created|timesince }} ago</small>
+                </div>
+            {% elif comment.is_done %}
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> <i class="bi  bi-bookmark-check-fill text-success">Resolved</i> </div> <small>{{ comment.date_created|timesince }} ago</small>
+                </div>
+            {% else%}
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> </div> <small>{{ comment.date_created|timesince }} ago</small>
+                </div>
+            {% endif %}
             {% if comment.is_archived %}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-row align-items-center"> <span class="badge bg-warning text-dark">This comment has been archived</span></div>

@@ -28,7 +28,7 @@ def stallholder_registration_search_view(request):
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
-        Q(profile__org_name__icontains=search_text) | Q(email__icontains=search_text))
+        Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
     context = {
         'results': results,
         'registration': registration

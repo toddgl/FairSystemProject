@@ -34,7 +34,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['192.168.1.78', 'localhost', '127.0.0.1', ]
+ALLOWED_HOSTS = ['192.168.1.80', 'localhost', '127.0.0.1', ]
 
 
 
@@ -76,6 +76,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_htmx.middleware.HtmxMiddleware',
 ]
+
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 ROOT_URLCONF = 'config.urls'
@@ -156,6 +157,8 @@ USE_TZ = False
 STATIC_ROOT = ''
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static',]
+
+FIXTURE_DIRS = [BASE_DIR / 'fixtures']
 
 MEDIA_ROOT = BASE_DIR/'media'
 MEDIA_URL = '/media/'
