@@ -19,3 +19,14 @@ Under development, only some apsects of the final design will run
 The system has been build using Django 4.1 and a Postgresql database.  
 This web page provides a good overview on Django :
 https://developer.mozilla.org/en-US/docs/Learn/Server-side/Django/Introduction
+
+### Initial Data Load ###
+
+Seed data for the system has been provided and this can be loaded to the database instance using the following comands in the follwoign order
+
+`django-admin loaddata accounts.json`
+
+`django-admin loaddata fairs.json`
+
+`django-admin loaddata registration.json`
+
