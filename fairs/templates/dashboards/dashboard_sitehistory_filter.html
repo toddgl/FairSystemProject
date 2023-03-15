@@ -1,0 +1,57 @@
+<!-- fairs/templates/dashboards/dashboard_sitehistory_filter.html -->
+
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <div class="container">
+        <h4>Site History</h4>
+        <hr>
+        <!-- Comment Filter -->
+        <div class="row">
+            <div class="col-md-6">
+                <div class="col-md-4">
+                    <div class="container mt-5 mb-5">
+                        <div class="title-hr">
+                            <span class="hr fix"></span>
+                            <span><strong>Site History Filters</strong></span>
+                            <span class="hr"></span>
+                        </div>
+                        <form>
+                            {% csrf_token %}
+                            {{ historyfilterform.as_p }}
+                        </form>
+                        <hr>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                {% include 'search/partials/search_stallholders.html' %}
+                <hr>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="container mt-5 mb-5">
+                    <!-- History based on Sites -->
+                    {% include 'dashboards/dashboard_site_history.html' %}
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="container mt-5 mb-5">
+                    <!-- History based on Sites -->
+                    {% include 'dashboards/dashboard_stallholder_history.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<script src="{% static 'js/message_filter_hide.js' %}"></script>
+{% endblock %}

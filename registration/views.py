@@ -84,14 +84,16 @@ def stall_registration_listview(request):
     global stallholder
     cards_per_page = 6
     request.session['registration'] = 'registration:stallregistration-list'
-    alert_message = 'There are no stall registrations yet.'
     template_name = 'stallregistration/stallregistration_list.html'
     filterform = StallRegistrationFilterForm(request.POST or None )
     booking_status=request.GET.get('booking_status', '')
+    print('Booking status is', booking_status)
     if booking_status:
-        filtered_data = StallRegistration.registrationcurrentmgr.filter(booking_status=booking_status).order_by('stall_category')
+        filtered_data = StallRegistration.registrationcurrentmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
+        alert_message = 'There are no stall registration of status ' + str(booking_status) + ' created yet'
     else:
-        filtered_data = StallRegistration.registrationcurrentmgr.order_by('stall_category')
+        filtered_data = StallRegistration.registrationcurrentmgr.order_by('stall_category').prefetch_related('site_allocation').all()
+        alert_message = 'There are no stall registrations yet.'
 
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
@@ -101,7 +103,7 @@ def stall_registration_listview(request):
             filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category")
+            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -126,7 +128,7 @@ def stall_registration_listview(request):
                 }
             elif fair and site_size:
                 alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
-                filtered_data = StallRegistration.objects.all().order_by('stall_category')
+                filtered_data = StallRegistration.objects.all().order_by('stall_category').prefetch_related('site_allocation').all()
                 filter_dict = {
                     attr_fair: fair,
                     attr_site_size: site_size,
@@ -156,7 +158,7 @@ def stall_registration_listview(request):
             else:
                 alert_message = 'There are no stall registration created yet'
                 filter_dict = {}
-            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by('stall_category')
+            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by('stall_category').prefetch_related('site_allocation').all()
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -165,7 +167,7 @@ def stall_registration_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category")
+        filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
         template_name = 'stallregistration/stallregistration_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list

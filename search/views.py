@@ -35,6 +35,22 @@ def stallholder_registration_search_view(request):
     }
     return render(request, 'search/partials/stallholder_registration_results.html', context)
 
+def stallholder_history_search_view(request):
+    """
+    Search for Stallholders customised for the site history dashboard
+    """
+    search_text = request.POST.get('search')
+    history = request.session['history']
+
+    results = CustomUser.stallholdermgr.filter(
+        Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
+        Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
+    context = {
+        'results': results,
+        'history': history
+    }
+    return render(request, 'search/partials/stallholder_history_results.html', context)
+
 def stallholder_search_view(request):
     """
     Search for Stallholders customised for the messages listing
@@ -44,7 +60,7 @@ def stallholder_search_view(request):
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
-        Q(profile__org_name__icontains=search_text) | Q(email__icontains=search_text))
+        Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
     context = {
         'results': results,
         'message': message

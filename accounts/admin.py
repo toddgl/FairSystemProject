@@ -22,6 +22,7 @@ class CustomUserAdmin(UserAdmin):
             'Custom Fields',
             {
                 'fields': (
+                    'reference_id',
                     'role',
                     'phone',
                 ),

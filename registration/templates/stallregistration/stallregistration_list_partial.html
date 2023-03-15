@@ -15,6 +15,10 @@
                     <h4 class="card-title">{{ item.fair }} - {{ item.stallholder}}</h4>
                 </div>
                 <ul class="list-group list-group-flush">
+                    {% if item.site_allocation.event_site.site.zone.zone_name  %}
+                        <li class="list-group-item"><strong>Site Location:</strong> {{ item.site_allocation.event_site.site.zone.zone_name }}</li>
+                        <li class="list-group-item"><strong>Site Name:</strong> {{ item.site_allocation.event_site.site.site_name }}</li>
+                    {% endif %}
                     <li class="list-group-item"><strong>Registraion ID:</strong> {{ item.id }}</li>
                     <li class="list-group-item"><strong>Stall Category:</strong> {{ item.stall_category }}</li>
                     <li class="list-group-item"><strong>Site Size:</strong> {{ item.site_size }}</li>
