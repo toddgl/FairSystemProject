@@ -1,0 +1,29 @@
+<!-- fairs/templates/dashboards/dashboard_site_history.html -->
+
+<div id="site_history_data">
+    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+        {{ site_filter }}
+    </div>
+    <hr>
+    <!-- Loop through your queryset -->
+    {% for site, site_histories in site_histories_transposed.items %}
+        <table class="table table-striped">
+        <thead>
+            <th>Site</th>
+                {% for site_history in site_histories %}
+                    <th>{{ site_history.0  }}</th>
+                {% endfor %}
+        </thead>
+            <tbody>
+                <tr>
+                    <td> {{ site }}</td>
+                    {% for site_history in site_histories %}
+                    <td>{{ site_history.1}}</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    {% endfor %}
+
+    </div>
+

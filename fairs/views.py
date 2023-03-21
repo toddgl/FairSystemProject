@@ -14,6 +14,7 @@ from django.contrib import messages
 from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404
 from django.urls import reverse_lazy, reverse
+from collections import defaultdict
 from django.views.generic import (
     CreateView,
     FormView,
@@ -35,7 +36,7 @@ from fairs.models import (
     InventoryItemFair,
     PowerBox,
     EventPower,
-    SiteHistory
+    SiteHistory,
 )
 
 from registration.models import (
@@ -84,6 +85,7 @@ from .forms import (
     DashboardRegistrationFilterForm,
     MessageFilterForm,
     MessageReplyForm,
+    SiteHistoryFilerForm
 )
 
 from registration.forms import (
@@ -1350,7 +1352,7 @@ def siteallocation_delete_view(request, pk):
 @permission_required('fairs.view_siteallocation', raise_exception=True)
 def stall_registration_dashboard_view(request):
     """
-    Populate the Stall Registration dashboard with counts of a selected group of registration statuuses
+    Populate the Stall Registration dashboard with counts of a selected group of registration statuses
     """
     stall_registrations = StallRegistration.objects.all()
     template_name = 'dashboards/dashboard_registrations.html'
@@ -1579,7 +1581,6 @@ def messages_dashboard_view(request):
                 'filter': filter_message,
             })
         if messagefilterform.is_valid():
-            print('Messages Stallholder:',stallholder)
             fair = messagefilterform.cleaned_data['fair']
             comment_type = messagefilterform.cleaned_data['comment_type']
             active_flag = messagefilterform.cleaned_data['is_active']
@@ -1930,3 +1931,56 @@ def set_message_to_active(request, pk):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
+def stallholder_history_dashboard_view(request):
+    """
+    Populate the Stallholder History dashboard with site by year information
+    """
+    template = 'dashboards/dashboard_sitehistory_filter.html'
+    site_filter_message = 'Select a Zone to see stall holder site history for a specific zone'
+    stallholder_filter_message = 'Search for and select a stall holder to see their site allocation history'
+    request.session['stallhistory'] = 'fair:history-dashboard'
+    historyfilterform =  SiteHistoryFilerForm(request.POST or None)
+    site_histories = SiteHistory.fouryearhistorymgr.all().filter(stallholder=40)
+    stallholder_histories_transposed = defaultdict(list)
+    site_histories_transposed = defaultdict(list)
+    if request.htmx:
+        stallholder_id = request.POST.get('selected_stallholder')
+        attr_stallholder = 'stallholder'
+        if stallholder_id:
+            stallholder = stallholder_id
+            stallholder_filter_message = 'Showing site history for stallholder ID ' + str(stallholder)
+            stallholder_filter_dict = {
+                attr_stallholder: stallholder_id
+            }
+            stallholder_histories =  SiteHistory.fouryearhistorymgr.all().filter(**stallholder_filter_dict)
+            for stallholder_history in stallholder_histories:
+                stallholder_histories_transposed[stallholder_history.stallholder.id].append((stallholder_history.year, stallholder_history.site))
+            template = 'dashboards/dashboard_stallholder_history.html'
+            return TemplateResponse(request, template, {
+                'stallholder_filter': stallholder_filter_message,
+                'historyfilterform': historyfilterform,
+                'stallholder_histories_transposed': dict(stallholder_histories_transposed),
+            })
+        if historyfilterform.is_valid():
+            zone = historyfilterform.cleaned_data['zone']
+            attr_zone = 'site__zone'
+            site_filter_message = 'Showing stallholder ID allocation histories for zone ' + str(zone)
+            zone_filter_dict = {
+                attr_zone: zone.id
+            }
+            site_histories =  SiteHistory.fouryearhistorymgr.all().filter(**zone_filter_dict).order_by('year','site')
+            for site_history in site_histories:
+                site_histories_transposed[site_history.site].append((site_history.year, site_history.stallholder.id))
+            template = 'dashboards/dashboard_site_history.html'
+            return TemplateResponse(request, template, {
+                'site_filter': site_filter_message,
+                'historyfilterform': historyfilterform,
+                'site_histories_transposed': dict(site_histories_transposed),
+            })
+    return TemplateResponse(request, template, {
+        'site_filter': site_filter_message,
+        'stallholder_filter': stallholder_filter_message,
+        'historyfilterform': historyfilterform,
+        'stallholder_histories_transposed': dict(stallholder_histories_transposed),
+        'site_histories_transposed': dict(site_histories_transposed),
+    })

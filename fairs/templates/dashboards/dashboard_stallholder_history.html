@@ -1,0 +1,29 @@
+<!-- fairs/templates/dashboards/dashboard_stallholder_history.html -->
+
+<div id="stallholder_data">
+    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+        {{ stallholder_filter }}
+    </div>
+    <hr>
+    <!-- Loop through your queryset -->
+    {% for stallholder, site_histories in stallholder_histories_transposed.items %}
+        <table class="table table-striped">
+        <thead>
+            <th>Stallholder</th>
+                {% for site_history in site_histories %}
+                    <th>{{ site_history.0 }}</th>
+                {% endfor %}
+        </thead>
+            <tbody>
+                <tr>
+                    <td> {{ stallholder }}</td>
+                    {% for site_history in site_histories %}
+                    <td>{{ site_history.1 }}</td>
+                    {% endfor %}
+                </tr>
+            </tbody>
+        </table>
+    {% endfor %}
+
+    </div>
+

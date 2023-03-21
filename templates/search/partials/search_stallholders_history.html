@@ -1,5 +1,6 @@
-<!--templates/search/partials/search_stallholders.html -->
+<!--templates/search/partials/search_stallholders_history.html -->
 
+   <div class="row">
        <div class="col-md-9">
             <div class="title-hr">
                 <span class="hr fix"></span>
@@ -7,10 +8,11 @@
                 <span class="hr"></span>
             </div>
         </div>
+   </div>
     <form>
         {% csrf_token %}
         <input type="text"
-               hx-post="{% url 'search:search-stallholders' %}"
+               hx-post="{% url 'search:search-stallholders-history' %}"
                hx-target="#results"
                hx-trigger="keyup changed delay:400ms"
                name="search"

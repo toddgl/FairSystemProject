@@ -11,6 +11,7 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 # Global Variables
 current_year = datetime.now().year
 next_year = current_year + 1
+four_years_past = current_year - 4
 
 
 # Create your models here.
@@ -588,6 +589,14 @@ class EventPower(models.Model):
     class Meta:
         unique_together = ('event', 'power_box')
 
+class FourYearHistoryManager(models.Manager):
+    """
+    Manager that returns all the site history for the past four years
+    SiteHistory.fouryearhistorymgr.all()
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(year__lte=current_year, year__gte=four_years_past).order_by('year')
+
 
 class SiteHistory(models.Model):
     """
@@ -609,6 +618,8 @@ class SiteHistory(models.Model):
     )
     is_skipped = models.BooleanField(default=False)
     number_events = models.IntegerField()
+    objects = models.Manager()
+    fouryearhistorymgr = FourYearHistoryManager()
 
 
 class CurrentSiteAllocationManager(models.Manager):

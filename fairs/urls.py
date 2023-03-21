@@ -49,6 +49,7 @@ from fairs.views import (
     stall_registration_dashboard_view,
     setup_process_dashboard_view,
     messages_dashboard_view,
+    stallholder_history_dashboard_view,
     set_message_to_done,
     set_message_to_active
 )
@@ -84,6 +85,7 @@ urlpatterns = [
     path('dashboard/site/', site_dashboard_view, name='site-dashboard'),
     path('dashboard/registrations/', stall_registration_dashboard_view, name='registration-dashboard'),
     path('dashboard/messages/', messages_dashboard_view, name='messages-dashboard'),
+    path('dashboard/history/', stallholder_history_dashboard_view, name='history-dashboard'),
     path('registration/management/', site_dashboard_view, name='stallregistration-list'),
     path('dashboard/actionUrl/', site_allocation_listview, name='actionUrl'),
     path('fair/actionUrl/', FairCreateView.as_view(), name='actionUrl'),
