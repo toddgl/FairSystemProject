@@ -5,9 +5,6 @@
 /registration/__pycache__/
 .kdev4
 /config/.env
-/fairs/migrations/
-/accounts/migrations/
-/registration/migrations/
 FairSystemProject.kdev4
 FairSystemProject.sublime-project
 FairSystemProject.sublime-workspace
