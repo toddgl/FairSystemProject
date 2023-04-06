@@ -1,0 +1,29 @@
+<!-- fairs/templates/stallregistration/siteallocations_filter.html -->
+
+{% load static %}
+
+<div id="site_allocation_data">
+    <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+        {{ site_filter }}
+    </div>
+    <hr>
+    <div class="row g-3 ">
+        {% for site in site_list %}
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card-body">
+                <h4 class="card-title"><input class= 'me-2' value="{{ site.id }}" type="checkbox">{{ site.site}}</h4>
+                <p class="card-text">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Event:</strong> {{ site.event }}</li>
+                    <li class="list-group-item"><strong>Site Size:</strong> {{ site.site.site_size }}</li>
+                    <li class="list-group-item"><strong>Status:</strong> {{ site.get_site_status_display }}</li>
+                    <li class="list-group-item"><strong>Notes:</strong> {{ site.notes }}</li>
+                </ul>
+                </p>
+            </div>
+        </div>
+        {% empty %}
+        <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+        {% endfor %}
+    </div>
+</div>

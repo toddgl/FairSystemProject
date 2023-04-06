@@ -25,6 +25,11 @@
                     <li class="list-group-item"><strong>Status:</strong> {{ item.booking_status }}</li>
                     <li class="list-group-item"><strong>Description:</strong> {{ item.stall_description }}</li>
                 </ul>
+                <div class="card-body">
+                    <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="btn btn-primary">
+                        Site Allocation set or move
+                    </a>
+                </div>
             </div>
         </div>
         {% endfor %}

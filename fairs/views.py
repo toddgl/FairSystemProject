@@ -85,7 +85,8 @@ from .forms import (
     DashboardRegistrationFilterForm,
     MessageFilterForm,
     MessageReplyForm,
-    SiteHistoryFilerForm
+    SiteHistoryFilerForm,
+    SiteAllocationFilerForm
 )
 
 from registration.forms import (
@@ -1983,4 +1984,50 @@ def stallholder_history_dashboard_view(request):
         'historyfilterform': historyfilterform,
         'stallholder_histories_transposed': dict(stallholder_histories_transposed),
         'site_histories_transposed': dict(site_histories_transposed),
+    })
+
+def stallregistration_siteallocation_view(request, id):
+    """
+    Function to set or move siteallocation for a stall registration.  Called the conveners stallregistraion list display
+    """
+    template = 'stallregistrations/siteallocation_filter.html'
+    sitefilterform = SiteAllocationFilerForm(request.POST or None)
+    site_filter_message = 'Select a Zone to see available sites for allocation'
+    stallregistration = StallRegistration.objects.get(id=id)
+    if request.htmx:
+        if sitefilterform.is_valid():
+            zone = sitefilterform.cleaned_data['zone']
+            print(zone)
+            event = sitefilterform.cleaned_data['event']
+            attr_zone = 'site__zone'
+            attr_event ='event'
+            if event and zone:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id
+                }
+            elif event:
+                site_filter_message = 'Showing available sites that can be allocated for event ' + str(event)
+                event_filter_dict = {
+                    attr_event: event.id
+                }
+            elif zone:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
+                zone_filter_dict = {
+                    attr_zone: zone.id
+                }
+                print(zone_filter_dict)
+            available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
+            template = 'stallregistrations/available_sites_partial.html'
+            return TemplateResponse(request, template, {
+                'site_filter': site_filter_message,
+                'sitefilterform': sitefilterform,
+                'stallregistration': stallregistration,
+                'site_list': available_sites
+            })
+    return TemplateResponse(request, template, {
+        'site_filter': site_filter_message,
+        'sitefilterform': sitefilterform,
+        'stallregistration': stallregistration
     })

@@ -1,0 +1,54 @@
+<!-- fairs/templates/stallregistration/siteallocations_filter.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <div class="container">
+        <h4>Registration Site Allocation or Site Move</h4>
+        <hr>
+        <div class="row">
+            <!-- Passed om Stallregistration for siteallocation or move -->
+            <div class="col-md-6">
+                <div class="title-hr">
+                    <span class="hr fix"></span>
+                    <span><strong>Stallholder Registration Details</strong></span>
+                    <span class="hr"></span>
+                </div>
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ stallregistration.fair }} - {{ stallregistration.stallholder}}</h4>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% if stallregistration.site_allocation.event_site.site.zone.zone_name  %}
+                        <li class="list-group-item"><strong>Site Location:</strong> {{ stallregistration.site_allocation.event_site.site.zone.zone_name }}</li>
+                        <li class="list-group-item"><strong>Site Name:</strong> {{ stallregistration.site_allocation.event_site.site.site_name }}</li>
+                        {% endif %}
+                        <li class="list-group-item"><strong>Registraion ID:</strong> {{ stallregistration.id }}</li>
+                        <li class="list-group-item"><strong>Stall Category:</strong> {{ stallregistration.stall_category }}</li>
+                        <li class="list-group-item"><strong>Site Size:</strong> {{ stallregistration.site_size }}</li>
+                        <li class="list-group-item"><strong>Status:</strong> {{ stallregistration.booking_status }}</li>
+                        <li class="list-group-item"><strong>Description:</strong> {{ stallregistration.stall_description }}</li>
+                    </ul>
+                </div>
+                <hr>
+                <div class="container mt-5 mb-5">
+                    <!-- Stall holder Registration Details -->
+                </div>
+            </div>
+            <div class="col-md-6">
+                <form>
+                    {% csrf_token %}
+                    {{ sitefilterform.as_p }}
+                </form>
+                <hr>
+                <div class="container mt-5 mb-5">
+                    <!-- Results of Site Filter -->
+                    {% include 'stallregistrations/available_sites_partial.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}
+
