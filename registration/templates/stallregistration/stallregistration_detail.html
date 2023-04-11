@@ -1,0 +1,42 @@
+<!-- registration/templates/stallregistration/stallregistration_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div class="row g-3">
+        <h1>Stall Registration</h1>
+        <div class="row g-3">
+            <div class="col-12 col-md-6 col-lg-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h4 class="card-title">{{ stallregistration.fair }} - {{ stallregistration.stallholder}}</h4>
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        {% if stallregistration.site_allocation.event_site.site.zone.zone_name  %}
+                            <li class="list-group-item"><strong>Site Location:</strong> {{ stallregistration.site_allocation.event_site.site.zone.zone_name }}</li>
+                            <li class="list-group-item"><strong>Site Name:</strong> {{ stallregistration.site_allocation.event_site.site.site_name }}</li>
+                        {% endif %}
+                        <li class="list-group-item"><strong>Registraion ID:</strong> {{ stallregistration.id }}</li>
+                        <li class="list-group-item"><strong>Stall Category:</strong> {{ stallregistration.stall_category }}</li>
+                        <li class="list-group-item"><strong>Site Size:</strong> {{ stallregistration.site_size }}</li>
+                        <li class="list-group-item"><strong>Status:</strong> {{ stallregistration.booking_status }}</li>
+                        <li class="list-group-item"><strong>Description:</strong> {{ stallregistration.stall_description }}</li>
+                    </ul>
+                    <div class="card-body">
+                        {% if stallregistratiom.site_allocation.event_site.site.zone.zone_name  %}
+                            <a href="{% url 'fair:stallregistration-siteallocation'  stallregistration.id  %}" class="btn btn-primary">
+                                Site Allocation Cancel or Move
+                            </a>
+                        {% else %}
+                            <a href="{% url 'fair:stallregistration-siteallocation'  stallregistration.id  %}" class="btn btn-primary">
+                                Set Site Allocation
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -5,11 +5,11 @@
 {% block body %}
 <main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
     <div class="container">
-        <h4>Registration Site Allocation or Site Move</h4>
+        <h4>Registration Site Allocation </h4>
         <hr>
         <div class="row">
-            <!-- Passed om Stallregistration for siteallocation or move -->
-            <div class="col-md-6">
+            <!-- Passed om Stallregistration for siteallocation -->
+            <div class="col-md-4">
                 <div class="title-hr">
                     <span class="hr fix"></span>
                     <span><strong>Stallholder Registration Details</strong></span>
@@ -36,7 +36,7 @@
                     <!-- Stall holder Registration Details -->
                 </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <form>
                     {% csrf_token %}
                     {{ sitefilterform.as_p }}

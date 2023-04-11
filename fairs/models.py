@@ -645,7 +645,7 @@ class SiteAllocation(models.Model):
         verbose_name='event_site',
         related_name='site_allocation'
     )
-    stall_registration = models.OneToOneField(
+    stall_registration = models.ForeignKey(
         'registration.StallRegistration',
         verbose_name='stall_registration',
         related_name='site_allocation',

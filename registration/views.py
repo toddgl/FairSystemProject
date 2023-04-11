@@ -87,7 +87,6 @@ def stall_registration_listview(request):
     template_name = 'stallregistration/stallregistration_list.html'
     filterform = StallRegistrationFilterForm(request.POST or None )
     booking_status=request.GET.get('booking_status', '')
-    print('Booking status is', booking_status)
     if booking_status:
         filtered_data = StallRegistration.registrationcurrentmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
         alert_message = 'There are no stall registration of status ' + str(booking_status) + ' created yet'

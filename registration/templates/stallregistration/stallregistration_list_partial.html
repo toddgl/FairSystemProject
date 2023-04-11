@@ -26,9 +26,15 @@
                     <li class="list-group-item"><strong>Description:</strong> {{ item.stall_description }}</li>
                 </ul>
                 <div class="card-body">
-                    <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="btn btn-primary">
-                        Site Allocation set or move
-                    </a>
+                    {% if item.site_allocation.event_site.site.zone.zone_name  %}
+                        <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="btn btn-primary">
+                            Site Allocation Cancel or Move
+                        </a>
+                    {% else %}
+                        <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="btn btn-primary">
+                            Set Site Allocation
+                        </a>
+                    {% endif %}
                 </div>
             </div>
         </div>

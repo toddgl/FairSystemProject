@@ -12,9 +12,10 @@ from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http40
 from django.conf import settings
 from django.contrib import messages
 from django.shortcuts import redirect
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
+from django.db import transaction
 from django.views.generic import (
     CreateView,
     FormView,
@@ -1997,25 +1998,22 @@ def stallregistration_siteallocation_view(request, id):
     if request.htmx:
         if sitefilterform.is_valid():
             zone = sitefilterform.cleaned_data['zone']
-            print(zone)
             event = sitefilterform.cleaned_data['event']
+            attr_site_size = 'site__site_size'
             attr_zone = 'site__zone'
             attr_event ='event'
             if event and zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
                 zone_filter_dict = {
                     attr_event: event.id,
-                    attr_zone: zone.id
-                }
-            elif event:
-                site_filter_message = 'Showing available sites that can be allocated for event ' + str(event)
-                event_filter_dict = {
-                    attr_event: event.id
+                    attr_zone: zone.id,
+                    attr_site_size: stallregistration.site_size
                 }
             elif zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
                 zone_filter_dict = {
-                    attr_zone: zone.id
+                    attr_zone: zone.id,
+                    attr_site_size: stallregistration.site_size
                 }
                 print(zone_filter_dict)
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
@@ -2026,8 +2024,33 @@ def stallregistration_siteallocation_view(request, id):
                 'stallregistration': stallregistration,
                 'site_list': available_sites
             })
+    elif request.method == 'POST':
+        # Allocation request created
+        for site in request.POST.getlist('eventsites'):
+            print('Stallholderid: ', stallregistration.stallholder.id, 'StallRegistration :', id, 'EventSite: ', site)
+            # Create Allocation
+            eventsite = EventSite.objects.get(id=site)
+            print(eventsite.id)
+            SiteAllocation.objects.create(
+                stallholder_id=stallregistration.stallholder.id,
+                stall_registration= stallregistration,
+                event_site=eventsite,
+                created_by=request.user,
+            )
+            # Update status to allocated on the affected Eventsites
+            eventsite.site_status = 2
+            eventsite.save()
+        return redirect('stallregistration-detail', stallregistration_id=id)
+
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,
         'sitefilterform': sitefilterform,
         'stallregistration': stallregistration
     })
+
+def stallregistration_detail_view(request, stallregistration_id):
+    try:
+        stallregistration = StallRegistration.objects.get(pk=stallregistration_id)
+    except stallregistration.DoesNotExist:
+        return redirect('/')
+    return render(request, 'stallregistration/stallregistration_detail.html', {'stallregistration': stallregistration})
