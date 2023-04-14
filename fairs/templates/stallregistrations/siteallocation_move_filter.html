@@ -1,0 +1,79 @@
+<!-- fairs/templates/stallregistration/siteallocations_move_filter.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <div class="container">
+        <h4>Registration Move or Remove Site Allocation</h4>
+        <hr>
+        <div class="row">
+            <!-- Passed on Stallregistration for siteallocation -->
+            <div class="col-md-4">
+                <div class="title-hr">
+                    <span class="hr fix"></span>
+                    <span><strong>Stallholder Registration Details</strong></span>
+                    <span class="hr"></span>
+                </div>
+                <form action="." method="post" >
+                    {% csrf_token %}
+                    <div class="card">
+                        <div class="card-body">
+                            <h4 class="card-title">{{ stallregistration.fair }} - {{ stallregistration.stallholder}}</h4>
+                        </div>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item"><strong>Registration ID:</strong> {{ stallregistration.id }}</li>
+                            <li class="list-group-item"><strong>Stall Category:</strong> {{ stallregistration.stall_category }}</li>
+                            <li class="list-group-item"><strong>Site Size:</strong> {{ stallregistration.site_size }}</li>
+                            <li class="list-group-item"><strong>Status:</strong> {{ stallregistration.booking_status }}</li>
+                            <li class="list-group-item"><strong>Description:</strong> {{ stallregistration.stall_description }}</li>
+                        </ul>
+                        <div class="title-hr">
+                            <span class="hr fix"></span>
+                            <span><strong>Current Allocations</strong></span>
+                            <span class="hr"></span>
+                        </div>
+                        <ul>
+                            {% for allocation in siteallocations %}
+                                {% if allocation.event_site.site.zone.zone_name  %}
+                                    <li class="list-group-item">
+                                        <strong>Event:</strong> {{ allocation.event_site.event.event_name }}
+                                    </li>
+                                    <li class="list-group-item">
+                                        <input class="form-check-input me-1 " type="checkbox" name="currentsites" value={{ allocation.id }} checked>
+                                        <strong>Site Name:</strong> {{ allocation.event_site.site.zone.zone_name }} - {{ allocation.event_site.site.site_name }}
+                                    </li>
+                                {% endif %}
+                            {% endfor %}
+                        </ul>
+                    </div>
+                    <hr>
+                    <button class='btn btn-primary' type='submit'>Remove Selected Site Allocations</button>
+                </form>
+            </div>
+            <div class="col-md-8">
+                <form>
+                    {% csrf_token %}
+                    {{ sitefilterform.as_p }}
+                </form>
+                <hr>
+                <form action="." method="post" >
+                    <input id="hidden" type="hidden" name="hidden">
+                    {% csrf_token %}
+                    <button id='submitbtn' class='btn btn-primary' type='submit'>Move Site(s)</button>
+                    <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+                    <hr>
+                    <div class="container mt-5 mb-5">
+                        <!-- Results of Site Filter -->
+                        {% include 'stallregistrations/available_move_sites_partial.html' %}
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+<!-- Custom Javascript -->
+<script type="module" src="{% static 'js/checkbox_value_capture.js' %}"></script>
+{% endblock %}
+

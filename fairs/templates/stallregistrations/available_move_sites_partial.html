@@ -1,4 +1,4 @@
-<!-- fairs/templates/stallregistrations/available_sites_partial.html -->
+<!-- fairs/templates/stallregistrations/available_move_sites_partial.html -->
 
 {% load static %}
 
@@ -8,11 +8,6 @@
     </div>
     <hr>
     <div class="row g-3 ">
-        <form action="." method="post">
-            {% csrf_token %}
-            <button id='submitbtn' class='btn btn-primary' type='submit'>Allocate Site(s)</button>
-            <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
-            <hr>
             {% if site_list %}
             <div  class="table-responsive-lg">
                 <table class="table table-striped table-hover">
@@ -27,7 +22,7 @@
                     <tbody>
                         {% for site in site_list %}
                         <tr>
-                            <td><input type="checkbox" class="me-2" name="eventsites" value={{ site.id }}>{{ site.site }}</td>
+                            <td><input type="checkbox" class="form-check-input me-2" name="eventsites" value={{ site.id }}>{{ site.site }}</td>
                             <td>{{ site.event }}</td>
                             <td>{{ site.site.site_size }}</td>
                             <td>{{ site.notes }}</td>
@@ -37,6 +32,5 @@
                 </table>
             </div>
         {% endif %}
-        </form>
     </div>
 </div>

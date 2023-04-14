@@ -15,26 +15,32 @@
                     <h4 class="card-title">{{ item.fair }} - {{ item.stallholder}}</h4>
                 </div>
                 <ul class="list-group list-group-flush">
-                    {% if item.site_allocation.event_site.site.zone.zone_name  %}
-                        <li class="list-group-item"><strong>Site Location:</strong> {{ item.site_allocation.event_site.site.zone.zone_name }}</li>
-                        <li class="list-group-item"><strong>Site Name:</strong> {{ item.site_allocation.event_site.site.site_name }}</li>
-                    {% endif %}
-                    <li class="list-group-item"><strong>Registraion ID:</strong> {{ item.id }}</li>
+                    <li class="list-group-item"><strong>Registration ID:</strong> {{ item.id }}</li>
                     <li class="list-group-item"><strong>Stall Category:</strong> {{ item.stall_category }}</li>
                     <li class="list-group-item"><strong>Site Size:</strong> {{ item.site_size }}</li>
                     <li class="list-group-item"><strong>Status:</strong> {{ item.booking_status }}</li>
                     <li class="list-group-item"><strong>Description:</strong> {{ item.stall_description }}</li>
                 </ul>
+                <div class="title-hr">
+                    <span class="hr fix"></span>
+                    <span><strong>Current Allocations</strong></span>
+                    <span class="hr"></span>
+                </div>
+                <ul>
+                    {% for allocation in item.site_allocation.all %}
+                        {% if allocation.event_site.site.zone.zone_name  %}
+                            <li class="list-group-item"><strong>Event:</strong> {{ allocation.event_site.event.event_name }}</li>
+                            <li class="list-group-item"><strong>Site Name:</strong> {{ allocation.event_site.site.zone.zone_name }} - {{ allocation.event_site.site.site_name }}</li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
                 <div class="card-body">
-                    {% if item.site_allocation.event_site.site.zone.zone_name  %}
-                        <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="btn btn-primary">
+                        <a href="{% url 'fair:stallregistration-move-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-danger">
                             Site Allocation Cancel or Move
                         </a>
-                    {% else %}
-                        <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="btn btn-primary">
+                        <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-primary">
                             Set Site Allocation
                         </a>
-                    {% endif %}
                 </div>
             </div>
         </div>

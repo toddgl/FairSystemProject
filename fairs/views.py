@@ -1989,12 +1989,13 @@ def stallholder_history_dashboard_view(request):
 
 def stallregistration_siteallocation_view(request, id):
     """
-    Function to set or move siteallocation for a stall registration.  Called the conveners stallregistraion list display
+    Function to set siteallocation for a stall registration.  Called from the conveners stallregistraion list display
     """
     template = 'stallregistrations/siteallocation_filter.html'
     sitefilterform = SiteAllocationFilerForm(request.POST or None)
     site_filter_message = 'Select a Zone to see available sites for allocation'
     stallregistration = StallRegistration.objects.get(id=id)
+    siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     if request.htmx:
         if sitefilterform.is_valid():
             zone = sitefilterform.cleaned_data['zone']
@@ -2022,6 +2023,7 @@ def stallregistration_siteallocation_view(request, id):
                 'site_filter': site_filter_message,
                 'sitefilterform': sitefilterform,
                 'stallregistration': stallregistration,
+                'siteallocations': siteallocations,
                 'site_list': available_sites
             })
     elif request.method == 'POST':
@@ -2040,17 +2042,101 @@ def stallregistration_siteallocation_view(request, id):
             # Update status to allocated on the affected Eventsites
             eventsite.site_status = 2
             eventsite.save()
-        return redirect('stallregistration-detail', stallregistration_id=id)
+        return redirect('fair:stallregistration-detail', stallregistration_id=id)
 
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,
         'sitefilterform': sitefilterform,
-        'stallregistration': stallregistration
+        'stallregistration': stallregistration,
+        'siteallocations': siteallocations
     })
 
 def stallregistration_detail_view(request, stallregistration_id):
+    """
+    Display the updated stallregistration after a siteallocation add, move or remove has occurred
+    """
+    siteallocations = SiteAllocation.objects.filter(stall_registration=stallregistration_id)
     try:
         stallregistration = StallRegistration.objects.get(pk=stallregistration_id)
     except stallregistration.DoesNotExist:
         return redirect('/')
-    return render(request, 'stallregistration/stallregistration_detail.html', {'stallregistration': stallregistration})
+    return render(request, 'stallregistration/stallregistration_detail.html', {
+        'stallregistration': stallregistration,
+        'siteallocations': siteallocations
+    })
+
+
+def stallregistration_move_cancel_view(request, id):
+    """
+    Function to cancel or move siteallocation for a stall registration.  Called from the conveners stallregistraion list display
+    """
+    template = 'stallregistrations/siteallocation_move_filter.html'
+    sitefilterform = SiteAllocationFilerForm(request.POST or None)
+    site_filter_message = 'Select a Zone to see available sites for allocation'
+    stallregistration = StallRegistration.objects.get(id=id)
+    siteallocations = SiteAllocation.objects.filter(stall_registration=id)
+    if request.htmx:
+        if sitefilterform.is_valid():
+            zone = sitefilterform.cleaned_data['zone']
+            event = sitefilterform.cleaned_data['event']
+            attr_site_size = 'site__site_size'
+            attr_zone = 'site__zone'
+            attr_event ='event'
+            if event and zone:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_site_size: stallregistration.site_size
+                }
+            elif zone:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_site_size: stallregistration.site_size
+                }
+                print(zone_filter_dict)
+            available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
+            template = 'stallregistrations/available_move_sites_partial.html'
+            return TemplateResponse(request, template, {
+                'site_filter': site_filter_message,
+                'sitefilterform': sitefilterform,
+                'stallregistration': stallregistration,
+                'siteallocations': siteallocations,
+                'site_list': available_sites
+            })
+    elif request.method == 'POST':
+        # Cancel request created
+        if request.POST.get('hidden'):
+            currentallocationlist = request.POST.get('hidden').split(',')
+            for siteallocation in currentallocationlist:
+                print('CurrentEventSiteId: ', siteallocation)
+                siteallocation = SiteAllocation.objects.get(id=siteallocation)
+                eventsite = EventSite.objects.get(id=siteallocation.event_site.id)
+                siteallocation.delete()
+                # Update status to available on the affected Eventsites
+                eventsite.site_status = 1
+                eventsite.save()
+            # Move request created
+            for site in request.POST.getlist('eventsites'):
+                print('Stallholderid: ', stallregistration.stallholder.id, 'StallRegistration :', id, 'EventSite: ', site)
+                # Create Allocation
+                eventsite = EventSite.objects.get(id=site)
+                print(eventsite.id)
+                SiteAllocation.objects.create(
+                    stallholder_id=stallregistration.stallholder.id,
+                    stall_registration= stallregistration,
+                    event_site=eventsite,
+                    created_by=request.user,
+                )
+                # Update status to allocated on the affected Eventsites
+                eventsite.site_status = 2
+                eventsite.save()
+        return redirect('fair:stallregistration-detail', stallregistration_id=id)
+
+    return TemplateResponse(request, template, {
+        'site_filter': site_filter_message,
+        'sitefilterform': sitefilterform,
+        'stallregistration': stallregistration,
+        'siteallocations': siteallocations
+    })
