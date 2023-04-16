@@ -58,10 +58,10 @@
                     {{ sitefilterform.as_p }}
                 </form>
                 <hr>
-                <form action="." method="post" >
-                    <input id="hidden" type="hidden" name="hidden">
+                <form action="." method="post">
+                    <input id="hidden" type="hidden" name="hidden" >
                     {% csrf_token %}
-                    <button id='submitbtn' class='btn btn-primary' type='submit'>Move Site(s)</button>
+                    <button _="on load if #hidden is empty then add @disabled to me" id='submitbtn' class='btn btn-primary' type='submit' >Move Site(s)</button>
                     <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
                     <hr>
                     <div class="container mt-5 mb-5">

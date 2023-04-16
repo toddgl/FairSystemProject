@@ -2107,7 +2107,18 @@ def stallregistration_move_cancel_view(request, id):
             })
     elif request.method == 'POST':
         # Cancel request created
-        if request.POST.get('hidden'):
+        if request.POST.getlist('currentsites'):
+            print('Got Here onm cancellation submit')
+            cancelledallocations =request.POST.getlist('currentsites')
+            for cancelledallocation in cancelledallocations:
+                print(cancelledallocation)
+                siteallocation = SiteAllocation.objects.get(id=cancelledallocation)
+                eventsite = EventSite.objects.get(id=siteallocation.event_site.id)
+                siteallocation.delete()
+                # Update status to available on the affected Eventsites
+                eventsite.site_status = 1
+                eventsite.save()
+        elif request.POST.get('hidden'):
             currentallocationlist = request.POST.get('hidden').split(',')
             for siteallocation in currentallocationlist:
                 print('CurrentEventSiteId: ', siteallocation)
