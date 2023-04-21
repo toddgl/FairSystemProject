@@ -127,7 +127,6 @@ def stall_registration_listview(request):
                 }
             elif fair and site_size:
                 alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
-                filtered_data = StallRegistration.objects.all().order_by('stall_category').prefetch_related('site_allocation').all()
                 filter_dict = {
                     attr_fair: fair,
                     attr_site_size: site_size,

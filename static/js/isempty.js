@@ -1,10 +1,20 @@
-/*  static/js/checkbox_value_capture.js */
+/*  static/js/isempty.js */
 
-function isempty() {
-	 if(document.getElementById("hidden").value=="") {
-            document.getElementById('submitbtn').disabled = true;
+$(document).ready(function() {
+    if (!$('#hidden').val()) {
+            $('#movebtn').prop('disabled', true);
+            $('#removebtn').prop('disabled', true);
         } else {
-            document.getElementById('submitbtn').disabled = false;
+            $('#movebtn').prop('disabled', false);
+            $('#removebtn').prop('disabled', false);
         }
-    }
-window.onload= isempty();
+});
+$(document).on("change input paste", function() {
+    if (!$('#hidden').val()) {
+            $('#movebtn').prop('disabled', true);
+            $('#removebtn').prop('disabled', true);
+        } else {
+            $('#movebtn').prop('disabled', false);
+            $('#removebtn').prop('disabled', false);
+        }
+});

@@ -8,7 +8,7 @@ $(document).ready(function() {
             vals.push($(this).val());
         }
     });
-    hidden.val(vals.toString());
+    hidden.val(vals.toString()).change();
   });
   $("input[name='currentsites']").change(function() {
     var hidden = $('#hidden');
@@ -18,5 +18,5 @@ $(document).ready(function() {
             values.push($(this).val());
         }
     });
-    hidden.val(values.toString());
+    hidden.val(values.toString()).change();
   });
