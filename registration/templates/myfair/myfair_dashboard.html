@@ -13,7 +13,7 @@
     <button class="btn btn-primary btn-sm" onclick="location.href='{% url 'registration:stallregistration-create' %}'">Register for a fair stall</button>
   <hr>
   <div class="row">
-    <div class="col-md-7">
+    <div class="col-md-6">
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">
         <div class="card border-primary mb-3">
@@ -47,16 +47,10 @@
         {% endfor %}
       </div>
     </div>
-    <div class="col-md-5">
-      <div class="container mt-5 mb-5">
-        <div class="row height d-flex justify-content-center align-items-center">
-          <div class="card">
+    <div class="col-md-6">
             <h4>Comments</h4>
             {% include 'stallregistration/registration_comments_filter.html' %}
-          </div>
-      </div>
-      </div>
     </div>
-  </div>
+` </div>
 </div>
 {% endblock %}

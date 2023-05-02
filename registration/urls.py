@@ -22,6 +22,7 @@ from registration.views import (
     edit_equipment,
     myfair_dashboard_view,
     archive_comments,
+    comments_view_add,
 )
 
 app_name = 'registration'
@@ -40,9 +41,11 @@ urlpatterns = [
     path('stallcategory/,<int:pk>', StallCategoryDetailUpdateView.as_view(), name='stallcategory-detail'),
     path('stallcategory/actionUrl/', StallCategoryCreateView.as_view(), name='actionUrl'),
     path('stallregistration/create/', stall_registration_create, name='stallregistration-create'),
+    path('stallregistration/create/comments/', comments_view_add, name='stallregistration-comments'),
     path('stallregistration/,<int:pk>/', stall_registration_update_view, name='stallregistration-detail'),
     path('myfair/', myfair_dashboard_view, name='stallregistration-dashboard'),
-    path('foodregistration',food_registration, name='food-registration'),
+    path('myfair/comments/', comments_view_add, name='stallregistration-comments'),
+    path('foodregistration/,<int:pk>/',food_registration, name='food-registration'),
     path('foodequipment/', display_food_equipment, name='food-equipment'),
     path('foodequipment/list', equipment_list, name='equipment-list'),
     path('foodequipment/add', add_equipment, name='add-equipment'),

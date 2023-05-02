@@ -112,7 +112,7 @@ def stall_registration_listview(request):
                 'alert_mgr': alert_message,
             })
         if filterform.is_valid():
-            print('Stall  Reggistrion Stallholder:',stallholder)
+            print('Stall  Registration Stallholder:',stallholder)
             fair = filterform.cleaned_data['fair']
             site_size = filterform.cleaned_data['site_size']
             attr_fair = 'fair'
@@ -196,11 +196,15 @@ def stall_registration_create(request):
     """
     template_name = 'stallregistration/stallregistration_create.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
     stallholder = request.user
     siteallocation = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
                                                                  stall_registration__isnull=True).first()
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=stallholder.id,  is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    comment_filter_message = 'Showing current comments of the current fair'
     if siteallocation:
         fair_id = siteallocation.event_site.event.fair.id
         site_size = siteallocation.event_site.site.site_size_id
@@ -221,6 +225,11 @@ def stall_registration_create(request):
         fair_id = request.POST.get('fair')
         template_name = 'stallregistration/stallregistration_partial.html'
         total_cost = get_registration_costs(fair_id, request)
+        return TemplateResponse(request, template_name, {
+            'allocation_item': allocation_item,
+            'billing': total_cost,
+            'registrationform': registrationform,
+        })
     elif request.method == 'POST':
         total_cost = get_registration_costs(fair_id, request)
         if registrationform.is_valid():
@@ -233,19 +242,22 @@ def stall_registration_create(request):
                 siteallocation.stall_registration = stall_registration
                 siteallocation.save(update_fields=['stall_registration'])
             if stall_registration.selling_food:
-                success_url = reverse_lazy('registration:food-registration')
+                print('Stall_registration_id :', stall_registration.id)
+                return redirect('registration:food-registration', stall_registration.id)
         else:
             print(
                 registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
         return HttpResponseRedirect(success_url)
 
-    filter_message = 'Showing current comments of the current fair'
     return TemplateResponse(request, template_name, {
         'allocation_item': allocation_item,
         'billing': total_cost,
         'registrationform': registrationform,
+        'commentfilterform': commentfilterform,
+        'commentform': commentform,
+        'replyform': replyform,
         'comments': comments,
-        'filter': filter_message
+        'comment_filter': comment_filter_message
     })
 
 
@@ -256,11 +268,13 @@ def get_registration_costs(fair_id, request):
     if stall_category:
         category = StallCategory.objects.get(pk=stall_category)
         if category.has_inventory_item:
-            category_price = InventoryItemFair.objects.get(inventory_item_id=category.inventory_item.id).price
-            price_rate = InventoryItemFair.objects.get(inventory_item_id=category.inventory_item.id).price_rate
+            category_price = InventoryItemFair.objects.get(fair=fair_id,inventory_item_id=category.inventory_item.id).price
+            price_rate = InventoryItemFair.objects.get(fair=fair_id,inventory_item_id=category.inventory_item.id).price_rate
             category_price = category_price * price_rate
         else:
             category_price = decimal.Decimal(0.00)
+    else:
+        category_price = decimal.Decimal(0.00)
 
     if site_size:
         site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
@@ -514,7 +528,7 @@ def myfair_dashboard_view(request):
     """
 
     template = "myfair/myfair_dashboard.html"
-    filter_message= 'Showing current comments of the current fair'
+    comment_filter_message= 'Showing current comments of the current fair'
     current_fairs = StallRegistration.objects.filter(fair__is_activated=True)
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
@@ -528,114 +542,13 @@ def myfair_dashboard_view(request):
     except ObjectDoesNotExist:
         myfair_list = current_fairs.filter(stallholder=request.user)
 
-    if request.htmx:
-        template = 'stallregistration/registration_comments.html'
-        comments = RegistrationComment.objects.filter(stallholder=request.user, convener_only_comment=False,
-                                                      comment_parent__isnull=True)
-        if commentfilterform.is_valid():
-            archive_flag = commentfilterform.cleaned_data['is_archived']
-            fair = commentfilterform.cleaned_data['fair']
-            attr_archive = 'is_archived'
-            attr_fair = 'fair'
-            if archive_flag and fair:
-                filter_message = 'Showing all (archived and current) comments for the ' + str(fair)
-                comment_filter_dict = {
-                    attr_fair: fair
-                }
-            elif archive_flag:
-                filter_message = 'Showing all (archived and current) comments for the current fair'
-                comment_filter_dict = {
-                    attr_fair: current_fair.id
-                }
-            elif fair:
-                filter_message = 'Showing current comments for the ' + str(fair)
-                comment_filter_dict = {
-                    attr_archive: False,
-                    attr_fair: fair
-                }
-            else:
-                comment_filter_dict = {
-                    attr_archive: False,
-                    attr_fair: current_fair.id
-                }
-                filter_message = 'Showing current comments of the current fair'
-        filter_comments = comments.all().filter(**comment_filter_dict)
-        return TemplateResponse(request, template, {
-            'commentfilterform': commentfilterform,
-            'replyform': replyform,
-            'commentform': commentform,
-            'comments': filter_comments,
-            'filter': filter_message,
-        })
-    elif request.method == 'POST':
-        # comment has been added
-        commentform = RegistrationCommentForm(request.POST)
-        replyform = CommentReplyForm(request.POST)
-        if replyform.is_valid():
-            parent_obj = None
-            # get parent comment id from hidden input
-            try:
-                # id integer e.g. 15
-                parent_id = int(request.POST.get('parent_id'))
-            except Exception:
-                parent_id = None
-            # if parent_id has been submitted get parent_obj id
-            if parent_id:
-                parent_obj = RegistrationComment.objects.get(id=parent_id)
-                # if parent object exist
-                if parent_obj:
-                    # create reply comment object
-                    reply_comment = replyform.save(commit=False)
-                    # assign parent_obj to reply comment
-                    reply_comment.comment_parent = parent_obj
-                    # assign comment_type to replycomment
-                    reply_comment.comment_type = parent_obj.comment_type
-                    # assign user to created.by
-                    reply_comment.created_by = request.user
-                    # assign current fair to fair
-                    reply_comment.fair_id = current_fair.id
-                    # save
-                    reply_comment.save()
-                    return TemplateResponse(request, template, {
-                        'registrations': myfair_list,
-                        'commentfilterform': commentfilterform,
-                        'comments': comments,
-                        'commentform': commentform,
-                        'replyform': replyform,
-                        'filter': filter_message,
-                    })
-            elif commentform.is_valid():
-                # normal comment
-                # create comment object but do not save to database
-                new_comment = commentform.save(commit=False)
-                # assign stallholder to the comment
-                new_comment.stallholder = request.user
-                # assign user to created.by
-                new_comment.created_by = request.user
-                # assign current fair to fair
-                new_comment.fair_id = current_fair.id
-                # save
-                new_comment.save()
-            else:
-                print(
-                    commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
-        return TemplateResponse(request, template, {
-            'registrations': myfair_list,
-            'commentfilterform': commentfilterform,
-            'comments': comments,
-            'commentform': commentform,
-            'replyform': replyform,
-            'filter': filter_message,
-        })
-    else:
-        stallholder = ''
-        return TemplateResponse(request, template, {
-        'registrations': myfair_list,
-        'commentfilterform': commentfilterform,
-        'comments': comments,
-        'commentform': commentform,
-        'replyform': replyform,
-        'filter': filter_message,
+    return TemplateResponse(request, template, {
+    'registrations': myfair_list,
+    'commentfilterform': commentfilterform,
+    'comments': comments,
+    'commentform': commentform,
+    'replyform': replyform,
+    'filter': comment_filter_message,
     })
 
 def archive_comments(request, pk):
@@ -657,11 +570,14 @@ def archive_comments(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-def food_registration(request):
+def food_registration(request, parent_pk):
+    stallregistration = get_object_or_404(StallRegistration, pk=parent_pk)
+    form = FoodRegistrationForm(request.POST or None)
     if request.method == "POST":
-        form = FoodRegistrationForm(request.POST)
         if form.is_valid():
-            form.save()
+            food_registration = form.save(commit=False)
+            food_registration.registration = stallregistration
+            food_registration.save()
             return HttpResponse(status=204, headers={'HX-Trigger': 'foodRegistrationChanged'})
     else:
         form = FoodRegistrationForm()
@@ -748,6 +664,106 @@ def remove_equipment(request, pk):
         }
     )
 
+
+def comments_view_add (request):
+    """
+    Separation of the stallholder comments view and add code that just updats the comments displayed based on the htmx
+    filterform plus the ability to create new comments and reply to existing ones
+    """
+    template = 'stallregistration/registration_comments.html'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    if request.htmx:
+        comments = RegistrationComment.objects.filter(stallholder=request.user, convener_only_comment=False,
+                                                      comment_parent__isnull=True)
+        if commentfilterform.is_valid():
+            archive_flag = commentfilterform.cleaned_data['is_archived']
+            fair = commentfilterform.cleaned_data['fair']
+            attr_archive = 'is_archived'
+            attr_fair = 'fair'
+            if archive_flag and fair:
+                comment_filter_message = 'Showing all (archived and current) comments for the ' + str(fair)
+                comment_filter_dict = {
+                    attr_fair: fair
+                }
+            elif archive_flag:
+                comment_filter_message = 'Showing all (archived and current) comments for the current fair'
+                comment_filter_dict = {
+                    attr_fair: current_fair.id
+                }
+            elif fair:
+                comment_filter_message = 'Showing current comments for the ' + str(fair)
+                comment_filter_dict = {
+                    attr_archive: False,
+                    attr_fair: fair
+                }
+            else:
+                comment_filter_dict = {
+                    attr_archive: False,
+                    attr_fair: current_fair.id
+                }
+                comment_filter_message = 'Showing current comments of the current fair'
+        filter_comments = comments.all().filter(**comment_filter_dict)
+        return TemplateResponse(request, template, {
+            'commentfilterform': commentfilterform,
+            'replyform': replyform,
+            'commentform': commentform,
+            'comments': filter_comments,
+            'comment_filter': comment_filter_message,
+        })
+    elif request.method == 'POST':
+        # comment has been added
+        print('Got to the POST section in the comment_view_add view')
+        replyform = CommentReplyForm(request.POST or None)
+        commentform = RegistrationCommentForm(request.POST or None)
+        if commentform.is_valid():
+            print('Got to the create comment in the comment_view_add view')
+            # normal comment
+            # create comment object but do not save to database
+            new_comment = commentform.save(commit=False)
+            # assign stallholder to the comment
+            new_comment.stallholder = request.user
+            # assign user to created.by
+            new_comment.created_by = request.user
+            # assign current fair to fair
+            new_comment.fair_id = current_fair.id
+            try:
+                # save
+                new_comment.save()
+            except Exception:
+                print(
+                    commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+            return redirect(request.META.get('HTTP_REFERER'))
+        if replyform.is_valid():
+            print('Got to the create reply in the comment_view_add view')
+            parent_obj = None
+            # get parent comment id from hidden input
+            try:
+                # id integer e.g. 15
+                parent_id = int(request.POST.get('parent_id'))
+            except Exception:
+                parent_id = None
+            # if parent_id has been submitted get parent_obj id
+            if parent_id:
+                parent_obj = RegistrationComment.objects.get(id=parent_id)
+                # if parent object exist
+                if parent_obj:
+                    # create reply comment object
+                    reply_comment = replyform.save(commit=False)
+                    # assign parent_obj to reply comment
+                    reply_comment.comment_parent = parent_obj
+                    # assign comment_type to replycomment
+                    reply_comment.comment_type = parent_obj.comment_type
+                    # assign user to created.by
+                    reply_comment.created_by = request.user
+                    # assign current fair to fair
+                    reply_comment.fair_id = current_fair.id
+                    # save
+                    reply_comment.save()
+            return redirect(request.META.get('HTTP_REFERER'))
 
 
 

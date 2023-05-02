@@ -2,7 +2,7 @@
 
 <div id="comment_data">
     <div class="badge bg-info text-dark text-wrap" style="width: auto;">
-        {{ filter }}
+        {{ comment_filter }}
     </div>
     <hr>
     {% for comment in comments %}
@@ -54,7 +54,7 @@
                             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                         </div>
                         <div class="modal-body">
-                            <form action="." method="post">
+                            <form action="{% url 'registration:stallregistration-comments' %}" method="post">
                                 {% csrf_token %}
                                 {{ replyform.as_p }}
                                 <!-- Hidden input for parent comment.id -->

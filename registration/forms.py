@@ -6,6 +6,7 @@ from django.forms import (
     BooleanField,
     ChoiceField,
     Form,
+    HiddenInput,
     ModelForm,
     ModelChoiceField,
     Textarea,
@@ -357,18 +358,22 @@ class StallRegistrationCreateForm(ModelForm):
                 'hx-target': '#stallregistration_data',
             }),
             'selling_food': CheckboxInput(attrs={
-                'class': 'form-check-input'
-            }),
+                'class': 'form-check-input',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
+        }),
         }
 
     def clean(self):
         cleaned_data = super().clean()
         stall_category = cleaned_data.get('stall_category')
+        print(stall_category)
         selling_food = cleaned_data.get('selling_food')
 
         if stall_category and selling_food:
             # Only do something if both fields are valid so far.
-            if "Food" not in stall_category:
+            if 'Food' not in str(stall_category):
                 raise ValidationError(
                     "You must select a Stall category of either:"
                     "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
@@ -508,7 +513,7 @@ class StallRegistrationUpdateForm(ModelForm):
 
         if stall_category and selling_food:
             # Only do something if both fields are valid so far.
-            if "Food" not in stall_category:
+            if 'Food' not in str(stall_category):
                 raise ValidationError(
                     "You must select a Stall category of either:"
                     "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
@@ -532,6 +537,7 @@ class FoodRegistrationForm(ModelForm):
     class Meta:
         model = FoodRegistration
         fields = [
+            'registration',
             'food_stall_type',
             'food_display_method',
             'food_fair_consumed',
@@ -559,15 +565,18 @@ class FoodRegistrationForm(ModelForm):
             'food_registration_certificate': 'Please upload your food certificate',
         }
         widgets = {
+            'registration': HiddenInput(),
             'food_display_method': Textarea(attrs={
                 'class': "form-control",
                 'style': 'max-width: 400px;',
+                'rows': '5',
                 'placeholder': 'Describe how the food will be displayed'
             }),
             'food_fair_consumed': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
             'food_source': Textarea(attrs={
+                'rows': '5',
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe where the food being sold will be sourced from'
@@ -576,16 +585,19 @@ class FoodRegistrationForm(ModelForm):
                 'class': 'form-check-input'
             }),
             'food_storage_prep_method': Textarea(attrs={
+                'rows': '5',
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe where and how will the pre-sale storage or preparation of the food take place'
             }),
             'food_storage_prep': Textarea(attrs={
+                'rows': '5',
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe method and location of Food utensils, appliances and equipment.'
             }),
             'hygiene_methods': Textarea(attrs={
+                'rows': '5',
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe What arrangements have been made for toilet use and washing hands.'
@@ -594,8 +606,9 @@ class FoodRegistrationForm(ModelForm):
                 'class': 'form-check-input'
             }),
             'certificate_expiry_date': DateInput(attrs={
-                'class': "form-control",
-                'readonly': 'readonly'
+                'class': 'form-control',
+                'style': 'max-width: 400px;',
+                'type' : 'date'
             }),
             'food_registration_certificate': FileInput(),
         }
@@ -645,7 +658,7 @@ class CommentFilterForm(Form):
             'class': 'form-select',
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
-            'hx-post': '.',
+            'hx-post': 'comments/',
             'hx-target': '#comment_data',
         })
     )
@@ -654,7 +667,7 @@ class CommentFilterForm(Form):
         widget=CheckboxInput(attrs={
             'class': 'form-check-input',
             'hx-trigger': 'change',
-            'hx-post': '.',
+            'hx-post': 'comments/',
             'hx-target': '#comment_data',
             'checked': False
         })
