@@ -17,6 +17,7 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from django.forms.models import modelformset_factory
 
 from fairs.models import (
     Fair,
@@ -244,10 +245,21 @@ def stall_registration_create(request):
             if stall_registration.selling_food:
                 print('Stall_registration_id :', stall_registration.id)
                 return redirect('registration:food-registration', stall_registration.id)
+            else:
+                return HttpResponseRedirect(success_url)
         else:
             print(
                 registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
-        return HttpResponseRedirect(success_url)
+            return TemplateResponse(request, template_name, {
+                'allocation_item': allocation_item,
+                'billing': total_cost,
+                'registrationform': registrationform,
+                'commentfilterform': commentfilterform,
+                'commentform': commentform,
+                'replyform': replyform,
+                'comments': comments,
+                'comment_filter': comment_filter_message
+            })
 
     return TemplateResponse(request, template_name, {
         'allocation_item': allocation_item,
@@ -570,19 +582,29 @@ def archive_comments(request, pk):
     return redirect(request.META.get('HTTP_REFERER'))
 
 
-def food_registration(request, parent_pk):
-    stallregistration = get_object_or_404(StallRegistration, pk=parent_pk)
-    form = FoodRegistrationForm(request.POST or None)
+def food_registration_create(request, pk):
+    stallregistration = get_object_or_404(StallRegistration, id=pk)
+    food_form = FoodRegistrationForm(request.POST or None)
+    FoodEquipReqFormSet = modelformset_factory(FoodPrepEquipReq, form=FoodPrepEquipReqForm,
+        extra=0
+    )
+    formset = FoodEquipReqFormSet(request.POST or None)
     if request.method == "POST":
-        if form.is_valid():
-            food_registration = form.save(commit=False)
+        print(request.POST)
+        if all([food_form.is_valid(),formset.is_valid()]):
+            food_registration = food_form.save(commit=False)
             food_registration.registration = stallregistration
             food_registration.save()
-            return HttpResponse(status=204, headers={'HX-Trigger': 'foodRegistrationChanged'})
+            for equip_form in formset:
+                equip = equip_form.save(commit=False)
+                equip.food_registration = food_registration
+                equip.save()
+            return redirect(request.META.get('HTTP_REFERER'))
     else:
         form = FoodRegistrationForm()
     return render(request, 'stallregistration/food_registration.html', {
         'form': form,
+        'formset': formset
     })
 
 
@@ -619,10 +641,10 @@ def add_equipment(request):
             print(form)
             print("Invalid Form")
             print(form.errors)
-            return render(request, 'equipmentregistration/equipment_form.html', {'form': form})
+            return render(request, 'equipmentregistration/equipment_form_partial.html', {'form': form})
     else:
         form = FoodPrepEquipReqForm()
-    return render(request, 'equipmentregistration/equipment_form.html', {
+    return render(request, 'equipmentregistration/equipment_form_partial.html', {
         'form': form,
     })
 
@@ -644,7 +666,7 @@ def edit_equipment(request, pk):
             )
     else:
         form = FoodPrepEquipReqForm(instance=equipment)
-    return render(request, 'equipmentregistration/equipment_form.html', {
+    return render(request, 'equipmentregistration/equipment_form_partial.html', {
         'form': form,
         'equipment': equipment,
     })

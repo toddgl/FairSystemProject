@@ -295,6 +295,11 @@ a {
   }
 }
 
+/* Food Registration */
+.hidden {
+    display:none
+}
+
 /* Page Loader Spinner*/
 
 .loader {

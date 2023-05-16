@@ -516,10 +516,10 @@ class StallRegistrationUpdateForm(ModelForm):
             if 'Food' not in str(stall_category):
                 raise ValidationError(
                     "You must select a Stall category of either:"
-                    "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
+                    "Food Drink (other) or Food Drink (consumption on site)"
                     "If you are selling any type of food item"
                 )
-
+        return self.cleaned_data  # never forget this!
 
 class FoodRegistrationForm(ModelForm):
     """
@@ -636,6 +636,7 @@ class FoodPrepEquipReqForm(ModelForm):
             'food_registration',
             'food_prep_equipment',
             'how_powered',
+            'equipment_quantity'
         ]
         widgets = {
             'how_powered': RadioSelect(attrs={

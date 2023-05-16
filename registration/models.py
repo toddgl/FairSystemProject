@@ -406,11 +406,12 @@ class FoodRegistration(models.Model):
 
 class FoodPrepEquipReq(models.Model):
     """
-    Description a junction table joining FoodRegistration with FoodPrepEquipment used top capture whether the equipment
-    is gas or electrical powered
+    Description a junction table joining FoodRegistration with FoodPrepEquipment used to capture whether the equipment
+    the stallholder is using is gas or electrical powered.  The electrical equipment count will be used to calculate the
+    likely load on teh Fairs electrical network
     """
-    ELECTRICAL = 'e'
-    GAS = 'g'
+    ELECTRICAL = 1
+    GAS = 2
 
     POWERED_CHOICE = [
         (ELECTRICAL, _('Electric Powered')),
@@ -437,16 +438,7 @@ class FoodPrepEquipReq(models.Model):
         max_length=11,
         default=ELECTRICAL,
     )
-
-    """
-    Hooking the create_food_prep_equip_req and save_food_prep_equip_req methods to the FoodRegistration model, whenever 
-    a save event occurs. This kind of signal is called post_save.
-    """
-
-    @receiver(post_save, sender=FoodRegistration)
-    def create_food_prep_equip_req(self, instance, created, **kwargs):
-        if created:
-            FoodPrepEquipReq.objects.create(food_registration=instance)
+    equipment_quantity = models.IntegerField(default=1)
 
     class Meta:
         verbose_name = "foodprepequiprequired"

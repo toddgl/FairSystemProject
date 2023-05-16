@@ -11,10 +11,23 @@
     <form method="post" >
       {% csrf_token %}
       {{ form.as_p }}
+      <hr>
+      <h4>Food Equipment used in the stall</h4>
+      {% if formset %}
+        {% for equip in formset %}
+          <div class="equipment-form-list">
+            {{ equip.as_p }}
+          </div>
+        {% endfor %}
+          <div id="empty-form" class="hidden">{{ formset.empty_form }}</div>
+        <button id="add-more" type="button" class="mt-2 btn btn-primary">Add More</button>
+      {% endif %}
+      <br>
       <input type="submit" class="mt-2 btn btn-primary" value="Save" >
-      <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='../myfair'" value="Cancel" >
+      <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='/registration/myfair'" value="Cancel" >
     </form>
 </div>
 <script src="{% static 'js/food_registration_hide.js' %}"></script>
+<script src="{% static 'js/add_food_equipment_forms.js' %}"></script>
 {% endblock %}
 
