@@ -6,28 +6,40 @@
 {% block body %}
 <div class="container">
   <div class="px-5 my-5 text-center">
-    <h1>Edit Food Registration</h1>
-    </div>
-    <form method="post" >
-      {% csrf_token %}
-      {{ form.as_p }}
-      <hr>
-      <h4>Food Equipment used in the stall</h4>
-      {% if formset %}
-        {% for equip in formset %}
-          <div class="equipment-form-list">
-            {{ equip.as_p }}
-          </div>
-        {% endfor %}
-          <div id="empty-form" class="hidden">{{ formset.empty_form }}</div>
-        <button id="add-more" type="button" class="mt-2 btn btn-primary">Add More</button>
-      {% endif %}
-      <br>
-      <input type="submit" class="mt-2 btn btn-primary" value="Save" >
-      <input type="button" class="mt-2 ms-4 btn btn-secondary" onclick="location.href='/registration/myfair'" value="Cancel" >
-    </form>
+      <h1>Create Food Registration</h1>
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    {{ food_form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Save" >
+  </form>
+  <hr>
+  <h3>Equipment</h3>
+  {% include 'stallregistration/equipment_inline_partial.html' %}
+    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEquipmentModal">Add Equipment</button>
+
 </div>
-<script src="{% static 'js/food_registration_hide.js' %}"></script>
-<script src="{% static 'js/add_food_equipment_forms.js' %}"></script>
+<!-- Add Food Equipment modal-->
+<div class="modal fade" tabindex="-1" id="addEquipmentModal" aria-labelledby="addEquipmentModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Complete Equipment Form</h5>
+        <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'registration:add-food-prep-equipment' %}" method="POST">
+          {% csrf_token %}
+          {{ equipment_form.as_p }}
+          <!-- Hidden input for parent foodregistration.id -->
+          <input type="text" name="food_registration_id" value="{{ foodregistration.id }}">
+          <button type="submit" class="btn btn-primary">Save Equipment</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="{% static 'js/food_certificate_hide.js' %}"></script>
 {% endblock %}
 

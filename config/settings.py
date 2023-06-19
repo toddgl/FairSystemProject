@@ -34,7 +34,7 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = ['192.168.1.73', 'localhost', '127.0.0.1', ]
+ALLOWED_HOSTS = ['192.168.1.80', 'localhost', '127.0.0.1', ]
 
 
 
@@ -136,7 +136,7 @@ AUTH_PASSWORD_VALIDATORS = [
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 # Internationalization
-# https://docs.djangoproject.com/en/3.1/topics/i18n/
+# https://docs.djangoproject.com/en/4.2/topics/i18n/
 
 DATETIME_FORMAT = '%d-%m-%Y %H:%M:%S'
 

@@ -7,17 +7,16 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.response import TemplateResponse
-from django.urls import reverse_lazy
+from django.urls import reverse_lazy, reverse
 from django.views.decorators.http import require_POST
 from django.views.generic import (
     CreateView,
     ListView,
     UpdateView,
 )
-from django.forms.models import modelformset_factory
 
 from fairs.models import (
     Fair,
@@ -581,31 +580,92 @@ def archive_comments(request, pk):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
-
-def food_registration_create(request, pk):
-    stallregistration = get_object_or_404(StallRegistration, id=pk)
+@login_required
+def food_registration_create_view(request, pk):
+    foodregistration = get_object_or_404(FoodRegistration, registration=pk)
     food_form = FoodRegistrationForm(request.POST or None)
-    FoodEquipReqFormSet = modelformset_factory(FoodPrepEquipReq, form=FoodPrepEquipReqForm,
-        extra=0
-    )
-    formset = FoodEquipReqFormSet(request.POST or None)
-    if request.method == "POST":
-        print(request.POST)
-        if all([food_form.is_valid(),formset.is_valid()]):
-            food_registration = food_form.save(commit=False)
-            food_registration.registration = stallregistration
-            food_registration.save()
-            for equip_form in formset:
-                equip = equip_form.save(commit=False)
-                equip.food_registration = food_registration
-                equip.save()
-            return redirect(request.META.get('HTTP_REFERER'))
+    equipment_form = FoodPrepEquipReqForm(request.POST or None)
+    equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=foodregistration.id)
+    print("Food Registratoon id:",foodregistration.id)
+    if equipment_list:
+        context = {
+            'food_form' : food_form,
+            'equipment_form' : equipment_form,
+            'foodregistration' : foodregistration,
+            'equipment_list': equipment_list
+        }
     else:
-        form = FoodRegistrationForm()
-    return render(request, 'stallregistration/food_registration.html', {
-        'form': form,
-        'formset': formset
-    })
+        context = {
+            'food_form' : food_form,
+            'equipment_form' : equipment_form,
+            'foodregistration' : foodregistration
+        }
+
+    if request.method == 'POST':
+        print("Got the general post call")
+        if food_form.is_valid():
+            food_form.save()
+            return redirect(food_form.get_absolute_url())
+    return render(request, 'stallregistration/food_registration.html', context)
+
+
+@login_required
+def food_registration_update_view(request, id=None):
+    obj = get_object_or_404(FoodRegistration, id=id)
+    form = FoodRegistrationForm(request.POST or None, instance=obj)
+    new_equipment_url = reverse("registration:hx-equipment-create", kwargs={"parent_id": obj.id})
+    context = {
+        "form": form,
+        "object": obj,
+        "new_ingredient_url": new_equipment_url
+    }
+    if form.is_valid():
+        form.save()
+        context['message'] = 'Data saved.'
+    if request.htmx:
+        return render(request, "stallregistration/food_form_partial.html", context)
+    return render(request, "stallregistration/food_registration.html", context)
+
+
+@login_required
+def food_equipment_update_hx_view(request, parent_id=None, id=None):
+    print("Got to function")
+    if not request.htmx:
+        raise Http404
+    try:
+        print("Foodregistration Id", parent_id)
+        parent_obj = FoodRegistration.objects.get(id=parent_id)
+    except:
+        parent_obj = None
+    if parent_obj is  None:
+        return HttpResponse("Not found.")
+    instance = None
+    if id is not None:
+        print("EquipmentReq ID:", id)
+        try:
+            instance = FoodPrepEquipReq.objects.get(food_registration=parent_obj, id=id)
+        except:
+            instance = None
+    form = FoodPrepEquipReqForm(request.POST or None, instance=instance)
+    url = reverse("registration:hx-equipment-create", kwargs={"parent_id": parent_obj.id})
+    if instance:
+        url = instance.get_hx_edit_url()
+    context = {
+        "url": url,
+        "form": form,
+        "object": instance
+    }
+    if form.is_valid():
+        print("Form is valid")
+        new_obj = form.save(commit=False)
+        if instance is None:
+            new_obj.food_registration = parent_obj
+        new_obj.save()
+        context['object'] = new_obj
+        return render(request, "stallregistration/equipment_inline_partial.html", context)
+    print("form not validated")
+    return render(request, "stallregistration/equipment_form_partial.html", context)
+
 
 
 @login_required
@@ -622,31 +682,34 @@ def equipment_list(request):
     })
 
 
-def add_equipment(request):
+def add_food_prep_equipment(request):
+    food_equipment_form = FoodPrepEquipReqForm(request.POST or None)
     if request.method == "POST":
-        form = FoodPrepEquipReqForm(request.POST)
-        if form.is_valid():
-            equipment = form.save(commit=False)
-            equipment.food_registration = FoodRegistration.objects.get(id=id)
-            equipment = form.save()
-            return HttpResponse(
-                status=204,
-                headers={
-                    'HX-Trigger': json.dumps({
-                        "equipmentListChanged": None,
-                        "showMessage": f"{equipment.food_prep_equipment} added."
-                    })
-                })
+        if food_equipment_form.is_valid():
+            food_registration_obj = None
+            # get parent food registration from hidden input
+            try:
+                # id integer e.g. 15
+                food_registration_id = int(request.POST.get('food_registration_id'))
+            except Exception:
+                food_registration_id = None
+            # if food_registration_id has been submitted get the food_registration_obj id
+            if food_registration_id:
+                food_registration_obj= FoodRegistration.objects.get(id=food_registration_id)
+                # if food registration object exist
+                if food_registration_obj:
+                    # create food_registration requirement object
+                    food_prep_equipment = food_equipment_form.save(commit=False)
+                    food_prep_equipment.food_registration = food_registration_obj
+                    # save
+                    food_prep_equipment.save()
+            return redirect(request.META.get('HTTP_REFERER'))
         else:
-            print(form)
             print("Invalid Form")
-            print(form.errors)
-            return render(request, 'equipmentregistration/equipment_form_partial.html', {'form': form})
+            print(food_equipment_form.errors)
+            return redirect(request.META.get('HTTP_REFERER'))
     else:
-        form = FoodPrepEquipReqForm()
-    return render(request, 'equipmentregistration/equipment_form_partial.html', {
-        'form': form,
-    })
+        return redirect(request.META.get('HTTP_REFERER'))
 
 
 def edit_equipment(request, pk):
@@ -788,5 +851,62 @@ def comments_view_add (request):
             return redirect(request.META.get('HTTP_REFERER'))
 
 
+@login_required
+def food_equipment_update_hx_view(request, parent_id=None, id=None):
+    if not request.htmx:
+        raise Http404
+    try:
+        parent_obj = FoodRegistration.objects.get(id=parent_id )
+    except:
+        parent_obj = None
+    if parent_obj is  None:
+        return HttpResponse("Not found.")
+    instance = None
+    if id is not None:
+        try:
+            instance = FoodPrepEquipReq.objects.get(food_registration=parent_obj, id=id)
+        except:
+            instance = None
+    form = FoodPrepEquipReqForm(request.POST or None, instance=instance)
+    url = reverse("registration:hx-equipment-create", kwargs={"parent_id": parent_obj.id})
+    if instance:
+        url = instance.get_hx_edit_url()
+    context = {
+        "url": url,
+        "form": form,
+        "object": instance
+    }
+    if form.is_valid():
+        new_obj = form.save(commit=False)
+        if instance is None:
+            new_obj.food_registration = parent_obj
+        new_obj.save()
+        context['object'] = new_obj
+        return render(request, "stallregistration/equipment_inline_partial.html", context)
+    return render(request, "stallregistration/equipment_inline_partial.html", context)
+
+
+
+@login_required
+def food_equipment_delete_view(request, parent_id=None, id=None):
+    try:
+        obj = FoodPrepEquipReq.objects.get(food_registration__id=parent_id, id=id)
+    except:
+        obj = None
+    if obj is None:
+        if request.htmx:
+            return HttpResponse("Not Found")
+        raise Http404
+    if request.method == "POST":
+        name = obj.food_prep_equipment.equipment_name
+        obj.delete()
+        success_url = reverse('registration:detail', kwargs={"id": parent_id})
+        if request.htmx:
+            return render(request, "stallregistration/equipment-inline-delete-response_partial.html", {"name": name})
+        return redirect(success_url)
+    context = {
+        "object": obj
+    }
+    return render(request, "stallregistration/delete.html", context)
 
 

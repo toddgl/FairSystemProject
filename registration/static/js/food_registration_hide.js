@@ -20,7 +20,7 @@
       fprep.show();
       $('label[for=id_food_storage_prep_method], input#id_food_storage_prep_method').show();
     } else {
-     fprep .hide();
+     fprep.hide();
       $('label[for=id_food_storage_prep_method], input#id_food_storage_prep_method').hide();
     }
   });

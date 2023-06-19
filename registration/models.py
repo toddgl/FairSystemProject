@@ -4,7 +4,7 @@ import datetime
 from django.conf import settings  # new
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
@@ -372,7 +372,7 @@ class FoodRegistration(models.Model):
     )
     food_display_method = models.TextField()
     has_food_certificate = models.BooleanField(default=False)
-    food_registration_certificate = models.FileField(upload_to='media/food_certificates')
+    food_registration_certificate = models.FileField(upload_to='media/food_certificates', blank=True)
     certificate_expiry_date = models.DateField(blank=True, null=True)
     food_fair_consumed = models.BooleanField(default=False)
     food_prep_equipment = models.ManyToManyField(
@@ -393,16 +393,28 @@ class FoodRegistration(models.Model):
     food_storage_prep_method = models.TextField()
     hygiene_methods = models.TextField()
 
-    """
-    Hooking the create_food_registration and save_food_registration methods to the StallRegistration model, whenever 
-    a save event occurs and selling food has been selected. This kind of signal is called post_save.
-    """
-
-
     class Meta:
         verbose_name = "foodregistration"
         verbose_name_plural = "foodregistrations"
 
+    @property
+    def title(self):
+        return self.name
+
+    def get_absolute_url(self):
+        return reverse("registration:foodregistration-detail", kwargs={"id": self.id})
+
+    def get_hx_url(self):
+        return reverse("registration:foodregistration-hx-detail", kwargs={"id": self.id})
+
+    def get_edit_url(self):
+        return reverse("registration:foodregistration-update", kwargs={"id": self.id})
+
+    def get_delete_url(self):
+        return reverse("registration:foodregistration-delete", kwargs={"id": self.id})
+
+    def get_equipment_children(self):
+        return self.foodprepequiprequired_set.all()
 
 class FoodPrepEquipReq(models.Model):
     """
@@ -410,8 +422,8 @@ class FoodPrepEquipReq(models.Model):
     the stallholder is using is gas or electrical powered.  The electrical equipment count will be used to calculate the
     likely load on teh Fairs electrical network
     """
-    ELECTRICAL = 1
-    GAS = 2
+    ELECTRICAL = "1"
+    GAS = "2"
 
     POWERED_CHOICE = [
         (ELECTRICAL, _('Electric Powered')),
@@ -443,3 +455,35 @@ class FoodPrepEquipReq(models.Model):
     class Meta:
         verbose_name = "foodprepequiprequired"
         verbose_name_plural = "foodprepequiprequirements"
+
+    def get_absolute_url(self):
+        return self.food_registration.get_absolute_url()
+
+    def get_delete_url(self):
+        kwargs = {
+            "parent_id": self.food_registration.id,
+            "id": self.id
+        }
+        return reverse("registration:remove-equipment", kwargs=kwargs)
+
+    def get_hx_edit_url(self):
+        kwargs = {
+            "parent_id": self.food_registration.id,
+            "id": self.id
+        }
+        return reverse("registration:hx-equipment-detail", kwargs=kwargs)
+
+@receiver(post_save, sender=StallRegistration)
+def create_food_registration(sender, instance, created, **kwargs):
+    if created and instance.selling_food:
+        FoodRegistration.objects.create(registration=instance)
+
+
+@receiver(pre_save, sender=StallRegistration)
+def remove_food_registration(sender, instance, **kwargs):
+    if instance.pk:
+        original_instance = StallRegistration.objects.get(pk=instance.pk)
+        if not original_instance.selling_food and instance.selling_food:
+            FoodRegistration.objects.create(registration=instance)
+        elif original_instance.selling_food and not instance.selling_food:
+            FoodRegistration.objects.filter(registration=instance).delete()
