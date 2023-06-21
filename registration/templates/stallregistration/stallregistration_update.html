@@ -35,9 +35,6 @@
         <input type="submit" class="btn btn-primary" value="Update" >
         <a href="{% url 'registration:stallregistration-dashboard' %}" class="btn btn-secondary" role="button">Cancel</a>
       </form>
-      {% if stallregistration.selling_food %}
-        <a href= "{{ registration.food_registration }}" class="btn btn-outline-primary btn-sm" role="button">Edit Food Registration</a>
-      {% endif %}
     </div>
     <div class="col-md-6">
       <h4>Comments</h4>

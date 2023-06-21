@@ -327,9 +327,20 @@ def stall_registration_update_view(request, pk):
     if siteallocation:
         allocation_item = siteallocation
         fair_id = siteallocation.event_site.event.fair.id
+        context = {
+            'allocation_item': allocation_item,
+            'billing': total_cost,
+            'registrationform': registrationform,
+            'comments': comments,
+        }
     else:
         current_fair = Fair.currentfairmgr.all().last()
         fair_id = current_fair.id
+        context = {
+            'billing': total_cost,
+            'registrationform': registrationform,
+            'comments': comments,
+        }
 
     if request.htmx:
         template = 'stallregistration/stallregistration_partial.html'
@@ -340,16 +351,15 @@ def stall_registration_update_view(request, pk):
             stall_registration = registrationform.save(commit=False)
             stall_registration.total_charge = total_cost
             stall_registration.save()
-            return HttpResponseRedirect(success_url)
+            if stall_registration.selling_food:
+                print('Stall_registration_id :', stall_registration.id)
+                return redirect('registration:food-registration', stall_registration.id)
+            else:
+                return HttpResponseRedirect(success_url)
 
     filter_message = 'Showing current comments of the current fair'
-    return TemplateResponse(request, template, {
-        'allocation_item': allocation_item,
-        'billing': total_cost,
-        'registrationform': registrationform,
-        'comments': comments,
-        'filter': filter_message
-    })
+    context['filter'] = filter_message
+    return TemplateResponse(request, template, context)
 
 
 class FoodPrepEquipmentCreateView(PermissionRequiredMixin, CreateView):
@@ -736,18 +746,15 @@ def edit_equipment(request, pk):
 
 
 @require_POST
-def remove_equipment(request, pk):
-    equipment = get_object_or_404(FoodPrepEquipReq, pk=pk)
+def remove_equipment(request, parent_id, id):
+    print("got to delete function")
+    template = 'stallregistration/equipment_inline_partial.html'
+    equipment = get_object_or_404(FoodPrepEquipReq, pk=id)
     equipment.delete()
-    return HttpResponse(
-        status=204,
-        headers={
-            'HX-Trigger': json.dumps({
-                "equipmentListChanged": None,
-                "showMessage": f"{equipment.food_prep_equipment} deleted."
-            })
-        }
-    )
+    equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=int(parent_id))
+    return TemplateResponse(request, template, {
+        'equipment_list': equipment_list,
+        })
 
 
 def comments_view_add (request):

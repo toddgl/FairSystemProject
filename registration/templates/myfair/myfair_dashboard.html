@@ -36,7 +36,7 @@
               <li class="list-group-item"><strong>Requiring Power:</strong> {{ registration.power_required|yesno:"Yes,No" }}</li>
             </ul>
             <div class="card-body">
-              <a href="{% url 'registration:stallregistration-detail' pk=registration.pk %}" class="btn btn-primary">
+              <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
                 View and edit Stall Registration Detail
               </a>
             </div>
