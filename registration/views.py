@@ -112,7 +112,6 @@ def stall_registration_listview(request):
                 'alert_mgr': alert_message,
             })
         if filterform.is_valid():
-            print('Stall  Registration Stallholder:',stallholder)
             fair = filterform.cleaned_data['fair']
             site_size = filterform.cleaned_data['site_size']
             attr_fair = 'fair'
@@ -242,7 +241,6 @@ def stall_registration_create(request):
                 siteallocation.stall_registration = stall_registration
                 siteallocation.save(update_fields=['stall_registration'])
             if stall_registration.selling_food:
-                print('Stall_registration_id :', stall_registration.id)
                 return redirect('registration:food-registration', stall_registration.id)
             else:
                 return HttpResponseRedirect(success_url)
@@ -321,8 +319,13 @@ def stall_registration_update_view(request, pk):
     total_cost = obj.total_charge
     registrationform = StallRegistrationUpdateForm(request.POST or None, instance=obj)
     siteallocation = SiteAllocation.currentallocationsmgr.filter(stall_registration=pk).first()
+    comment_filter_message= 'Showing current comments of the current fair'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=obj.stallholder,  is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
 
     if siteallocation:
         allocation_item = siteallocation
@@ -331,6 +334,10 @@ def stall_registration_update_view(request, pk):
             'allocation_item': allocation_item,
             'billing': total_cost,
             'registrationform': registrationform,
+            'commentfilterform': commentfilterform,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': comment_filter_message,
             'comments': comments,
         }
     else:
@@ -339,6 +346,10 @@ def stall_registration_update_view(request, pk):
         context = {
             'billing': total_cost,
             'registrationform': registrationform,
+            'commentfilterform': commentfilterform,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': comment_filter_message,
             'comments': comments,
         }
 
@@ -352,7 +363,6 @@ def stall_registration_update_view(request, pk):
             stall_registration.total_charge = total_cost
             stall_registration.save()
             if stall_registration.selling_food:
-                print('Stall_registration_id :', stall_registration.id)
                 return redirect('registration:food-registration', stall_registration.id)
             else:
                 return HttpResponseRedirect(success_url)
@@ -592,27 +602,42 @@ def archive_comments(request, pk):
 
 @login_required
 def food_registration_create_view(request, pk):
+    comment_filter_message= 'Showing current comments of the current fair'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    # list of active parent comments
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     foodregistration = get_object_or_404(FoodRegistration, registration=pk)
     food_form = FoodRegistrationForm(request.POST or None)
     equipment_form = FoodPrepEquipReqForm(request.POST or None)
     equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=foodregistration.id)
-    print("Food Registratoon id:",foodregistration.id)
     if equipment_list:
         context = {
             'food_form' : food_form,
             'equipment_form' : equipment_form,
             'foodregistration' : foodregistration,
-            'equipment_list': equipment_list
+            'equipment_list': equipment_list,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': comment_filter_message,
         }
     else:
         context = {
             'food_form' : food_form,
             'equipment_form' : equipment_form,
-            'foodregistration' : foodregistration
+            'foodregistration' : foodregistration,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'filter': comment_filter_message,
         }
 
     if request.method == 'POST':
-        print("Got the general post call")
         if food_form.is_valid():
             food_form.save()
             return redirect(food_form.get_absolute_url())
@@ -621,13 +646,22 @@ def food_registration_create_view(request, pk):
 
 @login_required
 def food_registration_update_view(request, id=None):
+    comment_filter_message= 'Showing current comments of the current fair'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    current_fair = Fair.currentfairmgr.all().last()
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     obj = get_object_or_404(FoodRegistration, id=id)
     form = FoodRegistrationForm(request.POST or None, instance=obj)
-    new_equipment_url = reverse("registration:hx-equipment-create", kwargs={"parent_id": obj.id})
     context = {
         "form": form,
         "object": obj,
-        "new_ingredient_url": new_equipment_url
+        'commentfilterform': commentfilterform,
+        'comments': comments,
+        'commentform': commentform,
+        'replyform': replyform,
+        'comment_filter': comment_filter_message
     }
     if form.is_valid():
         form.save()
@@ -639,11 +673,9 @@ def food_registration_update_view(request, id=None):
 
 @login_required
 def food_equipment_update_hx_view(request, parent_id=None, id=None):
-    print("Got to function")
     if not request.htmx:
         raise Http404
     try:
-        print("Foodregistration Id", parent_id)
         parent_obj = FoodRegistration.objects.get(id=parent_id)
     except:
         parent_obj = None
@@ -651,7 +683,6 @@ def food_equipment_update_hx_view(request, parent_id=None, id=None):
         return HttpResponse("Not found.")
     instance = None
     if id is not None:
-        print("EquipmentReq ID:", id)
         try:
             instance = FoodPrepEquipReq.objects.get(food_registration=parent_obj, id=id)
         except:
@@ -666,14 +697,12 @@ def food_equipment_update_hx_view(request, parent_id=None, id=None):
         "object": instance
     }
     if form.is_valid():
-        print("Form is valid")
         new_obj = form.save(commit=False)
         if instance is None:
             new_obj.food_registration = parent_obj
         new_obj.save()
         context['object'] = new_obj
         return render(request, "stallregistration/equipment_inline_partial.html", context)
-    print("form not validated")
     return render(request, "stallregistration/equipment_form_partial.html", context)
 
 
@@ -693,8 +722,9 @@ def equipment_list(request):
 
 
 def add_food_prep_equipment(request):
+    template = 'stallregistration/equipment_inline_partial.html'
     food_equipment_form = FoodPrepEquipReqForm(request.POST or None)
-    if request.method == "POST":
+    if request.htmx:
         if food_equipment_form.is_valid():
             food_registration_obj = None
             # get parent food registration from hidden input
@@ -713,41 +743,18 @@ def add_food_prep_equipment(request):
                     food_prep_equipment.food_registration = food_registration_obj
                     # save
                     food_prep_equipment.save()
-            return redirect(request.META.get('HTTP_REFERER'))
+            equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=food_registration_id)
+            return TemplateResponse(request, template, {
+                'equipment_list': equipment_list,
+            })
         else:
-            print("Invalid Form")
-            print(food_equipment_form.errors)
             return redirect(request.META.get('HTTP_REFERER'))
     else:
         return redirect(request.META.get('HTTP_REFERER'))
 
 
-def edit_equipment(request, pk):
-    equipment = get_object_or_404(FoodPrepEquipReq, pk=pk)
-    if request.method == "POST":
-        form = FoodPrepEquipReqForm(request.POST, instance=equipment)
-        if form.is_valid():
-            form.save()
-            return HttpResponse(
-                status=204,
-                headers={
-                    'HX-Trigger': json.dumps({
-                        "equipmentListChanged": None,
-                        "showMessage": f"{equipment.food_prep_equipment} updated."
-                    })
-                }
-            )
-    else:
-        form = FoodPrepEquipReqForm(instance=equipment)
-    return render(request, 'equipmentregistration/equipment_form_partial.html', {
-        'form': form,
-        'equipment': equipment,
-    })
-
-
 @require_POST
 def remove_equipment(request, parent_id, id):
-    print("got to delete function")
     template = 'stallregistration/equipment_inline_partial.html'
     equipment = get_object_or_404(FoodPrepEquipReq, pk=id)
     equipment.delete()
@@ -808,11 +815,9 @@ def comments_view_add (request):
         })
     elif request.method == 'POST':
         # comment has been added
-        print('Got to the POST section in the comment_view_add view')
         replyform = CommentReplyForm(request.POST or None)
         commentform = RegistrationCommentForm(request.POST or None)
         if commentform.is_valid():
-            print('Got to the create comment in the comment_view_add view')
             # normal comment
             # create comment object but do not save to database
             new_comment = commentform.save(commit=False)
@@ -830,7 +835,6 @@ def comments_view_add (request):
                     commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
             return redirect(request.META.get('HTTP_REFERER'))
         if replyform.is_valid():
-            print('Got to the create reply in the comment_view_add view')
             parent_obj = None
             # get parent comment id from hidden input
             try:

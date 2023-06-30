@@ -5,38 +5,53 @@
 
 {% block body %}
 <div class="container">
-  <div class="px-5 my-5 text-center">
+  <div class="row">
+    <div class="px-5 my-5 text-center">
       <h1>Create Food Registration</h1>
+    </div>
+    <hr>
   </div>
-  <form method="post">
-    {% csrf_token %}
-    {{ food_form.as_p }}
-    <input type="submit" class="btn btn-primary" value="Save" >
-  </form>
-  <hr>
-  <h3>Equipment</h3>
-  {% include 'stallregistration/equipment_inline_partial.html' %}
-    <button class="btn btn-outline-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEquipmentModal">Add Equipment</button>
+  <div class="row">
+    <div class="col-md-6">
+      <form method="post">
+        {% csrf_token %}
+        {{ food_form.as_p }}
+        <input type="submit" class="btn btn-primary" value="Save" >
+        <a type="button" class="mt-2 ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+      </form>
+      <hr>
+      <h3>Equipment</h3>
+      <div class="alert alert-primary" role="alert">
+        You need to provide details of your gas and electirical food equipment.  Please use the Add Equipment button below to list these items.
+      </div>
+      {% include 'stallregistration/equipment_inline_partial.html' %}
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addEquipmentModal">Add Equipment</button>
 
-</div>
-<!-- Add Food Equipment modal-->
-<div class="modal fade" tabindex="-1" id="addEquipmentModal" aria-labelledby="addEquipmentModalLabel" aria-hidden="true">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Complete Equipment Form</h5>
-        <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    </div>
+    <!-- Add Food Equipment modal-->
+    <div class="modal fade" tabindex="-1" id="addEquipmentModal" aria-labelledby="addEquipmentModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Complete Equipment Form</h5>
+            <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <form hx-post="{% url 'registration:add-food-prep-equipment' %}"  hx-target='#equipment-list'>
+              {% csrf_token %}
+              {{ equipment_form.as_p }}
+              <!-- Hidden input for parent foodregistration.id -->
+              <input type="text" name="food_registration_id" value="{{ foodregistration.id }}">
+              <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Equipment</button>
+              <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </form>
+          </div>
+        </div>
       </div>
-      <div class="modal-body">
-        <form action="{% url 'registration:add-food-prep-equipment' %}" method="POST">
-          {% csrf_token %}
-          {{ equipment_form.as_p }}
-          <!-- Hidden input for parent foodregistration.id -->
-          <input type="text" name="food_registration_id" value="{{ foodregistration.id }}">
-          <button type="submit" class="btn btn-primary">Save Equipment</button>
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </form>
-      </div>
+    </div>
+    <div class="col-md-6">
+      <h4>Comments</h4>
+      {% include 'stallregistration/registration_comments_filter.html' %}
     </div>
   </div>
 </div>

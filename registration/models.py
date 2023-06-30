@@ -387,10 +387,10 @@ class FoodRegistration(models.Model):
         blank=True,
         null=True
     )
-    food_source = models.TextField()
+    food_source = models.TextField(default=False)
     food_storage_prep = models.TextField()
     has_food_prep = models.BooleanField(default=False)
-    food_storage_prep_method = models.TextField()
+    food_storage_prep_method = models.TextField(default=False)
     hygiene_methods = models.TextField()
 
     class Meta:
