@@ -387,11 +387,12 @@ class FoodRegistration(models.Model):
         blank=True,
         null=True
     )
-    food_source = models.TextField(default=False)
+    food_source = models.TextField(blank=True, null=True)
     food_storage_prep = models.TextField()
-    has_food_prep = models.BooleanField(default=False)
-    food_storage_prep_method = models.TextField(default=False)
+    has_food_prep = models.BooleanField(blank=True, null=True)
+    food_storage_prep_method = models.TextField(blank=True, null=True)
     hygiene_methods = models.TextField()
+    is_valid = models.BooleanField(blank=True, null=True)
 
     class Meta:
         verbose_name = "foodregistration"
@@ -402,7 +403,7 @@ class FoodRegistration(models.Model):
         return self.name
 
     def get_absolute_url(self):
-        return reverse("registration:foodregistration-detail", kwargs={"id": self.id})
+        return reverse("registration:food-registration", kwargs={"id": self.id})
 
     def get_hx_url(self):
         return reverse("registration:foodregistration-hx-detail", kwargs={"id": self.id})

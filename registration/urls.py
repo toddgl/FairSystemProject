@@ -22,7 +22,6 @@ from registration.views import (
     myfair_dashboard_view,
     archive_comments,
     comments_view_add,
-    food_equipment_update_hx_view,
 )
 
 app_name = 'registration'
@@ -51,6 +50,4 @@ urlpatterns = [
     path('foodequipment/add', add_food_prep_equipment, name='add-food-prep-equipment'),
     path('foodequipment/remove/<int:parent_id>/<int:id>/', remove_equipment, name='remove-equipment'),
     path('registration/comment/<int:pk>/',  archive_comments, name='archive'),
-    path("hx/<int:parent_id>/equipment/<int:id>/", food_equipment_update_hx_view, name='hx-equipment-detail'),
-    path("hx/<int:parent_id>/equipment/", food_equipment_update_hx_view, name='hx-equipment-create'),
 ]
