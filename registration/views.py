@@ -17,6 +17,9 @@ from django.views.generic import (
     ListView,
     UpdateView,
 )
+from accounts.models import(
+    CustomUser
+)
 
 from fairs.models import (
     Fair,
@@ -210,13 +213,13 @@ def stall_registration_create(request):
         site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(
             inventory_item__item_name=siteallocation.event_site.site.site_size).price
         total_cost = site_charge
-        registrationform = StallRegistrationCreateForm(request.POST or None,
+        registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
                                                        initial={'fair': fair_id, 'site_size': site_size})
         allocation_item = siteallocation
     else:
         current_fair = Fair.currentfairmgr.all().last()
         fair_id = current_fair.id
-        registrationform = StallRegistrationCreateForm(request.POST or None, initial={'fair': fair_id})
+        registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None, initial={'fair': fair_id})
         allocation_item = None
         total_cost = None
 
@@ -317,7 +320,7 @@ def stall_registration_update_view(request, pk):
 
     obj = get_object_or_404(StallRegistration, id=pk)
     total_cost = obj.total_charge
-    registrationform = StallRegistrationUpdateForm(request.POST or None, instance=obj)
+    registrationform = StallRegistrationUpdateForm(request.POST, request.FILES, instance=obj)
     siteallocation = SiteAllocation.currentallocationsmgr.filter(stall_registration=pk).first()
     comment_filter_message= 'Showing current comments of the current fair'
     commentfilterform = CommentFilterForm(request.POST or None)
@@ -610,7 +613,7 @@ def food_registration_create_view(request, pk):
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     foodregistration = get_object_or_404(FoodRegistration, registration=pk)
-    food_form = FoodRegistrationForm(request.POST or None, instance=foodregistration)
+    food_form = FoodRegistrationForm(request.POST, request.FILES or None, instance=foodregistration)
     equipment_form = FoodPrepEquipReqForm(request.POST or None)
     equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=foodregistration.id)
     if equipment_list:
@@ -655,7 +658,7 @@ def food_registration_update_view(request, id=None):
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     obj = get_object_or_404(FoodRegistration, id=id)
-    form = FoodRegistrationForm(request.POST or None, instance=obj)
+    form = FoodRegistrationForm(request.POST, request.FILES, instance=obj)
     context = {
         "form": form,
         "object": obj,
@@ -691,7 +694,7 @@ def equipment_list(request):
 
 def add_food_prep_equipment(request):
     template = 'stallregistration/equipment_inline_partial.html'
-    food_equipment_form = FoodPrepEquipReqForm(request.POST or None)
+    food_equipment_form = FoodPrepEquipReqForm(request.POST, request.FILES or None)
     if request.htmx:
         if food_equipment_form.is_valid():
             food_registration_obj = None
@@ -734,17 +737,30 @@ def remove_equipment(request, parent_id, id):
 
 def comments_view_add (request):
     """
-    Separation of the stallholder comments view and add code that just updats the comments displayed based on the htmx
+    Separation of the stallholder comments view and add code that just updates the comments displayed based on the htmx
     filterform plus the ability to create new comments and reply to existing ones
     """
+    stallholder_id = None
     template = 'stallregistration/registration_comments.html'
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    if request.session.get('stallholder_id'):
+        stallholder_id = request.session['stallholder_id']
+        comments = RegistrationComment.objects.filter(stallholder=stallholder_id, is_archived=False,
+                                                  convener_only_comment=False, comment_parent__isnull=True,
+                                                  fair=current_fair.id)
+    else:
+        comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False,
+                                                  convener_only_comment=False, comment_parent__isnull=True,
+                                                  fair=current_fair.id)
     if request.htmx:
-        comments = RegistrationComment.objects.filter(stallholder=request.user, convener_only_comment=False,
+        if stallholder_id:
+            comments = RegistrationComment.objects.filter(stallholder=stallholder_id,convener_only_comment=False,
+                                                          comment_parent__isnull=True)
+        else:
+            comments = RegistrationComment.objects.filter(stallholder=request.user, convener_only_comment=False,
                                                       comment_parent__isnull=True)
         if commentfilterform.is_valid():
             archive_flag = commentfilterform.cleaned_data['is_archived']
@@ -790,7 +806,11 @@ def comments_view_add (request):
             # create comment object but do not save to database
             new_comment = commentform.save(commit=False)
             # assign stallholder to the comment
-            new_comment.stallholder = request.user
+            if stallholder_id:
+                stallholder = CustomUser.objects.get(id=stallholder_id)
+                new_comment.stallholder = stallholder
+            else:
+                new_comment.stallholder = request.user
             # assign user to created.by
             new_comment.created_by = request.user
             # assign current fair to fair
@@ -889,3 +909,29 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
     return render(request, "stallregistration/delete.html", context)
 
 
+def stall_registration_detailview(request, id):
+    """
+    Display the details of the stall and food registration data provided by the stallholder
+    """
+    template = "stallregistration/stall_registration_detail.html"
+    comment_filter_message= 'Showing current comments of the current fair'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    current_fair = Fair.currentfairmgr.all().last()
+    stall_registration = StallRegistration.objects.get(id=id)
+    request.session['stallholder_id'] = stall_registration.stallholder.id
+    comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    context = {
+        "stall_data" : stall_registration,
+        'commentfilterform': commentfilterform,
+        'comments': comments,
+        'commentform': commentform,
+        'replyform': replyform,
+        'comment_filter': comment_filter_message
+    }
+    if FoodRegistration.objects.filter(registration=id).exists():
+        context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
+        context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
+
+    return TemplateResponse(request, template, context)

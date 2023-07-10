@@ -372,7 +372,7 @@ class FoodRegistration(models.Model):
     )
     food_display_method = models.TextField()
     has_food_certificate = models.BooleanField(default=False)
-    food_registration_certificate = models.FileField(upload_to='media/food_certificates', blank=True)
+    food_registration_certificate = models.FileField(upload_to='food_certificates/' + str(current_year), blank=True)
     certificate_expiry_date = models.DateField(blank=True, null=True)
     food_fair_consumed = models.BooleanField(default=False)
     food_prep_equipment = models.ManyToManyField(

@@ -1,0 +1,150 @@
+<!--registration/templates/stallregistration/stall_registration_detail.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+<div class="container">
+  <div class="row">
+    <div class="px-5 my-5 text-center">
+      <h1>{{ stall_data.fair }} Registration Detail for {{ stall_data.stallholder }}</h1>
+    </div>
+    <hr>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="col-12 col-md-12 col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Stall Registration Detail</h4>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Registration ID:</strong> {{ stall_data.id }}</li>
+            <li class="list-group-item"><strong>Status:</strong> {{ stall_data.booking_status }}</li>
+            <li class="list-group-item"><strong>Stall Manager:</strong> {{ stall_data.stall_manager_name }}</li>
+            <li class="list-group-item"><strong>Vehicle Registration:</strong> {{ stall_data.manager_vehicle_registration}}</li>
+            <li class="list-group-item"><strong>Stall Category:</strong> {{ stall_data.stall_category }}</li>
+            <li class="list-group-item"><strong>Site Size:</strong> {{ stall_data.site_size }}</li>
+            <li class="list-group-item"><strong>Description:</strong> {{ stall_data.stall_description }}</li>
+            <li class="list-group-item"><strong>Products on Site:</strong> {{ stall_data.products_on_site }}</li>
+            <li class="list-group-item"><strong>Is selling Food:</strong> {{ stall_data.selling_food|yesno:"Yes,No" }}</li>
+            <hr>
+          </ul>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Power Required:</strong> {{ stall_data.power_required|yesno:"Yes,No" }}</li>
+            {% if stall_data.trestle_required %}
+              <li class="list-group-item"><strong>Number of Trestles Required:</strong> {{ stall_data.trestle_quantity }}</li>
+            {% endif %}
+            <hr>
+          </ul>
+          {% if stall_data.vehicle_on_site %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Vehicle Width:</strong> {{ stall_data.vehicle_width }}</li>
+            <li class="list-group-item"><strong>Vehicle Length:</strong> {{ stall_data.vehicle_length }}</li>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal"> Click to view vehicle image</button>
+            <hr>
+          </ul>
+          {% endif %}
+        </div>
+      </div>
+      <hr>
+      {% if stall_data.selling_food %}
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Food Registration Detail</h4>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Food Stall Type:</strong> {{ food_data.food_stall_type }}</li>
+            <li class="list-group-item"><strong>Is Food Consumed at the Fair:</strong> {{ food_data.food_fair_consummed|yesno:"Yes,No" }}</li>
+            <li class="list-group-item"><strong>Food Display:</strong> {{ food_data.food_display_method }}</li>
+            <li class="list-group-item"><strong>Food Source:</strong> {{ food_data.food_source }}</li>
+            <li class="list-group-item"><strong>Food Storage:</strong> {{ food_data.food_storage_prep_method }}</li>
+            <li class="list-group-item"><strong>Equipment Storage:</strong> {{ food_data.food_storage_prep }}</li>
+            <li class="list-group-item"><strong>Hygene:</strong> {{ food_data.hygiene_methods }}</li>
+            <hr>
+          </ul>
+          {% if food_data.has_food_certificate %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Certificate expiry date:</strong> {{ food_data.certificate_expiry_date }}</li>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#certModal"> Click to view food certificate</button>
+            <hr>
+          </ul>
+          {% endif %}
+        </div>
+        {% if equipment_list %}
+        <hr>
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Food Equipment</h4>
+          </div>
+          <table class="table table-striped">
+            <thead>
+            <tr>
+              <th scope="col">Quantity</th>
+              <th scope="col">Name</th>
+              <th scope="col">Powered</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for equipment in equipment_list %}
+            <tr>
+              <td>{{ equipment.equipment_quantity }}</td>
+              <td>{{ equipment.food_prep_equipment.equipment_name }}</td>
+              <td>{{ equipment.get_how_powered_display }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      {% endif %}
+      <hr>
+      <div>
+        <a type="button" class="ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h4>Comments</h4>
+      {% include 'stallregistration/registration_comments_filter.html' %}
+    </div>
+  </div>
+</div>
+<!--Vehicle Image Bootstrap modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <!-- Modal heading -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Vehicle Image</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+                </button>
+            </div>
+            <!-- Modal body with image -->
+            <div class="modal-body">
+              {% if stall_data.vehicle_image  %}
+                <img src="{{ stall_data.vehicle_image.url }}" />
+              {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<!--Food Certificate Bootstrap modal -->
+<div class="modal fade" id="certModal" tabindex="-1" role="dialog" aria-labelledby="certModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="certModalLabel">Vehicle Image</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <!-- Modal body with image -->
+      <div class="modal-body">
+        {% if food_data.food_registration_certificate  %}
+        <img src="{{ food_data.food_registration_certificate.url }}" />
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
