@@ -32,6 +32,7 @@ from registration.models import (
     RegistrationComment,
     CommentType,
 )
+import magic
 
 
 class FoodPrepEquipmentCreationForm(ModelForm):
@@ -365,6 +366,15 @@ class StallRegistrationCreateForm(ModelForm):
         }),
         }
 
+    def clean_vehicle_image(self):
+        thefile = self.cleaned_data.get("vehicle_image", False)
+        if thefile is not None:
+            mime = magic.from_buffer(thefile.read(), mime=True)
+            if not mime == 'image/png' or not mime == 'image/jpeg':
+                raise forms.ValidationError('File must be a png or jpg image')
+            else:
+                return thefile
+
     def clean(self):
         cleaned_data = super().clean()
         stall_category = cleaned_data.get('stall_category')
@@ -506,6 +516,15 @@ class StallRegistrationUpdateForm(ModelForm):
             }),
         }
 
+    def clean_vehicle_image(self):
+        thefile = self.cleaned_data.get("vehicle_image", False)
+        if thefile is not None:
+            mime = magic.from_buffer(thefile.read(), mime=True)
+            if not mime == 'image/png' or not mime == 'image/jpeg':
+                raise forms.ValidationError('File must be a png or jpg image')
+            else:
+                return thefile
+
     def clean(self):
         cleaned_data = super().clean()
         stall_category = cleaned_data.get('stall_category')
@@ -612,6 +631,15 @@ class FoodRegistrationForm(ModelForm):
             }),
             'food_registration_certificate': FileInput(),
         }
+
+    def clean_food_registration_certificate(self):
+        thefile = self.cleaned_data.get("food_registration_certificate", False)
+        mime = magic.from_buffer(thefile.read(), mime=True)
+        print(mime)
+        if not mime == 'application/pdf' or not mime == 'image/png' or not mime == 'image/jpeg':
+            raise forms.ValidationError('File must be a pdf, png or jpg document')
+        else:
+            return thefile
 
 
 class FoodPrepEquipReqForm(ModelForm):

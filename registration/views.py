@@ -1,7 +1,6 @@
 # registration/views.py
 import datetime
 import decimal
-import json
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -315,64 +314,65 @@ def get_registration_costs(fair_id, request):
 @login_required
 @permission_required('registration.change_stallregistration', raise_exception=True)
 def stall_registration_update_view(request, pk):
-    template = 'stallregistration/stallregistration_update.html'
+    template_name = 'stallregistration/stallregistration_update.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
-
-    obj = get_object_or_404(StallRegistration, id=pk)
-    total_cost = obj.total_charge
-    registrationform = StallRegistrationUpdateForm(request.POST, request.FILES, instance=obj)
-    siteallocation = SiteAllocation.currentallocationsmgr.filter(stall_registration=pk).first()
-    comment_filter_message= 'Showing current comments of the current fair'
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
-    # list of active parent comments
-    current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    comment_filter_message = 'Showing current comments of the current fair'
 
+    obj = get_object_or_404(StallRegistration, id=pk)
+    total_cost = obj.total_charge
+    stallholder = obj.stallholder
+    registration_fair = obj.fair
+    if SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration=pk).exists():
+        siteallocation = SiteAllocation.currentallocationsmgr.get(stallholder_id=stallholder.id, stall_registration=pk)
+    else:
+        siteallocation = None
+
+    # list of active parent comments
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=registration_fair.id)
+    registrationform = StallRegistrationUpdateForm(instance=obj)
+
+    context = {
+        'billing': total_cost,
+        'registrationform': registrationform,
+        'commentfilterform': commentfilterform,
+        'commentform': commentform,
+        'replyform': replyform,
+        'filter': comment_filter_message,
+        'comments': comments,
+    }
     if siteallocation:
         allocation_item = siteallocation
-        fair_id = siteallocation.event_site.event.fair.id
-        context = {
-            'allocation_item': allocation_item,
-            'billing': total_cost,
-            'registrationform': registrationform,
-            'commentfilterform': commentfilterform,
-            'commentform': commentform,
-            'replyform': replyform,
-            'filter': comment_filter_message,
-            'comments': comments,
-        }
-    else:
-        current_fair = Fair.currentfairmgr.all().last()
-        fair_id = current_fair.id
-        context = {
-            'billing': total_cost,
-            'registrationform': registrationform,
-            'commentfilterform': commentfilterform,
-            'commentform': commentform,
-            'replyform': replyform,
-            'filter': comment_filter_message,
-            'comments': comments,
-        }
+        context['allocation_item'] = allocation_item
 
     if request.htmx:
-        template = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(fair_id, request)
+        template_name = 'stallregistration/stallregistration_partial.html'
+        total_cost = get_registration_costs(registration_fair.id, request)
+        return TemplateResponse(request, template_name, {
+            'billing': total_cost,
+            'registrationform': registrationform,
+        })
     elif request.method == 'POST':
-        total_cost = get_registration_costs(fair_id, request)
+        total_cost = get_registration_costs(registration_fair.id, request)
+        registrationform = StallRegistrationUpdateForm(request.POST, request.FILES or None)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
+            stall_registration.id = pk
+            stall_registration.stallholder = stallholder
             stall_registration.total_charge = total_cost
             stall_registration.save()
             if stall_registration.selling_food:
                 return redirect('registration:food-registration', stall_registration.id)
             else:
                 return HttpResponseRedirect(success_url)
+        else:
+            print(
+                registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+            return TemplateResponse(request, template_name, context)
 
-    filter_message = 'Showing current comments of the current fair'
-    context['filter'] = filter_message
-    return TemplateResponse(request, template, context)
+    return TemplateResponse(request, template_name, context)
 
 
 class FoodPrepEquipmentCreateView(PermissionRequiredMixin, CreateView):
@@ -587,7 +587,7 @@ def myfair_dashboard_view(request):
 
 def archive_comments(request, pk):
     """
-    Function called from the stall holder comments page to set
+    Function called from the stallholder comments page to set
     the is_archived flag on the parent comments instance and its sibling replies
     """
     # set the is_archived flag to false on the parent comment
@@ -613,7 +613,7 @@ def food_registration_create_view(request, pk):
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     foodregistration = get_object_or_404(FoodRegistration, registration=pk)
-    food_form = FoodRegistrationForm(request.POST, request.FILES or None, instance=foodregistration)
+    food_form = FoodRegistrationForm(request.POST, request.FILES, instance=foodregistration)
     equipment_form = FoodPrepEquipReqForm(request.POST or None)
     equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=foodregistration.id)
     if equipment_list:

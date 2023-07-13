@@ -141,7 +141,11 @@
       <!-- Modal body with image -->
       <div class="modal-body">
         {% if food_data.food_registration_certificate  %}
-        <img src="{{ food_data.food_registration_certificate.url }}" />
+          {% if food_date.cert_filetype == "image" %}
+            <img src="{{ food_data.food_registration_certificate.url }}" />
+          {% else %}
+            <embed src="{{ food_data.food_registration_certificate.url }}" frameborder="0" width="100%" height="700px">
+          {% endif %}
         {% endif %}
       </div>
     </div>

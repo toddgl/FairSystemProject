@@ -15,6 +15,8 @@ from fairs.models import (
     InventoryItem
 )
 
+import magic
+
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
 # Global Variables
@@ -393,6 +395,7 @@ class FoodRegistration(models.Model):
     food_storage_prep_method = models.TextField(blank=True, null=True)
     hygiene_methods = models.TextField()
     is_valid = models.BooleanField(blank=True, null=True)
+    cert_filetype = models.CharField(default="image",blank=True,max_length=50)
 
     class Meta:
         verbose_name = "foodregistration"
@@ -405,9 +408,6 @@ class FoodRegistration(models.Model):
     def get_absolute_url(self):
         return reverse("registration:food-registration", kwargs={"id": self.id})
 
-    def get_hx_url(self):
-        return reverse("registration:foodregistration-hx-detail", kwargs={"id": self.id})
-
     def get_edit_url(self):
         return reverse("registration:foodregistration-update", kwargs={"id": self.id})
 
@@ -416,6 +416,15 @@ class FoodRegistration(models.Model):
 
     def get_equipment_children(self):
         return self.foodprepequiprequired_set.all()
+
+    def save(self, *args ,**kwargs):
+        # Identify whether the certificated uplaoded is an image or pdf
+        cert_file=self.food_registration_certificate.read(1000)
+        self.food_registration_certificate.seek(0)
+        mime= magic.from_buffer(cert_file,mime=True)
+        if "pdf" in mime :
+            self.cert_filetype = "pdf"
+        super(FoodRegistration,self).save(*args,**kwargs)
 
 class FoodPrepEquipReq(models.Model):
     """
