@@ -356,7 +356,7 @@ def stall_registration_update_view(request, pk):
         })
     elif request.method == 'POST':
         total_cost = get_registration_costs(registration_fair.id, request)
-        registrationform = StallRegistrationUpdateForm(request.POST, request.FILES or None)
+        registrationform = StallRegistrationUpdateForm(request.POST, request.FILES or None, instance=obj)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
             stall_registration.id = pk
@@ -605,15 +605,17 @@ def archive_comments(request, pk):
 
 @login_required
 def food_registration_create_view(request, pk):
-    comment_filter_message= 'Showing current comments of the current fair'
+    template_name = 'stallregistration/food_registration.html'
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
+    comment_filter_message= 'Showing current comments of the current fair'
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     foodregistration = get_object_or_404(FoodRegistration, registration=pk)
-    food_form = FoodRegistrationForm(request.POST, request.FILES, instance=foodregistration)
+    food_form = FoodRegistrationForm(instance=foodregistration)
     equipment_form = FoodPrepEquipReqForm(request.POST or None)
     equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=foodregistration.id)
     if equipment_list:
@@ -641,12 +643,13 @@ def food_registration_create_view(request, pk):
         }
 
     if request.method == 'POST':
+        food_form = FoodRegistrationForm(request.POST, request.FILES or None, instance=foodregistration)
         if food_form.is_valid():
             object=food_form.save(commit=False)
             object.is_valid = True
             object.save()
-            return redirect(request.META.get('HTTP_REFERER'))
-    return render(request, 'stallregistration/food_registration.html', context)
+            return HttpResponseRedirect(success_url)
+    return TemplateResponse(request, template_name, context)
 
 
 @login_required

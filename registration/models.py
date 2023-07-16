@@ -294,6 +294,18 @@ class StallRegistration(models.Model):
     def booking_id(self):
         return self.id
 
+    def save(self, *args ,**kwargs):
+        # Identify whether a new file has been uploaded
+        if self.vehicle_image:
+            # Delete existing file
+            try:
+                this = StallRegistration.objects.get(id=self.id)
+                if this.vehicle_image != self.vehicle_image:
+                    this.vehicle_image.delete()
+            except:
+                pass
+            super(StallRegistration,self).save(*args,**kwargs)
+
 
 class CommentType(models.Model):
     """
@@ -418,13 +430,21 @@ class FoodRegistration(models.Model):
         return self.foodprepequiprequired_set.all()
 
     def save(self, *args ,**kwargs):
-        # Identify whether the certificated uplaoded is an image or pdf
-        cert_file=self.food_registration_certificate.read(1000)
-        self.food_registration_certificate.seek(0)
-        mime= magic.from_buffer(cert_file,mime=True)
-        if "pdf" in mime :
-            self.cert_filetype = "pdf"
-        super(FoodRegistration,self).save(*args,**kwargs)
+        # Identify whether the certificated uploaded is an image or pdf
+        if self.food_registration_certificate:
+            # Delete existing file
+            try:
+                this = FoodRegistration.objects.get(id=self.id)
+                if this.food_registration_certificate != self.food_registration_certificate:
+                    this.food_registration_certificate.delete()
+            except:
+                pass
+            cert_file=self.food_registration_certificate.read(1000)
+            self.food_registration_certificate.seek(0)
+            mime= magic.from_buffer(cert_file,mime=True)
+            if "pdf" in mime :
+                self.cert_filetype = "pdf"
+            super(FoodRegistration,self).save(*args,**kwargs)
 
 class FoodPrepEquipReq(models.Model):
     """
