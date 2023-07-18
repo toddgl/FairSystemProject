@@ -206,19 +206,19 @@ def stall_registration_create(request):
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=stallholder.id,  is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     comment_filter_message = 'Showing current comments of the current fair'
+    print('Got to the stall registration create')
     if siteallocation:
         fair_id = siteallocation.event_site.event.fair.id
         site_size = siteallocation.event_site.site.site_size_id
         site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(
             inventory_item__item_name=siteallocation.event_site.site.site_size).price
         total_cost = site_charge
-        registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
-                                                       initial={'fair': fair_id, 'site_size': site_size})
+        registrationform = StallRegistrationCreateForm( initial={'fair': fair_id, 'site_size': site_size})
         allocation_item = siteallocation
     else:
         current_fair = Fair.currentfairmgr.all().last()
         fair_id = current_fair.id
-        registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None, initial={'fair': fair_id})
+        registrationform = StallRegistrationCreateForm(initial={'fair': fair_id})
         allocation_item = None
         total_cost = None
 
@@ -233,6 +233,12 @@ def stall_registration_create(request):
         })
     elif request.method == 'POST':
         total_cost = get_registration_costs(fair_id, request)
+        if siteallocation:
+            registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
+                                                       initial={'fair': fair_id, 'site_size': site_size})
+        else:
+            registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
+                                                           initial={'fair': fair_id})
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
@@ -364,6 +370,14 @@ def stall_registration_update_view(request, pk):
             stall_registration.total_charge = total_cost
             stall_registration.save()
             if stall_registration.selling_food:
+                new_instance = get_object_or_404(StallRegistration, id=pk)
+                try:
+                    # get Food Registration object
+                    obj = FoodRegistration.objects.get(registration=new_instance)
+                except FoodRegistration.DoesNotExist:  #f FoodRegistration object does not exist
+                    # create FoodRegistration object
+                    obj = FoodRegistration(registration=new_instance, has_food_certificate=False, food_fair_consumed=False, has_food_prep=False, is_valid=False)
+                    obj.save()
                 return redirect('registration:food-registration', stall_registration.id)
             else:
                 return HttpResponseRedirect(success_url)

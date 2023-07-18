@@ -384,15 +384,16 @@ class FoodRegistration(models.Model):
         blank=True,
         null=True
     )
-    food_display_method = models.TextField()
-    has_food_certificate = models.BooleanField(default=False)
-    food_registration_certificate = models.FileField(upload_to='food_certificates/' + str(current_year), blank=True)
+    food_display_method = models.TextField(blank=True, null=True)
+    has_food_certificate = models.BooleanField(null=True, default=False)
+    food_registration_certificate = models.FileField(blank=True, null=True, upload_to='food_certificates/' + str(current_year))
     certificate_expiry_date = models.DateField(blank=True, null=True)
-    food_fair_consumed = models.BooleanField(default=False)
+    food_fair_consumed = models.BooleanField(null=True, default=False)
     food_prep_equipment = models.ManyToManyField(
         FoodPrepEquipment,
         related_name='food_registration',
         through='FoodPrepEquipReq',
+        blank=True,
     )
     food_stall_type = models.ForeignKey(
         FoodSaleType,
@@ -402,12 +403,12 @@ class FoodRegistration(models.Model):
         null=True
     )
     food_source = models.TextField(blank=True, null=True)
-    food_storage_prep = models.TextField()
+    food_storage_prep = models.TextField(blank=True, null=True)
     has_food_prep = models.BooleanField(blank=True, null=True)
     food_storage_prep_method = models.TextField(blank=True, null=True)
-    hygiene_methods = models.TextField()
+    hygiene_methods = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField(blank=True, null=True)
-    cert_filetype = models.CharField(default="image",blank=True,max_length=50)
+    cert_filetype = models.CharField(default="image",blank=True, null=True, max_length=50)
 
     class Meta:
         verbose_name = "foodregistration"
@@ -508,12 +509,3 @@ def create_food_registration(sender, instance, created, **kwargs):
     if created and instance.selling_food:
         FoodRegistration.objects.create(registration=instance)
 
-
-@receiver(pre_save, sender=StallRegistration)
-def remove_food_registration(sender, instance, **kwargs):
-    if instance.pk:
-        original_instance = StallRegistration.objects.get(pk=instance.pk)
-        if not original_instance.selling_food and instance.selling_food:
-            FoodRegistration.objects.create(registration=instance)
-        elif original_instance.selling_food and not instance.selling_food:
-            FoodRegistration.objects.filter(registration=instance).delete()
