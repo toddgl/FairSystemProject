@@ -33,6 +33,7 @@ from registration.models import (
     FoodRegistration,
     FoodPrepEquipReq,
     RegistrationComment,
+    AdditionalSiteRequirement,
 )
 from .forms import (
     FoodPrepEquipmentCreationForm,
@@ -49,6 +50,7 @@ from .forms import (
     CommentFilterForm,
     CommentReplyForm,
     StallRegistrationFilterForm,
+    AdditionalSiteReqForm,
 )
 
 # Global Variables
@@ -322,6 +324,7 @@ def get_registration_costs(fair_id, request):
 def stall_registration_update_view(request, pk):
     template_name = 'stallregistration/stallregistration_update.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
+    additionalsiteform = AdditionalSiteReqForm(request.POST or None)
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
@@ -335,14 +338,15 @@ def stall_registration_update_view(request, pk):
         siteallocation = SiteAllocation.currentallocationsmgr.get(stallholder_id=stallholder.id, stall_registration=pk)
     else:
         siteallocation = None
-
     # list of active parent comments
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=registration_fair.id)
     registrationform = StallRegistrationUpdateForm(instance=obj)
 
     context = {
         'billing': total_cost,
+        'stallregistration': obj,
         'registrationform': registrationform,
+        'additionalsiteform' : additionalsiteform,
         'commentfilterform': commentfilterform,
         'commentform': commentform,
         'replyform': replyform,
@@ -352,6 +356,12 @@ def stall_registration_update_view(request, pk):
     if siteallocation:
         allocation_item = siteallocation
         context['allocation_item'] = allocation_item
+
+    # Additional Sites add and display
+    addsites_form = AdditionalSiteReqForm(request.POST or None)
+    additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=obj)
+    if additional_sites:
+        context['site_requirement_list'] = additional_sites
 
     if request.htmx:
         template_name = 'stallregistration/stallregistration_partial.html'
@@ -709,6 +719,32 @@ def equipment_list(request):
     })
 
 
+def add_site_requirement(request, pk):
+    template = 'stallregistration/stallregistration_inline_partial.html'
+    site_requirement_form = AdditionalSiteReqForm(request.POST or None)
+    if request.htmx:
+        if site_requirement_form.is_valid():
+            stall_registration_obj= StallRegistration.objects.get(id=pk)
+            # if stall registration object exist
+            if stall_registration_obj:
+                # create site requirement object
+                site_requirement = site_requirement_form.save(commit=False)
+                site_requirement.stall_registration = stall_registration_obj
+                # save
+                site_requirement.save()
+            else:
+                print('No stall registration object found for ID:', pk)
+            site_requirement_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=pk)
+            return TemplateResponse(request, template, {
+                'site_requirement_list': site_requirement_list,
+            })
+        else:
+            return redirect(request.META.get('HTTP_REFERER'))
+    else:
+        return redirect(request.META.get('HTTP_REFERER'))
+
+
+
 def add_food_prep_equipment(request):
     template = 'stallregistration/equipment_inline_partial.html'
     food_equipment_form = FoodPrepEquipReqForm(request.POST, request.FILES or None)
@@ -739,6 +775,17 @@ def add_food_prep_equipment(request):
             return redirect(request.META.get('HTTP_REFERER'))
     else:
         return redirect(request.META.get('HTTP_REFERER'))
+
+
+@require_POST
+def remove_site_requirement(request, parent_id, id):
+    template = 'stallregistration/stallregistration_inline_partial.html'
+    site = get_object_or_404(AdditionalSiteRequirement, pk=id)
+    site.delete()
+    site_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=int(parent_id))
+    return TemplateResponse(request, template, {
+        'site_requirement_list': site_list,
+    })
 
 
 @require_POST
@@ -947,6 +994,9 @@ def stall_registration_detailview(request, id):
         'replyform': replyform,
         'comment_filter': comment_filter_message
     }
+    if stall_registration.multi_site:
+        context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
+
     if FoodRegistration.objects.filter(registration=id).exists():
         context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)

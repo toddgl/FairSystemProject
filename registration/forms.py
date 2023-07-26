@@ -31,6 +31,7 @@ from registration.models import (
     FoodPrepEquipReq,
     RegistrationComment,
     CommentType,
+    AdditionalSiteRequirement,
 )
 import magic
 
@@ -291,11 +292,13 @@ class StallRegistrationCreateForm(ModelForm):
             'vehicle_width',
             'vehicle_image',
             'power_required',
+            'multi_site',
             'selling_food'
         ]
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
+            'multi-site': 'Do you want more than a single site with this registration?',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
@@ -358,11 +361,14 @@ class StallRegistrationCreateForm(ModelForm):
                 'hx-post': '.',
                 'hx-target': '#stallregistration_data',
             }),
+            'multi-site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input',
                 'hx-trigger': 'change',
                 'hx-post': '.',
-                'hx-target': '#stallregistration_data',
+                'hx-target': '#stallregistration_data'
         }),
         }
 
@@ -445,11 +451,13 @@ class StallRegistrationUpdateForm(ModelForm):
             'vehicle_width',
             'vehicle_image',
             'power_required',
+            'multi_site',
             'selling_food'
         ]
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
+            'multi-site': 'Do you want more than a single site with this registration?',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
@@ -511,6 +519,9 @@ class StallRegistrationUpdateForm(ModelForm):
                 'hx-trigger': 'change',
                 'hx-post': '.',
                 'hx-target': '#stallregistration_data',
+            }),
+            'multi-site': CheckboxInput(attrs={
+                'class': 'form-check-input'
             }),
             'selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input'
@@ -646,7 +657,6 @@ class FoodRegistrationForm(ModelForm):
             else:
                 return thefile
 
-
 class FoodPrepEquipReqForm(ModelForm):
     """
     Form for populating the junction table between food registration and food preparation equipment
@@ -673,6 +683,39 @@ class FoodPrepEquipReqForm(ModelForm):
         ]
         widgets = {
             'how_powered': RadioSelect(attrs={
+                'style': 'display: inline-block',
+            })
+        }
+        error_messages = {
+            'text': {'required': "You can't have an empty list item"}
+        }
+
+
+class AdditionalSiteReqForm(ModelForm):
+    """
+    Form for populating the AdditionalSiteReq model
+    """
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-control',
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    class Meta:
+        model = AdditionalSiteRequirement
+        exclude = ['stall_registration']
+        fields = [
+            'site_quantity',
+            'site_size',
+            'location_choice'
+        ]
+        widgets = {
+            'location_choice': RadioSelect(attrs={
                 'style': 'display: inline-block',
             })
         }

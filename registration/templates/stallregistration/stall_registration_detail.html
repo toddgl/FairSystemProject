@@ -46,6 +46,32 @@
           </ul>
           {% endif %}
         </div>
+        {% if additional_sites %}
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Additional Sites Required</h4>
+          </div>
+          <table class="table table-striped">
+            <thead>
+            <tr>
+              <th scope="col">Quantity</th>
+              <th scope="col">Site Size</th>
+              <th scope="col">Location</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for site in additional_sites %}
+            <tr>
+              <td>{{ site.site_quantity }}</td>
+              <td>{{ site.site_size }}</td>
+              <td>{{ site.get_location_choice_display }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <hr>
+        {% endif %}
       </div>
       <hr>
       {% if stall_data.selling_food %}

@@ -270,6 +270,7 @@ class StallRegistration(models.Model):
     vehicle_width = models.FloatField(default=0)
     vehicle_length = models.FloatField(default=0)
     vehicle_image = models.ImageField(blank=True, null=True, upload_to='vehicles/' + str(current_year))
+    multi_site = models.BooleanField(default=False)
 
     objects = models.Manager()
     registrationcurrentmgr = RegistrationCurrentManager()
@@ -447,6 +448,57 @@ class FoodRegistration(models.Model):
                 self.cert_filetype = "pdf"
             super(FoodRegistration,self).save(*args,**kwargs)
 
+
+class AdditionalSiteRequirement(models.Model):
+    """
+    Description of a StallRegistration related table that can be used to store additional site requirements
+    over and above the single site that is automatically associiated with the registration
+    """
+    JOINED ="1"
+    SEPARATE="2"
+
+    LOCATION_CHOICE = [
+        (JOINED, _('Joined')),
+        (SEPARATE, _('Separate'))
+    ]
+
+    stall_registration = models.ForeignKey(
+        StallRegistration,
+        on_delete=models.CASCADE,
+        verbose_name='AdditionalSitesRequired',
+        related_name='additional_sites_required',
+        blank=True,
+        null=True
+    )
+    site_size = models.ForeignKey(
+        InventoryItem,
+        related_name='Additional_site_size_requirement',
+        on_delete=models.SET_NULL,
+        null=True
+    )
+    location_choice = models.CharField(
+        choices=LOCATION_CHOICE,
+        max_length=11,
+        default=JOINED,
+    )
+    site_quantity = models.IntegerField(default=1)
+
+
+    class Meta:
+        verbose_name = "addiitionalsiterequired"
+        verbose_name_plural = "addiitionalsiterequirements"
+
+    def get_absolute_url(self):
+        return self.stall_registration.get_absolute_url()
+
+    def get_delete_url(self):
+        kwargs = {
+            "parent_id": self.stall_registration.id,
+            "id": self.id
+        }
+        return reverse("registration:remove-site", kwargs=kwargs)
+
+
 class FoodPrepEquipReq(models.Model):
     """
     Description a junction table joining FoodRegistration with FoodPrepEquipment used to capture whether the equipment
@@ -497,12 +549,6 @@ class FoodPrepEquipReq(models.Model):
         }
         return reverse("registration:remove-equipment", kwargs=kwargs)
 
-    def get_hx_edit_url(self):
-        kwargs = {
-            "parent_id": self.food_registration.id,
-            "id": self.id
-        }
-        return reverse("registration:hx-equipment-detail", kwargs=kwargs)
 
 @receiver(post_save, sender=StallRegistration)
 def create_food_registration(sender, instance, created, **kwargs):

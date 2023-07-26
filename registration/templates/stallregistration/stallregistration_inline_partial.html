@@ -1,0 +1,27 @@
+<!--registration/templates/stallregistration/stallregistration_inline_partial.html -->
+
+<div id='required-site-list'>
+    <div>
+        <table class="table table-striped">
+          <thead>
+            <tr>
+              <th scope="col">Quantity</th>
+              <th scope="col">Site Size</th>
+              <th scope="col">Location</th>
+              <th scope="col"></th>
+            </tr>
+          </thead>
+          <tbody>
+          {% for siterequirement in site_requirement_list %}
+            <tr>
+              <td>{{ siterequirement.site_quantity }}</td>
+              <td>{{ siterequirement.site_size.item_name }}</td>
+              <td>{{ equipment.get_location_choice }}</td>
+              <td><a class = "btn btn-danger" hx-post= '{{ siterequirement.get_delete_url }}' hx-confirm='Are you sure you wish to delete?' hx-trigger='click' href='{{ site_requirement.get_delete_url }}'
+               hx-target='#required-site-list' ><i class="bi bi-trash-fill"></i></a></td>
+            </tr>
+          {% endfor %}
+          </tbody>
+        </table>
+    </div>
+</div>
