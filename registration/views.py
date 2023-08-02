@@ -227,14 +227,14 @@ def stall_registration_create(request):
     if request.htmx:
         fair_id = request.POST.get('fair')
         template_name = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(fair_id, request)
+        total_cost = get_registration_costs(request, fair_id)
         return TemplateResponse(request, template_name, {
             'allocation_item': allocation_item,
             'billing': total_cost,
             'registrationform': registrationform,
         })
     elif request.method == 'POST':
-        total_cost = get_registration_costs(fair_id, request)
+        total_cost = get_registration_costs(request, fair_id)
         if siteallocation:
             registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
                                                        initial={'fair': fair_id, 'site_size': site_size})
@@ -280,9 +280,20 @@ def stall_registration_create(request):
     })
 
 
-def get_registration_costs(fair_id, request):
+def get_registration_costs(request, fair_id, parent_id=None):
     site_size = request.POST.get('site_size')
     stall_category = request.POST.get('stall_category')
+    additional_site_costs = decimal.Decimal(0.00)
+
+    # check to see if this a stall registration update
+    if parent_id:
+        # Check to see if there are additional sites required
+        if AdditionalSiteRequirement.objects.filter(stall_registration_id=parent_id ).exists():
+            additional_site_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=parent_id )
+            for additional_site in additional_site_list:
+                site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=additional_site.site_size.id).price
+                price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=additional_site.site_size.id).price_rate
+                additional_site_costs = price_rate * site_price * additional_site.site_quantity
 
     if stall_category:
         category = StallCategory.objects.get(pk=stall_category)
@@ -315,7 +326,7 @@ def get_registration_costs(fair_id, request):
         power_price = price_rate * power_price
     else:
         power_price = decimal.Decimal(0.00)
-    total_cost = category_price + site_price + total_trestle_cost + power_price
+    total_cost = category_price + site_price + total_trestle_cost + power_price + additional_site_costs
     return total_cost
 
 
@@ -361,17 +372,19 @@ def stall_registration_update_view(request, pk):
     addsites_form = AdditionalSiteReqForm(request.POST or None)
     additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=obj)
     if additional_sites:
+        total_cost = get_registration_costs(request, registration_fair.id, pk)
+        print('Added sites for registration id', pk, 'Total cost of', total_cost)
         context['site_requirement_list'] = additional_sites
 
     if request.htmx:
         template_name = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(registration_fair.id, request)
+        total_cost = get_registration_costs(request, registration_fair.id, pk)
         return TemplateResponse(request, template_name, {
             'billing': total_cost,
             'registrationform': registrationform,
         })
     elif request.method == 'POST':
-        total_cost = get_registration_costs(registration_fair.id, request)
+        total_cost = get_registration_costs(request, registration_fair.id, pk)
         registrationform = StallRegistrationUpdateForm(request.POST, request.FILES or None, instance=obj)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)

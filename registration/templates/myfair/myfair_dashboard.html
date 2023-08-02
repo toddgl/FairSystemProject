@@ -34,6 +34,7 @@
               <li class="list-group-item"><strong>Requiring Trestles:</strong> {{ registration.trestle_required|yesno:"Yes,No" }}</li>
               <li class="list-group-item"><strong>Vehicle on Site:</strong> {{ registration.vehicle_on_site|yesno:"Yes,No" }}</li>
               <li class="list-group-item"><strong>Requiring Power:</strong> {{ registration.power_required|yesno:"Yes,No" }}</li>
+              <li class="list-group-item"><strong>Total Cost:</strong> ${{ registration.total_charge }}</li>
             </ul>
             <div class="card-body">
               <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">

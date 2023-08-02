@@ -28,22 +28,22 @@
             <li class="list-group-item"><strong>Description:</strong> {{ stall_data.stall_description }}</li>
             <li class="list-group-item"><strong>Products on Site:</strong> {{ stall_data.products_on_site }}</li>
             <li class="list-group-item"><strong>Is selling Food:</strong> {{ stall_data.selling_food|yesno:"Yes,No" }}</li>
-            <hr>
           </ul>
+          <hr>
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><strong>Power Required:</strong> {{ stall_data.power_required|yesno:"Yes,No" }}</li>
             {% if stall_data.trestle_required %}
               <li class="list-group-item"><strong>Number of Trestles Required:</strong> {{ stall_data.trestle_quantity }}</li>
             {% endif %}
-            <hr>
           </ul>
+          <hr>
           {% if stall_data.vehicle_on_site %}
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><strong>Vehicle Width:</strong> {{ stall_data.vehicle_width }}</li>
             <li class="list-group-item"><strong>Vehicle Length:</strong> {{ stall_data.vehicle_length }}</li>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal"> Click to view vehicle image</button>
-            <hr>
           </ul>
+          <hr>
           {% endif %}
         </div>
         {% if additional_sites %}
@@ -87,14 +87,14 @@
             <li class="list-group-item"><strong>Food Storage:</strong> {{ food_data.food_storage_prep_method }}</li>
             <li class="list-group-item"><strong>Equipment Storage:</strong> {{ food_data.food_storage_prep }}</li>
             <li class="list-group-item"><strong>Hygene:</strong> {{ food_data.hygiene_methods }}</li>
-            <hr>
           </ul>
+          <hr>
           {% if food_data.has_food_certificate %}
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><strong>Certificate expiry date:</strong> {{ food_data.certificate_expiry_date }}</li>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#certModal"> Click to view food certificate</button>
-            <hr>
           </ul>
+          <hr>
           {% endif %}
         </div>
         {% if equipment_list %}
