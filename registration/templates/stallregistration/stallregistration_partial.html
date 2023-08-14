@@ -6,8 +6,8 @@
     {% if billing %}
         <div class="card-body">
             <h4 class="card-title">Registration Total Cost</h4>
-            <p class="card-text">
-                $ {{ billing }}
+            <p class="card-text" name="total-cost" value={{ billing }}>
+                ${{ billing }}
             </p>
         </div>
         <hr>

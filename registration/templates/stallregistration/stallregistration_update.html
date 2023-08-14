@@ -54,7 +54,7 @@
             <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <form hx-post="{% url 'registration:add-site-requirement' stallregistration.id %}"  hx-target='#required-site-list'>
+            <form hx-post="{% url 'registration:add-site-requirement' stallregistration.id %}"  hx-target='#required-site-list' hx-include="[name='total-cost']">
               {% csrf_token %}
               {{ additionalsiteform.as_p }}
               <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Requirement</button>

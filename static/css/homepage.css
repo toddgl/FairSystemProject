@@ -237,7 +237,8 @@ a {
     background-color: #fafafa;
 }
 
-.form-control {
+/* Override textarea.form-control */
+.form-control.text {
     height: 70px;
 }
 

@@ -305,7 +305,8 @@ class StallRegistration(models.Model):
                     this.vehicle_image.delete()
             except:
                 pass
-            super(StallRegistration,self).save(*args,**kwargs)
+        super(StallRegistration,self).save(*args,**kwargs)
+
 
 
 class CommentType(models.Model):
@@ -381,9 +382,7 @@ class FoodRegistration(models.Model):
     registration = models.OneToOneField(
         StallRegistration,
         related_name='food_registration',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
+        on_delete=models.CASCADE,
     )
     food_display_method = models.TextField(blank=True, null=True)
     has_food_certificate = models.BooleanField(null=True, default=False)
@@ -446,7 +445,7 @@ class FoodRegistration(models.Model):
             mime= magic.from_buffer(cert_file,mime=True)
             if "pdf" in mime :
                 self.cert_filetype = "pdf"
-            super(FoodRegistration,self).save(*args,**kwargs)
+        super(FoodRegistration,self).save(*args,**kwargs)
 
 
 class AdditionalSiteRequirement(models.Model):
@@ -552,6 +551,15 @@ class FoodPrepEquipReq(models.Model):
 
 @receiver(post_save, sender=StallRegistration)
 def create_food_registration(sender, instance, created, **kwargs):
+    print("Got to post_save", created, instance.selling_food)
     if created and instance.selling_food:
         FoodRegistration.objects.create(registration=instance)
 
+@receiver(pre_save, sender=StallRegistration)
+def remove_food_registration(sender, instance, **kwargs):
+    if instance.pk:
+        original_instance = StallRegistration.objects.get(pk=instance.pk)
+        if not original_instance.selling_food and instance.selling_food:
+            FoodRegistration.objects.create(registration=instance)
+        elif original_instance.selling_food and not instance.selling_food:
+            FoodRegistration.objects.filter(registration=instance).delete()

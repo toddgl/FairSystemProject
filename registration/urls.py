@@ -15,7 +15,7 @@ from registration.views import (
     stall_registration_create,
     stall_registration_update_view,
     food_registration_create_view,
-    stall_registration_detailview,
+    stall_registration_detail_view,
     display_food_equipment,
     equipment_list,
     add_food_prep_equipment,
@@ -33,7 +33,7 @@ urlpatterns = [
     path('',
          include('django.contrib.auth.urls')),  # v1
     path('stallregistration/list/', stall_registration_listview, name='stallregistration-list'),
-    path('stallregistration/details/,<int:id>', stall_registration_detailview, name='stall-food-registration-detail'),
+    path('stallregistration/details/,<int:id>', stall_registration_detail_view, name='stall-food-registration-detail'),
     path('foodprepequipment/', FoodPrepEquipmentListView.as_view(), name='foodprepequipment-list'),
     path('foodprepequipment/,<int:pk>', FoodPrepEquipmentDetailUpdateView.as_view(), name='foodprepequipment-detail'),
     path('foodprepequipment/actionUrl/', FoodPrepEquipmentCreateView.as_view(), name='actionUrl'),

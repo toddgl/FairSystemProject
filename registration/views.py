@@ -208,7 +208,6 @@ def stall_registration_create(request):
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter(stallholder=stallholder.id,  is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     comment_filter_message = 'Showing current comments of the current fair'
-    print('Got to the stall registration create')
     if siteallocation:
         fair_id = siteallocation.event_site.event.fair.id
         site_size = siteallocation.event_site.site.site_size_id
@@ -234,20 +233,20 @@ def stall_registration_create(request):
             'registrationform': registrationform,
         })
     elif request.method == 'POST':
-        total_cost = get_registration_costs(request, fair_id)
         if siteallocation:
             registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
                                                        initial={'fair': fair_id, 'site_size': site_size})
         else:
             registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
                                                            initial={'fair': fair_id})
+        total_cost = get_registration_costs(request, fair_id)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
             stall_registration.total_charge = total_cost
             stall_registration.save()
+            stall_registration.refresh_from_db()
             if siteallocation:
-                stall_registration.refresh_from_db()
                 siteallocation.stall_registration = stall_registration
                 siteallocation.save(update_fields=['stall_registration'])
             if stall_registration.selling_food:
@@ -284,6 +283,7 @@ def get_registration_costs(request, fair_id, parent_id=None):
     site_size = request.POST.get('site_size')
     stall_category = request.POST.get('stall_category')
     additional_site_costs = decimal.Decimal(0.00)
+    total_additional_site_costs = decimal.Decimal(0.00)
 
     # check to see if this a stall registration update
     if parent_id:
@@ -294,6 +294,7 @@ def get_registration_costs(request, fair_id, parent_id=None):
                 site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=additional_site.site_size.id).price
                 price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=additional_site.site_size.id).price_rate
                 additional_site_costs = price_rate * site_price * additional_site.site_quantity
+                total_additional_site_costs = total_additional_site_costs + additional_site_costs
 
     if stall_category:
         category = StallCategory.objects.get(pk=stall_category)
@@ -326,7 +327,7 @@ def get_registration_costs(request, fair_id, parent_id=None):
         power_price = price_rate * power_price
     else:
         power_price = decimal.Decimal(0.00)
-    total_cost = category_price + site_price + total_trestle_cost + power_price + additional_site_costs
+    total_cost = category_price + site_price + total_trestle_cost + power_price + total_additional_site_costs
     return total_cost
 
 
@@ -373,7 +374,6 @@ def stall_registration_update_view(request, pk):
     additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=obj)
     if additional_sites:
         total_cost = get_registration_costs(request, registration_fair.id, pk)
-        print('Added sites for registration id', pk, 'Total cost of', total_cost)
         context['site_requirement_list'] = additional_sites
 
     if request.htmx:
@@ -745,8 +745,6 @@ def add_site_requirement(request, pk):
                 site_requirement.stall_registration = stall_registration_obj
                 # save
                 site_requirement.save()
-            else:
-                print('No stall registration object found for ID:', pk)
             site_requirement_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=pk)
             return TemplateResponse(request, template, {
                 'site_requirement_list': site_requirement_list,
@@ -795,9 +793,9 @@ def remove_site_requirement(request, parent_id, id):
     template = 'stallregistration/stallregistration_inline_partial.html'
     site = get_object_or_404(AdditionalSiteRequirement, pk=id)
     site.delete()
-    site_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=int(parent_id))
+    site_requirement_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=parent_id)
     return TemplateResponse(request, template, {
-        'site_requirement_list': site_list,
+        'site_requirement_list': site_requirement_list,
     })
 
 
@@ -928,42 +926,6 @@ def comments_view_add (request):
 
 
 @login_required
-def food_equipment_update_hx_view(request, parent_id=None, id=None):
-    if not request.htmx:
-        raise Http404
-    try:
-        parent_obj = FoodRegistration.objects.get(id=parent_id )
-    except:
-        parent_obj = None
-    if parent_obj is  None:
-        return HttpResponse("Not found.")
-    instance = None
-    if id is not None:
-        try:
-            instance = FoodPrepEquipReq.objects.get(food_registration=parent_obj, id=id)
-        except:
-            instance = None
-    form = FoodPrepEquipReqForm(request.POST or None, instance=instance)
-    url = reverse("registration:hx-equipment-create", kwargs={"parent_id": parent_obj.id})
-    if instance:
-        url = instance.get_hx_edit_url()
-    context = {
-        "url": url,
-        "form": form,
-        "object": instance
-    }
-    if form.is_valid():
-        new_obj = form.save(commit=False)
-        if instance is None:
-            new_obj.food_registration = parent_obj
-        new_obj.save()
-        context['object'] = new_obj
-        return render(request, "stallregistration/equipment_inline_partial.html", context)
-    return render(request, "stallregistration/equipment_inline_partial.html", context)
-
-
-
-@login_required
 def food_equipment_delete_view(request, parent_id=None, id=None):
     try:
         obj = FoodPrepEquipReq.objects.get(food_registration__id=parent_id, id=id)
@@ -986,7 +948,7 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
     return render(request, "stallregistration/delete.html", context)
 
 
-def stall_registration_detailview(request, id):
+def stall_registration_detail_view(request, id):
     """
     Display the details of the stall and food registration data provided by the stallholder
     """

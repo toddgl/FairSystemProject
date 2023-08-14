@@ -313,12 +313,12 @@ class StallRegistrationCreateForm(ModelForm):
                 'style': 'max-width: 300px;',
             }),
             'stall_description': Textarea(attrs={
-                'class': "form-control",
+                'class': "form-control text",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Outline the purpose of the stall'
             }),
             'products_on_site': Textarea(attrs={
-                'class': "form-control",
+                'class': "form-control text",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Outline of the items being sold at the stall'
             }),
@@ -335,7 +335,7 @@ class StallRegistrationCreateForm(ModelForm):
                 'hx-target': '#stallregistration_data',
             }),
             'stall_shelter': Textarea(attrs={
-                'class': "form-control",
+                'class': "form-control text",
                 'style': 'max-width: 400px; height: 75px;',
                 'placeholder': 'Describe any shelter to be used in conjunction with the stall'
             }),
@@ -385,7 +385,6 @@ class StallRegistrationCreateForm(ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         stall_category = cleaned_data.get('stall_category')
-        print(stall_category)
         selling_food = cleaned_data.get('selling_food')
 
         if stall_category and selling_food:
@@ -393,9 +392,10 @@ class StallRegistrationCreateForm(ModelForm):
             if 'Food' not in str(stall_category):
                 raise ValidationError(
                     "You must select a Stall category of either:"
-                    "<strong>Food Drink (other)</strong> or <strong>Food Drink (consumption on site)</strong>"
+                    "Food Drink (other) or Food Drink (consumption on site)"
                     "If you are selling any type of food item"
                 )
+        return self.cleaned_data  # never forget this!
 
 
 class StallRegistrationUpdateForm(ModelForm):
@@ -417,7 +417,13 @@ class StallRegistrationUpdateForm(ModelForm):
     stall_category = ModelChoiceField(
         queryset=StallCategory.objects.filter(is_active=True),
         empty_label='Please Select',
-        widget=Select(attrs={'class': "form-select", 'style': 'max-width: 300px;', })
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#stallregistration_data',
+        })
     )
 
     site_size = ModelChoiceField(
@@ -472,12 +478,12 @@ class StallRegistrationUpdateForm(ModelForm):
                 'style': 'max-width: 300px;',
             }),
             'stall_description': Textarea(attrs={
-                'class': "form-control",
+                'class': "form-control text",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Outline the purpose of the stall'
             }),
             'products_on_site': Textarea(attrs={
-                'class': "form-control",
+                'class': "form-control text",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Outline of the items being sold at the stall'
             }),
@@ -494,7 +500,7 @@ class StallRegistrationUpdateForm(ModelForm):
                 'hx-target': '#stallregistration_data',
             }),
             'stall_shelter': Textarea(attrs={
-                'class': "form-control",
+                'class': "form-control text",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe any shelter to be used in conjunction with the stall'
             }),
@@ -524,7 +530,10 @@ class StallRegistrationUpdateForm(ModelForm):
                 'class': 'form-check-input'
             }),
             'selling_food': CheckboxInput(attrs={
-                'class': 'form-check-input'
+                'class': 'form-check-input',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data'
             }),
         }
 
@@ -699,7 +708,7 @@ class AdditionalSiteReqForm(ModelForm):
         queryset=InventoryItem.objects.filter(item_type=1),
         empty_label='Show All',
         label='Site Size',
-        required=False,
+        required=True,
         widget=Select(attrs={
             'class': 'form-control',
             'style': 'max-width: 300px;',

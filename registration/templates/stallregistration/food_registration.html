@@ -41,7 +41,7 @@
               {% csrf_token %}
               {{ equipment_form.as_p }}
               <!-- Hidden input for parent foodregistration.id -->
-              <input type="text" name="food_registration_id" value="{{ foodregistration.id }}">
+              <input type="hidden" name="food_registration_id" value="{{ foodregistration.id }}">
               <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Equipment</button>
               <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </form>
