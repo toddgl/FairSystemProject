@@ -17,7 +17,8 @@ from django.views.generic import (
     UpdateView,
 )
 from accounts.models import(
-    CustomUser
+    CustomUser,
+    Profile
 )
 
 from fairs.models import (
@@ -960,8 +961,10 @@ def stall_registration_detail_view(request, id):
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
     request.session['stallholder_id'] = stall_registration.stallholder.id
+    stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     context = {
+        'stallholder_detail': stallholder_detail,
         "stall_data" : stall_registration,
         'commentfilterform': commentfilterform,
         'comments': comments,

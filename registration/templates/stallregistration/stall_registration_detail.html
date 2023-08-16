@@ -8,6 +8,7 @@
   <div class="row">
     <div class="px-5 my-5 text-center">
       <h1>{{ stall_data.fair }} Registration Detail for {{ stall_data.stallholder }}</h1>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderdetail"> Click to view stallholder profile</button>
     </div>
     <hr>
   </div>
@@ -178,6 +179,33 @@
             ></iframe>
           {% endif %}
         {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Stallholder details modal -->
+<div class="modal fade" id="stallholderdetail" tabindex="-1" role="dialog" aria-labelledby="stallholderdetailLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="stallholderdetailLabel">Stallholder Profile</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="card">
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Stallholder Name:</strong> {{ stallholder_detail.user }}</li>
+              <li class="list-group-item"><strong>Phone:</strong> {{ stallholder_detail.user.phone}}</li>
+              <li class="list-group-item"><strong>Alternative Phone:</strong> {{ stallholder_detail.phone2}}</li>
+              <li class="list-group-item"><strong>Email:</strong> {{ stallholder_detail.user.email }}</li>
+              <li class="list-group-item"><strong>Business Name:</strong> {{ stallholder_detail.org_name}}</li>
+              <li class="list-group-item"><strong>Home Town:</strong> {{ stallholder_detail.user.town}}</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   </div>

@@ -14,6 +14,7 @@
                 <div class="card-body">
                     <h4 class="card-title">{{ item.fair }} - {{ item.stallholder}}</h4>
                 </div>
+                </hr>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><strong>Registration ID:</strong> {{ item.id }}</li>
                     <li class="list-group-item"><strong>Stall Category:</strong> {{ item.stall_category }}</li>
@@ -58,7 +59,6 @@
     <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
     {% endfor %}
     </div>
-
     <!-- Pagination -->
     {% if stallregistration_list.has_other_pages %}
     <nav aria-label="Page navigation">
