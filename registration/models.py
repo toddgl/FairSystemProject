@@ -1,4 +1,4 @@
-# registration/model.py
+# registration/models.py
 
 import datetime
 from django.conf import settings  # new
@@ -8,7 +8,7 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 from django.urls import reverse
 from django.utils.translation import gettext_lazy as _
-from django_fsm import FSMField
+from django_fsm import FSMField, transition
 
 from fairs.models import (
     Fair,
@@ -127,13 +127,22 @@ class StallCategory(models.Model):
 
 # StallRegistration Managers
 
-class RegistrationCurrentManager(models.Manager):
+class RegistrationCurrentAllManager(models.Manager):
     """
     Queryset of Stall Registrations for current Fairs
     """
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True)
+
+
+class RegistrationCurrentManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current Fairs excluded cancelled stall registrations
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True).exclude(is_cancelled=True)
 
 
 class RegistrationSellingFoodManager(models.Manager):
@@ -271,8 +280,10 @@ class StallRegistration(models.Model):
     vehicle_length = models.FloatField(default=0)
     vehicle_image = models.ImageField(blank=True, null=True, upload_to='vehicles/' + str(current_year))
     multi_site = models.BooleanField(default=False)
+    is_cancelled = models.BooleanField(default=False)
 
     objects = models.Manager()
+    registrationcurrentallmgr = RegistrationCurrentAllManager()
     registrationcurrentmgr = RegistrationCurrentManager()
     sellingfoodmgr = RegistrationSellingFoodManager()
     registrationcreatedmgr = RegistrationCreatedManager()
@@ -306,6 +317,13 @@ class StallRegistration(models.Model):
             except:
                 pass
         super(StallRegistration,self).save(*args,**kwargs)
+
+    @transition(field=booking_status, source="CREATED", target="CANCELLED")
+    def to_booking_status_cancelled(self):
+        pass
+    @transition(field=booking_status, source="CREATED", target="SUBMITTED")
+    def to_booking_status_submitted(self):
+        pass
 
 
 
@@ -551,7 +569,6 @@ class FoodPrepEquipReq(models.Model):
 
 @receiver(post_save, sender=StallRegistration)
 def create_food_registration(sender, instance, created, **kwargs):
-    print("Got to post_save", created, instance.selling_food)
     if created and instance.selling_food:
         FoodRegistration.objects.create(registration=instance)
 

@@ -1,6 +1,7 @@
 # registration/views.py
 import datetime
 import decimal
+import logging
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -10,7 +11,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import render, get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy, reverse
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django.views.generic import (
     CreateView,
     ListView,
@@ -57,6 +58,7 @@ from .forms import (
 # Global Variables
 current_year = datetime.datetime.now().year
 next_year = current_year + 1
+db_logger = logging.getLogger('db')
 
 
 # Create your views here.
@@ -93,10 +95,10 @@ def stall_registration_listview(request):
     filterform = StallRegistrationFilterForm(request.POST or None )
     booking_status=request.GET.get('booking_status', '')
     if booking_status:
-        filtered_data = StallRegistration.registrationcurrentmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
+        filtered_data = StallRegistration.registrationcurrentallmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
         alert_message = 'There are no stall registration of status ' + str(booking_status) + ' created yet'
     else:
-        filtered_data = StallRegistration.registrationcurrentmgr.order_by('stall_category').prefetch_related('site_allocation').all()
+        filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related('site_allocation').all()
         alert_message = 'There are no stall registrations yet.'
 
     if request.htmx:
@@ -107,7 +109,7 @@ def stall_registration_listview(request):
             filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -160,7 +162,7 @@ def stall_registration_listview(request):
             else:
                 alert_message = 'There are no stall registration created yet'
                 filter_dict = {}
-            filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by('stall_category').prefetch_related('site_allocation').all()
+            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by('stall_category').prefetch_related('site_allocation').all()
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -169,7 +171,7 @@ def stall_registration_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        filtered_data = StallRegistration.registrationcurrentmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+        filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
         template_name = 'stallregistration/stallregistration_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list
@@ -278,6 +280,34 @@ def stall_registration_create(request):
         'comments': comments,
         'comment_filter': comment_filter_message
     })
+
+@login_required
+@permission_required('registration.delete_stallregistration', raise_exception=True)
+@require_http_methods(['DELETE'])
+def stall_registration_cancel_view(request, pk):
+    """
+    Remove a stall registration
+    """
+    print("Cancel pk:", pk)
+    stallregistration = get_object_or_404(StallRegistration, id=pk)
+    stallholder = stallregistration.stallholder
+    if SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration=pk).exists():
+        siteallocation = SiteAllocation.currentallocationsmgr.get(stallholder_id=stallholder.id, stall_registration=pk)
+    else:
+        siteallocation = None
+    try:
+        print("Stallregistration cancel function - Cancelling registration id:", pk)
+        stallregistration.is_cancelled=True
+        stallregistration.save(update_fields=['is_cancelled'])
+        stallregistration.to_booking_status_cancelled()
+        if siteallocation:
+            print('Siteallocation Foreign key set to None')
+            siteallocation.stall_registration=None
+            siteallocation.save(update_fields=['stall_registration'])
+    except Exception as e:  # It will catch other errors related to the delete call.
+        db_logger.error('There was an error cancelling the stallregistration.' + str(e),
+                        extra={'custom_category': 'Stall Registration'})
+    return redirect('registration:stallregistration-dashboard')
 
 
 def get_registration_costs(request, fair_id, parent_id=None):
@@ -610,9 +640,9 @@ def myfair_dashboard_view(request):
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     try:
         # Use prefetch_related to bring through the site allocation data associated with the stall registration
-        myfair_list = current_fairs.filter(stallholder=request.user).prefetch_related('site_allocation').all()
+        myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user).prefetch_related('site_allocation').all()
     except ObjectDoesNotExist:
-        myfair_list = current_fairs.filter(stallholder=request.user)
+        myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
 
     return TemplateResponse(request, template, {
     'registrations': myfair_list,

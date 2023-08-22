@@ -8,7 +8,7 @@
   <title>MyFair</title>
 {% endblock %}
 {% block body %}
-<div class="container">
+<div class="container" id="registration-list">
   <h1>MyFair Dashboard for  {{ user.first_name }}</h1>
     <button class="btn btn-primary btn-sm" onclick="location.href='{% url 'registration:stallregistration-create' %}'">Register for a fair stall</button>
   <hr>
@@ -20,12 +20,14 @@
           <div class="card-body">
             <h4 class="card-title text-primary">Registration ID - {{ registration.pk }}</h4>
             <ul class="list-group list-group-flush">
-              {% if registration.site_allocation.event_site.site.zone.zone_name  %}
-                <li class="list-group-item"><strong>Site Location:</strong> {{ registration.site_allocation.event_site.site.zone.zone_name }}</li>
-                <li class="list-group-item"><strong>Site Name:</strong> {{ registration.site_allocation.event_site.site.site_name }}</li>
-              {% else %}
-                <li class="list-group-item"><strong>Site Location:</strong> You have not been allocated a stall site yet.</li>
-              {% endif %}
+              {% for allocation in registration.site_allocation.all %}
+                {% if allocation.event_site.site.zone.zone_name  %}
+                  <li class="list-group-item"><strong>Site Location:</strong> {{ allocation.event_site.site.zone.zone_name }}</li>
+                  <li class="list-group-item"><strong>Site Name:</strong> {{ allocation.event_site.site.site_name }}</li>
+                {% else %}
+                  <li class="list-group-item"><strong>Site Location:</strong> You have not been allocated a stall site yet.</li>
+                {% endif %}
+              {% endfor %}
               <li class="list-group-item"><strong>Booking Status:</strong> {{ registration.booking_status }}</li>
               <li class="list-group-item"><strong>Site Size:</strong> {{ registration.site_size }}</li>
               <li class="list-group-item"><strong>Stall Category:</strong> {{ registration.stall_category }}</li>
@@ -40,6 +42,7 @@
               <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
                 View and edit Stall Registration Detail
               </a>
+              <a class = "btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel the Stall Registration" hx-delete="{% url 'registration:stallregistration-cancel' registration.pk %}" hx-swap="none" hx-confirm="Are you sure you wish to cancel this stallregistration?"><i class="bi bi-trash-fill"></i></a>
             </div>
           </div>
         </div>
