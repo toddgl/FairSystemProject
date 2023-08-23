@@ -60,8 +60,14 @@ current_year = datetime.datetime.now().year
 next_year = current_year + 1
 db_logger = logging.getLogger('db')
 
+class HTTPResponseHXRedirect(HttpResponseRedirect):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self["HX-Redirect"] = self["Location"]
 
-# Create your views here.
+    status_code = 200
+
+
 def pagination_data(cards_per_page, filtered_data, request):
     """
     Refactored pagination code that is available to all views that included pagination
@@ -298,17 +304,16 @@ def stall_registration_cancel_view(request, pk):
     try:
         print("Stallregistration cancel function - Cancelling registration id:", pk)
         stallregistration.is_cancelled=True
-        stallregistration.save(update_fields=['is_cancelled'])
         stallregistration.to_booking_status_cancelled()
+        stallregistration.save(update_fields=['is_cancelled', 'booking_status'])
         if siteallocation:
             print('Siteallocation Foreign key set to None')
             siteallocation.stall_registration=None
             siteallocation.save(update_fields=['stall_registration'])
-    except Exception as e:  # It will catch other errors related to the delete call.
+    except Exception as e:  # It will catch other errors related to the cancel call.
         db_logger.error('There was an error cancelling the stallregistration.' + str(e),
                         extra={'custom_category': 'Stall Registration'})
-    return redirect('registration:stallregistration-dashboard')
-
+    return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
 def get_registration_costs(request, fair_id, parent_id=None):
     site_size = request.POST.get('site_size')
