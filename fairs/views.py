@@ -1513,6 +1513,8 @@ def setup_process_dashboard_view(request):
     elif request.method == 'POST' and 'create_emails' in request.POST:
         # call function
         site_allocation_emails()
+        current_fair.allocation_email_date = datetime.now()
+        current_fair.save()
         # return user to required page
         return HttpResponseRedirect(reverse('fair:setup-dashboard'))
     elif request.method == 'POST' and 'delete_allocations' in request.POST:

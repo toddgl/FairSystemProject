@@ -27,14 +27,14 @@ def site_allocation_emails():
     """
     current_fair = Fair.currentfairmgr.last()
     site_allocations = SiteAllocation.currentallocationsmgr.all()
-    subject = "Martinborough Fair Site Registration - Action Required",
+    subject = 'Martinborough Fair Site Registration - Action Required',
     if site_allocations:
         for site_allocation in site_allocations:
             context = {'subject': subject, 'stallholder': site_allocation.stallholder, 'fair': current_fair}
             html_content = render_to_string("email/site_allocation_email.html", context)
             text_content = strip_tags(html_content)
             mail = EmailMultiAlternatives(
-                subject=subject,
+                subject=strip_tags(subject),
                 from_email=settings.EMAIL_HOST_USER,
                 to=[site_allocation.stallholder.email],
             )
@@ -70,12 +70,12 @@ def site_allocations():
     """
     events = Event.currenteventfiltermgr.all()
     count = 4
-    for event in events:
-        while count > 0:
-            year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id']) == count
-            year_sites = [i for i, j in year_series.items() if j == True]
-            db_logger.info(str(count) + ' ' + str(year_sites), extra={'custom_category': 'Site Allocation'})
-            for stallholder, site in year_sites:
+    while count > 0:
+        year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id']) == count
+        year_sites = [i for i, j in year_series.items() if j == True]
+        db_logger.info(str(count) + ' ' + str(year_sites), extra={'custom_category': 'Site Allocation'})
+        for stallholder, site in year_sites:
+            for event in events:
                 if EventSite.objects.filter(event_id=event.id, site_id=site).exists():
                     eventsite = EventSite.objects.get(event_id=event.id, site_id=site)
                     if eventsite.site_status == 1:
@@ -89,14 +89,14 @@ def site_allocations():
                     else:
                         db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
                             event.event_name) + ' and Site name' + str(
-                            eventsite.site.site_name) + 'has not been created, as the EventSite was not Available.',
+                            eventsite.site.site_name) + 'has not been created, as the EventSite has been taken.',
                                           extra={'custom_category': 'Site Allocation'})
                 else:
                     db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
                         event.event_name) + ' and Site name' + str(
-                        eventsite.site.site_name) + 'has not been created, as the EventSite was not Available.',
+                        eventsite.site.site_name) + 'has not been created, as the EventSite does not exist.',
                                       extra={'custom_category': 'Site Allocation'})
-            count = count - 1
+        count = count - 1
 
 def delete_unregistered_allocations():
     """

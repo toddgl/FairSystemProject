@@ -145,7 +145,7 @@ class FairDetailForm(ModelForm):
     class Meta:
         model = Fair
         fields = ['fair_year', 'fair_name', 'date_cancelled', 'fair_description', 'is_cancelled',
-                  'activation_date', 'is_activated']
+                  'activation_date', 'allocation_email_date', 'is_activated']
         widgets = {
             'fair_year': TextInput(attrs={
                 'class': "form-control",
@@ -168,6 +168,7 @@ class FairDetailForm(ModelForm):
             }),
             # 'activation_date': AdminSplitDateTime(),
             'activation_date': MinimalSplitDateTimeMultiWidget(),
+            'allocation_email_date': MinimalSplitDateTimeMultiWidget(),
             "is_activated": CheckboxInput(attrs={
                 'class': 'form-check-input',
                 'readonly': 'readonly'
