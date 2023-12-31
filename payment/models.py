@@ -71,7 +71,7 @@ class PaymentHistory (models.Model):
         verbose_name_plural = "payments"
 
 
-class IvoiceItem(models.Model):
+class InvoiceItem(models.Model):
     """
     Description: A model that provides the detail of the items that make up  each invoice
     """

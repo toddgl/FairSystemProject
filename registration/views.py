@@ -256,8 +256,10 @@ def stall_registration_create(request):
             stall_registration.save()
             stall_registration.refresh_from_db()
             if siteallocation:
-                siteallocation.stall_registration = stall_registration
-                siteallocation.save(update_fields=['stall_registration'])
+                allocations = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration__isnull=True)
+                for allocation in allocations:
+                    allocation.stall_registration = stall_registration
+                    allocation.save(update_fields=['stall_registration'])
             if stall_registration.selling_food:
                 return redirect('registration:food-registration', stall_registration.id)
             else:
