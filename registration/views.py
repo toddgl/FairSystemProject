@@ -12,6 +12,8 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.template.response import TemplateResponse
 from django.urls import reverse_lazy, reverse
 from django.views.decorators.http import require_POST, require_http_methods
+from django.core.exceptions import PermissionDenied
+from django_fsm import can_proceed
 from django.views.generic import (
     CreateView,
     ListView,
@@ -1017,3 +1019,12 @@ def stall_registration_detail_view(request, id):
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
 
     return TemplateResponse(request, template, context)
+
+def submit_stall_registration(request, id):
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
+    stallregistration = get_object_or_404(StallRegistration, pk=id)
+    if not can_proceed(stallregistration.to_booking_status_submitted):
+        raise PermissionDenied
+    stallregistration.to_booking_status_submitted()
+    stallregistration.save()
+    return HttpResponseRedirect(success_url)

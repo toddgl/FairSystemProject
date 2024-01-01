@@ -321,9 +321,39 @@ class StallRegistration(models.Model):
     @transition(field=booking_status, source="Created", target="Cancelled")
     def to_booking_status_cancelled(self):
         pass
+
     @transition(field=booking_status, source="Created", target="Submitted")
     def to_booking_status_submitted(self):
         pass
+
+    @transition(field=booking_status, source=["Created", "Submitted"], target="Invoiced")
+    def to_booking_status_invoiced(self):
+        pass
+
+    @transition(field=booking_status, source="Invoiced", target="Manual Payment")
+    def to_booking_status_manual_payment(self):
+        pass
+
+    @transition(field=booking_status, source="Invoiced", target="Poli Payment")
+    def to_booking_status_poli_payment(self):
+        pass
+
+    @transition(field=booking_status, source="Invoiced", target="Stripe Payment")
+    def to_booking_status_stripe_payment(self):
+        pass
+
+    @transition(field=booking_status, source=["Manual Payment", "Poli Payment", "Stripe Payment"], target="Payment Completed")
+    def to_booking_status_payment_complete(self):
+        pass
+
+    @transition(field=booking_status, source=["Submitted", "Invoiced", "Payment Completed"], target="Cancelled")
+    def to_booking_status_cancelled(self):
+        pass
+
+
+
+
+
 
 
 
