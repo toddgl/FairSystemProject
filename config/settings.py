@@ -164,10 +164,9 @@ FIXTURE_DIRS = [BASE_DIR / 'fixtures']
 MEDIA_ROOT = BASE_DIR/'media'
 MEDIA_URL = '/media/'
 
-LOGIN_REDIRECT_URL = 'home'
-ACCOUNT_LOGOUT_REDIRECT_URL = 'home'
-
 # allauth settings
+
+ACCOUNT_ADAPTER = 'accounts.adapter.AccountAdapter'
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 

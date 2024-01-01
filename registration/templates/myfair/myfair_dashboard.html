@@ -4,6 +4,7 @@
 {% block head %}
 <!-- Custom css -->
 {% load static %}
+{% load hasallocations_tag %}
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
 {% endblock %}
@@ -42,7 +43,12 @@
               <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
                 View and edit Stall Registration Detail
               </a>
-              <a href="#" class="btn btn-success">Submit for payment</a>
+              {% get_has_site_allocation user.id as result %}
+                {% if result %}
+                  <a href="#" class="btn btn-success">Submit for payment</a>
+                {% else %}
+                  <a href="#" class="btn btn-success">Submit for site allocation</a>
+                {% endif %}
               <a class = "btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel the Stall Registration" hx-delete="{% url 'registration:stallregistration-cancel' registration.pk %}"  hx-confirm="Are you sure you wish to cancel this stallregistration?"><i class="bi bi-trash-fill"></i></a>
             </div>
           </div>
