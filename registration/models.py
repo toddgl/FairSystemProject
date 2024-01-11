@@ -373,6 +373,21 @@ class CommentType(models.Model):
         ordering = ('type_name',)
         verbose_name_plural = "CommentTypes"
 
+class HasUnactionedCommentsManager(models.Manager):
+    """
+    Queryset of Registration comments for current fairs and tehe specified stallholder that
+    has unactioned comments.  Used to determine if the Stallregistration can be submitted for payment
+    use sommething like to get ta True ? False response
+    has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(stallholder_id).exists()
+    """
+
+    def get_queryset(self):
+        current_fair = Fair.currentfairmgr.all().last()
+        return super().get_queryset().filter(fair=current_fair.id, is_done=False)
+
+    def filter_by_stallholder(self, stallholder_id):
+        return self.get_queryset().filter(stallholder=stallholder_id)
+
 
 class RegistrationComment(models.Model):
     """
@@ -413,6 +428,8 @@ class RegistrationComment(models.Model):
     )
     fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
     is_done = models.BooleanField(default=False)
+    objects = models.Manager()
+    hasunactionedcommentsmgr = HasUnactionedCommentsManager()
 
     class Meta:
         # sort comments in chronological order by default

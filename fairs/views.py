@@ -1,4 +1,4 @@
-# fairs/view.py
+# fairs/views.py
 import datetime
 import os
 import logging
