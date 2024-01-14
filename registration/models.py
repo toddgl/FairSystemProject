@@ -1,6 +1,7 @@
 # registration/models.py
 
 import datetime
+from django.db.models import Q
 from django.conf import settings  # new
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
@@ -12,6 +13,7 @@ from django_fsm import FSMField, transition
 
 from fairs.models import (
     Fair,
+    Event,
     InventoryItem
 )
 
@@ -200,6 +202,46 @@ class RegistrationCancelledManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Cancelled')
 
+class VehiclesOnSiteManager(models.Manager):
+    """
+    Queryset of StallRegistration for current fairs and the specified stallholder that
+    that has inddicated that they have a vehicle on site and that it sze has been defined and it is not over 6 metres in length
+    and an image of the vehicle has been uploaded.  Used to determine if the Stallregistration can be submitted for payment
+    use something like to get ta True / False response
+    has_size = StallRegistration.vehicleonsitemgr.has_size(registration_id)
+    not_oversize = StallRegistration.vehicleonsitemgr.not_oversize(registration_id)
+    has_image = StallRegistration.vehicleonsitemgr.has_image(registration_id)
+    """
+
+    def get_queryset(self):
+        current_fair = Fair.currentfairmgr.all().last()
+        return super().get_queryset().filter(fair=current_fair.id, vehicle_on_site=True)
+
+    def has_size(self, registration_id):
+        return self.get_queryset().filter(id=registration_id, vehicle_length__gt=0).exists()
+
+    def not_oversize(self, registration_id):
+        return self.get_queryset().filter(id=registration_id, vehicle_length__lte=6).exists()
+
+    def has_image(self, registration_id):
+        return self.get_queryset().filter(id=registration_id, vehicle_image__isnull=False).exists()
+
+class IsMultiSiteRegistrationManager(models.Manager):
+    """
+    Queryset of Stall Registration  for current fairs and the specified stall registration that
+    is a multisite request.  Used to determine if the Stallregistration can be submitted for payment
+    use something like to get ta True ? False response
+    is_multi_site = StallRegistration.ismultisiteregistrationmgr.filter_by_stallregistration(stallregistration_id)
+    """
+
+    def get_queryset(self):
+        current_fair = Fair.currentfairmgr.all().last()
+        return super().get_queryset().filter(fair=current_fair.id, multi_site=True)
+
+    def filter_by_stallregistration(self, stallregistration_id):
+        return self.get_queryset().filter(stallholder=stallregistration_id).exists()
+
+
 class StallRegistration(models.Model):
     """
     Description: Model to capture stall registrations
@@ -291,6 +333,8 @@ class StallRegistration(models.Model):
     registrationinvoicedmgr = RegistrationInvoicedManager()
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
+    vehicleonsitemgr = VehiclesOnSiteManager()
+    ismultisiteregistrationmgr = IsMultiSiteRegistrationManager()
 
     class Meta:
         verbose_name = "stallregistration"
@@ -352,11 +396,6 @@ class StallRegistration(models.Model):
 
 
 
-
-
-
-
-
 class CommentType(models.Model):
     """
     Description of a Model to set Comment Types these types are used to make it easier for the Convener
@@ -375,9 +414,9 @@ class CommentType(models.Model):
 
 class HasUnactionedCommentsManager(models.Manager):
     """
-    Queryset of Registration comments for current fairs and tehe specified stallholder that
+    Queryset of Registration comments for current fairs and the specified stallholder that
     has unactioned comments.  Used to determine if the Stallregistration can be submitted for payment
-    use sommething like to get ta True ? False response
+    use something like to get ta True ? False response
     has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(stallholder_id).exists()
     """
 
@@ -438,6 +477,22 @@ class RegistrationComment(models.Model):
     def __str__(self):
         return 'Comment by {}'.format(str(self.created_by))
 
+class CertificateValidityManager(models.Manager):
+
+    def get_queryset(self):
+        current_fair = Fair.currentfairmgr.all().last()
+        return super().get_queryset().filter(registration__fair=current_fair.id)
+
+    def has_certificate(self, registration_id):
+        return self.get_queryset().filter(registration=registration_id, food_registration_certificate__isnull=False).exists()
+
+    def not_expiring(self, registration_id):
+        current_event = Event.currenteventfiltermgr.all().last()
+        food_registration = self.get_queryset().filter(registration=registration_id)
+        if current_event.postponement_event_date:
+            return food_registration.filter(certificate_expiry_date__gt=current_event.postponement_event_date).exists()
+        else:
+            return food_registration.filter(certificate_expiry_date__gt=current_event.original_event_date).exists()
 
 class FoodRegistration(models.Model):
     """
@@ -474,6 +529,8 @@ class FoodRegistration(models.Model):
     hygiene_methods = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField(blank=True, null=True)
     cert_filetype = models.CharField(default="image",blank=True, null=True, max_length=50)
+    objects = models.Manager()
+    certificatevaliditymgr = CertificateValidityManager()
 
     class Meta:
         verbose_name = "foodregistration"
