@@ -569,6 +569,13 @@ class FoodRegistration(models.Model):
                 self.cert_filetype = "pdf"
         super(FoodRegistration,self).save(*args,**kwargs)
 
+class AdditionalSiteRequirementManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().all()
+
+    def filter_by_stallregistration(self, stallregistration):
+        return self.get_queryset().filter(stall_registration=stallregistration)
+
 
 class AdditionalSiteRequirement(models.Model):
     """
@@ -603,6 +610,9 @@ class AdditionalSiteRequirement(models.Model):
         default=JOINED,
     )
     site_quantity = models.IntegerField(default=1)
+    objects = models.Manager()
+    additionalsiterequirementmgr = AdditionalSiteRequirementManager()
+
 
 
     class Meta:

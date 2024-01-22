@@ -360,6 +360,13 @@ def get_registration_costs(request, fair_id, parent_id=None):
         total_trestle_cost = price_rate * trestle_price * decimal.Decimal(trestle_num)
     else:
         total_trestle_cost = decimal.Decimal(0.00)
+    vehicle_length = request.POST.get('vehicle_length')
+    if vehicle_length:
+        vehicle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price
+        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price_rate
+        total_vehicle_cost = price_rate * vehicle_price
+    else:
+        total_vehicle_cost = decimal.Decimal(0.00)
     power_req = request.POST.get('power_required')
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
@@ -367,7 +374,8 @@ def get_registration_costs(request, fair_id, parent_id=None):
         power_price = price_rate * power_price
     else:
         power_price = decimal.Decimal(0.00)
-    total_cost = category_price + site_price + total_trestle_cost + power_price + total_additional_site_costs
+    total_cost = (category_price + site_price + total_trestle_cost + total_vehicle_cost + power_price +
+                  total_additional_site_costs)
     return total_cost
 
 
@@ -1021,6 +1029,9 @@ def stall_registration_detail_view(request, id):
     return TemplateResponse(request, template, context)
 
 def submit_stall_registration(request, id):
+    """
+    Stall holder driven request to submit a stall registration  to status submitted for the convener to  review
+    """
     success_url = reverse_lazy('registration:stallregistration-dashboard')
     stallregistration = get_object_or_404(StallRegistration, pk=id)
     if not can_proceed(stallregistration.to_booking_status_submitted):
@@ -1028,3 +1039,22 @@ def submit_stall_registration(request, id):
     stallregistration.to_booking_status_submitted()
     stallregistration.save()
     return HttpResponseRedirect(success_url)
+
+
+def invoice_stall_registration(request, id):
+    """
+    Stall holder driven request to submit a stall registration to the status invoiced.  This initiates a multi-step
+    process to firstly check to see whether the registration can be moved to invoiced without convener review. If it
+    passes the tests the status of the registration is changed to invoiced, if it fails a comment is created
+    detailing why it requires the convener's review, and it's status is changed to submitted.
+    """
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
+    stallregistration = get_object_or_404(StallRegistration, pk=id)
+    if not can_proceed(stallregistration.to_booking_status_invoiced):
+        raise PermissionDenied
+
+    stallregistration.to_booking_status_invoiced()
+    stallregistration.save()
+    return HttpResponseRedirect(success_url)
+
+

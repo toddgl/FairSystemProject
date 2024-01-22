@@ -1,15 +1,18 @@
 #payment/models.py
 
+import decimal
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 from fairs.models import (
-    InventoryItem
+    InventoryItem,
+    InventoryItemFair
 )
 from registration.models import (
-    StallRegistration
+    StallRegistration,
+    AdditionalSiteRequirement
 )
 
 
@@ -27,6 +30,11 @@ class PaymentType(models.Model):
     class Meta:
         verbose_name_plural = "paymenttypenames"
 
+class InvoiceManager(models.Manager):
+
+    def get_invoices(self, registration_id):
+        return super().get_queryset().filter(registration=registration_id)
+
 class Invoice(models.Model):
     """
     Description: A model for recording invoicing for stall registrations
@@ -36,8 +44,8 @@ class Invoice(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
-    total_cost = models.DecimalField(max_digits=8, decimal_places=2)
-    gst_value = models.DecimalField(max_digits=8, decimal_places=2)
+    total_cost = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
+    gst_value = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -70,6 +78,105 @@ class PaymentHistory (models.Model):
         verbose_name = "payment"
         verbose_name_plural = "payments"
 
+class InvoiceItemManager(models.Manager):
+
+    def create_invoice_items(self, registration ):
+        """
+        Cycle through the billable items on the stall registration instance and create an invoice and invoice item
+        for each of teh billable items on the stall registration record
+
+        Parameters:
+        - registration: The instance of the the StallRegistration.
+        - field_list: A list of field names to iterate through.
+        - action: A function representing the action to be performed on each field.
+        """
+        fields_to_check = ['stall_category','site_size','trestle_quantity', 'vehicle_length', 'power_required', 'multi_site' ]
+        invoice = Invoice.objects.get_or_create(
+            stall_registration = registration,
+            stallholder_id = registration.stallholder.id,
+        )
+        total_cost = decimal.Decimal(0.00)
+        for field_name in fields_to_check:
+            field_value = getattr(registration, field_name, None)
+            if field_value is not None:
+                print(registration, field_name, field_value)
+                if(field_name == 'stall_category'):
+                    if field_value.has_inventory_item:
+                        category_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                       inventory_item_id=field_value.inventory_item.id).price
+                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                   inventory_item_id=field_value.inventory_item.id).price_rate
+                        category_cost = category_price * price_rate
+                        print('Category', category_price, price_rate, category_cost)
+                        total_cost = category_cost
+                    else:
+                        category_cost = decimal.Decimal(0.00)
+                        print('Category', category_cost)
+
+                if field_name == 'site_size':
+                    site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                               inventory_item__id=int(field_value.id)).price
+                    price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                               inventory_item__id=int(field_value.id)).price_rate
+                    site_cost = price_rate * site_price
+                    print('Site Size',site_price, price_rate, site_cost)
+                    total_cost = total_cost + site_cost
+
+                if field_name == ('trestle_quantity'):
+                    if field_value > 0:
+                        trestle_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                      inventory_item__item_name='Trestle Table').price
+                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                   inventory_item__item_name='Trestle Table').price_rate
+                        total_trestle_cost = price_rate * trestle_price * decimal.Decimal(field_value)
+                        print("Trestle", total_trestle_cost)
+                        total_cost =total_cost + total_trestle_cost
+                    else:
+                        total_trestle_cost = decimal.Decimal(0.00)
+                        print("No Trestles", total_trestle_cost)
+
+                if field_name == ('vehicle_length'):
+                    if field_value > 6:
+                        vehicle_price = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price
+                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price_rate
+                        total_vehicle_cost = price_rate * vehicle_price
+                        print("Vehicle", total_vehicle_cost)
+                        total_cost =total_cost + total_vehicle_cost
+                    else:
+                        total_vehicle_cost = decimal.Decimal(0.00)
+                        print("No Vehicle", total_vehicle_cost)
+
+                if field_name == 'power_required':
+                    if field_value:
+                        power_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                    inventory_item__item_name='Power Point').price
+                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                   inventory_item__item_name='Power Point').price_rate
+                        power_cost = price_rate * power_price
+                        print('Power', power_price, price_rate, power_cost)
+                        total_cost = total_cost + power_cost
+                    else:
+                        power_cost = decimal.Decimal(0.00)
+                        print('No Power', power_cost)
+
+                if field_name == 'multi_site':
+                    total_additional_site_costs = decimal.Decimal(0.00)
+                    if AdditionalSiteRequirement.objects.filter(stall_registration=registration).exists():
+                        additional_site_list = AdditionalSiteRequirement.objects.filter(
+                            stall_registration=registration)
+                        for additional_site in additional_site_list:
+                            site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                       inventory_item__id=additional_site.site_size.id).price
+                            price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                       inventory_item__id=additional_site.site_size.id).price_rate
+                            additional_site_costs = price_rate * site_price * additional_site.site_quantity
+                            print('Additional Sites', additional_site.site_size, site_price, price_rate, additional_site.site_quantity )
+                            total_additional_site_costs = total_additional_site_costs + additional_site_costs
+                        print("Total Additional Site Costs", total_additional_site_costs)
+                        total_cost = total_cost + total_additional_site_costs
+        gst_component = round((total_cost * 3) / 23, 2)
+        print('Total Cost', total_cost, 'GST Component', gst_component)
+
 
 class InvoiceItem(models.Model):
     """
@@ -80,6 +187,11 @@ class InvoiceItem(models.Model):
     item_quantity = models.IntegerField(default=0, validators=[MinValueValidator(0), MaxValueValidator(9999), ], )
     item_cost = models.DecimalField(max_digits=8, decimal_places=2)
 
-    class Meta:
+    objects = models.Manager()
+    invoiceitemmgr = InvoiceItemManager()
+
+
+class Meta:
         verbose_name = "invoiceitem"
         verbose_name_plural = "invoiceitems"
+        unique_together = ('invoice', 'inventory_item')

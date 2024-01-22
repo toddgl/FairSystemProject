@@ -42,13 +42,15 @@ class InventoryItem(models.Model):
     HEALTHSAFETY = 3
     FOODLICENCE = 4
     TRESTLE = 5
+    VEHICLE = 6
 
     TYPE_CHOICE = [
         (FAIRSITE, _('Site')),
         (POWER, _('PowerPoint')),
         (HEALTHSAFETY, _('Health & Safety')),
         (FOODLICENCE, _('Food Licence')),
-        (TRESTLE, _('Trestle'))
+        (TRESTLE, _('Trestle')),
+        (VEHICLE, _('Vehicle'))
     ]
 
     item_name = models.CharField(
@@ -272,6 +274,14 @@ class ZoneMap(models.Model):
         unique_together = ('year', 'map_pdf')
 
 
+
+class InventoryItemPriceManager(models.Manager):
+    """
+    Retrun the price of teh inventory item whn  thefair id and inventory Item id are provided
+    """
+    def queryset(self, fair_id, inventory_item_id):
+        return super().get_queryset().get(fair=fair_id, inventory_item=inventory_item_id)
+
 class InventoryItemFair(models.Model):
     """
     Description: Junction table for the manytomany relationship between
@@ -311,6 +321,7 @@ class InventoryItemFair(models.Model):
     powerpricemgr = PowerPointPriceFilterManager()
     healthsafetyfoodlicencepricemgr = HealthSafetyFoodLicencePriceFilterManager()
     foodlicencepricemgr = FoodLicencePriceFilterManager()
+    inventoryitempricemgr = InventoryItemPriceManager()
 
     def __int__(self):
         return str(self.inventory_item) + "$" + str(self.price)
