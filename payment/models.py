@@ -1,6 +1,7 @@
 #payment/models.py
 
 import decimal
+import logging
 from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
@@ -15,6 +16,7 @@ from registration.models import (
     AdditionalSiteRequirement
 )
 
+db_logger = logging.getLogger('db')
 
 # Create your models here.
 
@@ -102,59 +104,104 @@ class InvoiceItemManager(models.Manager):
                 print(registration, field_name, field_value)
                 if(field_name == 'stall_category'):
                     if field_value.has_inventory_item:
-                        category_price = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                       inventory_item_id=field_value.inventory_item.id).price
-                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                   inventory_item_id=field_value.inventory_item.id).price_rate
-                        category_cost = category_price * price_rate
-                        print('Category', category_price, price_rate, category_cost)
-                        total_cost = category_cost
+                        try:
+                            category_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                           inventory_item_id=field_value.inventory_item.id).price
+                            price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                       inventory_item_id=field_value.inventory_item.id).price_rate
+                            category_cost = category_price * price_rate
+                            print('Category', category_price, price_rate, category_cost)
+                            total_cost = category_cost
+                            obj, created = InvoiceItem.objects.update_or_create(invoice=invoice,
+                                                                        inventory_item_id=field_value.inventory_item.id,
+                                                                        item_quanity= 1,
+                                                                        item_cost=category_cost
+                                                                        )
+                        except Exception as e:  # It will catch other errors related to the cost determination.
+                            db_logger.error('There was an error in determining stall category costs.' + e,
+                                        extra={'custom_category': 'Invoicing'})
                     else:
                         category_cost = decimal.Decimal(0.00)
                         print('Category', category_cost)
 
                 if field_name == 'site_size':
-                    site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                    try:
+                        site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
                                                                inventory_item__id=int(field_value.id)).price
-                    price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
                                                                inventory_item__id=int(field_value.id)).price_rate
-                    site_cost = price_rate * site_price
-                    print('Site Size',site_price, price_rate, site_cost)
-                    total_cost = total_cost + site_cost
+                        site_cost = price_rate * site_price
+                        print('Site Size',site_price, price_rate, site_cost)
+                        total_cost = total_cost + site_cost
+                        obj, created = InvoiceItem.objects.update_or_create(invoice=invoice,
+                                                                            inventory_item_id=field_value.inventory_item.id,
+                                                                            item_quanity=1,
+                                                                            item_cost=site_cost
+                                                                            )
+                    except Exception as e:  # It will catch other errors related to the cost determination.
+                        db_logger.error('There was an error in determining site size costs.' + e,
+                                extra={'custom_category': 'Invoicing'})
 
                 if field_name == ('trestle_quantity'):
                     if field_value > 0:
-                        trestle_price = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                      inventory_item__item_name='Trestle Table').price
-                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                   inventory_item__item_name='Trestle Table').price_rate
-                        total_trestle_cost = price_rate * trestle_price * decimal.Decimal(field_value)
-                        print("Trestle", total_trestle_cost)
-                        total_cost =total_cost + total_trestle_cost
+                        try:
+                            trestle_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                          inventory_item__item_name='Trestle Table').price
+                            price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                       inventory_item__item_name='Trestle Table').price_rate
+                            total_trestle_cost = price_rate * trestle_price * decimal.Decimal(field_value)
+                            print("Trestle", total_trestle_cost)
+                            total_cost =total_cost + total_trestle_cost
+                            obj, created = InvoiceItem.objects.update_or_create(invoice=invoice,
+                                                                                inventory_item_id=field_value.inventory_item.id,
+                                                                                item_quanity= field_value,
+                                                                                item_cost=total_trestle_cost
+                                                                                )
+                        except Exception as e:  # It will catch other errors related to the cost determination.
+                            db_logger.error('There was an error in determining trestle costs.' + e,
+                                        extra={'custom_category': 'Invoicing'})
                     else:
                         total_trestle_cost = decimal.Decimal(0.00)
                         print("No Trestles", total_trestle_cost)
 
                 if field_name == ('vehicle_length'):
                     if field_value > 6:
-                        vehicle_price = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price
-                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price_rate
-                        total_vehicle_cost = price_rate * vehicle_price
-                        print("Vehicle", total_vehicle_cost)
-                        total_cost =total_cost + total_vehicle_cost
+                        try:
+                            vehicle_price = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price
+                            price_rate = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price_rate
+                            total_vehicle_cost = price_rate * vehicle_price
+                            print("Vehicle", total_vehicle_cost)
+                            total_cost =total_cost + total_vehicle_cost
+                            obj, created = InvoiceItem.objects.update_or_create(invoice=invoice,
+                                                                                inventory_item_id=field_value.inventory_item.id,
+                                                                                item_quanity= 1,
+                                                                                item_cost=total_vehicle_cost
+                                                                                )
+                        except Exception as e:  # It will catch other errors related to the cost determination.
+                            db_logger.error('There was an error in determining vehicle length costs.' + e,
+                                        extra={'custom_category': 'Invoicing'})
                     else:
                         total_vehicle_cost = decimal.Decimal(0.00)
                         print("No Vehicle", total_vehicle_cost)
 
                 if field_name == 'power_required':
                     if field_value:
-                        power_price = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                    inventory_item__item_name='Power Point').price
-                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                   inventory_item__item_name='Power Point').price_rate
-                        power_cost = price_rate * power_price
-                        print('Power', power_price, price_rate, power_cost)
-                        total_cost = total_cost + power_cost
+                        try:
+                            power_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                        inventory_item__item_name='Power Point').price
+                            price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                       inventory_item__item_name='Power Point').price_rate
+                            power_cost = price_rate * power_price
+                            print('Power', power_price, price_rate, power_cost)
+                            total_cost = total_cost + power_cost
+                            obj, created = InvoiceItem.objects.update_or_create(invoice=invoice,
+                                                                                inventory_item_id=field_value.inventory_item.id,
+                                                                                item_quanity= 1,
+                                                                                item_cost=power_cost
+                                                                                )
+                        except Exception as e:  # It will catch other errors related to the cost determination.
+                            db_logger.error('There was an error in determining vehicle length costs.' + e,
+                                        extra={'custom_category': 'Invoicing'})
                     else:
                         power_cost = decimal.Decimal(0.00)
                         print('No Power', power_cost)
@@ -162,18 +209,26 @@ class InvoiceItemManager(models.Manager):
                 if field_name == 'multi_site':
                     total_additional_site_costs = decimal.Decimal(0.00)
                     if AdditionalSiteRequirement.objects.filter(stall_registration=registration).exists():
-                        additional_site_list = AdditionalSiteRequirement.objects.filter(
-                            stall_registration=registration)
-                        for additional_site in additional_site_list:
-                            site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                       inventory_item__id=additional_site.site_size.id).price
-                            price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                                       inventory_item__id=additional_site.site_size.id).price_rate
-                            additional_site_costs = price_rate * site_price * additional_site.site_quantity
-                            print('Additional Sites', additional_site.site_size, site_price, price_rate, additional_site.site_quantity )
-                            total_additional_site_costs = total_additional_site_costs + additional_site_costs
-                        print("Total Additional Site Costs", total_additional_site_costs)
-                        total_cost = total_cost + total_additional_site_costs
+                        try:
+                            additional_site_list = AdditionalSiteRequirement.objects.filter( stall_registration=registration)
+                            for additional_site in additional_site_list:
+                                site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                           inventory_item__id=additional_site.site_size.id).price
+                                price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                           inventory_item__id=additional_site.site_size.id).price_rate
+                                additional_site_costs = price_rate * site_price * additional_site.site_quantity
+                                print('Additional Sites', additional_site.site_size, site_price, price_rate, additional_site.site_quantity )
+                                total_additional_site_costs = total_additional_site_costs + additional_site_costs
+                                obj, created = InvoiceItem.objects.update_or_create(invoice=invoice,
+                                                                                inventory_item_id=field_value.inventory_item.id,
+                                                                                item_quanity= additional_site.site_quantity,
+                                                                                item_cost=additional_site_costs
+                                                                                )
+                            print("Total Additional Site Costs", total_additional_site_costs)
+                            total_cost = total_cost + total_additional_site_costs
+                        except Exception as e:  # It will catch other errors related to the cost determination.
+                            db_logger.error('There was an error in determining multi-site costs.' + e,
+                                        extra={'custom_category': 'Invoicing'})
         gst_component = round((total_cost * 3) / 23, 2)
         print('Total Cost', total_cost, 'GST Component', gst_component)
 
