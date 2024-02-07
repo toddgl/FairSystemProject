@@ -39,7 +39,7 @@
                     </ul>
                 <div class="card-body">
                     {% if not item.is_cancelled %}
-                        {% if item.site_allocation %}
+                        {% if item.site_allocation.all %}
                             {% for allocation in item.site_allocation.all %}
                                 {% if forloop.first %}
                                     <a href="{% url 'fair:stallregistration-move-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-danger">
