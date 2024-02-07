@@ -395,9 +395,10 @@ def stall_registration_update_view(request, pk):
     stallholder = obj.stallholder
     registration_fair = obj.fair
     if SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration=pk).exists():
-        siteallocation = SiteAllocation.currentallocationsmgr.get(stallholder_id=stallholder.id, stall_registration=pk)
+        siteallocations = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id,
+                                                                    stall_registration=pk)
     else:
-        siteallocation = None
+        siteallocations = None
     # list of active parent comments
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=registration_fair.id)
     registrationform = StallRegistrationUpdateForm(instance=obj)
@@ -413,9 +414,8 @@ def stall_registration_update_view(request, pk):
         'filter': comment_filter_message,
         'comments': comments,
     }
-    if siteallocation:
-        allocation_item = siteallocation
-        context['allocation_item'] = allocation_item
+    if siteallocations:
+        context['allocations'] = siteallocations
 
     # Additional Sites add and display
     addsites_form = AdditionalSiteReqForm(request.POST or None)
@@ -508,9 +508,9 @@ class FoodPrepEquipmentDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(FoodPrepEquipmentDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['foodprepequipment'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['foodprepequipment'] = obj
         return context
 
     def form_valid(self, form):
@@ -568,9 +568,9 @@ class FoodSaleTypeDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(FoodSaleTypeDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['foodsaletype'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['foodsaletype'] = obj
         return context
 
     def form_valid(self, form):
@@ -628,9 +628,9 @@ class StallCategoryDetailUpdateView(PermissionRequiredMixin, UpdateView):
 
     def get_context_data(self, **kwargs):
         context = super(StallCategoryDetailUpdateView, self).get_context_data(**kwargs)
-        # Refresh the object from the database in case the form validation changed it
-        object = self.get_object()
-        context['object'] = context['stallcategory'] = object
+        # Refresh the obj from the database in case the form validation changed it
+        obj = self.get_object()
+        context['obj'] = context['stallcategory'] = obj
         return context
 
     def form_valid(self, form):
@@ -730,9 +730,9 @@ def food_registration_create_view(request, pk):
     if request.method == 'POST':
         food_form = FoodRegistrationForm(request.POST, request.FILES or None, instance=foodregistration)
         if food_form.is_valid():
-            object=food_form.save(commit=False)
-            object.is_valid = True
-            object.save()
+            obj=food_form.save(commit=False)
+            obj.is_valid = True
+            obj.save()
             return HttpResponseRedirect(success_url)
     return TemplateResponse(request, template_name, context)
 
@@ -749,7 +749,7 @@ def food_registration_update_view(request, id=None):
     form = FoodRegistrationForm(request.POST, request.FILES, instance=obj)
     context = {
         "form": form,
-        "object": obj,
+        "obj": obj,
         'commentfilterform': commentfilterform,
         'comments': comments,
         'commentform': commentform,
@@ -757,9 +757,9 @@ def food_registration_update_view(request, id=None):
         'comment_filter': comment_filter_message
     }
     if form.is_valid():
-        object = form.save(commit=False)
-        object.is_valid = True
-        object.save()
+        obj = form.save(commit=False)
+        obj.is_valid = True
+        obj.save()
         context['message'] = 'Data saved.'
     if request.htmx:
         return render(request, "stallregistration/food_form_partial.html", context)
@@ -1034,8 +1034,16 @@ def submit_stall_registration(request, id):
     """
     success_url = reverse_lazy('registration:stallregistration-dashboard')
     stallregistration = get_object_or_404(StallRegistration, pk=id)
+    stallholder_id = stallregistration.stallholder.id
     if not can_proceed(stallregistration.to_booking_status_submitted):
         raise PermissionDenied
+    error_comment, is_ok = validate_stallregistration( stallholder_id, stallregistration)
+    if not is_ok:
+        obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
+                                                                              stallregistration.fair, 8,
+                                                                              error_comment)
+        return HttpResponseRedirect(success_url)
+
     stallregistration.to_booking_status_submitted()
     stallregistration.save()
     return HttpResponseRedirect(success_url)
@@ -1047,14 +1055,118 @@ def invoice_stall_registration(request, id):
     process to firstly check to see whether the registration can be moved to invoiced without convener review. If it
     passes the tests the status of the registration is changed to invoiced, if it fails a comment is created
     detailing why it requires the convener's review, and it's status is changed to submitted.
+    If it missing data the submission will be rejected and the items that nee to be rectified detailed in comment
+    message the Comment type is Submission Error (8) Comment type
+    If the stallregistrationis correct but cannot be progressed without Convener intervention the details of this
+    will bedetailed in an Invoicing (4) Comment type
     """
     success_url = reverse_lazy('registration:stallregistration-dashboard')
     stallregistration = get_object_or_404(StallRegistration, pk=id)
+    stallholder_id = stallregistration.stallholder.id
     if not can_proceed(stallregistration.to_booking_status_invoiced):
         raise PermissionDenied
+
+    # Check to see if stallregistrtion is complete otherwise create stallholder comment detailing the issues
+    error_comment, is_ok = validate_stallregistration( stallholder_id, stallregistration)
+    if not is_ok:
+        obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
+                                                                              stallregistration.fair, 8,
+                                                                              error_comment)
+        return HttpResponseRedirect(success_url)
+
+    # Check to see if stallregistration can be invoiced otherwise submit it for convener review
+    error_comment, is_ok = check_needs_convener_review(stallregistration)
+    if not is_ok:
+        obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
+                                                                              stallregistration.fair, 4,
+                                                                              error_comment)
+        return HttpResponseRedirect(success_url)
 
     stallregistration.to_booking_status_invoiced()
     stallregistration.save()
     return HttpResponseRedirect(success_url)
+
+
+def check_needs_convener_review(stallregistration):
+    """
+    Check to sse if the stall and food registration submission  need convener input before the cost of the
+    registration can be invoiced.
+    Args:
+        stallregistration : instance of stallregistration
+    Returns:
+        Boolean : True / False
+    error_comment: String of the issues found that can be used to create a stall holder comment
+    """
+    error_comment = "Stall registration ID " + str(stallregistration.id) + (' will need to be reviewed by the convener '
+                                                                            'because:\n')
+    is_ok = True
+    if stallregistration.vehicle_on_site:
+        not_oversize = StallRegistration.vehicleonsitemgr.not_oversize(stallregistration.id)
+        if not_oversize:
+            pass
+        else:
+            error_comment = error_comment + '- you have a vehicle on site that is over 6 metres in length.\n'
+            is_ok = False
+    if stallregistration.multi_site:
+        error_comment = error_comment + ('- you have requested a multi-site registration the extra sites will need to '
+                                         'be allocated by the convener.\n')
+        is_ok = False
+    if stallregistration.selling_food:
+        valid_cert = FoodRegistration.certificatevaliditymgr.not_expiring(stallregistration.id)
+        if valid_cert:
+            pass
+        else:
+            error_comment = error_comment + '- the food certificate is not valid for the period of the fair.'
+            is_ok = False
+    if is_ok:
+        error_comment =''
+    return error_comment, is_ok
+
+
+def validate_stallregistration(stallholder_id, stallregistration):
+    """
+    Check to see if stallregistrtion is complete otherwise create stallholder comment detailing the issues .
+    used by the invoice_stall_registration and submit_stall_registration functions
+    Args:
+        stallregistration : instance of stallregistration
+    Returns:
+        Boolean : True / False
+        error_comment: String of the issues found that can be used to create a stall holder comment
+    """
+    error_comment = "Stall registration ID " + str(stallregistration.id) + ' cannot be submitted because \n'
+    is_ok = True
+    has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(
+        stallholder_id).exists()
+    if has_unactioned_comments:
+        error_comment = error_comment + ' - there are unactioned comments that need to be resolved.\n'
+        is_ok = False
+    if stallregistration.vehicle_on_site:
+        has_size = StallRegistration.vehicleonsitemgr.has_size(stallregistration.id)
+        has_image = StallRegistration.vehicleonsitemgr.has_image(stallregistration.id)
+        if has_size and has_image:
+            pass
+        else:
+            error_comment = error_comment + (' - you have a vehicle on site and you have not declared its size or  '
+                                             'provided an image of the vehicle.\n')
+            is_ok = False
+    if stallregistration.multi_site:
+        has_related_objects = AdditionalSiteRequirement.objects.filter(
+            stall_registration_id=stallregistration.id).exists()
+        if has_related_objects:
+            pass
+        else:
+            error_comment = error_comment + (' - you have asked for a multi site registration but have not provided '
+                                             'the requirements for the additional site(s).\n')
+            is_ok = False
+    if stallregistration.selling_food:
+        has_cert = FoodRegistration.certificatevaliditymgr.has_certificate(stallregistration.id)
+        if has_cert:
+            pass
+        else:
+            error_comment = error_comment + ' - you need to upload your food certificate'
+            is_ok = False
+    if is_ok:
+        error_comment =''
+    return error_comment, is_ok
 
 

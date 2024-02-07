@@ -7,12 +7,16 @@
 <div class="container">
   <div class="row">
   <h4>Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
-  <h6>{{ stallregistration.get_booking_status_display }}</h6>
+  <h5>Status - {{ stallregistration.get_booking_status_display }}</h5>
     <div id="registration_data">
-      {% if allocation_item %}
+      {% if allocations %}
       <div class="alert alert-primary" role="alert">
-        The {{ allocation_item.event_site.site.site_size }} - {{ allocation_item.event_site.site.site_name }} - for the {{ allocation_item.event_site.event.event_name }} has been allocated to you based on your historical use.
-        <br>
+        Based on your historirical use the following sites have been pre-allocated to you: <br>
+        <ul>
+        {% for allocation_item in allocations %}
+          <li>{{ allocation_item.event_site.site.site_size }} - {{ allocation_item.event_site.site.site_name }} - for the {{ allocation_item.event_site.event.event_name }} </li>
+        {% endfor %}
+        </ul>
         Leave a site move request with reasons in Comments if you want this changed.
       </div>
       {% else %}

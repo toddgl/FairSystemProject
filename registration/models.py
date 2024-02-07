@@ -427,6 +427,16 @@ class HasUnactionedCommentsManager(models.Manager):
     def filter_by_stallholder(self, stallholder_id):
         return self.get_queryset().filter(stallholder=stallholder_id)
 
+class CreateRegistrationCommentManager(models.Manager):
+    """
+    Used to create a comment to advise the Stall holder if there are any issues with their efforts to submit
+    a stall registration for payment.
+    """
+    def create_comment(self, stallholder, current_fair, comment_type, comment):
+        obj = RegistrationComment.objects.create(stallholder= stallholder, fair=current_fair,
+                                                comment_type=comment_type, comment=comment)
+        return obj
+
 
 class RegistrationComment(models.Model):
     """
@@ -469,6 +479,7 @@ class RegistrationComment(models.Model):
     is_done = models.BooleanField(default=False)
     objects = models.Manager()
     hasunactionedcommentsmgr = HasUnactionedCommentsManager()
+    createregistrationcommentmgr = CreateRegistrationCommentManager()
 
     class Meta:
         # sort comments in chronological order by default

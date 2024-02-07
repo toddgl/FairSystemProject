@@ -39,16 +39,19 @@
                     </ul>
                 <div class="card-body">
                     {% if not item.is_cancelled %}
-                        {% for allocation in item.site_allocation.all %}
-                            {% if forloop.first %}
-                                <a href="{% url 'fair:stallregistration-move-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-danger">
-                                    Site Allocation Cancel or Move
-                                </a>
-                            {% endif %}
-                        {% endfor %}
+                        {% if item.site_allocation %}
+                            {% for allocation in item.site_allocation.all %}
+                                {% if forloop.first %}
+                                    <a href="{% url 'fair:stallregistration-move-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-danger">
+                                        Site Allocation Cancel or Move
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        {% else %}
                             <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-primary">
                                 Set Site Allocation
                             </a>
+                        {% endif %}
                     {% endif %}
                         <a href="{% url 'registration:stall-food-registration-detail'  item.id  %}" class="bp-3 mb-2 btn btn-info">
                             View Registration Details
