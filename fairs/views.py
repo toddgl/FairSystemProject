@@ -1066,7 +1066,6 @@ def site_allocation_listview(request):
                 'alert_mgr': alert_message,
             })
         if filterform.is_valid():
-            print('Site Allocation Stallholder:',stallholder)
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
             on_hold = filterform.cleaned_data['on_hold']
@@ -1292,8 +1291,9 @@ def site_allocation_create(request):
             site_allocation.created_by = request.user
             siteallocationform.save()
         else:
-            print(
-                siteallocationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+            db_logger.error('There was an error with saving the site allocation. '
+                            + siteallocationform.errors.as_data(),
+                            extra={'custom_category': 'Site Allocations'})
         return HttpResponseRedirect(success_url)
 
     else:
@@ -1440,7 +1440,7 @@ def setup_process_dashboard_view(request):
         bgcolor2 = 'bg-success'
 
     # Status of Fair Data
-    current_fair = Fair.currentfairmgr.last()
+    current_fair = Fair.currentfairmgr.all().last()
     if current_fair:
         has_reached_activation_date = True
         if int(current_fair.fair_year) < current_year and current_month > 5:
@@ -2018,7 +2018,6 @@ def stallregistration_siteallocation_view(request, id):
                     attr_zone: zone.id,
                     attr_site_size: stallregistration.site_size
                 }
-                print(zone_filter_dict)
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
             template = 'stallregistrations/available_sites_partial.html'
             return TemplateResponse(request, template, {
@@ -2031,10 +2030,8 @@ def stallregistration_siteallocation_view(request, id):
     elif request.method == 'POST':
         # Allocation request created
         for site in request.POST.getlist('eventsites'):
-            print('Stallholderid: ', stallregistration.stallholder.id, 'StallRegistration :', id, 'EventSite: ', site)
             # Create Allocation
             eventsite = EventSite.objects.get(id=site)
-            print(eventsite.id)
             SiteAllocation.objects.create(
                 stallholder_id=stallregistration.stallholder.id,
                 stall_registration= stallregistration,
@@ -2097,7 +2094,6 @@ def stallregistration_move_cancel_view(request, id):
                     attr_zone: zone.id,
                     attr_site_size: stallregistration.site_size
                 }
-                print(zone_filter_dict)
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
             template = 'stallregistrations/available_move_sites_partial.html'
             return TemplateResponse(request, template, {
@@ -2110,10 +2106,8 @@ def stallregistration_move_cancel_view(request, id):
     elif request.method == 'POST':
         # Cancel request created
         if request.POST.getlist('currentsites'):
-            print('Got Here onm cancellation submit')
             cancelledallocations =request.POST.getlist('currentsites')
             for cancelledallocation in cancelledallocations:
-                print(cancelledallocation)
                 siteallocation = SiteAllocation.objects.get(id=cancelledallocation)
                 eventsite = EventSite.objects.get(id=siteallocation.event_site.id)
                 siteallocation.delete()
@@ -2123,7 +2117,6 @@ def stallregistration_move_cancel_view(request, id):
         elif request.POST.get('hidden'):
             currentallocationlist = request.POST.get('hidden').split(',')
             for siteallocation in currentallocationlist:
-                print('CurrentEventSiteId: ', siteallocation)
                 siteallocation = SiteAllocation.objects.get(id=siteallocation)
                 eventsite = EventSite.objects.get(id=siteallocation.event_site.id)
                 siteallocation.delete()
@@ -2132,10 +2125,8 @@ def stallregistration_move_cancel_view(request, id):
                 eventsite.save()
             # Move request created
             for site in request.POST.getlist('eventsites'):
-                print('Stallholderid: ', stallregistration.stallholder.id, 'StallRegistration :', id, 'EventSite: ', site)
                 # Create Allocation
                 eventsite = EventSite.objects.get(id=site)
-                print(eventsite.id)
                 SiteAllocation.objects.create(
                     stallholder_id=stallregistration.stallholder.id,
                     stall_registration= stallregistration,

@@ -6,6 +6,7 @@ from django.db import models
 from django.conf import settings
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
+from django_fsm import FSMField, transition
 
 from fairs.models import (
     InventoryItem,
@@ -54,31 +55,77 @@ class Invoice(models.Model):
         verbose_name = "invoice"
         verbose_name_plural = "invoices"
 
+class PaymentHistoryManager(models.Manager):
+    """
+    Used to create a PaymentHistory object when an invoice is initially created
+    Parameters:
+        invoice - invoive instance
+        amount_to_pay - tatal amoun topay from the invoice
+    Output:
+        the created object
+    """
+    def create_paymenthistory(self, invoice, amount_to_pay):
+        obj = PaymentHistory.objects.create(invoice=invoice, amount_to_pay=amount_to_pay)
+        return obj
+
+
 class PaymentHistory (models.Model):
     """
     Description: A model that records stallholder payment history includes credits as well as payment
     """
-    PENDING = "P"
-    COMPLETED = "C"
-    FAILED = "F"
+    PENDING = "Pending"
+    CANCELLED = "Cancelled"
+    COMPLETED = "Completed"
+    FAILED = "Failed"
+    RECONCILED = "Reconciled"
 
-    STATUS_CHOICES = (
+    PAYMENT_STATUS_CHOICES = [
         (PENDING, _("pending")),
+        (CANCELLED, _("cancelled")),
         (COMPLETED, _("completed")),
         (FAILED, _("failed")),
+        (RECONCILED, _("reconciled")),
+    ]
+    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+    amount_to_pay = models.DecimalField(default=0.00, max_digits=8, decimal_places=2)
+    amount_paid = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
+    payment_status = FSMField(
+        default=PENDING,
+        verbose_name='Payment State',
+        choices=PAYMENT_STATUS_CHOICES,
+        protected=False,
     )
-    invoice_number = models.ForeignKey(Invoice, on_delete=models.CASCADE)
-    amount_paid = models.DecimalField(max_digits=8, decimal_places=2)
-    payment_status = models.CharField(
-        max_length=1, choices=STATUS_CHOICES, default=PENDING
+    payment_type = models.ForeignKey(
+        PaymentType,
+        on_delete=models.CASCADE,
+        null=True
     )
-    payment_type = models.ForeignKey(PaymentType, on_delete=models.CASCADE)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+    objects = models.Manager()
+    paymenthistorymgr = PaymentHistoryManager()
+
 
     class Meta:
         verbose_name = "payment"
         verbose_name_plural = "payments"
+
+    @transition(field=payment_status, source="Pending", target="Cancelled")
+    def to_payment_status_cancelled(self):
+        pass
+
+    @transition(field=payment_status, source="Pending", target="Failed")
+    def to_payment_status_failed(self):
+        pass
+
+    @transition(field=payment_status, source="Pending", target="Completed")
+    def to_payment_status_completed(self):
+        pass
+
+    @transition(field=payment_status, source="Completed", target="Reconciled")
+    def to_payment_status_reconciled(self):
+        pass
+
 
 class InvoiceItemManager(models.Manager):
 
@@ -88,7 +135,7 @@ class InvoiceItemManager(models.Manager):
         for each of teh billable items on the stall registration record
 
         Parameters:
-        - registration: The instance of the the StallRegistration.
+        - registration: The instance of the StallRegistration.
         - field_list: A list of field names to iterate through.
         - action: A function representing the action to be performed on each field.
         """
@@ -250,3 +297,5 @@ class Meta:
         verbose_name = "invoiceitem"
         verbose_name_plural = "invoiceitems"
         unique_together = ('invoice', 'inventory_item')
+
+

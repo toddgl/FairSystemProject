@@ -267,8 +267,9 @@ def stall_registration_create(request):
             else:
                 return HttpResponseRedirect(success_url)
         else:
-            print(
-                registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+            db_logger.error('There was an error with saving the stall registration. '
+                            + registrationform.errors.as_data(),
+                            extra={'custom_category': 'Stall Registration'})
             return TemplateResponse(request, template_name, {
                 'allocation_item': allocation_item,
                 'billing': total_cost,
@@ -298,7 +299,6 @@ def stall_registration_cancel_view(request, pk):
     """
     Remove a stall registration
     """
-    print("Cancel pk:", pk)
     stallregistration = get_object_or_404(StallRegistration, id=pk)
     stallholder = stallregistration.stallholder
     if SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration=pk).exists():
@@ -306,12 +306,10 @@ def stall_registration_cancel_view(request, pk):
     else:
         siteallocation = None
     try:
-        print("Stallregistration cancel function - Cancelling registration id:", pk)
         stallregistration.is_cancelled=True
         stallregistration.to_booking_status_cancelled()
         stallregistration.save(update_fields=['is_cancelled', 'booking_status'])
         if siteallocation:
-            print('Siteallocation Foreign key set to None')
             siteallocation.stall_registration=None
             siteallocation.save(update_fields=['stall_registration'])
     except Exception as e:  # It will catch other errors related to the cancel call.
@@ -453,8 +451,9 @@ def stall_registration_update_view(request, pk):
             else:
                 return HttpResponseRedirect(success_url)
         else:
-            print(
-                registrationform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+            db_logger.error('There was an error with saving the stall Registration. '
+                            + registrationform.errors.as_data(),
+                            extra={'custom_category': 'Stall Registration'})
             return TemplateResponse(request, template_name, context)
 
     return TemplateResponse(request, template_name, context)
@@ -942,8 +941,9 @@ def comments_view_add (request):
                 # save
                 new_comment.save()
             except Exception:
-                print(
-                    commentform.errors.as_data())  # here you print errors to terminal TODO these should go to a log
+                db_logger.error('There was an error with saving the comment form. '
+                                + commentform.errors.as_data(),
+                                extra={'custom_category': 'Comments'})
             return redirect(request.META.get('HTTP_REFERER'))
         if replyform.is_valid():
             parent_obj = None
@@ -1058,7 +1058,7 @@ def invoice_stall_registration(request, id):
     If it missing data the submission will be rejected and the items that nee to be rectified detailed in comment
     message the Comment type is Submission Error (8) Comment type
     If the stallregistrationis correct but cannot be progressed without Convener intervention the details of this
-    will bedetailed in an Invoicing (4) Comment type
+    will be detailed in an Invoicing (4) Comment type
     """
     success_url = reverse_lazy('registration:stallregistration-dashboard')
     stallregistration = get_object_or_404(StallRegistration, pk=id)

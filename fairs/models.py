@@ -123,6 +123,7 @@ class Fair(models.Model):
     objects = models.Manager()
     currentfairmgr = CurrentFairManager()
 
+
     def __str__(self):
         return self.fair_name
 
