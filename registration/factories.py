@@ -4,8 +4,17 @@ import factory
 from factory.django import DjangoModelFactory
 from faker import Faker
 from accounts.models import CustomUser
-from fairs.models import Fair
-from payment.models import Invoice
+from fairs.models import (
+    Fair,
+    InventoryItem,
+    InventoryItemFair
+)
+from payment.models import (
+    Invoice,
+    InventoryItem,
+    PaymentType,
+    PaymentHistory
+)
 from registration.models import (
     StallRegistration,
     StallCategory
@@ -16,11 +25,6 @@ fake =Faker()
 class UserFactory(DjangoModelFactory):
     class Meta:
         model = CustomUser
-        django_get_or_create = ('username',)
-
-    username = factory.LazyAttribute(lambda _: fake.unique.email())
-    first_name = factory.LazyAttribute(lambda _: fake.first_name())
-    last_name = factory.LazyAttribute(lambda _: fake.last_name())
 
 class FairFactory(DjangoModelFactory):
 
@@ -38,24 +42,34 @@ class StallCategoryFactory(DjangoModelFactory):
 
     category_name = "Test Category"
 
+class InventoryItemFactory(DjangoModelFactory):
+
+    class Meta:
+        model = InventoryItem
+
+    item_description = "Test Inventory Item"
+
+class InventoryItemFairFactory(DjangoModelFactory):
+
+    class Mets:
+        model = InventoryItemFair
+
+
 class RegistrationFactory(DjangoModelFactory):
     class Meta:
         model = StallRegistration
 
-    fair = factory.SubFactory(FairFactory)
-    stallholder = factory.SubFactory(UserFactory)
-    stall_manager_name = factory.LazyAttribute(lambda _: fake.name())
-    stall_category = factory.SubFactory(StallCategoryFactory)
-    stall_description = factory.LazyAttribute(lambda  _: fake.text())
-    products_on_site = factory.LazyAttribute(lambda  _: fake.text())
-    total_charge = round(random.randint(1, 1000) * random.random(), 2)
 
 class InvoiceFactory(DjangoModelFactory):
     class Meta:
         model = Invoice
 
-    stall_registration = factory.SubFactory(RegistrationFactory)
-    stallholder = factory.SubFactory(UserFactory)
-    total_cost = round(random.randint(1, 1000) * random.random(), 2)
-    gst_value =  round((total_cost * 3) / 23, 2)
+
+class PaymentTypeFactory(DjangoModelFactory):
+    class Meta:
+        model = PaymentType
+
+class PaymentHistoryFactory(DjangoModelFactory):
+    class Meta:
+        model = PaymentHistory
 

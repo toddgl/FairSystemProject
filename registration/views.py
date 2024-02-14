@@ -29,7 +29,11 @@ from fairs.models import (
     SiteAllocation,
     InventoryItemFair
 )
+from payment.models import (
+    Invoice
+)
 from registration.models import (
+    CommentType,
     FoodPrepEquipment,
     FoodSaleType,
     StallCategory,
@@ -236,8 +240,14 @@ def stall_registration_create(request):
 
     if request.htmx:
         fair_id = request.POST.get('fair')
+        site_size = request.POST.get('site_size')
+        stall_category = request.POST.get('stall_category')
+        trestle_num = request.POST.get('trestle_quantity')
+        vehicle_length = request.POST.get('vehicle_length')
+        power_req = request.POST.get('power_required')
         template_name = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(request, fair_id)
+        total_cost = get_registration_costs(request, fair_id,  site_size, stall_category,
+                                            trestle_num, vehicle_length, power_req)
         return TemplateResponse(request, template_name, {
             'allocation_item': allocation_item,
             'billing': total_cost,
@@ -250,7 +260,13 @@ def stall_registration_create(request):
         else:
             registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
                                                            initial={'fair': fair_id})
-        total_cost = get_registration_costs(request, fair_id)
+        site_size = request.POST.get('site_size')
+        stall_category = request.POST.get('stall_category')
+        trestle_num = request.POST.get('trestle_quantity')
+        vehicle_length = request.POST.get('vehicle_length')
+        power_req = request.POST.get('power_required')
+        total_cost = get_registration_costs(request, fair_id,  site_size, stall_category,
+                                            trestle_num, vehicle_length, power_req)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
@@ -317,9 +333,9 @@ def stall_registration_cancel_view(request, pk):
                         extra={'custom_category': 'Stall Registration'})
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
-def get_registration_costs(request, fair_id, parent_id=None):
-    site_size = request.POST.get('site_size')
-    stall_category = request.POST.get('stall_category')
+def get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None,
+                           vehicle_length=None,
+                           power_req=None):
     additional_site_costs = decimal.Decimal(0.00)
     total_additional_site_costs = decimal.Decimal(0.00)
 
@@ -351,21 +367,18 @@ def get_registration_costs(request, fair_id, parent_id=None):
         site_price = price_rate * site_price
     else:
         site_price = decimal.Decimal(0.00)
-    trestle_num = request.POST.get('trestle_quantity')
     if trestle_num:
         trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price_rate
         total_trestle_cost = price_rate * trestle_price * decimal.Decimal(trestle_num)
     else:
         total_trestle_cost = decimal.Decimal(0.00)
-    vehicle_length = request.POST.get('vehicle_length')
     if vehicle_length:
         vehicle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price_rate
         total_vehicle_cost = price_rate * vehicle_price
     else:
         total_vehicle_cost = decimal.Decimal(0.00)
-    power_req = request.POST.get('power_required')
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price_rate
@@ -423,14 +436,26 @@ def stall_registration_update_view(request, pk):
         context['site_requirement_list'] = additional_sites
 
     if request.htmx:
+        site_size = request.POST.get('site_size')
+        stall_category = request.POST.get('stall_category')
+        trestle_num = request.POST.get('trestle_quantity')
+        vehicle_length = request.POST.get('vehicle_length')
+        power_req = request.POST.get('power_required')
         template_name = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(request, registration_fair.id, pk)
+        total_cost = get_registration_costs(request, registration_fair.id, pk, site_size, stall_category,
+                                            trestle_num, vehicle_length, power_req)
         return TemplateResponse(request, template_name, {
             'billing': total_cost,
             'registrationform': registrationform,
         })
     elif request.method == 'POST':
-        total_cost = get_registration_costs(request, registration_fair.id, pk)
+        site_size = request.POST.get('site_size')
+        stall_category = request.POST.get('stall_category')
+        trestle_num = request.POST.get('trestle_quantity')
+        vehicle_length = request.POST.get('vehicle_length')
+        power_req = request.POST.get('power_required')
+        total_cost = get_registration_costs(request, registration_fair.id, pk, site_size, stall_category,
+                                            trestle_num, vehicle_length, power_req)
         registrationform = StallRegistrationUpdateForm(request.POST, request.FILES or None, instance=obj)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
@@ -656,11 +681,19 @@ def myfair_dashboard_view(request):
     comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     try:
         # Use prefetch_related to bring through the site allocation data associated with the stall registration
-        myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user).prefetch_related('site_allocation').all()
+        myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user).prefetch_related(
+            'site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
+    try:
+        # Use prefetch_related to bring through the payment data associated with the invoice
+        invoice_list = Invoice.invoicecurrentmgr.filter(stallholder=request.user).prefetch_related(
+            'payment_history').all()
+    except ObjectDoesNotExist:
+        invoice_list = Invoice.invoicecurrentmgr.filter(stallholder=request.user)
 
     return TemplateResponse(request, template, {
+    'invoices': invoice_list,
     'registrations': myfair_list,
     'commentfilterform': commentfilterform,
     'comments': comments,
@@ -1039,8 +1072,9 @@ def submit_stall_registration(request, id):
         raise PermissionDenied
     error_comment, is_ok = validate_stallregistration( stallholder_id, stallregistration)
     if not is_ok:
+        comment_type = CommentType.objects.get(type_name__in=['Submission Error'])
         obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
-                                                                              stallregistration.fair, 8,
+                                                                              stallregistration.fair, comment_type,
                                                                               error_comment)
         return HttpResponseRedirect(success_url)
 
@@ -1069,16 +1103,18 @@ def invoice_stall_registration(request, id):
     # Check to see if stallregistrtion is complete otherwise create stallholder comment detailing the issues
     error_comment, is_ok = validate_stallregistration( stallholder_id, stallregistration)
     if not is_ok:
+        comment_type = CommentType.objects.get(type_name__in=['Submission Error'])
         obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
-                                                                              stallregistration.fair, 8,
+                                                                              stallregistration.fair, comment_type,
                                                                               error_comment)
         return HttpResponseRedirect(success_url)
 
     # Check to see if stallregistration can be invoiced otherwise submit it for convener review
     error_comment, is_ok = check_needs_convener_review(stallregistration)
     if not is_ok:
+        comment_type = CommentType.objects.get(type_name__in=['Invoicing'])
         obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
-                                                                              stallregistration.fair, 4,
+                                                                              stallregistration.fair, comment_type,
                                                                               error_comment)
         return HttpResponseRedirect(success_url)
 

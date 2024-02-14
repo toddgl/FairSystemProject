@@ -1,0 +1,300 @@
+-   model: fairs.fair
+    pk: 1
+    fields:
+        fair_year: '2022'
+        fair_name: Martinborough Fair 2022
+        date_created: 2021-09-23 22:00:13
+        date_updated: 2023-01-15 22:19:11.897006
+        date_cancelled: null
+        fair_description: Rotary managed Martinborough Fair - 2022
+        is_cancelled: false
+        activation_date: 2021-10-01 00:59:00
+        is_activated: false
+        allocation_email_date: null
+        created_by: null
+        updated_by: 3
+-   model: fairs.fair
+    pk: 4
+    fields:
+        fair_year: '2023'
+        fair_name: Martinborough Fair 2023
+        date_created: 2023-01-30 21:30:36.196463
+        date_updated: 2023-11-19 15:18:13.853940
+        date_cancelled: null
+        fair_description: SW Rotary managed Martinborough Fair
+        is_cancelled: false
+        activation_date: 2022-09-30 00:00:00
+        is_activated: false
+        allocation_email_date: null
+        created_by: 3
+        updated_by: 3
+-   model: fairs.fair
+    pk: 5
+    fields:
+        fair_year: '2024'
+        fair_name: Martinborough Fair 2024
+        date_created: 2023-11-19 15:19:09.060943
+        date_updated: 2023-12-31 12:02:24.363590
+        date_cancelled: null
+        fair_description: SW Rotary managed Martinborough Fair
+        is_cancelled: false
+        activation_date: 2023-10-01 00:00:00
+        is_activated: true
+        allocation_email_date: 2023-12-31 12:02:24.363356
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 3
+    fields:
+        item_name: Full Size Fair Site
+        item_type: 1
+        item_description: This is the standard full size Fair site
+        item_quantity: 0
+        site_size: 6x3
+        date_created: 2021-12-15 15:21:55.414982
+        date_updated: 2021-12-20 17:27:36.123818
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 4
+    fields:
+        item_name: Half Size Fair Site
+        item_type: 1
+        item_description: Half size fair site there is only a limited number of these
+        item_quantity: 0
+        site_size: 3x3
+        date_created: 2021-12-15 15:38:01.215065
+        date_updated: 2021-12-20 17:27:24.187596
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 5
+    fields:
+        item_name: Power Point
+        item_type: 2
+        item_description: Power point available to some sites - includes a single
+            cable and power socket
+        item_quantity: 0
+        site_size: null
+        date_created: 2021-12-15 15:57:07.336902
+        date_updated: 2021-12-20 17:27:06.090176
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 6
+    fields:
+        item_name: Trestle Table
+        item_type: 5
+        item_description: Trestle Tables provided by Lions
+        item_quantity: 1
+        site_size: null
+        date_created: 2021-12-15 16:00:48.157163
+        date_updated: 2022-05-16 10:14:13.475225
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 7
+    fields:
+        item_name: Health & Safety Food Licence
+        item_type: 4
+        item_description: SWDC approved food licence to enable a stall holder to sell
+            food that will be consumed at the fair
+        item_quantity: 0
+        site_size: null
+        date_created: 2022-05-12 21:09:19.450456
+        date_updated: 2022-06-05 21:41:41.847507
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 8
+    fields:
+        item_name: Foodstall Licence
+        item_type: 4
+        item_description: SWDC approved food licence to enable a stall holder to sell
+            food that will be taken for consumtion off site.
+        item_quantity: 0
+        site_size: null
+        date_created: 2022-06-05 21:42:53.969484
+        date_updated: 2023-01-30 21:40:34.974696
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitem
+    pk: 9
+    fields:
+        item_name: Non-standard Size Site
+        item_type: 1
+        item_description: These are for sites that do not conform to the standard
+            6 x 3 or 3x 3 site size
+        item_quantity: 0
+        site_size: Non standard
+        date_created: 2023-01-15 17:38:51.291778
+        date_updated: 2023-01-15 17:38:51.291802
+        created_by: 3
+        updated_by: null
+-   model: fairs.inventoryitem
+    pk: 10
+    fields:
+        item_name: Over 6m vehicle on site
+        item_type: 6
+        item_description: This is to apply an extra charge for on site vehicles over
+            6m in length
+        item_quantity: 0
+        site_size: null
+        date_created: 2024-01-22 21:01:58.250899
+        date_updated: 2024-01-22 21:56:29.723387
+        created_by: 3
+        updated_by: 3
+-   model: fairs.inventoryitemfair
+    pk: 2
+    fields:
+        fair: 1
+        inventory_item: 3
+        price_rate: 1
+        price: '370.00'
+-   model: fairs.inventoryitemfair
+    pk: 3
+    fields:
+        fair: 1
+        inventory_item: 4
+        price_rate: 1
+        price: '220.00'
+-   model: fairs.inventoryitemfair
+    pk: 4
+    fields:
+        fair: 1
+        inventory_item: 5
+        price_rate: 1
+        price: '100.00'
+-   model: fairs.inventoryitemfair
+    pk: 5
+    fields:
+        fair: 1
+        inventory_item: 6
+        price_rate: 2
+        price: '20.00'
+-   model: fairs.inventoryitemfair
+    pk: 6
+    fields:
+        fair: 1
+        inventory_item: 7
+        price_rate: 2
+        price: '30.00'
+-   model: fairs.inventoryitemfair
+    pk: 7
+    fields:
+        fair: 1
+        inventory_item: 8
+        price_rate: 1
+        price: '20.00'
+-   model: fairs.inventoryitemfair
+    pk: 8
+    fields:
+        fair: 4
+        inventory_item: 5
+        price_rate: 1
+        price: '120.00'
+-   model: fairs.inventoryitemfair
+    pk: 9
+    fields:
+        fair: 4
+        inventory_item: 4
+        price_rate: 1
+        price: '240.00'
+-   model: fairs.inventoryitemfair
+    pk: 10
+    fields:
+        fair: 4
+        inventory_item: 3
+        price_rate: 1
+        price: '390.00'
+-   model: fairs.inventoryitemfair
+    pk: 11
+    fields:
+        fair: 4
+        inventory_item: 6
+        price_rate: 1
+        price: '40.00'
+-   model: fairs.inventoryitemfair
+    pk: 12
+    fields:
+        fair: 4
+        inventory_item: 7
+        price_rate: 2
+        price: '80.00'
+-   model: fairs.inventoryitemfair
+    pk: 13
+    fields:
+        fair: 4
+        inventory_item: 8
+        price_rate: 1
+        price: '30.00'
+-   model: fairs.inventoryitemfair
+    pk: 14
+    fields:
+        fair: 4
+        inventory_item: 9
+        price_rate: 2
+        price: '90.00'
+-   model: fairs.inventoryitemfair
+    pk: 15
+    fields:
+        fair: 5
+        inventory_item: 3
+        price_rate: 1
+        price: '390.00'
+-   model: fairs.inventoryitemfair
+    pk: 16
+    fields:
+        fair: 5
+        inventory_item: 4
+        price_rate: 1
+        price: '240.00'
+-   model: fairs.inventoryitemfair
+    pk: 17
+    fields:
+        fair: 5
+        inventory_item: 9
+        price_rate: 2
+        price: '90.00'
+-   model: fairs.inventoryitemfair
+    pk: 18
+    fields:
+        fair: 5
+        inventory_item: 5
+        price_rate: 1
+        price: '120.00'
+-   model: fairs.inventoryitemfair
+    pk: 19
+    fields:
+        fair: 5
+        inventory_item: 6
+        price_rate: 1
+        price: '40.00'
+-   model: fairs.inventoryitemfair
+    pk: 20
+    fields:
+        fair: 5
+        inventory_item: 7
+        price_rate: 2
+        price: '80.00'
+-   model: fairs.inventoryitemfair
+    pk: 21
+    fields:
+        fair: 5
+        inventory_item: 8
+        price_rate: 1
+        price: '40.00'
+-   model: fairs.inventoryitemfair
+    pk: 22
+    fields:
+        fair: 5
+        inventory_item: 10
+        price_rate: 2
+        price: '50.00'
+-   model: fairs.inventoryitemfair
+    pk: 23
+    fields:
+        fair: 4
+        inventory_item: 10
+        price_rate: 2
+        price: '50.00'

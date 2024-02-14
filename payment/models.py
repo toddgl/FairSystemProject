@@ -1,6 +1,7 @@
 #payment/models.py
 
 import decimal
+import datetime
 import logging
 from django.db import models
 from django.conf import settings
@@ -17,6 +18,9 @@ from registration.models import (
     AdditionalSiteRequirement
 )
 
+# Global Variables
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
 db_logger = logging.getLogger('db')
 
 # Create your models here.
@@ -31,12 +35,20 @@ class PaymentType(models.Model):
         return self.payment_type_name
 
     class Meta:
-        verbose_name_plural = "paymenttypenames"
+        verbose_name_plural = "payment types"
 
-class InvoiceManager(models.Manager):
+class InvoiceCurrentManager(models.Manager):
 
-    def get_invoices(self, registration_id):
-        return super().get_queryset().filter(registration=registration_id)
+    def get_queryset(self):
+        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[ current_year, next_year])
+
+    def get_registration_invoices(self, registration_id):
+        return super().get_queryset().filter(stall_registration_id=registration_id)
+
+    def get_stallholder_invoices(self, stallholder_id):
+        return super().get_queryset().filter(stallholder_id=stallholder_id, stall_registration__fair__fair_year__in=[
+            current_year, next_year])
+
 
 class Invoice(models.Model):
     """
@@ -50,6 +62,8 @@ class Invoice(models.Model):
     total_cost = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
     gst_value = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
     date_created = models.DateTimeField(auto_now_add=True)
+    objects = models.Manager()
+    invoicecurrentmgr = InvoiceCurrentManager()
 
     class Meta:
         verbose_name = "invoice"
@@ -59,8 +73,8 @@ class PaymentHistoryManager(models.Manager):
     """
     Used to create a PaymentHistory object when an invoice is initially created
     Parameters:
-        invoice - invoive instance
-        amount_to_pay - tatal amoun topay from the invoice
+        invoice - invoice instance
+        amount_to_pay - tatal amount to pay from the invoice
     Output:
         the created object
     """
@@ -86,7 +100,11 @@ class PaymentHistory (models.Model):
         (FAILED, _("failed")),
         (RECONCILED, _("reconciled")),
     ]
-    invoice = models.ForeignKey(Invoice, on_delete=models.CASCADE)
+    invoice = models.ForeignKey(
+        Invoice,
+        on_delete=models.CASCADE,
+        related_name = 'payment_history'
+    )
     amount_to_pay = models.DecimalField(default=0.00, max_digits=8, decimal_places=2)
     amount_paid = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     payment_status = FSMField(
@@ -140,16 +158,16 @@ class InvoiceItemManager(models.Manager):
         - action: A function representing the action to be performed on each field.
         """
         fields_to_check = ['stall_category','site_size','trestle_quantity', 'vehicle_length', 'power_required', 'multi_site' ]
-        invoice = Invoice.objects.get_or_create(
+        invoice, created = Invoice.objects.get_or_create(
             stall_registration = registration,
-            stallholder_id = registration.stallholder.id,
+            stallholder = registration.stallholder,
         )
         total_cost = decimal.Decimal(0.00)
         for field_name in fields_to_check:
             field_value = getattr(registration, field_name, None)
             if field_value is not None:
                 print(registration, field_name, field_value)
-                if(field_name == 'stall_category'):
+                if field_name == 'stall_category':
                     if field_value.has_inventory_item:
                         try:
                             category_price = InventoryItemFair.objects.get(fair=registration.fair.id,
@@ -189,7 +207,7 @@ class InvoiceItemManager(models.Manager):
                         db_logger.error('There was an error in determining site size costs.' + e,
                                 extra={'custom_category': 'Invoicing'})
 
-                if field_name == ('trestle_quantity'):
+                if field_name == 'trestle_quantity':
                     if field_value > 0:
                         try:
                             trestle_price = InventoryItemFair.objects.get(fair=registration.fair.id,
@@ -211,7 +229,7 @@ class InvoiceItemManager(models.Manager):
                         total_trestle_cost = decimal.Decimal(0.00)
                         print("No Trestles", total_trestle_cost)
 
-                if field_name == ('vehicle_length'):
+                if field_name == 'vehicle_length':
                     if field_value > 6:
                         try:
                             vehicle_price = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price
@@ -277,6 +295,10 @@ class InvoiceItemManager(models.Manager):
                             db_logger.error('There was an error in determining multi-site costs.' + e,
                                         extra={'custom_category': 'Invoicing'})
         gst_component = round((total_cost * 3) / 23, 2)
+        invoice.total_cost= total_cost
+        invoice.gst_component= gst_component
+        invoice.save()
+        payment_history = PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice. total_cost)
         print('Total Cost', total_cost, 'GST Component', gst_component)
 
 

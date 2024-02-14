@@ -1,0 +1,396 @@
+-   model: registration.stallcategory
+    pk: 1
+    fields:
+        category_name: Food/drink (consumption on site)
+        is_active: true
+        has_inventory_item: true
+        inventory_item: 7
+        date_created: 2022-01-15 17:35:11.657546
+        date_updated: 2022-10-17 22:05:09.523922
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 2
+    fields:
+        category_name: Food/Drink (other)
+        is_active: true
+        has_inventory_item: true
+        inventory_item: 8
+        date_created: 2022-01-15 17:37:06.969205
+        date_updated: 2022-10-17 22:04:55.760346
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 3
+    fields:
+        category_name: Clothing - Adult
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-01-15 17:37:27.613510
+        date_updated: 2022-01-15 17:37:27.613530
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 4
+    fields:
+        category_name: Clothing - Children/Babies
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-01-15 17:37:38.246323
+        date_updated: 2022-01-15 17:37:38.246350
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 5
+    fields:
+        category_name: Baby Needs
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:35:48.587294
+        date_updated: 2022-09-16 17:35:48.587316
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 6
+    fields:
+        category_name: Toys
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:36:04.189414
+        date_updated: 2022-09-16 17:36:04.189433
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 7
+    fields:
+        category_name: Jewellery
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:36:19.428635
+        date_updated: 2022-09-16 17:36:19.428659
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 8
+    fields:
+        category_name: Pottery, Ceramis, Stoneware
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:36:49.722977
+        date_updated: 2022-09-16 17:36:49.722998
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 9
+    fields:
+        category_name: Timber Products
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:37:14.950685
+        date_updated: 2022-09-16 17:37:14.950706
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 10
+    fields:
+        category_name: Furniture
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:37:31.118189
+        date_updated: 2022-09-16 22:06:13.950976
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 11
+    fields:
+        category_name: Soft Furnishings
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:37:48.160667
+        date_updated: 2022-09-16 17:37:48.160687
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 12
+    fields:
+        category_name: Art & Artisan products
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:38:12.648683
+        date_updated: 2022-09-16 17:38:12.648703
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 13
+    fields:
+        category_name: Plants
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:38:23.181538
+        date_updated: 2022-09-16 17:38:23.181558
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 14
+    fields:
+        category_name: Collectables
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:38:45.744846
+        date_updated: 2022-09-16 17:38:45.744867
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 15
+    fields:
+        category_name: Domestic Services
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:38:57.281558
+        date_updated: 2022-09-16 17:38:57.281579
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 16
+    fields:
+        category_name: Baskets
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:39:04.947890
+        date_updated: 2022-09-16 17:39:04.947910
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 17
+    fields:
+        category_name: Books
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:39:12.779183
+        date_updated: 2022-09-16 17:39:12.779204
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 18
+    fields:
+        category_name: Cosmetics
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:39:37.261807
+        date_updated: 2022-09-16 17:39:37.261828
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 19
+    fields:
+        category_name: Gardening Products
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:39:51.390002
+        date_updated: 2022-09-16 17:39:51.390023
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 20
+    fields:
+        category_name: Leather Goods
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:40:07.910179
+        date_updated: 2022-09-16 17:40:07.910200
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 21
+    fields:
+        category_name: Ironware
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:40:25.750368
+        date_updated: 2022-09-16 17:40:25.750389
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 22
+    fields:
+        category_name: Glassware
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:40:33.743792
+        date_updated: 2022-09-16 17:40:33.743813
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 23
+    fields:
+        category_name: Shoes
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:40:52.893326
+        date_updated: 2022-09-16 17:40:52.893351
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 24
+    fields:
+        category_name: Wool Products
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:41:04.277248
+        date_updated: 2022-09-16 17:41:04.277275
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 25
+    fields:
+        category_name: Leatherware
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:41:21.890799
+        date_updated: 2022-09-16 17:41:21.890819
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 26
+    fields:
+        category_name: Carvings, Sculpture
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:41:49.044479
+        date_updated: 2022-09-16 17:41:49.044506
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 27
+    fields:
+        category_name: Kitchen
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:41:56.012759
+        date_updated: 2022-09-16 17:41:56.012783
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 28
+    fields:
+        category_name: Pet Accessories
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 17:42:05.406131
+        date_updated: 2022-09-16 17:42:05.406152
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 29
+    fields:
+        category_name: Sideshows
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:03:40.289736
+        date_updated: 2022-09-16 22:03:40.289757
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 30
+    fields:
+        category_name: Services
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:03:51.178529
+        date_updated: 2022-09-16 22:03:51.178551
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 31
+    fields:
+        category_name: Clothing -General
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:04:11.685884
+        date_updated: 2022-09-16 22:05:41.934118
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 32
+    fields:
+        category_name: Public Awareness
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:04:28.963948
+        date_updated: 2022-09-16 22:04:28.963969
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 33
+    fields:
+        category_name: Charity
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:04:38.991817
+        date_updated: 2022-09-16 22:04:38.991837
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 34
+    fields:
+        category_name: Natural Products
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:04:52.345319
+        date_updated: 2022-09-16 22:04:52.345339
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 35
+    fields:
+        category_name: Hats
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:05:06.399802
+        date_updated: 2022-09-16 22:05:06.399822
+        created_by: 3
+        updated_by: null
+-   model: registration.stallcategory
+    pk: 36
+    fields:
+        category_name: Fashion Accessories
+        is_active: true
+        has_inventory_item: false
+        inventory_item: null
+        date_created: 2022-09-16 22:05:21.549589
+        date_updated: 2022-09-16 22:05:21.549609
+        created_by: 3
+        updated_by: null

@@ -5,6 +5,7 @@
 <!-- Custom css -->
 {% load static %}
 {% load hasallocations_tag %}
+{% load hasinvoices_tag %}
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
 {% endblock %}
@@ -15,6 +16,22 @@
   <hr>
   <div class="row">
     <div class="col-md-6">
+        {% get_has_invoices user.id as invoice_result %}
+          {% if invoice_result %}
+            {% for invoice in invoices %}
+              <div class="container mt-3" style="width: 600px;">
+                <div class="card border-primary mb-3">
+                  <div class="card-body">
+                    <h4 class="card-title text-primary">Invoice ID - {{ invoice.id }}</h4>
+                    <ul class="list-group list-group-flush">
+                      <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ invoice.stall_registration.id }}</li>
+                      <li class="list-group-item"><strong>Total Amount:</strong> {{ invoice.total_cost }}</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          {% endif %}
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">
         <div class="card border-primary mb-3">

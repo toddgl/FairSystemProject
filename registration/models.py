@@ -98,7 +98,7 @@ class StallCategory(models.Model):
     has_inventory_item = models.BooleanField(default=False)
     inventory_item = models.ForeignKey(
         InventoryItem,
-        related_name='inventory_item',
+        related_name='category_inventory_item',
         on_delete=models.SET_NULL,
         blank=True,
         null=True

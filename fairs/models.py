@@ -306,7 +306,7 @@ class InventoryItemFair(models.Model):
         InventoryItem,
         on_delete=models.CASCADE,
         verbose_name='inventory_items',
-        related_name='inventory_item_fair'
+        related_name='inventory_itemr'
     )
     price_rate = models.PositiveSmallIntegerField(
         choices=PRICING_CHOICE,
