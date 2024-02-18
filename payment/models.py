@@ -38,7 +38,9 @@ class PaymentType(models.Model):
         verbose_name_plural = "payment types"
 
 class InvoiceCurrentManager(models.Manager):
-
+    """
+    Description: Methods to access current Invoices
+    """
     def get_queryset(self):
         return super().get_queryset().filter(stall_registration__fair__fair_year__in=[ current_year, next_year])
 
@@ -46,8 +48,7 @@ class InvoiceCurrentManager(models.Manager):
         return super().get_queryset().filter(stall_registration_id=registration_id)
 
     def get_stallholder_invoices(self, stallholder_id):
-        return super().get_queryset().filter(stallholder_id=stallholder_id, stall_registration__fair__fair_year__in=[
-            current_year, next_year])
+        return super().get_queryset().filter(stallholder_id=stallholder_id)
 
 
 class Invoice(models.Model):
@@ -81,6 +82,20 @@ class PaymentHistoryManager(models.Manager):
     def create_paymenthistory(self, invoice, amount_to_pay):
         obj = PaymentHistory.objects.create(invoice=invoice, amount_to_pay=amount_to_pay)
         return obj
+
+class PaymentHistoryCurrentManager(models.Manager):
+    """
+    Description: Methods to get current payments
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(invoice__stall_registration__fair__fair_year__in=[ current_year,
+                                                                                                next_year])
+
+    def get_registration_payment_history(self, registration):
+        return super().get_queryset().filter(invoice__stall_registration=registration)
+
+    def get_stallholder_payment_history(self, stallholder):
+        return super().get_queryset().filter(invoice__stallholder=stallholder)
 
 
 class PaymentHistory (models.Model):
@@ -122,6 +137,7 @@ class PaymentHistory (models.Model):
     date_updated = models.DateTimeField(auto_now=True)
     objects = models.Manager()
     paymenthistorymgr = PaymentHistoryManager()
+    paymenthistorycurrentmgr = PaymentHistoryCurrentManager()
 
 
     class Meta:

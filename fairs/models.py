@@ -278,7 +278,7 @@ class ZoneMap(models.Model):
 
 class InventoryItemPriceManager(models.Manager):
     """
-    Retrun the price of teh inventory item whn  thefair id and inventory Item id are provided
+    Retrun the price of teh inventory item whn  the fair id and inventory Item id are provided
     """
     def queryset(self, fair_id, inventory_item_id):
         return super().get_queryset().get(fair=fair_id, inventory_item=inventory_item_id)

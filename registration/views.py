@@ -30,7 +30,7 @@ from fairs.models import (
     InventoryItemFair
 )
 from payment.models import (
-    Invoice
+    PaymentHistory
 )
 from registration.models import (
     CommentType,
@@ -685,15 +685,10 @@ def myfair_dashboard_view(request):
             'site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
-    try:
-        # Use prefetch_related to bring through the payment data associated with the invoice
-        invoice_list = Invoice.invoicecurrentmgr.filter(stallholder=request.user).prefetch_related(
-            'payment_history').all()
-    except ObjectDoesNotExist:
-        invoice_list = Invoice.invoicecurrentmgr.filter(stallholder=request.user)
+    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=request.user)
 
     return TemplateResponse(request, template, {
-    'invoices': invoice_list,
+    'payment_histories': payment_history_list,
     'registrations': myfair_list,
     'commentfilterform': commentfilterform,
     'comments': comments,

@@ -3,79 +3,221 @@
     fields:
         name: convener
         permissions:
-        - 34
-        - 36
-        - 25
-        - 26
-        - 28
-        - 77
-        - 78
-        - 80
-        - 57
-        - 58
-        - 60
-        - 97
-        - 98
-        - 100
-        - 69
-        - 70
-        - 72
-        - 53
-        - 54
-        - 56
-        - 73
-        - 74
-        - 76
-        - 81
-        - 82
-        - 84
-        - 101
-        - 102
-        - 104
-        - 93
-        - 94
-        - 96
-        - 65
-        - 66
-        - 68
-        - 141
-        - 142
-        - 143
-        - 144
-        - 61
-        - 62
-        - 64
-        - 145
-        - 146
-        - 148
-        - 105
-        - 106
-        - 108
-        - 109
-        - 110
-        - 112
-        - 129
-        - 130
-        - 132
-        - 113
-        - 114
-        - 116
-        - 118
-        - 120
+        -   - change_emailaddress
+            - account
+            - emailaddress
+        -   - view_emailaddress
+            - account
+            - emailaddress
+        -   - add_customuser
+            - accounts
+            - customuser
+        -   - change_customuser
+            - accounts
+            - customuser
+        -   - view_customuser
+            - accounts
+            - customuser
+        -   - add_profile
+            - accounts
+            - profile
+        -   - change_profile
+            - accounts
+            - profile
+        -   - view_profile
+            - accounts
+            - profile
+        -   - add_event
+            - fairs
+            - event
+        -   - change_event
+            - fairs
+            - event
+        -   - view_event
+            - fairs
+            - event
+        -   - add_eventpower
+            - fairs
+            - eventpower
+        -   - change_eventpower
+            - fairs
+            - eventpower
+        -   - view_eventpower
+            - fairs
+            - eventpower
+        -   - add_eventsite
+            - fairs
+            - eventsite
+        -   - change_eventsite
+            - fairs
+            - eventsite
+        -   - view_eventsite
+            - fairs
+            - eventsite
+        -   - add_fair
+            - fairs
+            - fair
+        -   - change_fair
+            - fairs
+            - fair
+        -   - view_fair
+            - fairs
+            - fair
+        -   - add_inventoryitem
+            - fairs
+            - inventoryitem
+        -   - change_inventoryitem
+            - fairs
+            - inventoryitem
+        -   - view_inventoryitem
+            - fairs
+            - inventoryitem
+        -   - add_inventoryitemfair
+            - fairs
+            - inventoryitemfair
+        -   - change_inventoryitemfair
+            - fairs
+            - inventoryitemfair
+        -   - view_inventoryitemfair
+            - fairs
+            - inventoryitemfair
+        -   - add_location
+            - fairs
+            - location
+        -   - change_location
+            - fairs
+            - location
+        -   - view_location
+            - fairs
+            - location
+        -   - add_powerbox
+            - fairs
+            - powerbox
+        -   - change_powerbox
+            - fairs
+            - powerbox
+        -   - view_powerbox
+            - fairs
+            - powerbox
+        -   - add_site
+            - fairs
+            - site
+        -   - change_site
+            - fairs
+            - site
+        -   - view_site
+            - fairs
+            - site
+        -   - add_siteallocation
+            - fairs
+            - siteallocation
+        -   - change_siteallocation
+            - fairs
+            - siteallocation
+        -   - delete_siteallocation
+            - fairs
+            - siteallocation
+        -   - view_siteallocation
+            - fairs
+            - siteallocation
+        -   - add_zone
+            - fairs
+            - zone
+        -   - change_zone
+            - fairs
+            - zone
+        -   - view_zone
+            - fairs
+            - zone
+        -   - add_commenttype
+            - registration
+            - commenttype
+        -   - change_commenttype
+            - registration
+            - commenttype
+        -   - view_commenttype
+            - registration
+            - commenttype
+        -   - add_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - change_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - view_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - add_foodsaletype
+            - registration
+            - foodsaletype
+        -   - change_foodsaletype
+            - registration
+            - foodsaletype
+        -   - view_foodsaletype
+            - registration
+            - foodsaletype
+        -   - add_registrationcomment
+            - registration
+            - registrationcomment
+        -   - change_registrationcomment
+            - registration
+            - registrationcomment
+        -   - view_registrationcomment
+            - registration
+            - registrationcomment
+        -   - add_stallcategory
+            - registration
+            - stallcategory
+        -   - change_stallcategory
+            - registration
+            - stallcategory
+        -   - view_stallcategory
+            - registration
+            - stallcategory
+        -   - change_stallregistration
+            - registration
+            - stallregistration
+        -   - view_stallregistration
+            - registration
+            - stallregistration
 -   model: auth.group
     pk: 2
     fields:
         name: stallholder
         permissions:
-        - 105
-        - 106
-        - 107
-        - 108
-        - 121
-        - 122
-        - 123
-        - 124
-        - 117
-        - 118
-        - 119
-        - 120
+        -   - add_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - change_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - delete_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - view_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - add_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - change_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - delete_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - view_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - add_stallregistration
+            - registration
+            - stallregistration
+        -   - change_stallregistration
+            - registration
+            - stallregistration
+        -   - delete_stallregistration
+            - registration
+            - stallregistration
+        -   - view_stallregistration
+            - registration
+            - stallregistration

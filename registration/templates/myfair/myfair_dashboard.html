@@ -5,7 +5,7 @@
 <!-- Custom css -->
 {% load static %}
 {% load hasallocations_tag %}
-{% load hasinvoices_tag %}
+{% load haspayment_history_tag %}
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
 {% endblock %}
@@ -16,20 +16,27 @@
   <hr>
   <div class="row">
     <div class="col-md-6">
-        {% get_has_invoices user.id as invoice_result %}
-          {% if invoice_result %}
-            {% for invoice in invoices %}
+        {% get_has_payment_history user.id as payment_history_result %}
+          {% if payment_history_result %}
+            {% for payment_history in payment_histories %}
               <div class="container mt-3" style="width: 600px;">
                 <div class="card border-primary mb-3">
                   <div class="card-body">
-                    <h4 class="card-title text-primary">Invoice ID - {{ invoice.id }}</h4>
+                    <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}</h4>
                     <ul class="list-group list-group-flush">
-                      <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ invoice.stall_registration.id }}</li>
-                      <li class="list-group-item"><strong>Total Amount:</strong> {{ invoice.total_cost }}</li>
+                      <li class="list-group-item"><strong>Stall Registration ID:</strong> {{
+                        payment_history.invoice.stall_registration.id }}</li>
+                      <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history
+                        .amount_to_pay }}</li>
+                      <li class="list-group-item"><strong>Amount to Paid:</strong> {{ payment_history
+                        .amount_paid }}</li>
+                      <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history
+                        .payment_status }}</li>
                     </ul>
                   </div>
                 </div>
               </div>
+              <a href="#" class="btn btn-success">View Invoice</a>
             {% endfor %}
           {% endif %}
       {% for registration in registrations %}
