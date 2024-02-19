@@ -30,7 +30,9 @@ from fairs.models import (
     InventoryItemFair
 )
 from payment.models import (
-    PaymentHistory
+    PaymentHistory,
+    Invoice,
+    InvoiceItem
 )
 from registration.models import (
     CommentType,
@@ -228,7 +230,9 @@ def stall_registration_create(request):
         site_size = siteallocation.event_site.site.site_size_id
         site_charge = InventoryItemFair.currentinventoryitemfairmgr.get(
             inventory_item__item_name=siteallocation.event_site.site.site_size).price
-        total_cost = site_charge
+        site_rate = InventoryItemFair.currentinventoryitemfairmgr.get(
+            inventory_item__item_name=siteallocation.event_site.site.site_size).price_rate
+        total_cost = site_charge * site_rate
         registrationform = StallRegistrationCreateForm( initial={'fair': fair_id, 'site_size': site_size})
         allocation_item = siteallocation
     else:
@@ -1112,9 +1116,20 @@ def invoice_stall_registration(request, id):
                                                                               stallregistration.fair, comment_type,
                                                                               error_comment)
         return HttpResponseRedirect(success_url)
+    InvoiceItem.invoiceitemmgr.create_invoice_items(stallregistration)
 
-    stallregistration.to_booking_status_invoiced()
-    stallregistration.save()
+    # check that the invoice and payment history records has been created
+    invoices = Invoice.invoicecurrentmgr.get_registration_invoices(stallregistration)
+    payment_history = PaymentHistory.paymenthistorycurrentmgr.get_registration_payment_history(stallregistration)
+    if invoices and payment_history:
+        stallregistration.to_booking_status_invoiced()
+        stallregistration.save()
+    else:
+        db_logger.error('There was an error with the creation of the invioce and payment history for '
+                        'stallregistration ID '
+                        + stallregistration.id ,
+                        extra={'custom_category': 'Stall Registration Invoicing'})
+
     return HttpResponseRedirect(success_url)
 
 

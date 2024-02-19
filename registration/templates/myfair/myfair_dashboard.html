@@ -6,6 +6,7 @@
 {% load static %}
 {% load hasallocations_tag %}
 {% load haspayment_history_tag %}
+{% load isinvoiced_tag %}
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
 {% endblock %}
@@ -24,19 +25,15 @@
                   <div class="card-body">
                     <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}</h4>
                     <ul class="list-group list-group-flush">
-                      <li class="list-group-item"><strong>Stall Registration ID:</strong> {{
-                        payment_history.invoice.stall_registration.id }}</li>
-                      <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history
-                        .amount_to_pay }}</li>
-                      <li class="list-group-item"><strong>Amount to Paid:</strong> {{ payment_history
-                        .amount_paid }}</li>
-                      <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history
-                        .payment_status }}</li>
+                      <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
+                      <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
+                      <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
+                      <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
                     </ul>
                   </div>
                 </div>
               </div>
-              <a href="#" class="btn btn-success">View Invoice</a>
+              <a href="#" class="btn btn-secondary">View Invoice</a>
             {% endfor %}
           {% endif %}
       {% for registration in registrations %}
@@ -70,14 +67,17 @@
               <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
                 View and edit Stall Registration Detail
               </a>
-              {% get_has_site_allocation user.id as result %}
-                {% if result %}
-                  <a href="{% url 'registration:stallregistration-invoice' registration.pk %}"
-                     class="btn btn-success">Submit for payment</a>
-                {% else %}
-                  <a href="{% url 'registration:stallregistration-submit' registration.pk %}" class="btn btn-success">Submit for site allocation</a>
-                {% endif %}
-              <a class = "btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel the Stall Registration" hx-delete="{% url 'registration:stallregistration-cancel' registration.pk %}"  hx-confirm="Are you sure you wish to cancel this stallregistration?"><i class="bi bi-trash-fill"></i></a>
+              {% get_is_invoiced registration.id as invoiced %}
+              {% if not invoiced %}
+                {% get_has_site_allocation user.id as result %}
+                  {% if result %}
+                    <a href="{% url 'registration:stallregistration-invoice' registration.pk %}"
+                       class="btn btn-success">Submit for payment</a>
+                  {% else %}
+                    <a href="{% url 'registration:stallregistration-submit' registration.pk %}" class="btn btn-success">Submit for site allocation</a>
+                  {% endif %}
+                <a class = "btn btn-danger" data-bs-toggle="tooltip" data-bs-placement="top" title="Cancel the Stall Registration" hx-delete="{% url 'registration:stallregistration-cancel' registration.pk %}"  hx-confirm="Are you sure you wish to cancel this stallregistration?"><i class="bi bi-trash-fill"></i></a>
+              {% endif %}
             </div>
           </div>
         </div>

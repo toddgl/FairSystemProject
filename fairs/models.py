@@ -192,96 +192,43 @@ class CurrentInventoryItemFairManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year], fair__is_activated=True)
 
-
-class FullSitePriceFilterManager(models.Manager):
-    """
-    Manager that returns the current price of full size fair sites, accessed by calling
-    InventoryItemFair.fullsitepricemgr.all()
-    """
-
-    def get_queryset(self):
+    def full_size_site_price(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Full Size Fair Site').price
 
 
-class HalfSitePriceFilterManager(models.Manager):
-    """
-    Manager that returns the current price of half size fair sites, accessed by calling
-    InventoryItemFair.halfsitepricemgr.all()
-    """
-
-    def get_queryset(self):
+    def half_size_site_price(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Half Size Fair Site').price
 
-
-class TrestlePriceFilterManager(models.Manager):
-    """
-    Manager that returns the current price of a trestle, accessed by calling  InventoryItemFair.trestlepricemgr.all()
-    """
-
-    def get_queryset(self):
+    def trestle_table_price(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Trestle Table').price
 
-
-class PowerPointPriceFilterManager(models.Manager):
-    """
-    Manager that returns the current price of site power, accessed by calling  InventoryItemFair.powerpricemgr.all()
-    """
-
-    def get_queryset(self):
+    def power_point_price(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Power Point').price
 
-
-class HealthSafetyFoodLicencePriceFilterManager(models.Manager):
-    """
-    Manager that returns the current price of a food licence, accessed by calling
-    InventoryItemFair.foodlicencepriceemgr.all()
-    """
-
-    def get_queryset(self):
+    def health_safety_food_licence_price(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
                                           inventory_item__item_name='Health & Safety Food Licence').price
 
-
-class FoodLicencePriceFilterManager(models.Manager):
-    """
-    Manager that returns the current price of a food licence, accessed by calling
-    InventoryItemFair.foodlicencepriceemgr.all()
-    """
-
-    def get_queryset(self):
+    def food_licence_price(self):
         return super().get_queryset().get(fair__fair_year__in=[current_year, next_year], fair__is_activated=True,
-                                          inventory_item__item_name='Food Licence').price
-
-
-class ZoneMap(models.Model):
-    """
-    Description: A linked model to Zone that supports the saving on Zone Site maps, the map saving functionality was
-    moved from the Zone model so a history of past maps could be recorded against each Zone.
-    """
-    zone = models.ForeignKey(
-        Zone,
-        on_delete=models.CASCADE,
-        verbose_name='zone',
-        related_name='zone_map',
-    )
-    year = models.CharField(max_length=4, default=str(current_year))
-    map_pdf = models.FileField(upload_to='maps/' + str(current_year))
-
-    class Meta:
-        unique_together = ('year', 'map_pdf')
-
+                                          inventory_item__item_name='Foodstall Licence').price
 
 
 class InventoryItemPriceManager(models.Manager):
     """
-    Retrun the price of teh inventory item whn  the fair id and inventory Item id are provided
+    Return the price of the inventory item when the fair id and inventory Item id are provided
+
+    Usage:
+        Returns the object - InventoryItemFair.inventoryitempricemgr.get_inventory_item_fair(5,4)
+        Returns a field value in this case price -InventoryItemFair.inventoryitempricemgr.get_inventory_item_fair(5,4).price
     """
-    def queryset(self, fair_id, inventory_item_id):
+    def get_inventory_item_fair(self, fair_id, inventory_item_id):
         return super().get_queryset().get(fair=fair_id, inventory_item=inventory_item_id)
+
 
 class InventoryItemFair(models.Model):
     """
@@ -316,16 +263,28 @@ class InventoryItemFair(models.Model):
 
     objects = models.Manager()
     currentinventoryitemfairmgr = CurrentInventoryItemFairManager()
-    fullsitepricemgr = FullSitePriceFilterManager()
-    halfsitepricemgr = HalfSitePriceFilterManager()
-    trestlepricemgr = TrestlePriceFilterManager()
-    powerpricemgr = PowerPointPriceFilterManager()
-    healthsafetyfoodlicencepricemgr = HealthSafetyFoodLicencePriceFilterManager()
-    foodlicencepricemgr = FoodLicencePriceFilterManager()
     inventoryitempricemgr = InventoryItemPriceManager()
 
     def __int__(self):
         return str(self.inventory_item) + "$" + str(self.price)
+
+
+class ZoneMap(models.Model):
+    """
+    Description: A linked model to Zone that supports the saving on Zone Site maps, the map saving functionality was
+    moved from the Zone model so a history of past maps could be recorded against each Zone.
+    """
+    zone = models.ForeignKey(
+        Zone,
+        on_delete=models.CASCADE,
+        verbose_name='zone',
+        related_name='zone_map',
+    )
+    year = models.CharField(max_length=4, default=str(current_year))
+    map_pdf = models.FileField(upload_to='maps/' + str(current_year))
+
+    class Meta:
+        unique_together = ('year', 'map_pdf')
 
 
 class Site(models.Model):
