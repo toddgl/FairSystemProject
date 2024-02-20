@@ -340,8 +340,8 @@ def stall_registration_cancel_view(request, pk):
 def get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None,
                            vehicle_length=None,
                            power_req=None):
-    additional_site_costs = decimal.Decimal(0.00)
     total_additional_site_costs = decimal.Decimal(0.00)
+    total_vehicle_cost = decimal.Decimal(0.00)
 
     # check to see if this a stall registration update
     if parent_id:
@@ -353,6 +353,7 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
                 price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=additional_site.site_size.id).price_rate
                 additional_site_costs = price_rate * site_price * additional_site.site_quantity
                 total_additional_site_costs = total_additional_site_costs + additional_site_costs
+            print('Get Additional Site Costs:', total_additional_site_costs)
 
     if stall_category:
         category = StallCategory.objects.get(pk=stall_category)
@@ -365,30 +366,48 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     else:
         category_price = decimal.Decimal(0.00)
 
+    print('Get stallcategory Costs', category_price)
+
     if site_size:
         site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price_rate
         site_price = price_rate * site_price
     else:
         site_price = decimal.Decimal(0.00)
+
+    print('Get site_size costs', site_price)
+
     if trestle_num:
         trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price_rate
         total_trestle_cost = price_rate * trestle_price * decimal.Decimal(trestle_num)
     else:
         total_trestle_cost = decimal.Decimal(0.00)
-    if vehicle_length:
-        vehicle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price
-        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price_rate
-        total_vehicle_cost = price_rate * vehicle_price
-    else:
-        total_vehicle_cost = decimal.Decimal(0.00)
+
+    print('Get trestle Costs', total_trestle_cost)
+    # Check if the input is not empty
+    if vehicle_length and vehicle_length.isdigit():
+        # Convert the input to an integer
+        vehicle_length = int(vehicle_length)
+        # Check if the vehicle length is greater than 6
+        if vehicle_length > 6:
+            vehicle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price
+            price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Over 6m vehicle on site').price_rate
+            total_vehicle_cost = price_rate * vehicle_price
+        else:
+            total_vehicle_cost = decimal.Decimal(0.00)
+
+    print('Get vehicle length costs', total_vehicle_cost)
+
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price_rate
         power_price = price_rate * power_price
     else:
         power_price = decimal.Decimal(0.00)
+
+    print('Get power required cost', power_price)
+
     total_cost = (category_price + site_price + total_trestle_cost + total_vehicle_cost + power_price +
                   total_additional_site_costs)
     return total_cost
