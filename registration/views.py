@@ -1130,10 +1130,11 @@ def invoice_stall_registration(request, id):
     # Check to see if stallregistration can be invoiced otherwise submit it for convener review
     error_comment, is_ok = check_needs_convener_review(stallregistration)
     if not is_ok:
+        is_done_flag = True # So created comment doesn't respond to unactioned comments test.
         comment_type = CommentType.objects.get(type_name__in=['Invoicing'])
         obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
                                                                               stallregistration.fair, comment_type,
-                                                                              error_comment)
+                                                                              error_comment, is_done_flag)
         return HttpResponseRedirect(success_url)
     InvoiceItem.invoiceitemmgr.create_invoice_items(stallregistration)
 

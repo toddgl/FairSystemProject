@@ -432,9 +432,9 @@ class CreateRegistrationCommentManager(models.Manager):
     Used to create a comment to advise the Stall holder if there are any issues with their efforts to submit
     a stall registration for payment.
     """
-    def create_comment(self, stallholder, current_fair, comment_type, comment):
+    def create_comment(self, stallholder, current_fair, comment_type, comment, is_done=False):
         obj = RegistrationComment.objects.create(stallholder= stallholder, fair=current_fair,
-                                                comment_type=comment_type, comment=comment)
+                                                comment_type=comment_type, comment=comment, is_done=is_done)
         return obj
 
 

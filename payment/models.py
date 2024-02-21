@@ -5,6 +5,7 @@ import datetime
 import logging
 from django.db import models
 from django.conf import settings
+from django.db.models import UniqueConstraint
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django_fsm import FSMField, transition
@@ -56,6 +57,7 @@ class Invoice(models.Model):
     """
     Description: A model for recording invoicing for stall registrations
     """
+    invoice_sequence = models.IntegerField(default=1)
     stall_registration = models.ForeignKey(StallRegistration, on_delete=models.CASCADE)
     stallholder = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -68,6 +70,10 @@ class Invoice(models.Model):
     invoicecurrentmgr = InvoiceCurrentManager()
 
     class Meta:
+        UniqueConstraint(
+            fields=['id', 'invoice_sequence'],
+            name='unique__invoice'
+        )
         verbose_name = "invoice"
         verbose_name_plural = "invoices"
 
@@ -123,6 +129,7 @@ class PaymentHistory (models.Model):
     )
     amount_to_pay = models.DecimalField(default=0.00, max_digits=8, decimal_places=2)
     amount_paid = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
+    amount_reconciled = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     payment_status = FSMField(
         default=PENDING,
         verbose_name='Payment State',
@@ -176,6 +183,7 @@ class InvoiceItemManager(models.Manager):
         """
         fields_to_check = ['stall_category','trestle_quantity', 'vehicle_length', 'power_required', 'multi_site' ]
         invoice, created = Invoice.objects.get_or_create(
+            invoice_sequence = 1,
             stall_registration = registration,
             stallholder = registration.stallholder,
         )
