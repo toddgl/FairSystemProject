@@ -1061,7 +1061,9 @@ def convener_stall_registration_detail_view(request, id):
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=stall_registration.stallholder.id)
     context = {
+        'payment_histories': payment_history_list,
         'stallholder_detail': stallholder_detail,
         "stall_data" : stall_registration,
         'commentfilterform': commentfilterform,

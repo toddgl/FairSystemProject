@@ -7,6 +7,7 @@
 {% load hasallocations_tag %}
 {% load haspayment_history_tag %}
 {% load isinvoiced_tag %}
+{% load isfoodstall_tag %}
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
 {% endblock %}
@@ -65,13 +66,18 @@
             </ul>
             <div class="card-body">
               {% get_is_invoiced registration.id as invoiced %}
+              {% get_is_foodstall registration.id as foodstall %}
               {% if not invoiced %}
                 <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
                   View and edit Stall Registration Detail
                 </a>
+              {% elif foodstall %}
+                <a href="{% url 'registration:stallholder-stall-food-registration-detail' registration.pk %}" class="btn btn-primary">
+                  View Stall Registration Detail and update vehicle and Food Certificate details
+                </a>
               {% else %}
                 <a href="{% url 'registration:stallholder-stall-food-registration-detail' registration.pk %}" class="btn btn-primary">
-                  View Stall Registration Detail and update vehicle and Food Certificate Details
+                  View Stall Registration Detail and update vehicle details
                 </a>
               {% endif %}
               {% get_is_invoiced registration.id as invoiced %}

@@ -720,7 +720,7 @@ class InventoryItemFairDetailForm(ModelForm):
 
     class Meta:
         model = InventoryItemFair
-        fields = ['fair', 'inventory_item', 'price_rate', 'price']
+        fields = ['fair', 'inventory_item', 'price_rate', 'is_percentage', 'price', 'is_refundable']
         widgets = {
             'fair': Select(attrs={
                 'class': 'form-select',
@@ -734,10 +734,16 @@ class InventoryItemFairDetailForm(ModelForm):
                 'class': 'form-select',
                 'style': 'max-width: 300px;',
             }),
+            'is_percentage': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
             'price': NumberInput(attrs={
-                'class': "form-control",
-                'style': 'max-width: 100px;',
-                'placeholder': 'Item Price'
+                    'class': "form-control",
+                    'style': 'max-width: 100px;',
+                    'placeholder': 'Item Price'
+                }),
+            'is_refundable': CheckboxInput(attrs={
+                'class': 'form-check-input',
             }),
         }
 
@@ -749,7 +755,7 @@ class InventoryItemFairCreateForm(ModelForm):
 
     class Meta:
         model = InventoryItemFair
-        fields = ['fair', 'inventory_item', 'price_rate', 'price']
+        fields = ['fair', 'inventory_item', 'price_rate', 'is_percentage', 'price', 'is_refundable']
         widgets = {
             'fair': Select(attrs={
                 'class': 'form-select',
@@ -763,10 +769,18 @@ class InventoryItemFairCreateForm(ModelForm):
                 'class': 'form-select',
                 'style': 'max-width: 300px;',
             }),
+            'is_percentage': CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'checked': False
+            }),
             'price': NumberInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 100px;',
                 'placeholder': 'Item Price'
+            }),
+            'is_refundable': CheckboxInput(attrs={
+                'class': 'form-check-input',
+                'checked': True
             }),
         }
 
