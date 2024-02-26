@@ -1047,11 +1047,43 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
     return render(request, "stallregistration/delete.html", context)
 
 
-def stall_registration_detail_view(request, id):
+def convener_stall_registration_detail_view(request, id):
     """
     Display the details of the stall and food registration data provided by the stallholder
     """
-    template = "stallregistration/stall_registration_detail.html"
+    template = "stallregistration/convener_stall_registration_detail.html"
+    comment_filter_message= 'Showing current comments of the current fair'
+    commentfilterform = CommentFilterForm(request.POST or None)
+    commentform = RegistrationCommentForm(request.POST or None)
+    replyform = CommentReplyForm(request.POST or None)
+    current_fair = Fair.currentfairmgr.all().last()
+    stall_registration = StallRegistration.objects.get(id=id)
+    request.session['stallholder_id'] = stall_registration.stallholder.id
+    stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
+    comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    context = {
+        'stallholder_detail': stallholder_detail,
+        "stall_data" : stall_registration,
+        'commentfilterform': commentfilterform,
+        'comments': comments,
+        'commentform': commentform,
+        'replyform': replyform,
+        'comment_filter': comment_filter_message
+    }
+    if stall_registration.multi_site:
+        context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
+
+    if FoodRegistration.objects.filter(registration=id).exists():
+        context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
+        context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
+
+    return TemplateResponse(request, template, context)
+
+def stallholder_stall_registration_detail_view(request, id):
+    """
+    Display the details of the stall and food registration data provided by the stallholder
+    """
+    template = "stallregistration/stallholder_stall_registration_detail.html"
     comment_filter_message= 'Showing current comments of the current fair'
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)

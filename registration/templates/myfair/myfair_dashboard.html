@@ -23,8 +23,7 @@
               <div class="container mt-3" style="width: 600px;">
                 <div class="card border-primary mb-3">
                   <div class="card-body">
-                    <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{
-                      payment_history.invoice.invoide_sequence}}</h4>
+                    <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{ payment_history.invoice.invoice_sequence }}</h4>
                     <ul class="list-group list-group-flush">
                       <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
                       <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
@@ -65,9 +64,16 @@
               <li class="list-group-item"><strong>Total Cost:</strong> ${{ registration.total_charge }}</li>
             </ul>
             <div class="card-body">
-              <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
-                View and edit Stall Registration Detail
-              </a>
+              {% get_is_invoiced registration.id as invoiced %}
+              {% if not invoiced %}
+                <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
+                  View and edit Stall Registration Detail
+                </a>
+              {% else %}
+                <a href="{% url 'registration:stallholder-stall-food-registration-detail' registration.pk %}" class="btn btn-primary">
+                  View Stall Registration Detail and update vehicle and Food Certificate Details
+                </a>
+              {% endif %}
               {% get_is_invoiced registration.id as invoiced %}
               {% if not invoiced %}
                 {% get_has_site_allocation user.id as result %}

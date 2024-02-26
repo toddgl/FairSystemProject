@@ -1,0 +1,257 @@
+<!--registration/templates/stallregistration/convener_stall_registration_detail.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+{% load haspayment_history_tag %}
+{% load isinvoiced_tag %}
+
+{% block body %}
+<div class="container">
+  <div class="row">
+    <div class="px-5 my-5 text-center">
+      <h1>{{ stall_data.fair }} Registration Detail for
+        {% if stallholder_detail.org_name is None %}
+        {{ stall_data.stallholder }}
+        {% else %}
+        {{ stallholder_detail.org_name }}
+        {% endif %}
+      </h1>
+      <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderdetail"> Click to view stallholder profile</button>
+      {% get_has_payment_history stall_data.stallholder.id as payment_history_result %}
+      {% if payment_history_result %}
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderpaymenthistory"> Click to view stallholder payment history</button>
+      {% endif %}
+    </div>
+    <hr>
+  </div>
+  <div class="row">
+    <div class="col-md-6">
+      <div class="col-12 col-md-12 col-lg-12">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Stall Registration Detail</h4>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Registration ID:</strong> {{ stall_data.id }}</li>
+            <li class="list-group-item"><strong>Status:</strong> {{ stall_data.booking_status }}</li>
+            <li class="list-group-item"><strong>Stall Manager:</strong> {{ stall_data.stall_manager_name }}</li>
+            <li class="list-group-item"><strong>Vehicle Registration:</strong> {{ stall_data.manager_vehicle_registration}}</li>
+            <li class="list-group-item"><strong>Stall Category:</strong> {{ stall_data.stall_category }}</li>
+            <li class="list-group-item"><strong>Site Size:</strong> {{ stall_data.site_size }}</li>
+            <li class="list-group-item"><strong>Description:</strong> {{ stall_data.stall_description }}</li>
+            <li class="list-group-item"><strong>Products on Site:</strong> {{ stall_data.products_on_site }}</li>
+            <li class="list-group-item"><strong>Is selling Food:</strong> {{ stall_data.selling_food|yesno:"Yes,No" }}</li>
+          </ul>
+          <hr>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Power Required:</strong> {{ stall_data.power_required|yesno:"Yes,No" }}</li>
+            {% if stall_data.trestle_required %}
+              <li class="list-group-item"><strong>Number of Trestles Required:</strong> {{ stall_data.trestle_quantity }}</li>
+            {% endif %}
+          </ul>
+          <hr>
+          {% if stall_data.vehicle_on_site %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Vehicle Width:</strong> {{ stall_data.vehicle_width }}</li>
+            <li class="list-group-item"><strong>Vehicle Length:</strong> {{ stall_data.vehicle_length }}</li>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#imageModal"> Click to view vehicle image</button>
+          </ul>
+          <hr>
+          {% endif %}
+        </div>
+        {% if additional_sites %}
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Additional Sites Required</h4>
+          </div>
+          <table class="table table-striped">
+            <thead>
+            <tr>
+              <th scope="col">Quantity</th>
+              <th scope="col">Site Size</th>
+              <th scope="col">Location</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for site in additional_sites %}
+            <tr>
+              <td>{{ site.site_quantity }}</td>
+              <td>{{ site.site_size }}</td>
+              <td>{{ site.get_location_choice_display }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        <hr>
+        {% endif %}
+      </div>
+      <hr>
+      {% if stall_data.selling_food %}
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Food Registration Detail</h4>
+          </div>
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Food Stall Type:</strong> {{ food_data.food_stall_type }}</li>
+            <li class="list-group-item"><strong>Is Food Consumed at the Fair:</strong> {{ food_data.food_fair_consummed|yesno:"Yes,No" }}</li>
+            <li class="list-group-item"><strong>Food Display:</strong> {{ food_data.food_display_method }}</li>
+            <li class="list-group-item"><strong>Food Source:</strong> {{ food_data.food_source }}</li>
+            <li class="list-group-item"><strong>Food Storage:</strong> {{ food_data.food_storage_prep_method }}</li>
+            <li class="list-group-item"><strong>Equipment Storage:</strong> {{ food_data.food_storage_prep }}</li>
+            <li class="list-group-item"><strong>Hygene:</strong> {{ food_data.hygiene_methods }}</li>
+          </ul>
+          <hr>
+          {% if food_data.has_food_certificate %}
+          <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Certificate expiry date:</strong> {{ food_data.certificate_expiry_date }}</li>
+            <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#certModal"> Click to view food certificate</button>
+          </ul>
+          <hr>
+          {% endif %}
+        </div>
+        {% if equipment_list %}
+        <hr>
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title text-primary">Food Equipment</h4>
+          </div>
+          <table class="table table-striped">
+            <thead>
+            <tr>
+              <th scope="col">Quantity</th>
+              <th scope="col">Name</th>
+              <th scope="col">Powered</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for equipment in equipment_list %}
+            <tr>
+              <td>{{ equipment.equipment_quantity }}</td>
+              <td>{{ equipment.food_prep_equipment.equipment_name }}</td>
+              <td>{{ equipment.get_how_powered_display }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% endif %}
+      {% endif %}
+      <hr>
+      <div>
+        <a type="button" class="ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <h4>Comments</h4>
+      {% include 'stallregistration/registration_comments_filter.html' %}
+    </div>
+  </div>
+</div>
+<!--Vehicle Image Bootstrap modal -->
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+        <div class="modal-content">
+            <!-- Modal heading -->
+            <div class="modal-header">
+                <h5 class="modal-title" id="imageModalLabel">Vehicle Image</h5>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+                </button>
+            </div>
+            <!-- Modal body with image -->
+            <div class="modal-body">
+              {% if stall_data.vehicle_image  %}
+                <img src="{{ stall_data.vehicle_image.url }}" />
+              {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+<!--Food Certificate Bootstrap modal -->
+<div class="modal fade" id="certModal" tabindex="-1" role="dialog" aria-labelledby="certModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="certModalLabel">Food Certificate</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <!-- Modal body with image -->
+      <div class="modal-body">
+        {% if food_data.food_registration_certificate  %}
+          {% if food_date.cert_filetype == "image" %}
+            <img src="{{ food_data.food_registration_certificate.url }}" class="figure-img img-fluid"/>
+          {% else %}
+            <iframe src="{{ food_data.food_registration_certificate.url }}"
+              frameBorder="0"
+              scrolling="auto"
+              height="100%"
+              width="100%"
+            ></iframe>
+          {% endif %}
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Stallholder details modal -->
+<div class="modal fade" id="stallholderdetail" tabindex="-1" role="dialog" aria-labelledby="stallholderdetailLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="stallholderdetailLabel">Stallholder Profile</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="card">
+          <div class="card-body">
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item"><strong>Stallholder Name:</strong> {{ stallholder_detail.user }}</li>
+              <li class="list-group-item"><strong>Phone:</strong> {{ stallholder_detail.user.phone}}</li>
+              <li class="list-group-item"><strong>Alternative Phone:</strong> {{ stallholder_detail.phone2}}</li>
+              <li class="list-group-item"><strong>Email:</strong> {{ stallholder_detail.user.email }}</li>
+              <li class="list-group-item"><strong>Business Name:</strong> {{ stallholder_detail.org_name}}</li>
+              <li class="list-group-item"><strong>Home Town:</strong> {{ stallholder_detail.user.town}}</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Stallholder payment history modal -->
+<div class="modal fade" id="stallholderpaymenthistory" tabindex="-1" role="dialog"
+     aria-labelledby="stallholderpaymenthistorylLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header">
+        <h5 class="modal-title" id="stallholderpaymenthistorylLabel">Stallholder Payment History</h5>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <div class="modal-body">
+        {% for payment_history in payment_histories %}
+          <div class="container mt-3" style="width: 600px;">
+            <div class="card border-primary mb-3">
+              <div class="card-body">
+                <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{ payment_history.invoice.invoice_sequence }}</h4>
+                <ul class="list-group list-group-flush">
+                  <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
+                  <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
+                  <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
+                  <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <a href="#" class="btn btn-secondary">View Invoice</a>
+        {% endfor %}
+    </div>
+  </div>
+  </div>
+</div>
+{% endblock %}

@@ -260,6 +260,8 @@ class InventoryItemFair(models.Model):
         default=FAIRPRICE,
     )
     price = models.DecimalField(max_digits=10, decimal_places=2)
+    is_percentage = models.BooleanField(default=False)
+    is_refundable = models.BooleanField(default=True)
 
     objects = models.Manager()
     currentinventoryitemfairmgr = CurrentInventoryItemFairManager()
