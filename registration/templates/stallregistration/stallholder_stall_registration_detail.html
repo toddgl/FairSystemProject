@@ -132,6 +132,7 @@
       {% endif %}
       <hr>
       <div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrationModal"> Click to update registration data</button>
         <a type="button" class="ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
       </div>
     </div>
@@ -184,6 +185,29 @@
             ></iframe>
           {% endif %}
         {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+<!--Update selected Registration data Bootstrap modal -->
+<div class="modal fade" id="registrationModal" tabindex="-1" role="dialog" aria-labelledby="registrationModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header bg-info text-dark">
+        <h4 class="modal-title" id="registrationModalLabel">Registration Update</h4>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <!-- Modal body with update form -->
+      <div class="modal-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ registrationupdateform.as_p }}
+          <input type="submit" class="btn btn-primary" value="Update" >
+          <a href="{% url 'registration:stallregistration-dashboard' %}" class="btn btn-secondary" role="button">Cancel</a>
+        </form>
       </div>
     </div>
   </div>

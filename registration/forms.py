@@ -374,13 +374,16 @@ class StallRegistrationCreateForm(ModelForm):
 
     def clean_vehicle_image(self):
         allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("vehicle_image", False)
+        thefile = self.cleaned_data.get("vehicle_image", None)
         if thefile is not None:
             mime = magic.from_buffer(thefile.read(), mime=True)
             if mime not in allowed_filetypes:
                 raise forms.ValidationError('File must be a png or jpg image')
             else:
                 return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
 
     def clean(self):
         cleaned_data = super().clean()
@@ -396,6 +399,69 @@ class StallRegistrationCreateForm(ModelForm):
                     "If you are selling any type of food item"
                 )
         return self.cleaned_data  # never forget this!
+
+
+class StallRegistrationStallholderEditForm(ModelForm):
+    """
+    Form to allow a stallholder to update information once the registration is invoiced.  The changes must not affect pricing
+    so is limited to manager name, vehicle registration, vehicle on site images
+    """
+    class Meta:
+        model = StallRegistration
+        fields = [
+            'stall_manager_name',
+            'manager_vehicle_registration',
+            'vehicle_on_site',
+            'vehicle_length',
+            'vehicle_width',
+            'vehicle_image',
+        ]
+        labels = {
+            'stall_manager_name': 'Stall manager\'s name',
+            'manager_vehicle_registration': 'Manager\'s vehicle registration',
+        }
+        widgets = {
+            'stall_manager_name': TextInput(attrs={
+                'placeholder': 'First and last name',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'manager_vehicle_registration': TextInput(attrs={
+                'placeholder': 'Rego',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'vehicle_on_site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'vehicle_length': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_width': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_image': FileInput(),
+        }
+    def clean_vehicle_image(self):
+        allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
+        thefile = self.cleaned_data.get("vehicle_image", None)
+        if thefile:
+            if hasattr(thefile, 'read') and hasattr(thefile, 'name'):
+                mime = magic.from_buffer(thefile.read(), mime=True)
+                print(mime)
+                if mime not in allowed_filetypes:
+                    raise forms.ValidationError('File must be a png or jpg image')
+                else:
+                    return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
 
 
 class StallRegistrationUpdateForm(ModelForm):
@@ -539,7 +605,7 @@ class StallRegistrationUpdateForm(ModelForm):
 
     def clean_vehicle_image(self):
         allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("vehicle_image", False)
+        thefile = self.cleaned_data.get("vehicle_image", None)
         if thefile is not None:
             mime = magic.from_buffer(thefile.read(), mime=True)
             print(mime)
@@ -547,6 +613,9 @@ class StallRegistrationUpdateForm(ModelForm):
                 raise forms.ValidationError('File must be a png or jpg image')
             else:
                 return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
 
     def clean(self):
         cleaned_data = super().clean()

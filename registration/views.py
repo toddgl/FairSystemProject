@@ -61,6 +61,7 @@ from .forms import (
     CommentReplyForm,
     StallRegistrationFilterForm,
     AdditionalSiteReqForm,
+    StallRegistrationStallholderEditForm,
 )
 
 # Global Variables
@@ -1095,7 +1096,9 @@ def stallholder_stall_registration_detail_view(request, id):
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    registrationupdateform = StallRegistrationStallholderEditForm(instance=stall_registration)
     context = {
+        'registrationupdateform': registrationupdateform,
         'stallholder_detail': stallholder_detail,
         "stall_data" : stall_registration,
         'commentfilterform': commentfilterform,
@@ -1110,6 +1113,19 @@ def stallholder_stall_registration_detail_view(request, id):
     if FoodRegistration.objects.filter(registration=id).exists():
         context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
+
+    if request.method == 'POST':
+        registrationupdateform = StallRegistrationStallholderEditForm(request.POST, request.FILES or None,
+                                                         instance=stall_registration)
+        if registrationupdateform.is_valid():
+            stall_registration = registrationupdateform.save(commit=False)
+            stall_registration.save()
+
+        else:
+            db_logger.error('There was an error with updating the stall Registration. '
+                            + registrationupdateform.errors.as_data(),
+                            extra={'custom_category': 'Stall Registration'})
+            return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
 
