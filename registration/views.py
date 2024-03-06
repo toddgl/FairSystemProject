@@ -62,6 +62,7 @@ from .forms import (
     StallRegistrationFilterForm,
     AdditionalSiteReqForm,
     StallRegistrationStallholderEditForm,
+    FoodRegistrationStallholderEditForm,
 )
 
 # Global Variables
@@ -1093,12 +1094,17 @@ def stallholder_stall_registration_detail_view(request, id):
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
+    food_registration = FoodRegistration.objects.get(registration=stall_registration)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     registrationupdateform = StallRegistrationStallholderEditForm(instance=stall_registration)
+    foodregistrtionupdateform = FoodRegistrationStallholderEditForm(instance=food_registration)
+    equipment_form = FoodPrepEquipReqForm(request.POST or None)
     context = {
         'registrationupdateform': registrationupdateform,
+        'foodregistrationupdateform': foodregistrtionupdateform,
+        'equipment_form': equipment_form,
         'stallholder_detail': stallholder_detail,
         "stall_data" : stall_registration,
         'commentfilterform': commentfilterform,
@@ -1117,9 +1123,13 @@ def stallholder_stall_registration_detail_view(request, id):
     if request.method == 'POST':
         registrationupdateform = StallRegistrationStallholderEditForm(request.POST, request.FILES or None,
                                                          instance=stall_registration)
-        if registrationupdateform.is_valid():
+        foodregistrtionupdateform = FoodRegistrationStallholderEditForm(request.POST, request.FILES or None,
+                                                        instance=food_registration)
+        if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
             stall_registration = registrationupdateform.save(commit=False)
             stall_registration.save()
+            food_registration = foodregistrtionupdateform.save(commit=False)
+            food_registration.save()
 
         else:
             db_logger.error('There was an error with updating the stall Registration. '

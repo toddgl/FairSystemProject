@@ -726,7 +726,7 @@ class FoodRegistrationForm(ModelForm):
 
     def clean_food_registration_certificate(self):
         allowed_filetypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("food_registration_certificate", False)
+        thefile = self.cleaned_data.get("food_registration_certificate", None)
         if thefile is not None:
             mime = magic.from_buffer(thefile.read(), mime=True)
             print(mime)
@@ -734,6 +734,104 @@ class FoodRegistrationForm(ModelForm):
                 raise forms.ValidationError('File must be a pdf, png or jpg document')
             else:
                 return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
+
+class FoodRegistrationStallholderEditForm(ModelForm):
+    """
+    Form for tall holder to update non-financial items  releated to Food registration
+    """
+
+    class Meta:
+        model = FoodRegistration
+        fields = [
+            'food_display_method',
+            'food_fair_consumed',
+            'food_source',
+            "has_food_prep",
+            'food_storage_prep_method',
+            'food_storage_prep',
+            'hygiene_methods',
+            'has_food_certificate',
+            'certificate_expiry_date',
+            'food_registration_certificate',
+        ]
+        labels = {
+            'food_display_method': 'How will the food be displayed',
+            'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
+            'food_source': 'Where will you obtain the food from',
+            'has_food_prep': 'Is any storage or preparation of the food to be undertaken after it is obtained by the '
+                             'operator of the food stall?',
+            'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
+            'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
+            'hygiene_methods': 'What arrangements do you have for hand washing',
+            'has_food_certificate': 'Do you have a food registration certificate',
+            'certificate_expiry_date': 'What is the expiry date of the certificate',
+            'food_registration_certificate': 'Please upload your food certificate',
+        }
+        widgets = {
+            'food_display_method': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'rows': '5',
+                'placeholder': 'Describe how the food will be displayed'
+            }),
+            'food_fair_consumed': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'food_source': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe where the food being sold will be sourced from'
+            }),
+            'has_food_prep': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'food_storage_prep_method': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe where and how will the pre-sale storage or preparation of the food take place'
+            }),
+            'food_storage_prep': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe method and location of Food utensils, appliances and equipment.'
+            }),
+            'hygiene_methods': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe What arrangements have been made for toilet use and washing hands.'
+            }),
+            'has_food_certificate': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'certificate_expiry_date': DateInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 400px;',
+                'type' : 'date'
+            }),
+            'food_registration_certificate': FileInput(),
+        }
+
+    def clean_food_registration_certificate(self):
+        allowed_filetypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+        thefile = self.cleaned_data.get("food_registration_certificate", None)
+        if thefile is not None:
+            mime = magic.from_buffer(thefile.read(), mime=True)
+            print(mime)
+            if mime not in allowed_filetypes:
+                raise forms.ValidationError('File must be a pdf, png or jpg document')
+            else:
+                return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
+
 
 class FoodPrepEquipReqForm(ModelForm):
     """
