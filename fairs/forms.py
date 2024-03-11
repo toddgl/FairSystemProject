@@ -981,7 +981,7 @@ class LocationCreateForm(ModelForm):
             }),
         }
 
-    def clean_power_location_name(self):
+    def clean_location_name(self):
         location_name = self.cleaned_data['location_name']
         if Location.objects.filter(location_name=location_name).exists():
             raise forms.ValidationError("This Location has already been created.")

@@ -1,0 +1,15 @@
+<!--faq/templates/faq_detail.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Update Location Detail</h2>
+  <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <input type="submit" class="btn btn-primary" value="Update" >
+    <a href="{{ view.get_success_url }}" class="btn btn-secondary">Cancel</a>
+  </form>
+</div>
+{% endblock %}`
