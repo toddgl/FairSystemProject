@@ -5,10 +5,12 @@
 {% block body %}
 <div class="container">
   <h1>FAQ</h1>
-    <form action='actionUrl' method='GET'>
-        <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new FAQ</button>
-        <a href="/" class="btn btn-secondary">Cancel</a>
-    </form>
+    {% if user.role == 2 %}
+        <form action='actionUrl' method='GET'>
+            <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new FAQ</button>
+            <a href="/" class="btn btn-secondary">Cancel</a>
+        </form>
+    {% endif %}
 
     {% for faq in faq_list %}
     <div class="container mt-3" style="width: 600px;">

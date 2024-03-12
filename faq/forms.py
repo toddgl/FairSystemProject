@@ -21,9 +21,13 @@ class FaqCreateForm(ModelForm):
 
     class Meta:
         model = FAQ
-        fields = ['location', 'question', 'answer']
+        fields = ['location', 'category', 'question', 'answer']
         widgets = {
             'location': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'category': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;'
             }),
@@ -53,9 +57,13 @@ class FaqUpdateForm(ModelForm):
 
     class Meta:
         model = FAQ
-        fields = ['location', 'question', 'answer', 'is_active']
+        fields = ['location', 'category', 'question', 'answer', 'is_active']
         widgets = {
             'location': Select(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;'
+            }),
+            'category': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;'
             }),
