@@ -8,31 +8,29 @@ from fairs.models import (
 
 
 # Create your models here.
+class ActiveFaqManager(models.Manager):
+    """
+    Manager that returns the current Faqa, accessed by calling
+    Faq.activefaqrmgr.all()
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(is_active=True).order_by('category')
+
+class FAQCategory(models.Model):
+    """
+    Model to represent FAQ categories
+    """
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
 
 class FAQ(models.Model):
     """
     Stpre for the fair FAQ's referenced by location
     """
-    SHOPPING = 1
-    LOGGING_IN = 2
-    APPLICATIONS = 3
-    ON_THE_DAY = 4
-    FOOD_STALLS = 5
-    BUSKERS = 6
-
-    CATEGORY_CHOICE = [
-        (SHOPPING, _('Shopping')),
-        (LOGGING_IN, _('Logging In')),
-        (APPLICATIONS, _('Applications')),
-        (ON_THE_DAY, _('On the Day')),
-        (FOOD_STALLS, _('Food Stalls')),
-        (BUSKERS, _('Buskers'))
-    ]
-
-    category = models.PositiveSmallIntegerField(
-        choices=CATEGORY_CHOICE,
-        default=SHOPPING
-    )
+    category = models.ForeignKey(FAQCategory, default='Shopping', on_delete=models.CASCADE)
     location = models.ForeignKey(
         Location,
         related_name='faq_location',
@@ -43,6 +41,9 @@ class FAQ(models.Model):
     question = models.TextField()
     answer = models.TextField()
     is_active = models.BooleanField(default=True)
+
+    objects = models.Manager()
+    activefaqmgr = ActiveFaqManager()
 
     def __str__(self):
         return self.question

@@ -2,6 +2,8 @@
 
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.template.response import TemplateResponse
 from django.views.generic import (
     CreateView,
     ListView,
@@ -16,6 +18,7 @@ from fairs.models import(
 )
 from .forms import(
     FaqCreateForm,
+    FaqFilterForm,
     FaqUpdateForm,
 )
 
@@ -32,21 +35,72 @@ class FaqCreateView(PermissionRequiredMixin, CreateView):
     success_url = reverse_lazy('faq:faq-list')
 
 
-class FaqListView( ListView):
+def pagination_data(faq_per_page, filtered_data, request):
     """
-    List all FAQ
+    Refactored pagination code that is available to all views that included pagination
+    It takes request, cards per page, and filtered_data and returns the page_list and page_range
     """
-    model = FAQ
+    paginator = Paginator(filtered_data, per_page=faq_per_page)
+    page_number = request.GET.get('page', 1)
+    page_range = paginator.get_elided_page_range(number=page_number)
+    try:
+        page_list = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        page_list = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        page_list = paginator.get_page(paginator.num_pages)
+    return page_list, page_range
+
+
+def faq_listview(request):
+    """
+    List  Fair FAQ, this is available for the genera public and those who are logged into the system
+    """
+    filter_dict ={}
     template_name = 'faq_list.html'
-    queryset = FAQ.objects.all().filter(is_active=True)
-
-    def get_context_data(self, **kwargs):
-        # Call the base implementation first to get a context
-        context = super().get_context_data(**kwargs)
-        # Add in a QuerySet of all the books
-        context["current_prices"] =  InventoryItemFair.currentinventoryitemfairmgr.all()
-        return context
-
+    faq_per_page = 8
+    filterform = FaqFilterForm(request.POST or None )
+    current_prices = InventoryItemFair.currentinventoryitemfairmgr.all()
+    if request.htmx:
+        if filterform.is_valid():
+            category = filterform.cleaned_data['category']
+            print(category)
+            attr_category = 'category'
+            if category:
+                filter_dict = {
+                    attr_category: category
+                }
+                print(filter_dict)
+                filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by( "question").all()
+                template_name = 'faq_list_partial.html'
+                page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
+                faq_list = page_list
+                return TemplateResponse(request, template_name, {
+                    'faq_list': faq_list,
+                    'page_range': page_range,
+                    'current_prices': current_prices
+                })
+        filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by("question").all()
+        template_name = 'faq_list_partial.html'
+        page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
+        faq_list = page_list
+        return TemplateResponse(request, template_name, {
+            'faq_list': faq_list,
+            'page_range': page_range,
+            'current_prices': current_prices
+        })
+    else:
+        filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by("question").all()
+        page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
+        faq_list = page_list
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'faq_list': faq_list,
+            'page_range': page_range,
+            'current_prices': current_prices
+        })
 
 
 class FaqDetailUpdateView(PermissionRequiredMixin, UpdateView):

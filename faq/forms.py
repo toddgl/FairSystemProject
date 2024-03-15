@@ -4,6 +4,7 @@ from django import forms
 from django.forms import (
     BooleanField,
     Form,
+    ModelChoiceField,
     ModelForm,
     Textarea,
     TextInput,
@@ -12,6 +13,7 @@ from django.forms import (
 )
 from faq.models import (
     FAQ,
+    FAQCategory
 )
 
 class FaqCreateForm(ModelForm):
@@ -83,3 +85,20 @@ class FaqUpdateForm(ModelForm):
         }
 
 
+class FaqFilterForm(Form):
+    """
+    Filter form to list FAQ by category
+    """
+    category = ModelChoiceField(
+        queryset=FAQCategory.objects.all(),
+        empty_label='Show All',
+        label='FAQ Categories',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-control',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#faq_data',
+        })
+    )
