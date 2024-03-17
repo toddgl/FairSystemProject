@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load paginator_tags %}
+{% load faq_extras %}
 
 <div id="faq_data">
     <div class="row g-3">
@@ -20,7 +21,7 @@
                         <div id="collapse-{{ item.id }}" class="accordion-collapse collapse "
                              aria-labelledby="heading-{{ item.id }}" data-bs-parent="#accordionFaq">
                             <div class="accordion-body">
-                                {{ item.answer }}
+                                {{ item.answer | render_markdown  }}
                             </div>
                         </div>
                     </div>
