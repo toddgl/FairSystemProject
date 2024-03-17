@@ -1103,7 +1103,7 @@ class SiteAllocationListFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#list_data',
+            'hx-target': '#allocation_data',
         })
     )
     zone = ModelChoiceField(
@@ -1116,7 +1116,7 @@ class SiteAllocationListFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#list_data',
+            'hx-target': '#allocation_data',
         })
     )
     on_hold = BooleanField(
@@ -1125,7 +1125,7 @@ class SiteAllocationListFilterForm(Form):
             'class': 'form-check-input',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#list_data',
+            'hx-target': '#allocation_data',
             'checked': False
         })
     )

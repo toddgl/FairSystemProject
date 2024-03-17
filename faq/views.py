@@ -58,49 +58,49 @@ def faq_listview(request):
     """
     List  Fair FAQ, this is available for the genera public and those who are logged into the system
     """
-    filter_dict ={}
+    global filter_dict
+    alert_message = ''
     template_name = 'faq_list.html'
     faq_per_page = 8
-    filterform = FaqFilterForm(request.POST or None )
     current_prices = InventoryItemFair.currentinventoryitemfairmgr.all()
+
+    filterform = FaqFilterForm(request.POST or None)
+    form_purpose = filterform.data.get('form_purpose', '')
+
     if request.htmx:
-        if filterform.is_valid():
-            category = filterform.cleaned_data['category']
-            print(category)
-            attr_category = 'category'
+        if form_purpose == 'filter':
+            # Handle filter form submission
+            category = filterform.data.get('category', '')
             if category:
-                filter_dict = {
-                    attr_category: category
-                }
-                print(filter_dict)
-                filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by( "question").all()
-                template_name = 'faq_list_partial.html'
-                page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
-                faq_list = page_list
-                return TemplateResponse(request, template_name, {
-                    'faq_list': faq_list,
-                    'page_range': page_range,
-                    'current_prices': current_prices
-                })
-        filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by("question").all()
+                filter_dict['category'] = category
+                alert_message = f'There are no FAQs of category {category} created yet'
+            else:
+                alert_message = 'There are no FAQs yet.'
+        else:
+            # Handle pagination
+            # The filter _dict is retained from the filter selection which ensures that the correct data is appplied
+            # to subsequent pages
+            pass
+        # Alert message logic
         template_name = 'faq_list_partial.html'
-        page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
-        faq_list = page_list
-        return TemplateResponse(request, template_name, {
-            'faq_list': faq_list,
-            'page_range': page_range,
-            'current_prices': current_prices
-        })
     else:
-        filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by("question").all()
-        page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
-        faq_list = page_list
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'faq_list': faq_list,
-            'page_range': page_range,
-            'current_prices': current_prices
-        })
+        filter_dict ={}
+
+    # Apply filters to the queryset
+    filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by("category").all()
+
+    # Pagination logic
+    page_list, page_range = pagination_data(faq_per_page, filtered_data, request)
+    faq_list = page_list
+
+    # Template response
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'faq_list': faq_list,
+        'page_range': page_range,
+        'current_prices': current_prices,
+        'alert_mgr': alert_message,
+    })
 
 
 class FaqDetailUpdateView(PermissionRequiredMixin, UpdateView):
