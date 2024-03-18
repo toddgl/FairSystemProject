@@ -1017,4 +1017,5 @@ class StallRegistrationFilterForm(Form):
             'hx-target': '#stallregistration_data',
         })
     )
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 

@@ -103,7 +103,7 @@ def stall_registration_listview(request):
     """
     List stall registration used by the Fair Conveners in the view and management of stall registrations
     """
-    filter_dict ={}
+    global stallregistration_filter_dict
     global stallholder
     cards_per_page = 6
     request.session['registration'] = 'registration:stallregistration-list'
@@ -122,10 +122,10 @@ def stall_registration_listview(request):
         attr_stallholder = 'stallholder'
         if stallholder_id:
             stallholder = stallholder_id
-            filter_dict = {
+            stallregistration_filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -134,60 +134,60 @@ def stall_registration_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        if filterform.is_valid():
-            fair = filterform.cleaned_data['fair']
-            site_size = filterform.cleaned_data['site_size']
-            attr_fair = 'fair'
-            attr_site_size = 'site_size'
-            if fair and site_size and stallholder:
-                alert_message = 'There are no stall registrations where the fair is ' + str(
-                fair) + ' and site size is ' + str(site_size) + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_fair: fair,
-                    attr_site_size: site_size,
-                    attr_stallholder: stallholder
-                }
-            elif fair and site_size:
-                alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
-                filter_dict = {
-                    attr_fair: fair,
-                    attr_site_size: site_size,
-                }
-            elif fair and stallholder:
-                alert_message = 'There are no stall registrations where the fair is ' + str(fair)  + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_fair: fair,
-                    attr_stallholder: stallholder
-                }
-            elif site_size and stallholder:
-                alert_message = 'There are no stall registrations where the site size is ' + str(site_size)  + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_site_size: site_size,
-                    attr_stallholder: stallholder
-                }
-            elif fair:
-                alert_message = 'There are no stall registrations where the fair is ' + str(fair)
-                filter_dict = {
-                    attr_fair: fair,
-                }
-            elif site_size:
-                alert_message = 'There are no stall registrations where the site size is ' + str(site_size)
-                filter_dict = {
-                    attr_site_size: site_size,
-                }
-            else:
-                alert_message = 'There are no stall registration created yet'
-                filter_dict = {}
-            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by('stall_category').prefetch_related('site_allocation').all()
-            template_name = 'stallregistration/stallregistration_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            stallregistration_list = page_list
-            return TemplateResponse(request, template_name, {
-                'stallregistration_list': stallregistration_list,
-                'page_range': page_range,
-                'alert_mgr': alert_message,
-            })
-        filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+        form_purpose = filterform.data.get('form_purpose', '')
+
+        if form_purpose == 'filter':
+            if filterform.is_valid():
+                fair = filterform.cleaned_data['fair']
+                site_size = filterform.cleaned_data['site_size']
+                attr_fair = 'fair'
+                attr_site_size = 'site_size'
+                if fair and site_size and stallholder:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(
+                    fair) + ' and site size is ' + str(site_size) + ' stallholder ID is ' + str(stallholder)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                        attr_site_size: site_size,
+                        attr_stallholder: stallholder
+                    }
+                elif fair and site_size:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                        attr_site_size: site_size,
+                    }
+                elif fair and stallholder:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(fair)  + ' stallholder ID is ' + str(stallholder)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                        attr_stallholder: stallholder
+                    }
+                elif site_size and stallholder:
+                    alert_message = 'There are no stall registrations where the site size is ' + str(site_size)  + ' stallholder ID is ' + str(stallholder)
+                    stallregistration_filter_dict = {
+                        attr_site_size: site_size,
+                        attr_stallholder: stallholder
+                    }
+                elif fair:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(fair)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                    }
+                elif site_size:
+                    alert_message = 'There are no stall registrations where the site size is ' + str(site_size)
+                    stallregistration_filter_dict = {
+                        attr_site_size: site_size,
+                    }
+                else:
+                    alert_message = 'There are no stall registration created yet'
+                    stallregistration_filter_dict = {}
+        else:
+            # Handle pagination
+            # The stallregistration_filter _dict is retained from the filter selection which ensures that the correct
+            # data is appplied
+            # to subsequent pages
+            pass
+        filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
         template_name = 'stallregistration/stallregistration_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list

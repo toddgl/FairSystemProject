@@ -58,7 +58,7 @@ def faq_listview(request):
     """
     List  Fair FAQ, this is available for the genera public and those who are logged into the system
     """
-    global filter_dict
+    global faq_filter_dict
     alert_message = ''
     template_name = 'faq_list.html'
     faq_per_page = 8
@@ -72,9 +72,10 @@ def faq_listview(request):
             # Handle filter form submission
             category = filterform.data.get('category', '')
             if category:
-                filter_dict['category'] = category
+                faq_filter_dict['category'] = category
                 alert_message = f'There are no FAQs of category {category} created yet'
             else:
+                faq_filter_dict = {}
                 alert_message = 'There are no FAQs yet.'
         else:
             # Handle pagination
@@ -84,10 +85,10 @@ def faq_listview(request):
         # Alert message logic
         template_name = 'faq_list_partial.html'
     else:
-        filter_dict ={}
+        faq_filter_dict ={}
 
     # Apply filters to the queryset
-    filtered_data = FAQ.activefaqmgr.filter(**filter_dict).order_by("category").all()
+    filtered_data = FAQ.activefaqmgr.filter(**faq_filter_dict).order_by("category").all()
 
     # Pagination logic
     page_list, page_range = pagination_data(faq_per_page, filtered_data, request)

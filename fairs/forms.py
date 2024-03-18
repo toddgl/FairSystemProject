@@ -703,6 +703,7 @@ class EventSiteListFilterForm(Form):
                 'hx-target': '#event_site_data',
             })
     )
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
     class Meta:
         fields = [
@@ -1103,7 +1104,7 @@ class SiteAllocationListFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
         })
     )
     zone = ModelChoiceField(
@@ -1116,7 +1117,7 @@ class SiteAllocationListFilterForm(Form):
             'style': 'max-width: 300px;',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
         })
     )
     on_hold = BooleanField(
@@ -1125,10 +1126,11 @@ class SiteAllocationListFilterForm(Form):
             'class': 'form-check-input',
             'hx-trigger': 'change',
             'hx-post': '.',
-            'hx-target': '#allocation_data',
+            'hx-target': '#list_data',
             'checked': False
         })
     )
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
     class Meta:
         fields = [
@@ -1169,6 +1171,7 @@ class SiteAllocationFilterForm(Form):
             'hx-target': '#list_data',
         }),
     )
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
     class Meta:
         fields = [
