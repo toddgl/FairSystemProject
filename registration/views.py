@@ -63,6 +63,8 @@ from .forms import (
     AdditionalSiteReqForm,
     StallRegistrationStallholderEditForm,
     FoodRegistrationStallholderEditForm,
+    StallRegistrtionConvenerEditForm,
+    FoodRegistrationConvenerEditForm,
 )
 
 # Global Variables
@@ -1052,6 +1054,7 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
 def convener_stall_registration_detail_view(request, id):
     """
     Display the details of the stall and food registration data provided by the stallholder
+    Includes functionality to update details that have an impact on pricing
     """
     template = "stallregistration/convener_stall_registration_detail.html"
     comment_filter_message= 'Showing current comments of the current fair'
@@ -1062,18 +1065,45 @@ def convener_stall_registration_detail_view(request, id):
     stall_registration = StallRegistration.objects.get(id=id)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
+    additionalsiteform = AdditionalSiteReqForm(request.POST or None)
+    registrationupdateform = StallRegistrtionConvenerEditForm(instance=stall_registration)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=stall_registration.stallholder.id)
-    context = {
-        'payment_histories': payment_history_list,
-        'stallholder_detail': stallholder_detail,
-        "stall_data" : stall_registration,
-        'commentfilterform': commentfilterform,
-        'comments': comments,
-        'commentform': commentform,
-        'replyform': replyform,
-        'comment_filter': comment_filter_message
-    }
+    if stall_registration.selling_food:
+        food_registration = FoodRegistration.objects.get(registration=stall_registration)
+        foodregistrtionupdateform = FoodRegistrationConvenerEditForm(instance=food_registration)
+        context = {
+            'registrationupdateform': registrationupdateform,
+            'foodregistrationupdateform': foodregistrtionupdateform,
+            'additionalsiteform' : additionalsiteform,
+            'payment_histories': payment_history_list,
+            'stallholder_detail': stallholder_detail,
+            "stall_data" : stall_registration,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'comment_filter': comment_filter_message
+        }
+    else:
+        context = {
+            'registrationupdateform': registrationupdateform,
+            'additionalsiteform' : additionalsiteform,
+            'payment_histories': payment_history_list,
+            'stallholder_detail': stallholder_detail,
+            "stall_data" : stall_registration,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'comment_filter': comment_filter_message
+        }
+
+    # Additional Sites add and display
+    additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=stall_registration)
+    if additional_sites:
+        context['site_requirement_list'] = additional_sites
+
     if stall_registration.multi_site:
         context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
 
@@ -1081,7 +1111,25 @@ def convener_stall_registration_detail_view(request, id):
         context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
 
+    if request.method == 'POST':
+        registrationupdateform = StallRegistrtionConvenerEditForm(request.POST, request.FILES or None,
+                                                                      instance=stall_registration)
+        foodregistrtionupdateform = FoodRegistrationConvenerEditForm(request.POST, request.FILES or None,
+                                                                        instance=food_registration)
+        if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
+            stall_registration = registrationupdateform.save(commit=False)
+            stall_registration.save()
+            food_registration = foodregistrtionupdateform.save(commit=False)
+            food_registration.save()
+
+        else:
+            db_logger.error('There was an error with updating the stall Registration. '
+                            + registrationupdateform.errors.as_data(),
+                            extra={'custom_category': 'Stall Registration'})
+            return TemplateResponse(request, template, context)
+
     return TemplateResponse(request, template, context)
+
 
 def stallholder_stall_registration_detail_view(request, id):
     """

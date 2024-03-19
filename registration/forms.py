@@ -464,6 +464,87 @@ class StallRegistrationStallholderEditForm(ModelForm):
             return None
 
 
+class StallRegistrtionConvenerEditForm(ModelForm):
+    """
+    Form to allow teh convener to update those items that affect costs on invoiced
+    stall Registrations
+    """
+    stall_category = ModelChoiceField(
+        queryset=StallCategory.objects.filter(is_active=True),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Please Select',
+        label='What size Site do you want?',
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    class Meta:
+        model = StallRegistration
+        fields = [
+            'stall_category',
+            'site_size',
+            'trestle_required',
+            'trestle_quantity',
+            'vehicle_on_site',
+            'vehicle_length',
+            'vehicle_width',
+            'power_required',
+            'multi_site',
+            'selling_food'
+        ]
+        labels = {
+            'multi-site': 'Do you want more than a single site with this registration?',
+            'selling_food': 'Are you selling food?',
+        }
+        widgets = {
+            'trestle_required': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'trestle_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '4',
+                'step': '1',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
+            }),
+            'vehicle_on_site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'vehicle_length': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_width': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'power_required': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'multi-site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'selling_food': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
+
 class StallRegistrationUpdateForm(ModelForm):
     """
     Form for updating Stall Registrations
@@ -831,6 +912,28 @@ class FoodRegistrationStallholderEditForm(ModelForm):
         else:
             # Handle the case where no file was uploaded
             return None
+
+class FoodRegistrationConvenerEditForm(ModelForm):
+    """
+    Form to allow teh convener to update those items that affect costs on invoiced
+    food Registrations
+    """
+    food_stall_type = ModelChoiceField(
+        queryset=FoodSaleType.objects.filter(is_active=True),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    ),
+    class Meta:
+        model = FoodRegistration
+        fields = [
+            'food_stall_type',
+        ]
+        labels = {
+            'food_stall_type': 'Food Stall Type',
+        }
 
 
 class FoodPrepEquipReqForm(ModelForm):
