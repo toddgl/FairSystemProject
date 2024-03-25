@@ -1165,14 +1165,13 @@ def site_allocation_listview(request):
                 else:
                     alert_message = 'There are no sites allocated yet.'
                     site_allocation_filter_dict = {}
+                filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
         else:
             # Handle pagination
             # The event_site_filter _dict is retained from the filter selection which ensures that the correct
             # data is appplied
             # to subsequent pages
             pass
-        filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by(
-            "event_site__site")
         template_name = 'siteallocations/siteallocation_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         allocation_list = page_list

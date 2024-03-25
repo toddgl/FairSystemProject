@@ -114,9 +114,11 @@ def stall_registration_listview(request):
     booking_status=request.GET.get('booking_status', '')
     if booking_status:
         filtered_data = StallRegistration.registrationcurrentallmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
         alert_message = 'There are no stall registration of status ' + str(booking_status) + ' created yet'
     else:
         filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related('site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
         alert_message = 'There are no stall registrations yet.'
 
     if request.htmx:
@@ -128,6 +130,7 @@ def stall_registration_listview(request):
                 attr_stallholder: stallholder_id
             }
             filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+            filtered_data = filtered_data.prefetch_related('additional_sites_required')
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -190,6 +193,7 @@ def stall_registration_listview(request):
             # to subsequent pages
             pass
         filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
         template_name = 'stallregistration/stallregistration_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list
