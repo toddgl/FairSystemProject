@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load paginator_tags %}
+{% load hasunallocatedsites_tag %}
 
 <div id="stallregistration_data">
     <div class="row g-3">
@@ -36,7 +37,6 @@
                                       <th scope="col">Quantity</th>
                                       <th scope="col">Site Size</th>
                                       <th scope="col">Location</th>
-                                      <th scope="col"></th>
                                     </tr>
                                   </thead>
                                   <tbody>
@@ -75,7 +75,9 @@
                                     </a>
                                 {% endif %}
                             {% endfor %}
-                        {% else %}
+                        {% endif %}
+                    {% get_has_unallocated_sites item.id as has_unallocated_sites %}
+                        {% if has_unallocated_sites %}
                             <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-primary">
                                 Set Site Allocation
                             </a>

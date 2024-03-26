@@ -42,7 +42,8 @@ from fairs.models import (
 
 from registration.models import (
     StallRegistration,
-    RegistrationComment
+    RegistrationComment,
+    AdditionalSiteRequirement
 )
 
 from utils.site_allocation_tools import (
@@ -1997,6 +1998,7 @@ def stallregistration_siteallocation_view(request, id):
     sitefilterform = SiteAllocationFilerForm(request.POST or None)
     site_filter_message = 'Select a Zone to see available sites for allocation'
     stallregistration = StallRegistration.objects.get(id=id)
+    additional_sites_required = AdditionalSiteRequirement.objects.filter(stall_registration=id)
     siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     if request.htmx:
         if sitefilterform.is_valid():
@@ -2025,7 +2027,8 @@ def stallregistration_siteallocation_view(request, id):
                 'sitefilterform': sitefilterform,
                 'stallregistration': stallregistration,
                 'siteallocations': siteallocations,
-                'site_list': available_sites
+                'site_list': available_sites,
+                'additional_sites_required': additional_sites_required
             })
     elif request.method == 'POST':
         # Allocation request created
@@ -2047,7 +2050,8 @@ def stallregistration_siteallocation_view(request, id):
         'site_filter': site_filter_message,
         'sitefilterform': sitefilterform,
         'stallregistration': stallregistration,
-        'siteallocations': siteallocations
+        'siteallocations': siteallocations,
+        'additional_sites_required': additional_sites_required
     })
 
 def stallregistration_detail_view(request, stallregistration_id):
