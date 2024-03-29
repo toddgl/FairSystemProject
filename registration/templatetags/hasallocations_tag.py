@@ -1,4 +1,4 @@
-# registrtaion/templatetags/hasallocation_tags.py
+# registration/templatetags/hasallocation_tags.py
 
 from django import template
 from fairs.models import SiteAllocation

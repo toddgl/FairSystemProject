@@ -1,0 +1,27 @@
+<!-- faq/templates/faq_list.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
+    <div class="row g-3">
+        <h1>Fair FAQs</h1>
+        <div class="row">
+            <div class="col-md-6">
+                {% if user.role == 2 %}
+                <form action='actionUrl' method='GET'>
+                    <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new FAQ</button>
+                    <a href="/" class="btn btn-secondary">Cancel</a>
+                </form>
+                {% endif %}
+                <hr>
+                {% include 'faq_filter_partial.html' %}
+            </div>
+            <div class="col-md-6">
+                {% include 'faq_list_partial.html' %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

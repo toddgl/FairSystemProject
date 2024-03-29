@@ -2,6 +2,7 @@
 
 {% load static %}
 {% load paginator_tags %}
+{% load hasunallocatedsites_tag %}
 
 <div id="stallregistration_data">
     <div class="row g-3">
@@ -22,6 +23,33 @@
                     <li class="list-group-item"><strong>Status:</strong> {{ item.booking_status }}</li>
                     <li class="list-group-item"><strong>Description:</strong> {{ item.stall_description }}</li>
                 </ul>
+                    {% for additionalsite in item.additional_sites_required.all %}
+                        {% if forloop.first %}
+                            <div>
+                                <div class="title-hr">
+                                    <span class="hr fix"></span>
+                                    <span><strong>Additional Site Requirements</strong></span>
+                                    <span class="hr"></span>
+                                </div>
+                                <table class="table table-striped">
+                                  <thead>
+                                    <tr>
+                                      <th scope="col">Quantity</th>
+                                      <th scope="col">Site Size</th>
+                                      <th scope="col">Location</th>
+                                    </tr>
+                                  </thead>
+                                  <tbody>
+                                  {% endif %}
+                                    <tr>
+                                      <td>{{ additionalsite.site_quantity }}</td>
+                                      <td>{{ additionalsite.site_size.item_name }}</td>
+                                      <td>{{ additionalsite.get_location_choice_display }}</td>
+                                    </tr>
+                                  {% endfor %}
+                                  </tbody>
+                                </table>
+                            </div>
                     {% for allocation in item.site_allocation.all %}
                         {% if forloop.first %}
                             <div class="title-hr">
@@ -47,7 +75,9 @@
                                     </a>
                                 {% endif %}
                             {% endfor %}
-                        {% else %}
+                        {% endif %}
+                    {% get_has_unallocated_sites item.id as has_unallocated_sites %}
+                        {% if has_unallocated_sites %}
                             <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-primary">
                                 Set Site Allocation
                             </a>

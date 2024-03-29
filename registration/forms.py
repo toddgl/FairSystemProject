@@ -374,13 +374,16 @@ class StallRegistrationCreateForm(ModelForm):
 
     def clean_vehicle_image(self):
         allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("vehicle_image", False)
+        thefile = self.cleaned_data.get("vehicle_image", None)
         if thefile is not None:
             mime = magic.from_buffer(thefile.read(), mime=True)
             if mime not in allowed_filetypes:
                 raise forms.ValidationError('File must be a png or jpg image')
             else:
                 return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
 
     def clean(self):
         cleaned_data = super().clean()
@@ -397,6 +400,150 @@ class StallRegistrationCreateForm(ModelForm):
                 )
         return self.cleaned_data  # never forget this!
 
+
+class StallRegistrationStallholderEditForm(ModelForm):
+    """
+    Form to allow a stallholder to update information once the registration is invoiced.  The changes must not affect pricing
+    so is limited to manager name, vehicle registration, vehicle on site images
+    """
+    class Meta:
+        model = StallRegistration
+        fields = [
+            'stall_manager_name',
+            'manager_vehicle_registration',
+            'vehicle_on_site',
+            'vehicle_length',
+            'vehicle_width',
+            'vehicle_image',
+        ]
+        labels = {
+            'stall_manager_name': 'Stall manager\'s name',
+            'manager_vehicle_registration': 'Manager\'s vehicle registration',
+        }
+        widgets = {
+            'stall_manager_name': TextInput(attrs={
+                'placeholder': 'First and last name',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'manager_vehicle_registration': TextInput(attrs={
+                'placeholder': 'Rego',
+                'class': "form-control",
+                'style': 'max-width: 300px;',
+            }),
+            'vehicle_on_site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'vehicle_length': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_width': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_image': FileInput(),
+        }
+    def clean_vehicle_image(self):
+        allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
+        thefile = self.cleaned_data.get("vehicle_image", None)
+        if thefile:
+            if hasattr(thefile, 'read') and hasattr(thefile, 'name'):
+                mime = magic.from_buffer(thefile.read(), mime=True)
+                print(mime)
+                if mime not in allowed_filetypes:
+                    raise forms.ValidationError('File must be a png or jpg image')
+                else:
+                    return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
+
+
+class StallRegistrtionConvenerEditForm(ModelForm):
+    """
+    Form to allow teh convener to update those items that affect costs on invoiced
+    stall Registrations
+    """
+    stall_category = ModelChoiceField(
+        queryset=StallCategory.objects.filter(is_active=True),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Please Select',
+        label='What size Site do you want?',
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+        })
+    )
+
+    class Meta:
+        model = StallRegistration
+        fields = [
+            'stall_category',
+            'site_size',
+            'trestle_required',
+            'trestle_quantity',
+            'vehicle_on_site',
+            'vehicle_length',
+            'vehicle_width',
+            'power_required',
+            'multi_site',
+            'selling_food'
+        ]
+        labels = {
+            'multi-site': 'Do you want more than a single site with this registration?',
+            'selling_food': 'Are you selling food?',
+        }
+        widgets = {
+            'trestle_required': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'trestle_quantity': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '4',
+                'step': '1',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
+            }),
+            'vehicle_on_site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'vehicle_length': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'vehicle_width': NumberInput(attrs={
+                'class': "form_control",
+                'min': '0',
+                'max': '10',
+                'step': '0.1',
+            }),
+            'power_required': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'multi-site': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'selling_food': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+        }
 
 class StallRegistrationUpdateForm(ModelForm):
     """
@@ -539,7 +686,7 @@ class StallRegistrationUpdateForm(ModelForm):
 
     def clean_vehicle_image(self):
         allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("vehicle_image", False)
+        thefile = self.cleaned_data.get("vehicle_image", None)
         if thefile is not None:
             mime = magic.from_buffer(thefile.read(), mime=True)
             print(mime)
@@ -547,6 +694,9 @@ class StallRegistrationUpdateForm(ModelForm):
                 raise forms.ValidationError('File must be a png or jpg image')
             else:
                 return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
 
     def clean(self):
         cleaned_data = super().clean()
@@ -657,7 +807,7 @@ class FoodRegistrationForm(ModelForm):
 
     def clean_food_registration_certificate(self):
         allowed_filetypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("food_registration_certificate", False)
+        thefile = self.cleaned_data.get("food_registration_certificate", None)
         if thefile is not None:
             mime = magic.from_buffer(thefile.read(), mime=True)
             print(mime)
@@ -665,6 +815,126 @@ class FoodRegistrationForm(ModelForm):
                 raise forms.ValidationError('File must be a pdf, png or jpg document')
             else:
                 return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
+
+class FoodRegistrationStallholderEditForm(ModelForm):
+    """
+    Form for tall holder to update non-financial items  releated to Food registration
+    """
+
+    class Meta:
+        model = FoodRegistration
+        fields = [
+            'food_display_method',
+            'food_fair_consumed',
+            'food_source',
+            "has_food_prep",
+            'food_storage_prep_method',
+            'food_storage_prep',
+            'hygiene_methods',
+            'has_food_certificate',
+            'certificate_expiry_date',
+            'food_registration_certificate',
+        ]
+        labels = {
+            'food_display_method': 'How will the food be displayed',
+            'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
+            'food_source': 'Where will you obtain the food from',
+            'has_food_prep': 'Is any storage or preparation of the food to be undertaken after it is obtained by the '
+                             'operator of the food stall?',
+            'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
+            'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
+            'hygiene_methods': 'What arrangements do you have for hand washing',
+            'has_food_certificate': 'Do you have a food registration certificate',
+            'certificate_expiry_date': 'What is the expiry date of the certificate',
+            'food_registration_certificate': 'Please upload your food certificate',
+        }
+        widgets = {
+            'food_display_method': Textarea(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'rows': '5',
+                'placeholder': 'Describe how the food will be displayed'
+            }),
+            'food_fair_consumed': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'food_source': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe where the food being sold will be sourced from'
+            }),
+            'has_food_prep': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'food_storage_prep_method': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe where and how will the pre-sale storage or preparation of the food take place'
+            }),
+            'food_storage_prep': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe method and location of Food utensils, appliances and equipment.'
+            }),
+            'hygiene_methods': Textarea(attrs={
+                'rows': '5',
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'Describe What arrangements have been made for toilet use and washing hands.'
+            }),
+            'has_food_certificate': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'certificate_expiry_date': DateInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 400px;',
+                'type' : 'date'
+            }),
+            'food_registration_certificate': FileInput(),
+        }
+
+    def clean_food_registration_certificate(self):
+        allowed_filetypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
+        thefile = self.cleaned_data.get("food_registration_certificate", None)
+        if thefile is not None:
+            mime = magic.from_buffer(thefile.read(), mime=True)
+            print(mime)
+            if mime not in allowed_filetypes:
+                raise forms.ValidationError('File must be a pdf, png or jpg document')
+            else:
+                return thefile
+        else:
+            # Handle the case where no file was uploaded
+            return None
+
+class FoodRegistrationConvenerEditForm(ModelForm):
+    """
+    Form to allow teh convener to update those items that affect costs on invoiced
+    food Registrations
+    """
+    food_stall_type = ModelChoiceField(
+        queryset=FoodSaleType.objects.filter(is_active=True),
+        empty_label='Please Select',
+        widget=Select(attrs={
+            'class': "form-select",
+            'style': 'max-width: 300px;',
+        })
+    ),
+    class Meta:
+        model = FoodRegistration
+        fields = [
+            'food_stall_type',
+        ]
+        labels = {
+            'food_stall_type': 'Food Stall Type',
+        }
+
 
 class FoodPrepEquipReqForm(ModelForm):
     """
@@ -850,4 +1120,5 @@ class StallRegistrationFilterForm(Form):
             'hx-target': '#stallregistration_data',
         })
     )
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 

@@ -61,6 +61,10 @@ from .forms import (
     CommentReplyForm,
     StallRegistrationFilterForm,
     AdditionalSiteReqForm,
+    StallRegistrationStallholderEditForm,
+    FoodRegistrationStallholderEditForm,
+    StallRegistrtionConvenerEditForm,
+    FoodRegistrationConvenerEditForm,
 )
 
 # Global Variables
@@ -101,7 +105,7 @@ def stall_registration_listview(request):
     """
     List stall registration used by the Fair Conveners in the view and management of stall registrations
     """
-    filter_dict ={}
+    global stallregistration_filter_dict
     global stallholder
     cards_per_page = 6
     request.session['registration'] = 'registration:stallregistration-list'
@@ -110,9 +114,11 @@ def stall_registration_listview(request):
     booking_status=request.GET.get('booking_status', '')
     if booking_status:
         filtered_data = StallRegistration.registrationcurrentallmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
         alert_message = 'There are no stall registration of status ' + str(booking_status) + ' created yet'
     else:
         filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related('site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
         alert_message = 'There are no stall registrations yet.'
 
     if request.htmx:
@@ -120,10 +126,11 @@ def stall_registration_listview(request):
         attr_stallholder = 'stallholder'
         if stallholder_id:
             stallholder = stallholder_id
-            filter_dict = {
+            stallregistration_filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+            filtered_data = filtered_data.prefetch_related('additional_sites_required')
             template_name = 'stallregistration/stallregistration_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             stallregistration_list = page_list
@@ -132,60 +139,61 @@ def stall_registration_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        if filterform.is_valid():
-            fair = filterform.cleaned_data['fair']
-            site_size = filterform.cleaned_data['site_size']
-            attr_fair = 'fair'
-            attr_site_size = 'site_size'
-            if fair and site_size and stallholder:
-                alert_message = 'There are no stall registrations where the fair is ' + str(
-                fair) + ' and site size is ' + str(site_size) + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_fair: fair,
-                    attr_site_size: site_size,
-                    attr_stallholder: stallholder
-                }
-            elif fair and site_size:
-                alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
-                filter_dict = {
-                    attr_fair: fair,
-                    attr_site_size: site_size,
-                }
-            elif fair and stallholder:
-                alert_message = 'There are no stall registrations where the fair is ' + str(fair)  + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_fair: fair,
-                    attr_stallholder: stallholder
-                }
-            elif site_size and stallholder:
-                alert_message = 'There are no stall registrations where the site size is ' + str(site_size)  + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_site_size: site_size,
-                    attr_stallholder: stallholder
-                }
-            elif fair:
-                alert_message = 'There are no stall registrations where the fair is ' + str(fair)
-                filter_dict = {
-                    attr_fair: fair,
-                }
-            elif site_size:
-                alert_message = 'There are no stall registrations where the site size is ' + str(site_size)
-                filter_dict = {
-                    attr_site_size: site_size,
-                }
-            else:
-                alert_message = 'There are no stall registration created yet'
-                filter_dict = {}
-            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by('stall_category').prefetch_related('site_allocation').all()
-            template_name = 'stallregistration/stallregistration_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            stallregistration_list = page_list
-            return TemplateResponse(request, template_name, {
-                'stallregistration_list': stallregistration_list,
-                'page_range': page_range,
-                'alert_mgr': alert_message,
-            })
-        filtered_data = StallRegistration.registrationcurrentallmgr.filter(**filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+        form_purpose = filterform.data.get('form_purpose', '')
+
+        if form_purpose == 'filter':
+            if filterform.is_valid():
+                fair = filterform.cleaned_data['fair']
+                site_size = filterform.cleaned_data['site_size']
+                attr_fair = 'fair'
+                attr_site_size = 'site_size'
+                if fair and site_size and stallholder:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(
+                    fair) + ' and site size is ' + str(site_size) + ' stallholder ID is ' + str(stallholder)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                        attr_site_size: site_size,
+                        attr_stallholder: stallholder
+                    }
+                elif fair and site_size:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(fair) + ' and site size is ' + str(site_size)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                        attr_site_size: site_size,
+                    }
+                elif fair and stallholder:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(fair)  + ' stallholder ID is ' + str(stallholder)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                        attr_stallholder: stallholder
+                    }
+                elif site_size and stallholder:
+                    alert_message = 'There are no stall registrations where the site size is ' + str(site_size)  + ' stallholder ID is ' + str(stallholder)
+                    stallregistration_filter_dict = {
+                        attr_site_size: site_size,
+                        attr_stallholder: stallholder
+                    }
+                elif fair:
+                    alert_message = 'There are no stall registrations where the fair is ' + str(fair)
+                    stallregistration_filter_dict = {
+                        attr_fair: fair,
+                    }
+                elif site_size:
+                    alert_message = 'There are no stall registrations where the site size is ' + str(site_size)
+                    stallregistration_filter_dict = {
+                        attr_site_size: site_size,
+                    }
+                else:
+                    alert_message = 'There are no stall registration created yet'
+                    stallregistration_filter_dict = {}
+        else:
+            # Handle pagination
+            # The stallregistration_filter _dict is retained from the filter selection which ensures that the correct
+            # data is appplied
+            # to subsequent pages
+            pass
+        filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
         template_name = 'stallregistration/stallregistration_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list
@@ -1050,6 +1058,7 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
 def convener_stall_registration_detail_view(request, id):
     """
     Display the details of the stall and food registration data provided by the stallholder
+    Includes functionality to update details that have an impact on pricing
     """
     template = "stallregistration/convener_stall_registration_detail.html"
     comment_filter_message= 'Showing current comments of the current fair'
@@ -1060,18 +1069,45 @@ def convener_stall_registration_detail_view(request, id):
     stall_registration = StallRegistration.objects.get(id=id)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
+    additionalsiteform = AdditionalSiteReqForm(request.POST or None)
+    registrationupdateform = StallRegistrtionConvenerEditForm(instance=stall_registration)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=stall_registration.stallholder.id)
-    context = {
-        'payment_histories': payment_history_list,
-        'stallholder_detail': stallholder_detail,
-        "stall_data" : stall_registration,
-        'commentfilterform': commentfilterform,
-        'comments': comments,
-        'commentform': commentform,
-        'replyform': replyform,
-        'comment_filter': comment_filter_message
-    }
+    if stall_registration.selling_food:
+        food_registration = FoodRegistration.objects.get(registration=stall_registration)
+        foodregistrtionupdateform = FoodRegistrationConvenerEditForm(instance=food_registration)
+        context = {
+            'registrationupdateform': registrationupdateform,
+            'foodregistrationupdateform': foodregistrtionupdateform,
+            'additionalsiteform' : additionalsiteform,
+            'payment_histories': payment_history_list,
+            'stallholder_detail': stallholder_detail,
+            "stall_data" : stall_registration,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'comment_filter': comment_filter_message
+        }
+    else:
+        context = {
+            'registrationupdateform': registrationupdateform,
+            'additionalsiteform' : additionalsiteform,
+            'payment_histories': payment_history_list,
+            'stallholder_detail': stallholder_detail,
+            "stall_data" : stall_registration,
+            'commentfilterform': commentfilterform,
+            'comments': comments,
+            'commentform': commentform,
+            'replyform': replyform,
+            'comment_filter': comment_filter_message
+        }
+
+    # Additional Sites add and display
+    additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=stall_registration)
+    if additional_sites:
+        context['site_requirement_list'] = additional_sites
+
     if stall_registration.multi_site:
         context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
 
@@ -1079,7 +1115,25 @@ def convener_stall_registration_detail_view(request, id):
         context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
 
+    if request.method == 'POST':
+        registrationupdateform = StallRegistrtionConvenerEditForm(request.POST, request.FILES or None,
+                                                                      instance=stall_registration)
+        foodregistrtionupdateform = FoodRegistrationConvenerEditForm(request.POST, request.FILES or None,
+                                                                        instance=food_registration)
+        if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
+            stall_registration = registrationupdateform.save(commit=False)
+            stall_registration.save()
+            food_registration = foodregistrtionupdateform.save(commit=False)
+            food_registration.save()
+
+        else:
+            db_logger.error('There was an error with updating the stall Registration. '
+                            + registrationupdateform.errors.as_data(),
+                            extra={'custom_category': 'Stall Registration'})
+            return TemplateResponse(request, template, context)
+
     return TemplateResponse(request, template, context)
+
 
 def stallholder_stall_registration_detail_view(request, id):
     """
@@ -1092,10 +1146,17 @@ def stallholder_stall_registration_detail_view(request, id):
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
+    food_registration = FoodRegistration.objects.get(registration=stall_registration)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
+    registrationupdateform = StallRegistrationStallholderEditForm(instance=stall_registration)
+    foodregistrtionupdateform = FoodRegistrationStallholderEditForm(instance=food_registration)
+    equipment_form = FoodPrepEquipReqForm(request.POST or None)
     context = {
+        'registrationupdateform': registrationupdateform,
+        'foodregistrationupdateform': foodregistrtionupdateform,
+        'equipment_form': equipment_form,
         'stallholder_detail': stallholder_detail,
         "stall_data" : stall_registration,
         'commentfilterform': commentfilterform,
@@ -1110,6 +1171,23 @@ def stallholder_stall_registration_detail_view(request, id):
     if FoodRegistration.objects.filter(registration=id).exists():
         context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
+
+    if request.method == 'POST':
+        registrationupdateform = StallRegistrationStallholderEditForm(request.POST, request.FILES or None,
+                                                         instance=stall_registration)
+        foodregistrtionupdateform = FoodRegistrationStallholderEditForm(request.POST, request.FILES or None,
+                                                        instance=food_registration)
+        if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
+            stall_registration = registrationupdateform.save(commit=False)
+            stall_registration.save()
+            food_registration = foodregistrtionupdateform.save(commit=False)
+            food_registration.save()
+
+        else:
+            db_logger.error('There was an error with updating the stall Registration. '
+                            + registrationupdateform.errors.as_data(),
+                            extra={'custom_category': 'Stall Registration'})
+            return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
 

@@ -59,32 +59,6 @@
           <hr>
           {% endif %}
         </div>
-        {% if additional_sites %}
-        <div class="card">
-          <div class="card-body">
-            <h4 class="card-title text-primary">Additional Sites Required</h4>
-          </div>
-          <table class="table table-striped">
-            <thead>
-            <tr>
-              <th scope="col">Quantity</th>
-              <th scope="col">Site Size</th>
-              <th scope="col">Location</th>
-            </tr>
-            </thead>
-            <tbody>
-            {% for site in additional_sites %}
-            <tr>
-              <td>{{ site.site_quantity }}</td>
-              <td>{{ site.site_size }}</td>
-              <td>{{ site.get_location_choice_display }}</td>
-            </tr>
-            {% endfor %}
-            </tbody>
-          </table>
-        </div>
-        <hr>
-        {% endif %}
       </div>
       <hr>
       {% if stall_data.selling_food %}
@@ -138,9 +112,17 @@
         {% endif %}
       {% endif %}
       <hr>
+      <div id='required_sites'>
+        <h4 class="card-title text-primary">Additional Site Requirements</h4>
+        {% include 'stallregistration/stallregistration_inline_partial.html' %}
+      </div>
+      <hr>
       <div>
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrationModal"> Click to update registration data</button>
+        <button class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#addSiteModal">Add Additonal Sites</button>
         <a type="button" class="ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
       </div>
+      <hr>
     </div>
     <div class="col-md-6">
       <h4>Comments</h4>
@@ -252,6 +234,50 @@
         {% endfor %}
     </div>
   </div>
+  </div>
+</div>
+<!--Update selected Registration data Bootstrap modal -->
+<div class="modal fade" id="registrationModal" tabindex="-1" role="dialog" aria-labelledby="registrationModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+    <div class="modal-content">
+      <!-- Modal heading -->
+      <div class="modal-header bg-info text-dark">
+        <h4 class="modal-title" id="registrationModalLabel">Registration Update</h4>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+        </button>
+      </div>
+      <!-- Modal body with update form -->
+      <div class="modal-body">
+        <form method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ registrationupdateform.as_p }}
+          {{ foodregistrationupdateform.as_p }}
+          <input type="submit" class="btn btn-primary" value="Update" >
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Add Site Requirements modal-->
+<div class="modal fade" tabindex="-1" id="addSiteModal" aria-labelledby="addSiteModalLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Complete Site Requirement Form</h5>
+        <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form hx-post="{% url 'registration:add-site-requirement' stall_data.id %}"  hx-target='#required-site-list'
+              hx-include="[name='total-cost']">
+          {% csrf_token %}
+          {{ additionalsiteform.as_p }}
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Requirement</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
   </div>
 </div>
 {% endblock %}

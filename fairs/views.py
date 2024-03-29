@@ -42,7 +42,8 @@ from fairs.models import (
 
 from registration.models import (
     StallRegistration,
-    RegistrationComment
+    RegistrationComment,
+    AdditionalSiteRequirement
 )
 
 from utils.site_allocation_tools import (
@@ -604,82 +605,82 @@ def event_site_listview(request):
     """
     List all the event sites and provide filtered views based on dropdown filters of events and Zones
     """
-    global filter_dict
+    global event_site_filter_dict
     cards_per_page = 6
     alert_message = 'There are no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
+    form_purpose = filterform.data.get('form_purpose', '')
     site_status=request.GET.get('site_status','')
     if site_status:
         filtered_data = EventSite.eventsitecurrentmgr.filter(site_status=site_status).order_by("site__site_name")
     else:
-        filtered_data = EventSite.eventsitecurrentmgr.order_by("site__site_name")
+        filtered_data = EventSite.eventsitecurrentmgr.all().order_by("site__site_name")
+
 
     if request.htmx:
-        if filterform.is_valid():
-            event = filterform.cleaned_data['event']
-            zone = filterform.cleaned_data['zone']
-            status = filterform.cleaned_data['site_status']
-            attr_zonesite = 'site__zone'
-            attr_eventsite = 'event'
-            attr_sitestatus = 'site_status'
-            if event and zone and status:
-                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
-                    zone) + ' with a status of ' + str(site_status_dict[int(status)])
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_eventsite: event,
-                    attr_sitestatus: status,
-                }
-            elif event and zone:
-                alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
-                    zone)
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_eventsite: event,
-                }
-            elif event and status:
-                alert_message = 'There are no event sites  where the event is ' + str(
-                    event) + ' with a status of ' + str(site_status_dict[int(status)])
-                filter_dict = {
-                    attr_eventsite: event,
-                    attr_sitestatus: status,
-                }
-            elif event:
-                alert_message = 'There are no event sites  where the event is ' + str(event)
-                filter_dict = {
-                    attr_eventsite: event
-                }
-            elif zone and status:
-                alert_message = 'There are no event sites where the zone is ' + str(zone) + ' with a status of ' + str(
-                    site_status_dict[int(status)])
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_sitestatus: status,
-                }
-            elif zone:
-                alert_message = 'There are no event sites where the zone is ' + str(zone)
-                filter_dict = {
-                    attr_zonesite: zone
-                }
-            elif status:
-                alert_message = 'There are no event sites with a status of ' + str(site_status_dict[int(status)])
-                filter_dict = {
-                    attr_sitestatus: status,
-                }
-            else:
-                alert_message = 'There are no event sites created yet.'
-                filter_dict = {}
-            filtered_data = EventSite.eventsitecurrentmgr.filter(**filter_dict).order_by("site__site_name")
-            template_name = 'eventsites/eventsite_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            eventsite_list = page_list
-            return TemplateResponse(request, template_name, {
-                'eventsite_list': eventsite_list,
-                'page_range': page_range,
-                'alert_mgr': alert_message,
-            })
-        filtered_data = EventSite.eventsitecurrentmgr.filter(**filter_dict).order_by("site__site_name")
+        if form_purpose == 'filter':
+            if filterform.is_valid():
+                event = filterform.cleaned_data['event']
+                zone = filterform.cleaned_data['zone']
+                status = filterform.cleaned_data['site_status']
+                attr_zonesite = 'site__zone'
+                attr_eventsite = 'event'
+                attr_sitestatus = 'site_status'
+                if event and zone and status:
+                    alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
+                        zone) + ' with a status of ' + str(site_status_dict[int(status)])
+                    event_site_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_eventsite: event,
+                        attr_sitestatus: status,
+                    }
+                elif event and zone:
+                    alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
+                        zone)
+                    event_site_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_eventsite: event,
+                    }
+                elif event and status:
+                    alert_message = 'There are no event sites  where the event is ' + str(
+                        event) + ' with a status of ' + str(site_status_dict[int(status)])
+                    event_site_filter_dict = {
+                        attr_eventsite: event,
+                        attr_sitestatus: status,
+                    }
+                elif event:
+                    alert_message = 'There are no event sites  where the event is ' + str(event)
+                    event_site_filter_dict = {
+                        attr_eventsite: event
+                    }
+                elif zone and status:
+                    alert_message = 'There are no event sites where the zone is ' + str(zone) + ' with a status of ' + str(
+                        site_status_dict[int(status)])
+                    event_site_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_sitestatus: status,
+                    }
+                elif zone:
+                    alert_message = 'There are no event sites where the zone is ' + str(zone)
+                    event_site_filter_dict = {
+                        attr_zonesite: zone
+                    }
+                elif status:
+                    alert_message = 'There are no event sites with a status of ' + str(site_status_dict[int(status)])
+                    event_site_filter_dict = {
+                        attr_sitestatus: status,
+                    }
+                else:
+                    alert_message = 'There are no event sites created yet.'
+                    event_site_filter_dict = {}
+        else:
+            # Handle pagination
+            # The event_site_filter _dict is retained from the filter selection which ensures that the correct
+            # data is appplied
+            # to subsequent pages
+            pass
+        filtered_data = EventSite.eventsitecurrentmgr.filter(**event_site_filter_dict).order_by("site__site_name")
         template_name = 'eventsites/eventsite_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         eventsite_list = page_list
@@ -1040,12 +1041,13 @@ def site_allocation_listview(request):
     Populate the site allocation forms in particular provide a filtered view of dropdown boxes
     based on the stallholder filters
     """
-    filter_dict = {}
+    global site_allocation_filter_dict
     global stallholder
     request.session['target'] = 'fair:siteallocation-list'
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
+    form_purpose = filterform.data.get('form_purpose', '')
     filtered_data = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
     cards_per_page = 6
     if request.htmx:
@@ -1053,10 +1055,11 @@ def site_allocation_listview(request):
         attr_stallholder = 'stallholder'
         if stallholder_id:
             stallholder = stallholder_id
-            filter_dict = {
+            site_allocation_filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+            filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by(
+                "event_site__site")
             template_name = 'siteallocations/siteallocation_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             allocation_list = page_list
@@ -1065,113 +1068,111 @@ def site_allocation_listview(request):
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        if filterform.is_valid():
-            event = filterform.cleaned_data['event']
-            zone = filterform.cleaned_data['zone']
-            on_hold = filterform.cleaned_data['on_hold']
-            attr_zonesite = 'event_site__site__zone'
-            attr_eventsite = 'event_site__event'
-            attr_onhold = 'on_hold'
-            if event and zone and stallholder and on_hold:
-                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
-                    zone) + ' stallholder ID is ' + str(stallholder) + ' that are on hold'
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_eventsite: event,
-                    attr_stallholder: stallholder,
-                    attr_onhold: on_hold
-                }
-            elif event and zone and stallholder:
-                alert_message = 'There are no sites allocated where the event is ' + str(
-                    event) + ' and zone is ' + str(
-                    zone) + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_eventsite: event,
-                    attr_stallholder: stallholder
-                }
-            elif event and zone and on_hold:
-                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
-                    zone)  + ' that are on hold'
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_eventsite: event,
-                    attr_onhold: on_hold
-                }
-            elif event and stallholder and on_hold:
-                alert_message = 'There are no sites allocated where the event is ' + str(
-                    event) + ' stallholder ID is ' + str(stallholder)  + ' that are on hold'
-                filter_dict = {
-                    attr_eventsite: event,
-                    attr_stallholder: stallholder,
-                    attr_onhold: on_hold
-                }
-            elif event and zone:
-                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
-                    zone)
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_eventsite: event
-                }
-            elif event and on_hold:
-                alert_message = 'There are no sites allocated where the event is ' + str(event)  + ' that are on hold'
-                filter_dict = {
-                    attr_eventsite: event,
-                    attr_onhold: on_hold
-                }
-            elif event and stallholder:
-                alert_message = 'There are no sites allocated where the event is ' + str(event) + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_eventsite: event,
-                    attr_stallholder: stallholder
-                }
-            elif zone and stallholder:
-                alert_message = 'There are no sites allocated where the zone is ' + str(zone) + ' stallholder ID is ' + str(stallholder)
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_stallholder: stallholder
-                }
-            elif zone and on_hold:
-                alert_message = 'There are no sites allocated where the zone is ' + str(
-                    zone) + ' that are on hold'
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_onhold: on_hold
-                }
-            elif stallholder and on_hold:
-                alert_message = 'There are no sites allocated where the stallholder ID is ' + str(stallholder)  + ' that are on hold'
-                filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_onhold: on_hold
-                }
-            elif event:
-                alert_message = 'There are no sites allocated where the event is ' + str(event)
-                filter_dict = {
-                    attr_eventsite: event
-                }
-            elif zone:
-                alert_message = 'There are no sites allocated where the zone is ' + str(zone)
-                filter_dict = {
-                    attr_zonesite: zone
-                }
-            elif on_hold:
-                alert_message = 'There are no sites allocated that are on hold'
-                filter_dict = {
-                    attr_onhold: on_hold
-                }
-            else:
-                alert_message = 'There are no sites allocated yet.'
-                filter_dict = {}
-            filtered_data = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
-            template_name = 'siteallocations/siteallocation_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            allocation_list = page_list
-            return TemplateResponse(request, template_name, {
-                'allocation_list': allocation_list,
-                'page_range': page_range,
-                'alert_mgr': alert_message,
-            })
-        filtered_data = SiteAllocation.currentallocationsmgr.filter(**filter_dict).order_by("event_site__site")
+        if form_purpose == 'filter':
+            if filterform.is_valid():
+                event = filterform.cleaned_data['event']
+                zone = filterform.cleaned_data['zone']
+                on_hold = filterform.cleaned_data['on_hold']
+                attr_zonesite = 'event_site__site__zone'
+                attr_eventsite = 'event_site__event'
+                attr_onhold = 'on_hold'
+                if event and zone and stallholder and on_hold:
+                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                        zone) + ' stallholder ID is ' + str(stallholder) + ' that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_eventsite: event,
+                        attr_stallholder: stallholder,
+                        attr_onhold: on_hold
+                    }
+                elif event and zone and stallholder:
+                    alert_message = 'There are no sites allocated where the event is ' + str(
+                        event) + ' and zone is ' + str(
+                        zone) + ' stallholder ID is ' + str(stallholder)
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_eventsite: event,
+                        attr_stallholder: stallholder
+                    }
+                elif event and zone and on_hold:
+                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                        zone)  + ' that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_eventsite: event,
+                        attr_onhold: on_hold
+                    }
+                elif event and stallholder and on_hold:
+                    alert_message = 'There are no sites allocated where the event is ' + str(
+                        event) + ' stallholder ID is ' + str(stallholder)  + ' that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_eventsite: event,
+                        attr_stallholder: stallholder,
+                        attr_onhold: on_hold
+                    }
+                elif event and zone:
+                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
+                        zone)
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_eventsite: event
+                    }
+                elif event and on_hold:
+                    alert_message = 'There are no sites allocated where the event is ' + str(event)  + ' that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_eventsite: event,
+                        attr_onhold: on_hold
+                    }
+                elif event and stallholder:
+                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' stallholder ID is ' + str(stallholder)
+                    site_allocation_filter_dict = {
+                        attr_eventsite: event,
+                        attr_stallholder: stallholder
+                    }
+                elif zone and stallholder:
+                    alert_message = 'There are no sites allocated where the zone is ' + str(zone) + ' stallholder ID is ' + str(stallholder)
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_stallholder: stallholder
+                    }
+                elif zone and on_hold:
+                    alert_message = 'There are no sites allocated where the zone is ' + str(
+                        zone) + ' that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone,
+                        attr_onhold: on_hold
+                    }
+                elif stallholder and on_hold:
+                    alert_message = 'There are no sites allocated where the stallholder ID is ' + str(stallholder)  + ' that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_onhold: on_hold
+                    }
+                elif event:
+                    alert_message = 'There are no sites allocated where the event is ' + str(event)
+                    site_allocation_filter_dict = {
+                        attr_eventsite: event
+                    }
+                elif zone:
+                    alert_message = 'There are no sites allocated where the zone is ' + str(zone)
+                    site_allocation_filter_dict = {
+                        attr_zonesite: zone
+                    }
+                elif on_hold:
+                    alert_message = 'There are no sites allocated that are on hold'
+                    site_allocation_filter_dict = {
+                        attr_onhold: on_hold
+                    }
+                else:
+                    alert_message = 'There are no sites allocated yet.'
+                    site_allocation_filter_dict = {}
+                filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
+        else:
+            # Handle pagination
+            # The event_site_filter _dict is retained from the filter selection which ensures that the correct
+            # data is appplied
+            # to subsequent pages
+            pass
         template_name = 'siteallocations/siteallocation_list_partial.html'
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         allocation_list = page_list
@@ -1997,6 +1998,7 @@ def stallregistration_siteallocation_view(request, id):
     sitefilterform = SiteAllocationFilerForm(request.POST or None)
     site_filter_message = 'Select a Zone to see available sites for allocation'
     stallregistration = StallRegistration.objects.get(id=id)
+    additional_sites_required = AdditionalSiteRequirement.objects.filter(stall_registration=id)
     siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     if request.htmx:
         if sitefilterform.is_valid():
@@ -2025,7 +2027,8 @@ def stallregistration_siteallocation_view(request, id):
                 'sitefilterform': sitefilterform,
                 'stallregistration': stallregistration,
                 'siteallocations': siteallocations,
-                'site_list': available_sites
+                'site_list': available_sites,
+                'additional_sites_required': additional_sites_required
             })
     elif request.method == 'POST':
         # Allocation request created
@@ -2047,7 +2050,8 @@ def stallregistration_siteallocation_view(request, id):
         'site_filter': site_filter_message,
         'sitefilterform': sitefilterform,
         'stallregistration': stallregistration,
-        'siteallocations': siteallocations
+        'siteallocations': siteallocations,
+        'additional_sites_required': additional_sites_required
     })
 
 def stallregistration_detail_view(request, stallregistration_id):

@@ -1,0 +1,634 @@
+-   model: faq.faqcategory
+    pk: 1
+    fields:
+        name: Shopping
+-   model: faq.faqcategory
+    pk: 2
+    fields:
+        name: Logging In
+-   model: faq.faqcategory
+    pk: 3
+    fields:
+        name: Applications
+-   model: faq.faqcategory
+    pk: 10
+    fields:
+        name: On the Day
+-   model: faq.faqcategory
+    pk: 11
+    fields:
+        name: Food Stalls
+-   model: faq.faqcategory
+    pk: 12
+    fields:
+        name: Buskers
+-   model: faq.faq
+    pk: 1
+    fields:
+        category: 1
+        location: 1
+        question: Are there any cash-out facilities
+        answer: 'There are two ATM’s in Martinborough situated on Kitchener Street
+            in close proximity.   Note: there is often a queue for both machines and
+            they have been known to run out on Fair day so it is advisable to bring
+            cash with you.   A number of stallholders do have mobile EFTPOS available
+            as well.  Each year we try to have the ANZ ATM module on site.  It houses
+            four ATMs.  If it''s available, the unit will be set up outside the Fire
+            Station on Texas Street East (Opposite the playground/Town Hall/Waihenga
+            center)'
+        is_active: true
+-   model: faq.faq
+    pk: 2
+    fields:
+        category: 1
+        location: 1
+        question: Can I bring my dog/s to the Fair?
+        answer: "We would appreciate it if you leave your dog(s) at home. \r\n\r\nWith
+            up to 30,000 people attending the Fair there is not much room for dogs
+            on leashes in amongst all those human legs. \r\n\r\nTemperatures in Martinborough
+            can often be in the high 20’s if not low 30’s at the Fair being in summer,
+            and the majority of stalls are on the road so it can’t be very nice for
+            your pet pooch walking on hot asphalt with no water readily available"
+        is_active: true
+-   model: faq.faq
+    pk: 3
+    fields:
+        category: 1
+        location: 1
+        question: Can we get food and drinks at the Fair?
+        answer: "There are a number of Food & Drink outlets around the Fair. \r\n\r\nThere
+            are approximately 40 Food stalls as part of the Fair and then there are
+            a number of popular Café’s that are one of the reasons Martinborough is
+            such a popular destination at the weekend."
+        is_active: true
+-   model: faq.faq
+    pk: 4
+    fields:
+        category: 1
+        location: null
+        question: How do I get to the Martinborough Fair
+        answer: "There are several ways of getting to Martinborough.  The most direct
+            way if travelling from Wellington via the Rimutaka Hill is via [SH53](https://www.google.co.nz/maps/dir/Featherston,+Wellington/Martinborough/@-41.1678676,175.3213715,12z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x6d40cbda6016546d:0x500ef6143a2c310!2m2!1d175.3230691!2d-41.116798!1m5!1m1!1s0x6d472d633665d94d:0x500ef6143a2e0e0!2m2!1d175.4600651!2d-41.2190932!3e0
+            )which goes from Featherston at the foot of the Rimutaka Hill Road through
+            to Martinborough. \r\nAs this is the most direct route it can also be
+            very busy so an alternate route which may take 20 minutes longer but will
+            avoid the usual traffic build up can be found [here](https://www.google.co.nz/maps/dir/Featherston,+Wellington/-41.3055443,175.2741616/Martinborough/@-41.2115996,175.2913277,12z/data=!4m15!4m14!1m5!1m1!1s0x6d40cbda6016546d:0x500ef6143a2c310!2m2!1d175.3230691!2d-41.116798!1m0!1m5!1m1!1s0x6d472d633665d94d:0x500ef6143a2e0e0!2m2!1d175.4600651!2d-41.2190932!3e0)\r\n\r\nTravelling
+            from Greytown you can come down Bidwills Cutting Road at the southern
+            end of Greytown If you are coming from further north of Carterton the
+            best route is via [Ponatahi Road](https://www.google.co.nz/maps/dir/Carterton,+Wellington/Martinborough/@-41.1239813,175.4303537,12z/data=!3m1!4b1!4m14!4m13!1m5!1m1!1s0x6d40d0aa7bf21045:0x500ef6143a29906!2m2!1d175.5235181!2d-41.0291733!1m5!1m1!1s0x6d472d633665d94d:0x500ef6143a2e0e0!2m2!1d175.4600651!2d-41.2190932!3e0).
+            You should be prepared to spend some time in a queue as there are regularly
+            up to 30,000 people attending the Fair each day."
+        is_active: true
+-   model: faq.faq
+    pk: 5
+    fields:
+        category: 1
+        location: 1
+        question: Is there an entry fee?
+        answer: "There is no fee to visit/shop at the Martinborough Fair. \r\nThere
+            may be a small fee for Parking in some places around Martinborough but
+            this is set by independent groups who look after parking."
+        is_active: true
+-   model: faq.faq
+    pk: 6
+    fields:
+        category: 1
+        location: 1
+        question: What Parking is available at the Fair?
+        answer: "There is generally plenty of parking around Martinborough.\r\n\r\nOn
+            roads\r\n\r\nAll around Martinborough there are a network of roads that
+            are available for free parking.  Don't be put off by the number of people
+            parking way back on highway 53 coming into the town, drive on through
+            to Martinborough town and turn left or right at Princess street to access
+            the rings of streets that surround the town.  You will find lots of kerbside
+            parking within good walking distance of the town centre where the Fair
+            is held.\r\n\r\nIn fields\r\n\r\nParking is also provided by a number
+            of independent organisations primarily as fund-raisers for their group.
+            \ These are set up in fields around town and are generally advertised
+            by a sign at the gate or entrance.  One is on Princess street North, another
+            on Princess street South, There is also usually a parking field in Cork
+            Street and on Strasbourgh Street.\r\n\r\nDisability parking\r\n\r\nCork
+            Street, behind the Waihenga Center and town hall has been set aside for
+            people with mobility challenges to park.\r\n\r\nBus parking\r\n\r\nCork
+            street behind the Pukemanu hotel has a section set aside for"
+        is_active: true
+-   model: faq.faq
+    pk: 7
+    fields:
+        category: 1
+        location: 1
+        question: What public transport is available for getting to and from the Fair?
+        answer: "There is the 200 Bus Service which starts in Masterton and comes
+            to Martinborough via Carterton, Greytown and the Featherston Railway Station.\r\n\r\nPrivate
+            bus companies also run special services to the Fair from around the country."
+        is_active: true
+-   model: faq.faq
+    pk: 8
+    fields:
+        category: 1
+        location: 1
+        question: When is the next Martinborough Fair?
+        answer: "It is usually the first Saturday of February and March each year.\r\n\r\nThe
+            2025 Martinborough Fair will be held on the 7th of February and the 7th
+            of March\r\n\r\nThe Fair officially starts at 8:00 am and runs through
+            to 4:00 pm."
+        is_active: true
+-   model: faq.faq
+    pk: 9
+    fields:
+        category: 1
+        location: 1
+        question: Where are the toilets?
+        answer: "There are public toilets located at the Playground on the Eastern
+            side of the Square, opposite the Fire Station. \r\n\r\nIn addition there
+            are a number of Port-a-loo’s located at the outside end of each street
+            that the Fair is on. \r\n\r\nOne or two large truck/trailer units housing
+            12 flushing toilets can also be found near the Fire Station opposite the
+            Town Hall"
+        is_active: true
+-   model: faq.faq
+    pk: 10
+    fields:
+        category: 2
+        location: 1
+        question: Forgotten username/password
+        answer: "### Username\r\n\r\nYour user name is your email address\r\n\r\n###
+            Password\r\n\r\nIf you have forgotten your password..  Click on log in
+            and choose 'Forgot your Password?'\r\n\r\nA password reset link will be
+            sent to your email address so you can reset the password.  You can reset
+            it to the same as before, up to 5 times, then you must choose a new one.\r\n\r\n###
+            Email address\r\n\r\nIf you no longer have access to the email address
+            you set up the account with, then you will need to contact the data administrator
+            with proof of ownership, to have the email address changed."
+        is_active: true
+-   model: faq.faq
+    pk: 11
+    fields:
+        category: 2
+        location: 1
+        question: I no longer have access to the account email address
+        answer: "If you have changed your email address since last year - don't worry,
+            just log in to your account and change it in your profile.\r\n\r\nIf you
+            have ALSO forgotten your password and/or account UserName - you will need
+            to contact us and we can tell you your username and reset the email address
+            for you so you can reset the password.\r\n\r\nPLEASE don't just create
+            a new account - it makes extra work for our volunteer convener and it
+            puts your application in the 'New applicant' category with no prior claims
+            on any sites. \r\n\r\nOnly returning stallholders are processed in the
+            first month, all others must wait until our returning stallholders have
+            had their sites allocated. This means that your previous site can be allocated
+            to someone else and you won't hear about your success or not until after
+            the 15th.\r\n\r\nIf there's no room left by then, your application will
+            be declined."
+        is_active: true
+-   model: faq.faq
+    pk: 12
+    fields:
+        category: 2
+        location: 1
+        question: What's the difference between 'Signing up ' and 'Site Registration'
+        answer: "Signing up  is where you set up an account on this web site to store
+            your application data.  This is intended to make application easier for
+            you.\r\n\r\nSite Registration is where you apply for a stall site at a
+            Martinborough Fair."
+        is_active: true
+-   model: faq.faq
+    pk: 13
+    fields:
+        category: 3
+        location: 1
+        question: How do I apply for a stall – I was a stall holder previously.
+        answer: "Previous stallholders will have registered on this site already and
+            have an account with a email address and a password. \r\n\r\nIf you have
+            NOT yet Signed Up on this site, you will need to do so using the Sign
+            Up button.  If you are told that the email address is already in use,
+            that means you do already have an account, and you need to try to remember
+            your user email address and password.\r\n\r\nIf you can't remember them
+            read the forgotten credentials FAQ (under the logging in tab) about it
+            before emailing for assistance.\r\n\r\nSo, assuming you have registered
+            your account:\r\n\r\nLog in to our web-site using the Log In button and
+            select the 'Site Registration' button on the MyFair dashboard  to APPLY
+            for your stall for the current year.  \r\n\r\nOnce you have submitted
+            your application, remember to pay your stall fee. If paying by Bank transfer,
+            our bank account number will be provided on your application acknowledgement
+            email.\r\n\r\nWhen we receive your payment, we can evaluate your proposal
+            get the application process under way."
+        is_active: true
+-   model: faq.faq
+    pk: 14
+    fields:
+        category: 3
+        location: 1
+        question: How do I apply for a stall – this is my first time?
+        answer: "Register\r\n\r\nIf you don't already have an account, locate the
+            'Register' button on the top menu and fill in your details.\r\nYou'll
+            receive an activation link to complete the process. \r\n \r\nLog in\r\n\r\nLocate
+            the login button and - well - log in.\r\n\r\nApply\r\n\r\nThe application
+            form will be available to registered site users from the 1st of October\r\n\r\nYou
+            can also make multiple applications so you can have more than one stall."
+        is_active: true
+-   model: faq.faq
+    pk: 15
+    fields:
+        category: 3
+        location: 1
+        question: What does it cost to have a stall at the Fair?
+        answer: "The Martinborough Fair is budgeted on there being two market days
+            so site fees cover both Fair days and all applicants are expected to commit
+            to both fairs.\r\n\r\nThe prices will depend on your setup \r\n\r\nNormally,
+            if a stallholder decides not to come to one fair or the other, they should
+            let us know and we will try to fill the spare slot, and if we can, we
+            will consider a refund, subject to administration cost retention policies
+            in force at the time."
+        is_active: true
+-   model: faq.faq
+    pk: 16
+    fields:
+        category: 3
+        location: 1
+        question: Can I apply for one Fair day?
+        answer: "The Martinborough Fair normally operates over two days, but we have
+            separated the days by one month.\r\n\r\nThis has the advantage of offering
+            our stallholders and visitors a better chance of a successful day's business
+            each year as it would be very unusual for both days to suffer from adverse
+            weather or other limiting conditions.\r\n\r\nAs a result, we expect stallholders
+            to commit to both Fair days on application.\r\n\r\nIf you are unable to
+            make it on one or other of the scheduled days, you still apply and pay
+            for both, but let us know in your application what your plans are.\r\n\r\nIt
+            is not always easy to fill a single fair day, but we will try to get a
+            replacement on your behalf and if we are successful, may consider refunding
+            one day's site fees less an administration fee."
+        is_active: true
+-   model: faq.faq
+    pk: 17
+    fields:
+        category: 3
+        location: 1
+        question: Can I rent multiple sites?
+        answer: "Yes you can. \r\n\r\nMulti-site applications can be achieved by selecting
+            Multi site on you application and then defining your additional site requirements.
+            \ \r\n\r\nYou can chose to have the site adjacent to your main site or
+            located elsewhere in the Fair.  Use the application comments functions
+            to explain to the Convener of your Fair location  preferences where the
+            additional sites are not adjacent to you main stall.."
+        is_active: true
+-   model: faq.faq
+    pk: 18
+    fields:
+        category: 3
+        location: 1
+        question: Can I share a stall site?
+        answer: "Site sharing must be discussed with the Convener first.\r\n\r\nTwo
+            food vendors will not normally be able to share a site due to food handling
+            and licensing requirements.\r\n\r\nStall sites may be shared, but not
+            sub-let.\r\n\r\nThe site cost may be shared, but for no more than a reasonable
+            share of the established site fee.\r\n\r\nAll products intended to be
+            on sale are to be listed on the application form, and the fact that the
+            stall is to be shared noted in comments, but one person will take responsibility
+            for application, payment and dealing with fair management regarding all
+            aspects of the stall site and its use."
+        is_active: true
+-   model: faq.faq
+    pk: 19
+    fields:
+        category: 3
+        location: 1
+        question: Can I skip a year and yet retain the stall site I love?
+        answer: If you just can't make it one year, but fully intend to be back, let
+            us know, and we can make sure the stallholder your site is allocated to
+            knows it is a temporary placement.
+        is_active: true
+-   model: faq.faq
+    pk: 20
+    fields:
+        category: 3
+        location: 1
+        question: Can you please confirm if there are spaces left in/at ....
+        answer: "Check the site front page for updates on that.\r\n\r\nFor a normal
+            year (Feb/March fairs), returning stallholders' paid applications are
+            processed first during the month applications open, with the expectation
+            that they can return to their previous sites or be transferred if possible.
+            \r\n\r\nAt the end of the first month, all paid applications are then
+            processed and any remaining sites allocated on a first come basis.\r\n\r\nFor
+            those reasons, we can not know what sites are likely to be available until
+            after the opening month.\r\n\r\nWe do try to place applicants according
+            to their expressed preferences, but reserve the right to place stalls
+            at our discretion."
+        is_active: true
+-   model: faq.faq
+    pk: 21
+    fields:
+        category: 3
+        location: 1
+        question: When do I have to apply and pay by?
+        answer: "You should be paid within 14 days of application. \r\n\r\nNormally,
+            applications open 1st October and we allocate returning stallholders during
+            that month.\r\n\r\nAfter October, all other applications are processed
+            and will be allocated any sites not yet claimed by returning stallholders.\r\n\r\nIf
+            you want to secure your site from last year, you need to have your application
+            in and paid before the end of the first month.\r\n\r\nIf you don't get
+            your application in before the end of the first month - don't be surprised
+            if your site is given to somebody else - and they will have first dibs
+            the following year."
+        is_active: true
+-   model: faq.faq
+    pk: 22
+    fields:
+        category: 3
+        location: 1
+        question: When do stall applications open?
+        answer: "Stall applications normally open on the 1st of October. \r\n\r\nGetting
+            your application in as soon after that as possible will help in stall
+            allocations.\r\n\r\n#### Normal operation:\r\n\r\nReturning stallholders
+            who apply and pay in the opening month will be processed first.  \r\n\r\nFrom
+            the following month on, all PAID applications are processed in a first-come
+            first-served basis.\r\n\r\nWe insist on payment before processing because
+            we have found it time-consuming chasing people for payment otherwise.\r\n\r\nThis
+            way, if you don't pay, your application will not be considered and so
+            we can be confident that stallholders we have allocated sites to have
+            paid."
+        is_active: true
+-   model: faq.faq
+    pk: 23
+    fields:
+        category: 3
+        location: 1
+        question: Why do I have to pay on application?
+        answer: "We insist on payment before processing because we have found it time-consuming
+            chasing people for payment otherwise.\r\n\r\nThis way, if you don't pay,
+            your application will not be considered and so we can be confident that
+            stallholders we have allocated sites to have paid.\r\n\r\nWe are generally
+            able to accommodate most applicants, so it will be unusual for your application
+            to be turned down.\r\n\r\nIt will only be on grounds such as unsuitable
+            product lines, incompatible site requirements (e.g. unusual power or size
+            requirements) or previous misbehaviour, that an application will be declined.\r\n\r\nCheck
+            the Stallholder Guidelines for information on site restrictions.  If you
+            satisfy all the criteria, you will probably be welcomed to the Fair.\r\n\r\nOnce
+            we are approaching capacity, we will advertise the fact on this website
+            and when full, we will still take applications from those who wish to
+            be put on the waiting list.\r\n\r\nIf we are unable to accommodate you
+            for any reason, your site application fees will be refunded in full.\r\n\r\n
+            \r\n\r\nNotes: Getting your application in as soon as applications open
+            will help in stall allocations.\r\n\r\nReturning stallholders who apply
+            and pay in October will be processed during October.  \r\n\r\nFrom the
+            1st of November on, all PAID applications are processed in a first-come
+            first-served basis."
+        is_active: true
+-   model: faq.faq
+    pk: 24
+    fields:
+        category: 3
+        location: 1
+        question: Refunds
+        answer: "Refunds will be made at the discretion of the Convener based on the
+            reason you are unable to make it to one or both of the Fair Days.  If
+            the Convener is advised more than two weeks prior to the February Fair
+            date, a refund is possible, although 25% of the claimed amount may be
+            retained as an Administration fee.\r\n\r\nNo refunds will be given due
+            to inclement weather or any other circumstances beyond our control."
+        is_active: true
+-   model: faq.faq
+    pk: 25
+    fields:
+        category: 3
+        location: 1
+        question: I am unable to attend the (Feb/Mar) market but would like to attend
+            the other Fair. Is that possible?
+        answer: "The Martinborough Fair normally operates over two days, but we have
+            separated the days by one month.\r\n\r\nThis has the advantage of offering
+            our stallholders and visitors a better chance of a successful day's business
+            each year as it would be very unusual for both days to suffer from adverse
+            weather or other limiting conditions.\r\n\r\nAs a result, we expect stallholders
+            to commit to both Fair days on application.\r\n\r\nIf you are unable to
+            make it on one or other of the scheduled days, you still apply and pay
+            for both, but let us know in your application what your plans are.\r\n\r\nIt
+            is not always easy to fill a single fair day, but we will try to get a
+            replacement on your behalf and if we are successful, may consider refunding
+            one day's site fees less an administration fee."
+        is_active: true
+-   model: faq.faq
+    pk: 26
+    fields:
+        category: 10
+        location: 1
+        question: Cash exchange
+        answer: "#### Cash window\r\n\r\nStallholders can get change and rationalise
+            cash holding at the cash exchange service that is run out of the Martinborough
+            Fire Station.  The cash window will be open at the front of the building."
+        is_active: true
+-   model: faq.faq
+    pk: 27
+    fields:
+        category: 10
+        location: 1
+        question: If I arrive on Friday evening where can I stay in the vicinity of
+            Martinborough?
+        answer: "Some stallholders camp in their caravan on the road around the square
+            somewhere near their stall site on Friday night so they can make an early
+            start to setting up. (Please don't camp in the grassed area of the square)\r\n\r\nBooking
+            of more formal accommodation needs to be arranged well ahead due to the
+            popularity of the Fair.  Many late-comers find they can only find accommodation
+            as far away as the Hutt Valley or Masterton."
+        is_active: true
+-   model: faq.faq
+    pk: 28
+    fields:
+        category: 10
+        location: 1
+        question: Powered sites
+        answer: "There are 7 power supply boxes around the Fair for use by stallholders
+            who have applied for power.\r\n\r\nIt is the responsibility of each power
+            user to provide their own extension leads to connect to the power outlets
+            and to ensure all cables and appliances are safe and have been tested
+            and tagged.\r\n\r\nAll cables that are exposed to foot traffic must also
+            be protected mechanically. Strips of gaffer tape will not be adequate.
+            \ Use carpet strips or purpose made cable covers that will withstand 50,000
+            feet standing on them and being kicked and pummeled by feet and wheels
+            all day.\r\n\r\n#### Oxford street and Cambridge Road\r\n\r\n- These two
+            distribution boxes plugged in, which are sited at ground level.\r\n- RCD
+            units are incorporated into the distribution boards or their supply points\r\n-
+            Any cables exposed to foot traffic must also be physically protected.
+            Gaffer tape is not enough. Lengths of carpet or purpose built cable covers
+            must be used.\r\n\r\n#### Mitre 10 Car park\r\n\r\n- Powered sites in
+            the Mitre 10 car park can run leads in through the Mitre 10 roller doorway
+            or from Pain and Kershaw. Use RCD protection for these supplies.\r\n-
+            There is a three phase supply point under the veranda in front of Nara
+            café which we can hire a distribution box for if there are enough enough
+            power users (currently $400 for the 2 days)\r\n\r\n#### Memorial Square
+            (under the trees)\r\n\r\nFour power boxes are mounted on poles around
+            the South-Western sides of the square. One opposite the Martinborough
+            Hotel, one opposite the Mitre 10 car park, and two are mounted over the
+            road from the Jellicoe Street entrance. \r\n\r\nAll these four power box
+            outlets are already protected by RCD units back at the main supply panel.
+            Users must still ensure all cables and equipment connected to these boxes
+            are certified safe. \r\n\r\n#### Memorial square atrium\r\n\r\nThe main
+            power distribution box in the middle of the square will have a few spare
+            outlets for use by stallholders who have applied and paid. They are all
+            protected by RCDs."
+        is_active: true
+-   model: faq.faq
+    pk: 29
+    fields:
+        category: 10
+        location: 1
+        question: Is electricity available for stalls?
+        answer: "Yes, there are a limited number of stalls where electricity can be
+            provided at a fee over and above the fee for the stall site.\r\n\r\n####
+            Extension cords\r\n\r\nAll extension cords are the responsibility of the
+            stallholder and must be adequately protected where crossing public areas.
+            All electrical equipment used on your stall must be tested and tagged
+            by an authorised tester.\r\n\r\n#### Generators\r\n\r\nGenerators will
+            only be allowed under special circumstances and with prior written approval.
+            \ If circumstances are deemed to warrant the use of a generator it will
+            be required to meet stringent noise and emission standards and must be
+            approved by Fair management BEFORE use."
+        is_active: true
+-   model: faq.faq
+    pk: 30
+    fields:
+        category: 10
+        location: 1
+        question: When should I set up my stall
+        answer: "Our traffic management plan as filed with Transit NZ calls for road
+            closures between the hours of 8am and 4pm on Saturday, and the District
+            Council allows us to use public reserve areas during the same times.\r\n\r\nWe
+            are allowed some setup/tear-down time, so cars may use the roads while
+            sites are being set up, typically from about 4am to 7:30am for set-up,
+            and tear-down time from 4pm to around 5pm.\r\n\r\nRoads around Martinbourough
+            Square are open and may not be obstructed outside those times.\r\n\r\nOnce
+            set up, the Fair runs from 8:00 am – 4:00 pm officially but we often have
+            people “shopping” from 7:00 am onwards. \r\n\r\nMany stallholders start
+            setting up in the small hours of the morning with the centre of Martinborough
+            buzzing by 5:00 am. \r\n\r\nYour car/van/truck needs to be outside the
+            road closure area by 7:30am so it's probably a good idea to aim at arriving
+            in Martinborough no later than 6:00am to unload, get the car parked somewhere
+            away from the stall areas and set up your stall ready for a busy day."
+        is_active: true
+-   model: faq.faq
+    pk: 31
+    fields:
+        category: 11
+        location: 1
+        question: Food Stall licensing
+        answer: "The District Council keeps a very close eye on food preparation and
+            provision at the Fair.If you are selling ANY food, whether you are preparing
+            it yourself in some way, or simply on-selling packaged human consumable
+            food, you MUST have been issued a licence to do so for this event specifically.\r\n\r\nPrevious
+            licences or permissions for other events are not considered valid and
+            you risk being closed down on the day if you do not comply.\r\n\r\nFood
+            stall providing food that can be consumed at the Fair should register
+            under the Food/Drink (consumable on site) Category, other foodstuffs like
+            honey, water, olive oil or packaged tea/coffee etc, should choose Food/Drink
+            (Other).\r\n\r\nOn-site food stalls will contribute towards health and
+            safety costs, as well as the SWDC licensing fees. ($60)\r\n\r\nPackaged
+            product will only incur the licensing fee ($20)\r\n\r\nThe stall application
+            form will include a section where you can provide all the information
+            required to applying for a SWDC food stall license. If the applicant is
+            a registered food business, they will need to provide a scanned copy of
+            their current registration certificate.\r\n\r\nWe will forward the application
+            information to the Council and pay any fees, and they will contact the
+            applicant if there are any questions.\r\n\r\nThe Council will evaluate
+            your application and then inform the Convener of their decision, at which
+            point, we will be able to finalise your stall allocation."
+        is_active: true
+-   model: faq.faq
+    pk: 32
+    fields:
+        category: 11
+        location: 1
+        question: Food Trucks
+        answer: "Sites are nominally 6x3 metres but there are sites at the end of
+            a row, or street, or in open areas that could be used to accommodate a
+            bigger vehicle.  But we need to know about it before-hand.  Sites are
+            not flexible, they are pre-marked in grids and there is no leeway.\r\n\r\n\r\nWe
+            also need to know about extractor positions so we don't place you next
+            to a clothing stall with the resultant danger of claims being made against
+            you for damage."
+        is_active: true
+-   model: faq.faq
+    pk: 33
+    fields:
+        category: 11
+        location: 1
+        question: General info about sites with access to power
+        answer: "There are 7 power supply boxes around the Fair for use by stallholders
+            who have applied for power.\r\n\r\nIt is the responsibility of each power
+            user to provide their own extension leads to connect to the power outlets
+            and to ensure all cables and appliances are safe and have been tested
+            and tagged.\r\n\r\nAll cables that are exposed to foot traffic must also
+            be protected mechanically. Strips of gaffer tape will not be adequate.
+            \ Use carpet strips or purpose made cable covers that will withstand 50,000
+            feet standing on them and being kicked and pummeled by feet and wheels
+            all day.\r\n\r\n#### Oxford street and Cambridge Road\r\n\r\n- These two
+            distribution boxes plugged in, which are sited at ground level.\r\n- RCD
+            units are incorporated into the distribution boards or their supply points\r\n-
+            Any cables exposed to foot traffic must also be physically protected.
+            Gaffer tape is not enough. Lengths of carpet or purpose built cable covers
+            must be used.\r\n\r\n#### Mitre 10 Car park\r\n\r\n- Powered sites in
+            the Mitre 10 car park can run leads in through the Mitre 10 roller doorway
+            or from Pain and Kershaw. Use RCD protection for these supplies.\r\n-
+            There is a three phase supply point under the veranda in front of Nara
+            café which we can hire a distribution box for if there are enough enough
+            power users (currently $400 for the 2 days)\r\n\r\n#### Memorial Square
+            (under the trees)\r\n\r\nFour power boxes are mounted on poles around
+            the South-Western sides of the square. One opposite the Martinborough
+            Hotel, one opposite the Mitre 10 car park, and two are mounted over the
+            road from the Jellicoe Street entrance. \r\n\r\nAll these four power box
+            outlets are already protected by RCD units back at the main supply panel.
+            Users must still ensure all cables and equipment connected to these boxes
+            are certified safe. \r\n\r\n#### Memorial square atrium\r\n\r\nThe main
+            power distribution box in the middle of the square will have a few spare
+            outlets for use by stallholders who have applied and paid. They are all
+            protected by RCDs."
+        is_active: true
+-   model: faq.faq
+    pk: 34
+    fields:
+        category: 11
+        location: 1
+        question: What size power outlets are available
+        answer: 10 and 15amp three flat pin sockets, 16amp and 20amp caravan sockets.  All
+            single phase.
+        is_active: true
+-   model: faq.faq
+    pk: 35
+    fields:
+        category: 12
+        location: 1
+        question: Buskers
+        answer: "#### The Martinborough Fair is a fun day for visitors and we welcome
+            musical entertainment that adds to the enjoyment of everyone associated
+            with the Fair. \r\n\r\nAlthough the streets and parks of the  Martinborough
+            village precinct, including Memorial Square, are ‘closed’ for the duration
+            of the Fair, we follow the South Wairarapa District Council’s policy relating
+            to music in the public space.  In particular we refer to the sections
+            about volume and appropriate lyrics. that basically says – Any person
+            busking or conducting a street performance, or other such activity must
+            not cause any nuisance or obstruction to any person using any public place
+            \   \r\n\r\nOur intention is to enable musicians to also have fun while
+            performing at the Fair, so these few guidelines are designed to avoid
+            issues or problems that are foreseeable, especially relating to site/location
+            and amplified volume: \r\n\r\n- On arrival at the Fair go to the Information
+            Centre in the middle of the Square. You’ll be introduced to whomever is
+            liaising with musicians on that day. There are some dedicated sites for
+            musicians, and you’ll be assisted to find your site(s).\r\n- Some sites
+            are more popular that others so, to rotate access, we ask that you play
+            for no more than an hour before moving on to another site. So not only
+            will you get to play in a different place, it also gives the stall holders
+            adjacent to the site a variation in music throughout the day.\r\n- Volume
+            of music and speech through amps and PA systems is the most common cause
+            of complaint, and it’s an issue we and you can simply avoid through good
+            communication, especially by occasionally checking with neighbouring stall
+            holders. \r\n- Amplified music should not, in general, be significantly
+            louder than acoustic production. Generally, if your neighbours are comfortable
+            with your volume and music style, then all is well.\r\n\r\n**NB** Most
+            of our musicians are solo, duo or trio.  For larger bands we have set
+            aside the staging area in front of the Town Hall where higher amplification
+            is suitable.  Performance times in this location are usually programmed
+            prior to the Fair day, so if you wish to book a playing time please contact
+            us.   We want you, together with everyone else at our Fair, to have a
+            good day.  We don’t expect to have disputes but if that happens then the
+            situation can (if your efforts fail) be resolved by our music coordinator.
+            \ \r\n\r\nFor any issues on the day, contact our head office on the day
+            at the Fire Station in Texas Street East."
+        is_active: true

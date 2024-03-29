@@ -30,6 +30,7 @@ urlpatterns = [
     path('', include('pages.urls')),  # pages at the root URL
     path('accounts/', include('allauth.urls')),
     path('', include('accounts.urls')),
+    path('', include('faq.urls')),
     path('registration/', include('registration.urls')),
     path('', include('fairs.urls')),
     path('',include('search.urls')),
