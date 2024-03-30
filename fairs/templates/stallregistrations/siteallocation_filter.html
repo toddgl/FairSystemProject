@@ -1,6 +1,7 @@
 <!-- fairs/templates/stallregistration/siteallocations_filter.html -->
 
 {% extends 'base.html' %}
+{% load hasunallocatedsites_tag %}
 
 {% block body %}
 <main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
@@ -53,6 +54,13 @@
                             </tbody>
                         </table>
                     </div>
+                    {% get_number_unallocated_sites stallregistration.id as number_unallocated_sites %}
+                    {% get_has_unallocated_sites stallregistration.id as has_unallocated_sites %}
+                    {% if has_unallocated_sites %}
+                        <div class="alert alert-danger" role="alert">
+                            There are {{ number_unallocated_sites }} unallocated sites that need to be resolved
+                        </div>
+                    {% endif %}
                     {% for allocation in item.site_allocation.all %}
                     <div class="title-hr">
                         <span class="hr fix"></span>

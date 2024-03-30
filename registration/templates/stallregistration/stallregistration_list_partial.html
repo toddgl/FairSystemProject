@@ -76,10 +76,14 @@
                                 {% endif %}
                             {% endfor %}
                         {% endif %}
+                    {% get_number_unallocated_sites item.id as number_unallocated_sites %}
                     {% get_has_unallocated_sites item.id as has_unallocated_sites %}
                         {% if has_unallocated_sites %}
-                            <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}" class="bp-3 mb-2 btn btn-primary">
-                                Set Site Allocation
+                            <a href="{% url 'fair:stallregistration-siteallocation'  item.id  %}"
+                               class="bp-3 mb-2 btn btn-primary position-relative">
+                                Set Site Allocation <span
+                                    class="badge position-absolute top-0 start-100 translate-middle p-2 rounded-pill bg-danger">
+                                {{ number_unallocated_sites }} <span class="visually-hidden">unread messages</span> </span>
                             </a>
                         {% endif %}
                     {% endif %}

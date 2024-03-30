@@ -1,0 +1,12 @@
+-   model: payment.paymenttype
+    pk: 1
+    fields:
+        payment_type_name: Stripe
+-   model: payment.paymenttype
+    pk: 2
+    fields:
+        payment_type_name: Poli
+-   model: payment.paymenttype
+    pk: 3
+    fields:
+        payment_type_name: Direct Credit
