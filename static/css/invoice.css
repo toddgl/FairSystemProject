@@ -1,3 +1,7 @@
+@page {
+ size: landscape;
+}
+
 .clearfix:after {
   content: "";
   display: table;
@@ -32,7 +36,7 @@ header {
 }
 
 #logo img {
-  width: 90px;
+  width: 200px;
 }
 
 h1 {
