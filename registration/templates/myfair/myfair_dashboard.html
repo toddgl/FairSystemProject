@@ -34,7 +34,8 @@
                   </div>
                 </div>
               </div>
-              <a href="{% url 'payment:create-pdf-invoice' %}" class="btn btn-secondary">View Invoice</a>
+              <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
+                 class="btn btn-secondary">View Invoice</a>
             {% endfor %}
           {% endif %}
       {% for registration in registrations %}

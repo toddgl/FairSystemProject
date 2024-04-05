@@ -5,7 +5,7 @@ import datetime
 import logging
 from django.db import models
 from django.conf import settings
-from django.db.models import UniqueConstraint
+from django.db.models import Max, Sum, UniqueConstraint, ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django_fsm import FSMField, transition
@@ -57,6 +57,7 @@ class Invoice(models.Model):
     """
     Description: A model for recording invoicing for stall registrations
     """
+    invoice_number = models.PositiveIntegerField(default=1)
     invoice_sequence = models.IntegerField(default=1)
     stall_registration = models.ForeignKey(StallRegistration, on_delete=models.CASCADE)
     stallholder = models.ForeignKey(
@@ -71,11 +72,44 @@ class Invoice(models.Model):
 
     class Meta:
         UniqueConstraint(
-            fields=['id', 'invoice_sequence'],
+            fields=['invoice_number', 'invoice_sequence'],
             name='unique__invoice'
         )
         verbose_name = "invoice"
         verbose_name_plural = "invoices"
+
+    def generate_invoice_number(stallregistration_pk):
+        """
+        Used to Generate invoice number for a new invoice
+        - if thete are no invoices in the system it starts at 1
+        - if there has already been an invoive created for the stall registration this nunber is reused
+        - if there is no invoices created for the stall registration it finds the highest invoice number in the
+        system and increments this by 1
+        """
+        if Invoice.objects.filter(stall_registration__pk=stallregistration_pk).exists():
+            invoice =  Invoice.objects.get(stall_registration__pk=stallregistration_pk)
+            invoice_num = invoice.invoice_number
+        else:
+            invoice_num= Invoice.objects.all().aggregate(Max( "invoice_number") )["invoice_number__max"]
+            while Invoice.objects.filter(invoice_number=invoice_num).exists():
+                invoice_num += 1
+
+        if not invoice_num:
+            invoice_num = 1
+
+        return invoice_num
+
+    def generate_sequence_number( stallregistration_pk):
+        sequence_num= Invoice.objects.filter(stall_registration__pk=stallregistration_pk).aggregate(Max(
+            "invoice_sequence") )["invoice_sequence__max"]
+
+        if not sequence_num:
+            sequence_num = 1
+
+        while Invoice.objects.filter(
+            stall_registration__pk=stallregistration_pk, invoice_sequence=sequence_num).exists():
+            sequence_num += 1
+        return sequence_num
 
 class PaymentHistoryManager(models.Manager):
     """
@@ -152,6 +186,16 @@ class PaymentHistory (models.Model):
         verbose_name = "payment"
         verbose_name_plural = "payments"
 
+    def total_paid(stall_registration):
+        paid_total = PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL = Sum(
+            'amount_paid'))['TOTAL']
+        return paid_total
+
+    def total_reconciled(stall_registration):
+        reconciled_total = PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL = Sum(
+            'amount_reconciled'))['TOTAL']
+        return reconciled_total
+
     @transition(field=payment_status, source="Pending", target="Cancelled")
     def to_payment_status_cancelled(self):
         pass
@@ -183,21 +227,27 @@ class InvoiceItemManager(models.Manager):
         """
         fields_to_check = ['stall_category','trestle_quantity', 'vehicle_length', 'power_required', 'multi_site' ]
         invoice, created = Invoice.objects.get_or_create(
-            invoice_sequence = 1,
+            invoice_number = Invoice.generate_invoice_number(registration.id),
+            invoice_sequence = Invoice.generate_sequence_number(registration.id),
             stall_registration = registration,
             stallholder = registration.stallholder,
         )
         total_cost = decimal.Decimal(0.00)
-        site_allocation = SiteAllocation.currentallocationsmgr.filter(stallholder= registration.stallholder,
+        try:
+            site_allocation = SiteAllocation.currentallocationsmgr.filter(stallholder= registration.stallholder,
                                                                       stall_registration= registration).first()
-        site_size = site_allocation.event_site.site.site_size
-        site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                   inventory_item=site_size).price
-        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
-                                                   inventory_item=site_size).price_rate
-        site_cost = price_rate * site_price
-        print('Site Size', site_price, price_rate, site_cost)
-        total_cost = total_cost + site_cost
+            if site_allocation:
+                site_size = site_allocation.event_site.site.site_size
+                site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                           inventory_item=site_size).price
+                price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                           inventory_item=site_size).price_rate
+                site_cost = price_rate * site_price
+                print('Site Size', site_price, price_rate, site_cost)
+                total_cost = total_cost + site_cost
+        except ObjectDoesNotExist as e:
+            db_logger.error('For Stall Registration ID ' + str(registration.id) + ' there was an error in determining site size costs.' + str(e), extra={'custom_category': 'Invoicing'})
+
         try:
             InvoiceItem.objects.create(invoice=invoice,
                                                               inventory_item=site_size,
@@ -325,11 +375,17 @@ class InvoiceItemManager(models.Manager):
                             db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining multi-site costs.' + str(e),
                                         extra={'custom_category': 'Invoicing'})
         gst_component = round((total_cost * 3) / 23, 2)
-        invoice.total_cost= total_cost
+        invoice.total_cost = total_cost
         invoice.gst_component= gst_component
         invoice.save()
-        PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
-        print('Total Cost', total_cost, 'GST Component', gst_component)
+        if PaymentHistory.total_paid(registration.id):
+            total_cost = total_cost - PaymentHistory.total_paid(registration.id)
+        try:
+            PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
+        except Exception as e:  # It will catch other errors related to the create call
+            db_logger.error('There was an error in creating the payment history.' + str(e),
+                        extra={'custom_category': 'Payment History'})
+
 
 
 class InvoiceItem(models.Model):

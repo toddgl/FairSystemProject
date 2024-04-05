@@ -608,7 +608,7 @@ class FoodSaleTypeListView(PermissionRequiredMixin, ListView):
     model = FoodPrepEquipment
     template_name = 'foodsaletype/foodsaletype_list.html'
     paginate_by = 12
-    queryset = FoodSaleType.objects.all()
+    queryset = FoodSaleType.objects.all().order_by('food_sale_type')
 
 
 class FoodSaleTypeDetailUpdateView(PermissionRequiredMixin, UpdateView):

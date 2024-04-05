@@ -9,5 +9,5 @@ from payment.views import (
 app_name = 'payment'  # This is the namespace, so you can reverse urls with payment:*
 
 urlpatterns = [
-    path('payment/invoice/', invoice_pdf_generation, name='create-pdf-invoice'),
+    path('payment/invoice/<int:id>/<int:seq>/', invoice_pdf_generation, name='create-pdf-invoice'),
 ]
