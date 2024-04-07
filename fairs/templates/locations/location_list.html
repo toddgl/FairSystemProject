@@ -5,7 +5,7 @@
 {% block body %}
 <div class="container">
   <h1>Locations</h1>
-    <form action='actionUrl' method='GET'>
+    <form action="{% url 'fair:location-create' %}" method='GET'>
         <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new location</button>
         <a href="/" class="btn btn-secondary">Cancel</a>
     </form>

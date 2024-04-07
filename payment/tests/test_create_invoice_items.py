@@ -1,6 +1,5 @@
 #payment/tests/test_create_invoice_items
 
-
 from django.test import TestCase
 from accounts.models import CustomUser
 from fairs.models import (
@@ -59,6 +58,10 @@ class TestInvoiceCreation(TestCase):
 
         # Check if an Invoice is created
         self.assertEqual(Invoice.objects.count(), 1)
+
+        # Check value of total_cost
+        self.invoice = Invoice.objects.all().last()
+        self.assertEqual(self.invoice.total_cost, 250)
 
     def test_invoice_items_creation(self):
         # Ensure that no InvoiceItems exist initially
