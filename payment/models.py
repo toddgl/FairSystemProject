@@ -65,7 +65,7 @@ class Invoice(models.Model):
         on_delete=models.CASCADE
     )
     total_cost = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
-    gst_value = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
+    gst_component = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
     date_created = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
     invoicecurrentmgr = InvoiceCurrentManager()

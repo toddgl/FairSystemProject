@@ -230,7 +230,8 @@
               </div>
             </div>
           </div>
-          <a href="#" class="btn btn-secondary">View Invoice</a>
+        <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
+           class="btn btn-secondary">View / Download Invoice</a>
         {% endfor %}
     </div>
   </div>

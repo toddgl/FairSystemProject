@@ -36,7 +36,7 @@ header {
 }
 
 #logo img {
-  width: 200px;
+  width: 400px;
 }
 
 h1 {
@@ -91,7 +91,7 @@ table td {
 }
 
 table th {
-  padding: 5px 20px;
+  padding: 5px 5px;
   color: #5D6975;
   border-bottom: 1px solid #C1CED9;
   white-space: nowrap;        
@@ -104,7 +104,7 @@ table .desc {
 }
 
 table td {
-  padding: 20px;
+  padding: 10px;
   text-align: right;
 }
 
