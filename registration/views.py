@@ -1122,6 +1122,7 @@ def convener_stall_registration_detail_view(request, id):
                                                                         instance=food_registration)
         if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
             stall_registration = registrationupdateform.save(commit=False)
+            stall_registration.is_invoiced = True
             stall_registration.save()
             food_registration = foodregistrtionupdateform.save(commit=False)
             food_registration.save()

@@ -378,6 +378,8 @@ class InvoiceItemManager(models.Manager):
         invoice.total_cost = total_cost
         invoice.gst_component= gst_component
         invoice.save()
+        registration.is_invoiced = True
+        registration.save(update_fields=["is_invoiced"])
         if PaymentHistory.total_paid(registration.id):
             total_cost = total_cost - PaymentHistory.total_paid(registration.id)
         try:

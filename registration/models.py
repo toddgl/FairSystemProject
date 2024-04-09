@@ -323,6 +323,7 @@ class StallRegistration(models.Model):
     vehicle_image = models.ImageField(blank=True, null=True, upload_to='vehicles/' + str(current_year))
     multi_site = models.BooleanField(default=False)
     is_cancelled = models.BooleanField(default=False)
+    is_invoiced = models.BooleanField(default=False)
 
     objects = models.Manager()
     registrationcurrentallmgr = RegistrationCurrentAllManager()

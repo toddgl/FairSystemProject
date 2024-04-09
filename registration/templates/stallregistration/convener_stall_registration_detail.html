@@ -21,6 +21,10 @@
       {% if payment_history_result %}
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderpaymenthistory"> Click to view stallholder payment history</button>
       {% endif %}
+      {% if not stall_data.is_invoiced %}
+        <a href="{% url 'registration:stallregistration-invoice' stall_data.id %}"
+          class="btn btn-danger">Re invoice</a>
+      {% endif %}
     </div>
     <hr>
   </div>
