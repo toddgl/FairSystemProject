@@ -20,8 +20,13 @@ from django.forms import (
 )
 from fairs.models import (
     Fair,
-    InventoryItem
+    InventoryItem,
 )
+
+from payment.models import (
+    DiscountItem
+)
+
 from registration.models import (
     FoodPrepEquipment,
     FoodSaleType,
@@ -1121,4 +1126,21 @@ class StallRegistrationFilterForm(Form):
         })
     )
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
+
+class RegistrationDiscountForm(ModelForm):
+    """
+    Form for add a discount amount to a stall registration
+    """
+
+    class Meta:
+        model = DiscountItem
+        fields = ['discount_amount']
+        widgets = {
+            'discount_amount': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Discount Amount'
+            })
+        }
+
 

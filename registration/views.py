@@ -32,7 +32,8 @@ from fairs.models import (
 from payment.models import (
     PaymentHistory,
     Invoice,
-    InvoiceItem
+    InvoiceItem,
+    DiscountItem
 )
 from registration.models import (
     CommentType,
@@ -65,6 +66,7 @@ from .forms import (
     FoodRegistrationStallholderEditForm,
     StallRegistrtionConvenerEditForm,
     FoodRegistrationConvenerEditForm,
+    RegistrationDiscountForm,
 )
 
 # Global Variables
@@ -1067,10 +1069,12 @@ def convener_stall_registration_detail_view(request, id):
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
+    discounts = DiscountItem.objects.filter(stall_registration=stall_registration)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     additionalsiteform = AdditionalSiteReqForm(request.POST or None)
     registrationupdateform = StallRegistrtionConvenerEditForm(instance=stall_registration)
+    applydiscountform = RegistrationDiscountForm(request.POST or None)
     comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=stall_registration.stallholder.id)
     if stall_registration.selling_food:
@@ -1079,7 +1083,8 @@ def convener_stall_registration_detail_view(request, id):
         context = {
             'registrationupdateform': registrationupdateform,
             'foodregistrationupdateform': foodregistrtionupdateform,
-            'additionalsiteform' : additionalsiteform,
+            'additionalsiteform': additionalsiteform,
+            'applydiscountform': applydiscountform,
             'payment_histories': payment_history_list,
             'stallholder_detail': stallholder_detail,
             "stall_data" : stall_registration,
@@ -1087,12 +1092,14 @@ def convener_stall_registration_detail_view(request, id):
             'comments': comments,
             'commentform': commentform,
             'replyform': replyform,
-            'comment_filter': comment_filter_message
+            'comment_filter': comment_filter_message,
+            'discounts': discounts
         }
     else:
         context = {
             'registrationupdateform': registrationupdateform,
             'additionalsiteform' : additionalsiteform,
+            'applydiscountform': applydiscountform,
             'payment_histories': payment_history_list,
             'stallholder_detail': stallholder_detail,
             "stall_data" : stall_registration,
@@ -1100,7 +1107,8 @@ def convener_stall_registration_detail_view(request, id):
             'comments': comments,
             'commentform': commentform,
             'replyform': replyform,
-            'comment_filter': comment_filter_message
+            'comment_filter': comment_filter_message,
+            'discounts': discounts
         }
 
     # Additional Sites add and display
@@ -1120,6 +1128,22 @@ def convener_stall_registration_detail_view(request, id):
                                                                       instance=stall_registration)
         foodregistrtionupdateform = FoodRegistrationConvenerEditForm(request.POST, request.FILES or None,
                                                                         instance=food_registration)
+        applydiscountform = RegistrationDiscountForm(request.POST or None)
+        if applydiscountform.is_valid():
+            # create DiscountItem object but do not save to database
+            new_discount = applydiscountform.save(commit=False)
+            # assign stall registration to the DiscountItem
+            new_discount.stall_registration = stall_registration
+            new_discount.created_by = request.user
+            try:
+                # save
+                new_discount.save()
+            except Exception:
+                db_logger.error('There was an error with saving the discount item form. '
+                                + applydiscountform.errors.as_data(),
+                                extra={'custom_category': 'Discounts'})
+            return TemplateResponse(request, template, context)
+
         if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
             stall_registration = registrationupdateform.save(commit=False)
             stall_registration.is_invoiced = True
@@ -1231,7 +1255,7 @@ def invoice_stall_registration(request, id):
     if not can_proceed(stallregistration.to_booking_status_invoiced):
         raise PermissionDenied
 
-    # Check to see if stallregistrtion is complete otherwise create stallholder comment detailing the issues
+    # Check to see if stallregistration is complete otherwise create stallholder comment detailing the issues
     error_comment, is_ok = validate_stallregistration( stallholder_id, stallregistration)
     if not is_ok:
         comment_type = CommentType.objects.get(type_name__in=['Submission Error'])

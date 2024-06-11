@@ -1,4 +1,4 @@
-# utils/migrate_history_2.py
+# utils/update_history_2.py
 
 import os
 import django
@@ -11,13 +11,12 @@ django.setup()
 from fairs.models import Site, SiteHistory
 from accounts.models import CustomUser
 
-history = pd.read_excel(
-    '/usr/home/glenn/Documents/Rotary/Martinborough_Fair/Legacy_System/Extracts/Mar24/dvpdata-sitehistory-2024.xlsx')
+history = pd.read_excel('/usr/home/glenn/Documents/Rotary/Martinborough_Fair/Legacy_System/Extracts/Mar24/dvpdata-sitehistory-2019-2024.xlsx')
 
 # Open up a file to redirect print statements to for check outcomes
 date = datetime.now().strftime("%Y_%m_%d-%I:%M:%S_%p")
 dir_name = '//usr/home/glenn/Documents/Bin/Django/FairSystemProject//logs'
-log_filename = f'historyextract_{date}'
+log_filename = f'historyupdate_{date}'
 suffix = '.txt'
 with open(os.path.join(dir_name, log_filename + suffix), 'w') as f:
     # let's create some history
@@ -31,19 +30,12 @@ with open(os.path.join(dir_name, log_filename + suffix), 'w') as f:
                 site = Site.objects.get(site_name=row['CODE'])
                 siteID = site.pk
                 if SiteHistory.objects.filter(stallholder_id=stallholderID, year=row['Fair_Name'], site=siteID).exists():
-                    print('SiteHistory for site {} and Stallholder ID {} and for the fair in {} was already created'.format(row['CODE'], stallholderID, row[ 'Fair_Name']), file=f)
-                else:
-                    SiteHistory.objects.create(
-                        stallholder_id=stallholderID,
-                        year=row['Fair_Name'],
-                        site_id=siteID,
-                        is_skipped=row['Skipped'],
-                        is_half_size=row['bIsHalfSite'],
-                        number_events=row['NumEvents'],
-                    )
+                    SiteHistory.objects.filter(stallholder_id=stallholderID, year=row['Fair_Name'], site=siteID).update(is_half_size=row['bIsHalfSite'])
+
                     print('Site history for Stallholder legacy reference {} for Site name {} and Fair Year {} has '
-                          'been created'.format(row['StallHolderID'], row['CODE'], row['Fair_Name']), file=f)
+                          'been updated to show if it was a half size site {}'.format(row['StallHolderID'],
+                                                                                      row['CODE'], row['Fair_Name'], row['bIsHalfSite']), file=f)
             else:
-                print('Site name {} has not been created.'.format(row['CODE']), file=f)
+                print('Site name {} does not exist.'.format(row['CODE']), file=f)
         else:
-            print('Stallholder legacy ID {} has not been created.'.format(row['StallHolderID']), file=f)
+            print('Stallholder legacy ID {} does not exist.'.format(row['StallHolderID']), file=f)

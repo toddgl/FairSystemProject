@@ -70,6 +70,7 @@ class Profile(models.Model):
     postcode = models.CharField(max_length=10, blank=True)
     phone2 = models.CharField(max_length=13, blank=True)
     org_name = models.CharField(max_length=50, blank=True)
+    objects = models.Manager()
 
     def __str__(self):
         return self.org_name

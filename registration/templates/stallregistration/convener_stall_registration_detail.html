@@ -8,7 +8,7 @@
 {% block body %}
 <div class="container">
   <div class="row">
-    <div class="px-5 my-5 text-center">
+    <div class="px-5 my-3 text-center">
       <h1>{{ stall_data.fair }} Registration Detail for
         {% if stallholder_detail.org_name is None %}
         {{ stall_data.stallholder }}
@@ -24,6 +24,17 @@
       {% if not stall_data.is_invoiced %}
         <a href="{% url 'registration:stallregistration-invoice' stall_data.id %}"
           class="btn btn-danger">Re invoice</a>
+      {% endif %}
+      <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#applyDiscountModal">
+        Apply cost discount</button>
+      {% if discounts %}
+        <div class="badge bg-info text-dark text-wrap" style="width: auto;">
+          <ul class="list-group list-group-flush">
+          {% for discount in discounts %}
+            <li class="list-group-item bg-info text-dark"><strong>${{ discount.discount_amount }}</strong> discount created by {{ discount.created_by }} on {{ discount.date_created }}</li>
+          {% endfor %}
+          </ul>
+        </div>
       {% endif %}
     </div>
     <hr>
@@ -279,6 +290,26 @@
           {% csrf_token %}
           {{ additionalsiteform.as_p }}
           <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Requirement</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Add Registration Discount modal-->
+<div class="modal fade" tabindex="-1" id="applyDiscountModal" aria-labelledby="applyDiscountModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-dark">
+        <h4 class="modal-title">Complete Registration Discount Form</h4>
+        <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ applydiscountform.as_p }}
+          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Discount</button>
           <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </form>
       </div>

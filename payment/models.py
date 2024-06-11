@@ -9,6 +9,7 @@ from django.db.models import Max, Sum, UniqueConstraint, ObjectDoesNotExist
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django_fsm import FSMField, transition
+from accounts.models import CustomUser
 
 from fairs.models import (
     InventoryItem,
@@ -408,4 +409,16 @@ class Meta:
         verbose_name_plural = "invoiceitems"
         unique_together = ('invoice', 'inventory_item')
 
+class DiscountItem(models.Model):
+    """
+    Description: A model used to record a discount amount that the convener can apply to a registration cost
+    """
+    stall_registration = models.ForeignKey(StallRegistration, on_delete=models.CASCADE)
+    discount_amount = models.DecimalField(max_digits=8, decimal_places=2)
+    date_created = models.DateTimeField(auto_now_add=True)
+    created_by = models.ForeignKey(CustomUser, related_name='discount_created_by', on_delete=models.SET_NULL, blank=True, null=True)
+    objects = models.Manager()
 
+class Meta:
+    verbose_name = "discountitem"
+    verbose_name_plural = "discountitems"

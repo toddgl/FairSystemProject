@@ -589,6 +589,7 @@ class SiteHistory(models.Model):
         verbose_name='site',
         related_name='site_history'
     )
+    is_half_size = models.BooleanField(default=False)
     is_skipped = models.BooleanField(default=False)
     number_events = models.IntegerField()
     objects = models.Manager()
