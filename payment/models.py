@@ -122,7 +122,10 @@ class PaymentHistoryManager(models.Manager):
         the created object
     """
     def create_paymenthistory(self, invoice, amount_to_pay):
-        obj = PaymentHistory.objects.create(invoice=invoice, amount_to_pay=amount_to_pay)
+        obj, created = PaymentHistory.objects.get_or_create(
+            invoice=invoice,
+            amount_to_pay=amount_to_pay
+        )
         return obj
 
 class PaymentHistoryCurrentManager(models.Manager):
@@ -234,6 +237,13 @@ class InvoiceItemManager(models.Manager):
             stallholder = registration.stallholder,
         )
         total_cost = decimal.Decimal(0.00)
+        # Determine if there are any discounts, if so sum them and record them as a negative amount against totle cost
+        discounts = DiscountItem.objects.filter(stall_registration=registration)
+        if discounts:
+            total_discount = sum(discounts.values_list('discount_amount', flat=True))
+            total_cost = total_cost - total_discount
+        if PaymentHistory.total_paid(registration.id):
+            total_cost = total_cost - PaymentHistory.total_paid(registration.id)
         try:
             site_allocation = SiteAllocation.currentallocationsmgr.filter(stallholder= registration.stallholder,
                                                                       stall_registration= registration).first()
@@ -381,8 +391,6 @@ class InvoiceItemManager(models.Manager):
         invoice.save()
         registration.is_invoiced = True
         registration.save(update_fields=["is_invoiced"])
-        if PaymentHistory.total_paid(registration.id):
-            total_cost = total_cost - PaymentHistory.total_paid(registration.id)
         try:
             PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
         except Exception as e:  # It will catch other errors related to the create call
@@ -409,6 +417,19 @@ class Meta:
         verbose_name_plural = "invoiceitems"
         unique_together = ('invoice', 'inventory_item')
 
+class DiscountItemManager(models.Manager):
+    """
+    Description: Methods to access discount items
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[ current_year, next_year])
+
+    def get_registration_discount(self, registration):
+        return super().get_queryset().filter(stall_registration=registration)
+
+    def get_stallholder_discounts(self, stallholder):
+        return super().get_queryset().filter(stall_registration__stallholder_id=stallholder)
+
 class DiscountItem(models.Model):
     """
     Description: A model used to record a discount amount that the convener can apply to a registration cost
@@ -418,6 +439,7 @@ class DiscountItem(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     created_by = models.ForeignKey(CustomUser, related_name='discount_created_by', on_delete=models.SET_NULL, blank=True, null=True)
     objects = models.Manager()
+    discountitemmgr = DiscountItemManager()
 
 class Meta:
     verbose_name = "discountitem"

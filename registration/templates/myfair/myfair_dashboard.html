@@ -8,6 +8,8 @@
 {% load haspayment_history_tag %}
 {% load isinvoiced_tag %}
 {% load isfoodstall_tag %}
+{% load hasdiscount_tag %}
+
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
 {% endblock %}
@@ -27,6 +29,14 @@
                     <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{ payment_history.invoice.invoice_sequence }}</h4>
                     <ul class="list-group list-group-flush">
                       <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
+                      {% get_has_discount payment_history.invoice.stall_registration.id as discount_item_result %}
+                      {% if discount_item_result %}
+                        {% for discount in discounts %}
+                          {% if discount.stall_registration.id  ==  payment_history.invoice.stall_registration.id %}
+                           <li class="list-group-item"><strong>Discount:</strong> {{ discount.discount_amount }}</li>
+                          {% endif %}
+                        {% endfor %}
+                      {% endif %}
                       <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
                       <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
                       <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>

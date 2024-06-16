@@ -4,6 +4,7 @@
 {% load static %}
 {% load haspayment_history_tag %}
 {% load isinvoiced_tag %}
+{% load hasdiscount_tag %}
 
 {% block body %}
 <div class="container">
@@ -22,8 +23,7 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderpaymenthistory"> Click to view stallholder payment history</button>
       {% endif %}
       {% if not stall_data.is_invoiced %}
-        <a href="{% url 'registration:stallregistration-invoice' stall_data.id %}"
-          class="btn btn-danger">Re invoice</a>
+        <a href="{% url 'registration:stallregistration-invoice' stall_data.id %}" class="btn btn-danger">Re invoice</a>
       {% endif %}
       <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#applyDiscountModal">
         Apply cost discount</button>
@@ -133,7 +133,7 @@
       </div>
       <hr>
       <div>
-        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrationModal"> Click to update registration data</button>
+        <button type="button" name="update" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrationModal"> Click to update registration data</button>
         <button class="btn btn-primary " data-bs-toggle="modal" data-bs-target="#addSiteModal">Add Additonal Sites</button>
         <a type="button" class="ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
       </div>
@@ -238,6 +238,10 @@
                 <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{ payment_history.invoice.invoice_sequence }}</h4>
                 <ul class="list-group list-group-flush">
                   <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
+                  {% get_has_discount payment_history.invoice.stall_registration.id as discount_item_result %}
+                  {% if discount_item_result %}
+                  <li class="list-group-item"><strong>Discount:</strong> {{ total_discount }}</li>
+                  {% endif %}
                   <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
                   <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
                   <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
@@ -309,7 +313,7 @@
         <form method="post">
           {% csrf_token %}
           {{ applydiscountform.as_p }}
-          <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Save Discount</button>
+          <button type="submit" name="discount" class="btn btn-primary" data-bs-dismiss="modal">Save Discount</button>
           <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </form>
       </div>

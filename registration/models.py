@@ -371,7 +371,7 @@ class StallRegistration(models.Model):
     def to_booking_status_submitted(self):
         pass
 
-    @transition(field=booking_status, source=["Created", "Submitted"], target="Invoiced")
+    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced"], target="Invoiced")
     def to_booking_status_invoiced(self):
         pass
 

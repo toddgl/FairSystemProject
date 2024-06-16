@@ -719,9 +719,11 @@ def myfair_dashboard_view(request):
     except ObjectDoesNotExist:
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=request.user)
+    discounts = DiscountItem.discountitemmgr.get_stallholder_discounts(stallholder=request.user)
 
     return TemplateResponse(request, template, {
     'payment_histories': payment_history_list,
+    'discounts': discounts,
     'registrations': myfair_list,
     'commentfilterform': commentfilterform,
     'comments': comments,
@@ -1069,7 +1071,12 @@ def convener_stall_registration_detail_view(request, id):
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
+    # Determine if there are any discounts, if so sum them and add it to the context
     discounts = DiscountItem.objects.filter(stall_registration=stall_registration)
+    if discounts:
+        total_discount = sum(discounts.values_list('discount_amount', flat=True))
+    else:
+        total_discount =  decimal.Decimal(0.00)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     additionalsiteform = AdditionalSiteReqForm(request.POST or None)
@@ -1093,7 +1100,8 @@ def convener_stall_registration_detail_view(request, id):
             'commentform': commentform,
             'replyform': replyform,
             'comment_filter': comment_filter_message,
-            'discounts': discounts
+            'discounts': discounts,
+            'total_discount': total_discount,
         }
     else:
         context = {
@@ -1108,7 +1116,8 @@ def convener_stall_registration_detail_view(request, id):
             'commentform': commentform,
             'replyform': replyform,
             'comment_filter': comment_filter_message,
-            'discounts': discounts
+            'discounts': discounts,
+            'total_discount': total_discount,
         }
 
     # Additional Sites add and display
@@ -1129,33 +1138,43 @@ def convener_stall_registration_detail_view(request, id):
         foodregistrtionupdateform = FoodRegistrationConvenerEditForm(request.POST, request.FILES or None,
                                                                         instance=food_registration)
         applydiscountform = RegistrationDiscountForm(request.POST or None)
-        if applydiscountform.is_valid():
-            # create DiscountItem object but do not save to database
-            new_discount = applydiscountform.save(commit=False)
-            # assign stall registration to the DiscountItem
-            new_discount.stall_registration = stall_registration
-            new_discount.created_by = request.user
-            try:
-                # save
-                new_discount.save()
-            except Exception:
-                db_logger.error('There was an error with saving the discount item form. '
-                                + applydiscountform.errors.as_data(),
-                                extra={'custom_category': 'Discounts'})
-            return TemplateResponse(request, template, context)
+        if 'discount' in request.POST:
+            if applydiscountform.is_valid():
+                # create DiscountItem object but do not save to database
+                new_discount = applydiscountform.save(commit=False)
+                # assign stall registration to the DiscountItem
+                new_discount.stall_registration = stall_registration
+                new_discount.created_by = request.user
+                try:
+                    # save discount
+                    new_discount.save()
+                except Exception:
+                    db_logger.error('There was an error with saving the discount item form. '
+                                    + applydiscountform.errors.as_data(),
+                                    extra={'custom_category': 'Discounts'})
+                try:
+                    # save set is_invoiced to False
+                    stall_registration.is_invoiced = False
+                    stall_registration.save()
+                except Exception:
+                    db_logger.error('There was an error with setting the is_invoiced flag post discount save. '
+                                    + applydiscountform.errors.as_data(),
+                                    extra={'custom_category': 'Discounts'})
+                return TemplateResponse(request, template, context)
 
-        if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
-            stall_registration = registrationupdateform.save(commit=False)
-            stall_registration.is_invoiced = True
-            stall_registration.save()
-            food_registration = foodregistrtionupdateform.save(commit=False)
-            food_registration.save()
+        if 'update' in request.POST:
+            if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
+                stall_registration = registrationupdateform.save(commit=False)
+                stall_registration.is_invoiced = False
+                stall_registration.save()
+                food_registration = foodregistrtionupdateform.save(commit=False)
+                food_registration.save()
 
-        else:
-            db_logger.error('There was an error with updating the stall Registration. '
-                            + registrationupdateform.errors.as_data(),
-                            extra={'custom_category': 'Stall Registration'})
-            return TemplateResponse(request, template, context)
+            else:
+                db_logger.error('There was an error with updating the stall Registration. '
+                                + registrationupdateform.errors.as_data(),
+                                extra={'custom_category': 'Stall Registration'})
+                return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
 
@@ -1280,6 +1299,7 @@ def invoice_stall_registration(request, id):
     payment_history = PaymentHistory.paymenthistorycurrentmgr.get_registration_payment_history(stallregistration)
     if invoices and payment_history:
         stallregistration.to_booking_status_invoiced()
+        stallregistration.is_invoiced = True
         stallregistration.save()
     else:
         db_logger.error('There was an error with the creation of the invioce and payment history for '
