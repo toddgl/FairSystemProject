@@ -22,31 +22,29 @@
     <div class="col-md-6">
         {% get_has_payment_history user.id as payment_history_result %}
           {% if payment_history_result %}
-            {% for payment_history in payment_histories %}
-              <div class="container mt-3" style="width: 600px;">
-                <div class="card border-primary mb-3">
-                  <div class="card-body">
-                    <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{ payment_history.invoice.invoice_sequence }}</h4>
-                    <ul class="list-group list-group-flush">
-                      <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
-                      {% get_has_discount payment_history.invoice.stall_registration.id as discount_item_result %}
-                      {% if discount_item_result %}
-                        {% for discount in discounts %}
-                          {% if discount.stall_registration.id  ==  payment_history.invoice.stall_registration.id %}
-                           <li class="list-group-item"><strong>Discount:</strong> {{ discount.discount_amount }}</li>
-                          {% endif %}
-                        {% endfor %}
-                      {% endif %}
-                      <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
-                      <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
-                      <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
-                    </ul>
-                  </div>
+            <div class="container mt-3" style="width: 600px;">
+              <div class="card border-primary mb-3">
+                <div class="card-body">
+                  <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.invoice_number }}-{{ payment_history.invoice.invoice_sequence }}</h4>
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
+                    {% get_has_discount payment_history.invoice.stall_registration.id as discount_item_result %}
+                    {% if discount_item_result %}
+                      {% for discount in discounts %}
+                        {% if discount.stall_registration.id  ==  payment_history.invoice.stall_registration.id %}
+                         <li class="list-group-item"><strong>Discount:</strong> {{ discount.discount_amount }}</li>
+                        {% endif %}
+                      {% endfor %}
+                    {% endif %}
+                    <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
+                    <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
+                    <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
+                  </ul>
                 </div>
               </div>
-              <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
-                 class="btn btn-secondary">View / Download Invoice</a>
-            {% endfor %}
+            </div>
+            <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
+               class="btn btn-secondary">View / Download Invoice</a>
           {% endif %}
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">

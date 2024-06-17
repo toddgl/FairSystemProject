@@ -29,6 +29,7 @@ from registration.views import (
     comments_view_add,
     submit_stall_registration,
     invoice_stall_registration,
+    reinvoice_stall_registration,
 )
 
 app_name = 'registration'
@@ -54,6 +55,7 @@ urlpatterns = [
     path('stallregistration/,<int:pk>/', stall_registration_update_view, name='stallregistration-detail'),
     path('stallregistration/submit/<int:id>/', submit_stall_registration, name='stallregistration-submit'),
     path('stallregistration/invoice/<int:id>/', invoice_stall_registration, name='stallregistration-invoice'),
+    path('stallregistration/reinvoice/<int:id>/', reinvoice_stall_registration, name='stallregistration-reinvoice'),
     path('siterequirement/add/,<int:pk>', add_site_requirement, name='add-site-requirement'),
     path('stallregistration/remove/<int:parent_id>/<int:id>/', remove_site_requirement, name='remove-site'),
     path('myfair/', myfair_dashboard_view, name='stallregistration-dashboard'),

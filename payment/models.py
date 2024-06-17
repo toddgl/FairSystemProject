@@ -82,13 +82,13 @@ class Invoice(models.Model):
     def generate_invoice_number(stallregistration_pk):
         """
         Used to Generate invoice number for a new invoice
-        - if thete are no invoices in the system it starts at 1
-        - if there has already been an invoive created for the stall registration this nunber is reused
+        - if there are no invoices in the system it starts at 1
+        - if there has already been an invoice created for the stall registration this number is reused
         - if there is no invoices created for the stall registration it finds the highest invoice number in the
         system and increments this by 1
         """
         if Invoice.objects.filter(stall_registration__pk=stallregistration_pk).exists():
-            invoice =  Invoice.objects.get(stall_registration__pk=stallregistration_pk)
+            invoice =  Invoice.objects.filter(stall_registration__pk=stallregistration_pk).last()
             invoice_num = invoice.invoice_number
         else:
             invoice_num= Invoice.objects.all().aggregate(Max( "invoice_number") )["invoice_number__max"]
@@ -117,14 +117,16 @@ class PaymentHistoryManager(models.Manager):
     Used to create a PaymentHistory object when an invoice is initially created
     Parameters:
         invoice - invoice instance
-        amount_to_pay - tatal amount to pay from the invoice
+        amount_to_pay - total amount to pay from the invoice
     Output:
         the created object
     """
-    def create_paymenthistory(self, invoice, amount_to_pay):
-        obj, created = PaymentHistory.objects.get_or_create(
+    def create_paymenthistory(self, invoice, amount_to_pay, amount_paid, amount_reconciled):
+        obj = PaymentHistory.objects.create(
             invoice=invoice,
-            amount_to_pay=amount_to_pay
+            amount_to_pay=amount_to_pay,
+            amount_paid=amount_paid,
+            amount_reconciled=amount_reconciled
         )
         return obj
 
@@ -137,7 +139,7 @@ class PaymentHistoryCurrentManager(models.Manager):
                                                                                                 next_year])
 
     def get_registration_payment_history(self, registration):
-        return super().get_queryset().filter(invoice__stall_registration=registration)
+        return super().get_queryset().filter(invoice__stall_registration=registration).last()
 
     def get_stallholder_payment_history(self, stallholder):
         return super().get_queryset().filter(invoice__stallholder=stallholder)
@@ -230,7 +232,7 @@ class InvoiceItemManager(models.Manager):
         - action: A function representing the action to be performed on each field.
         """
         fields_to_check = ['stall_category','trestle_quantity', 'vehicle_length', 'power_required', 'multi_site' ]
-        invoice, created = Invoice.objects.get_or_create(
+        invoice = Invoice.objects.create(
             invoice_number = Invoice.generate_invoice_number(registration.id),
             invoice_sequence = Invoice.generate_sequence_number(registration.id),
             stall_registration = registration,
@@ -240,10 +242,14 @@ class InvoiceItemManager(models.Manager):
         # Determine if there are any discounts, if so sum them and record them as a negative amount against totle cost
         discounts = DiscountItem.objects.filter(stall_registration=registration)
         if discounts:
-            total_discount = sum(discounts.values_list('discount_amount', flat=True))
-            total_cost = total_cost - total_discount
-        if PaymentHistory.total_paid(registration.id):
-            total_cost = total_cost - PaymentHistory.total_paid(registration.id)
+            total_cost = total_cost - sum(discounts.values_list('discount_amount', flat=True))
+
+        existing_payment_history = PaymentHistory.paymenthistorycurrentmgr.get_registration_payment_history(
+            registration)
+        if existing_payment_history:
+            existing_payment = existing_payment_history.amount_paid
+        else:
+            existing_payment = decimal.Decimal(0.00)
         try:
             site_allocation = SiteAllocation.currentallocationsmgr.filter(stallholder= registration.stallholder,
                                                                       stall_registration= registration).first()
@@ -386,13 +392,28 @@ class InvoiceItemManager(models.Manager):
                             db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining multi-site costs.' + str(e),
                                         extra={'custom_category': 'Invoicing'})
         gst_component = round((total_cost * 3) / 23, 2)
-        invoice.total_cost = total_cost
+        invoice.total_cost = total_cost - existing_payment
         invoice.gst_component= gst_component
-        invoice.save()
-        registration.is_invoiced = True
-        registration.save(update_fields=["is_invoiced"])
         try:
-            PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
+            invoice.save()
+        except Exception as e:  # It will catch other errors related to the create call
+            db_logger.error('There was an error in creating the invoice.' + str(e),
+                            extra={'custom_category': 'Registration Invoice'})
+        try:
+            registration.is_invoiced = True
+            registration.save(update_fields=["is_invoiced"])
+        except Exception as e:  # It will catch other errors related to the create call
+            db_logger.error('There was an error in updating the registration - ' + str(registration.id) + str(e),
+                            extra={'custom_category': 'Registration Invoice'})
+        # create a payment history instance if there was a previous one transfer payment and reconciliation amounts
+        try:
+            if existing_payment_history:
+                amount_to_pay = total_cost - existing_payment_history.amount_paid
+                PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, amount_to_pay,
+                                                                       existing_payment_history.amount_paid,
+                                                                       existing_payment_history.amount_reconciled)
+            else:
+                PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
         except Exception as e:  # It will catch other errors related to the create call
             db_logger.error('There was an error in creating the payment history.' + str(e),
                         extra={'custom_category': 'Payment History'})

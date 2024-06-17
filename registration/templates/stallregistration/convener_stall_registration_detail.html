@@ -23,7 +23,8 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderpaymenthistory"> Click to view stallholder payment history</button>
       {% endif %}
       {% if not stall_data.is_invoiced %}
-        <a href="{% url 'registration:stallregistration-invoice' stall_data.id %}" class="btn btn-danger">Re invoice</a>
+        <a href="{% url 'registration:stallregistration-reinvoice' stall_data.id %}" class="btn btn-danger">Re
+          invoice</a>
       {% endif %}
       <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#applyDiscountModal">
         Apply cost discount</button>
@@ -235,7 +236,7 @@
           <div class="container mt-3" style="width: 600px;">
             <div class="card border-primary mb-3">
               <div class="card-body">
-                <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.id }}-{{ payment_history.invoice.invoice_sequence }}</h4>
+                <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.invoice_number }}-{{ payment_history.invoice.invoice_sequence }}</h4>
                 <ul class="list-group list-group-flush">
                   <li class="list-group-item"><strong>Stall Registration ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
                   {% get_has_discount payment_history.invoice.stall_registration.id as discount_item_result %}

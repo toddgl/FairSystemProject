@@ -718,11 +718,11 @@ def myfair_dashboard_view(request):
             'site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
-    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(stallholder=request.user)
+    payment_history = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history( stallholder=request.user).last()
     discounts = DiscountItem.discountitemmgr.get_stallholder_discounts(stallholder=request.user)
 
     return TemplateResponse(request, template, {
-    'payment_histories': payment_history_list,
+    'payment_history': payment_history,
     'discounts': discounts,
     'registrations': myfair_list,
     'commentfilterform': commentfilterform,
@@ -1160,7 +1160,7 @@ def convener_stall_registration_detail_view(request, id):
                     db_logger.error('There was an error with setting the is_invoiced flag post discount save. '
                                     + applydiscountform.errors.as_data(),
                                     extra={'custom_category': 'Discounts'})
-                return TemplateResponse(request, template, context)
+                return redirect(request.META.get('HTTP_REFERER'))
 
         if 'update' in request.POST:
             if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
@@ -1256,6 +1256,31 @@ def submit_stall_registration(request, id):
     stallregistration.save()
     return HttpResponseRedirect(success_url)
 
+@login_required
+@permission_required('registration.change_stallregistration', raise_exception=True)
+def reinvoice_stall_registration(request, id):
+    """
+    Convener driven request to re-invoice a stallregistration. it is needed if cost driven items are added to a stall
+    registration by the convener or if a discount has been applied to the stallregistration.
+    """
+    stallregistration = get_object_or_404(StallRegistration, pk=id)
+
+    InvoiceItem.invoiceitemmgr.create_invoice_items(stallregistration)
+
+    # check that the invoice and payment history records has been created
+    invoices = Invoice.invoicecurrentmgr.get_registration_invoices(stallregistration)
+    payment_history = PaymentHistory.paymenthistorycurrentmgr.get_registration_payment_history(stallregistration)
+    if invoices and payment_history:
+        stallregistration.to_booking_status_invoiced()
+        stallregistration.is_invoiced = True
+        stallregistration.save()
+    else:
+        db_logger.error('There was an error with the creation of the re-invoice and payment history for '
+                        'stallregistration ID ' + stallregistration.id ,
+                        extra={'custom_category': 'Stall Registration Invoicing'})
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
 
 def invoice_stall_registration(request, id):
     """
@@ -1302,7 +1327,7 @@ def invoice_stall_registration(request, id):
         stallregistration.is_invoiced = True
         stallregistration.save()
     else:
-        db_logger.error('There was an error with the creation of the invioce and payment history for '
+        db_logger.error('There was an error with the creation of the invoice and payment history for '
                         'stallregistration ID '
                         + stallregistration.id ,
                         extra={'custom_category': 'Stall Registration Invoicing'})

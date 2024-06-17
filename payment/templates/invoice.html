@@ -66,6 +66,16 @@
         </tbody>
       </table>
       {% endif %}
+      {% if total_payments > 0 %}
+      <table>
+        <tbody>
+        <tr>
+          <td class="unit">Less Payments</td>
+          <td class="unit">${{ total_payments }}</td>
+        </tr>
+        </tbody>
+      </table>
+      {% endif %}
       <table>
         <tbody>
           <tr>
