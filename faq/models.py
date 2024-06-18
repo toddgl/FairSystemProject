@@ -10,7 +10,7 @@ from fairs.models import (
 # Create your models here.
 class ActiveFaqManager(models.Manager):
     """
-    Manager that returns the current Faqa, accessed by calling
+    Manager that returns the current Faqs, accessed by calling
     Faq.activefaqrmgr.all()
     """
     def get_queryset(self):

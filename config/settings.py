@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'accounts',
     'fairs',
     'faq',
+    'notices',
     'search',
     'CustomDBLogger',
     'payment'
