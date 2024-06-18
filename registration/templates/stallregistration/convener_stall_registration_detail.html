@@ -23,8 +23,11 @@
         <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderpaymenthistory"> Click to view stallholder payment history</button>
       {% endif %}
       {% if not stall_data.is_invoiced %}
-        <a href="{% url 'registration:stallregistration-reinvoice' stall_data.id %}" class="btn btn-danger">Re
-          invoice</a>
+        {% if stall_data.booking_status == 'Invoiced' %}
+          <a href="{% url 'registration:stallregistration-reinvoice' stall_data.id %}" class="btn btn-danger">Re-invoice</a>
+        {% else %}
+          <a href="{% url 'registration:stallregistration-reinvoice' stall_data.id %}" class="btn btn-danger"> Create Invoice</a>
+        {% endif %}
       {% endif %}
       <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#applyDiscountModal">
         Apply cost discount</button>

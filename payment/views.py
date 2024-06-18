@@ -24,6 +24,7 @@ def invoice_pdf_generation(request, id, seq):
     # Determine if there are any payments, if so sum them and add it to the context
     if payments:
         total_payments = payments.amount_paid
+        amount_to_pay =invoice.total_cost - total_payments
     else:
         total_payments = decimal.Decimal(0.00)
     # Determine if there are any discounts, if so sum them and add it to the context
@@ -38,6 +39,7 @@ def invoice_pdf_generation(request, id, seq):
         'invoice_items': invoice_items,
         'total_payments': total_payments,
         'total_discount': total_discount,
+        'amount_to_pay': amount_to_pay,
         'profile': profile
     }
     html_template = get_template('invoice.html').render(context)

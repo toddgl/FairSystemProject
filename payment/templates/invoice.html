@@ -60,18 +60,8 @@
       <table>
         <tbody>
         <tr>
-          <td class="unit">Discount</td>
+          <td class="unit">Less Discount</td>
           <td class="unit">${{ total_discount }}</td>
-        </tr>
-        </tbody>
-      </table>
-      {% endif %}
-      {% if total_payments > 0 %}
-      <table>
-        <tbody>
-        <tr>
-          <td class="unit">Less Payments</td>
-          <td class="unit">${{ total_payments }}</td>
         </tr>
         </tbody>
       </table>
@@ -79,7 +69,7 @@
       <table>
         <tbody>
           <tr>
-            <td colspan="4" class="grand total">TOTAL (INCL)</td>
+            <td colspan="4" class="grand total">Total Cost (INCL)</td>
             <td class="grand total">${{ invoice.total_cost }}</td>
           </tr>
           <tr>
@@ -88,6 +78,20 @@
           </tr>
         </tbody>
       </table>
+      {% if total_payments > 0 %}
+      <table>
+        <tbody>
+        <tr>
+          <td colspan="4" class="unit">Less Payments to date</td>
+          <td class="unit">${{ total_payments }}</td>
+        </tr>
+        <tr>
+          <td colspan="4" class="grand total">Amount to pay</td>
+          <td class="grand total">${{ amount_to_pay }}</td>
+        </tr>
+        </tbody>
+      </table>
+      {% endif %}
       <div id="notices">
         <div>NOTICE:</div>
         <div class="notice">A finance charge of 1.5% will be made on unpaid balances after 30 days.</div>

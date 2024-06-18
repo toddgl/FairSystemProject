@@ -26,6 +26,7 @@ current_year = datetime.datetime.now().year
 next_year = current_year + 1
 db_logger = logging.getLogger('db')
 
+
 # Create your models here.
 
 class PaymentType(models.Model):
@@ -40,12 +41,14 @@ class PaymentType(models.Model):
     class Meta:
         verbose_name_plural = "payment types"
 
+
 class InvoiceCurrentManager(models.Manager):
     """
     Description: Methods to access current Invoices
     """
+
     def get_queryset(self):
-        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[ current_year, next_year])
+        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[current_year, next_year])
 
     def get_registration_invoices(self, registration):
         return super().get_queryset().filter(stall_registration_id=registration)
@@ -65,8 +68,8 @@ class Invoice(models.Model):
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE
     )
-    total_cost = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
-    gst_component = models.DecimalField(blank=True, null=True,max_digits=8, decimal_places=2)
+    total_cost = models.DecimalField(blank=True, null=True, max_digits=8, decimal_places=2)
+    gst_component = models.DecimalField(blank=True, null=True, max_digits=8, decimal_places=2)
     date_created = models.DateTimeField(auto_now_add=True)
     objects = models.Manager()
     invoicecurrentmgr = InvoiceCurrentManager()
@@ -88,10 +91,10 @@ class Invoice(models.Model):
         system and increments this by 1
         """
         if Invoice.objects.filter(stall_registration__pk=stallregistration_pk).exists():
-            invoice =  Invoice.objects.filter(stall_registration__pk=stallregistration_pk).last()
+            invoice = Invoice.objects.filter(stall_registration__pk=stallregistration_pk).last()
             invoice_num = invoice.invoice_number
         else:
-            invoice_num= Invoice.objects.all().aggregate(Max( "invoice_number") )["invoice_number__max"]
+            invoice_num = Invoice.objects.all().aggregate(Max("invoice_number"))["invoice_number__max"]
             while Invoice.objects.filter(invoice_number=invoice_num).exists():
                 invoice_num += 1
 
@@ -100,17 +103,18 @@ class Invoice(models.Model):
 
         return invoice_num
 
-    def generate_sequence_number( stallregistration_pk):
-        sequence_num= Invoice.objects.filter(stall_registration__pk=stallregistration_pk).aggregate(Max(
-            "invoice_sequence") )["invoice_sequence__max"]
+    def generate_sequence_number(stallregistration_pk):
+        sequence_num = Invoice.objects.filter(stall_registration__pk=stallregistration_pk).aggregate(Max(
+            "invoice_sequence"))["invoice_sequence__max"]
 
         if not sequence_num:
             sequence_num = 1
 
         while Invoice.objects.filter(
-            stall_registration__pk=stallregistration_pk, invoice_sequence=sequence_num).exists():
+                stall_registration__pk=stallregistration_pk, invoice_sequence=sequence_num).exists():
             sequence_num += 1
         return sequence_num
+
 
 class PaymentHistoryManager(models.Manager):
     """
@@ -121,7 +125,8 @@ class PaymentHistoryManager(models.Manager):
     Output:
         the created object
     """
-    def create_paymenthistory(self, invoice, amount_to_pay, amount_paid, amount_reconciled):
+
+    def create_paymenthistory(self, invoice, amount_to_pay, amount_paid=0.00, amount_reconciled=0.00):
         obj = PaymentHistory.objects.create(
             invoice=invoice,
             amount_to_pay=amount_to_pay,
@@ -130,13 +135,15 @@ class PaymentHistoryManager(models.Manager):
         )
         return obj
 
+
 class PaymentHistoryCurrentManager(models.Manager):
     """
     Description: Methods to get current payments
     """
+
     def get_queryset(self):
-        return super().get_queryset().filter(invoice__stall_registration__fair__fair_year__in=[ current_year,
-                                                                                                next_year])
+        return super().get_queryset().filter(invoice__stall_registration__fair__fair_year__in=[current_year,
+                                                                                               next_year])
 
     def get_registration_payment_history(self, registration):
         return super().get_queryset().filter(invoice__stall_registration=registration).last()
@@ -145,7 +152,7 @@ class PaymentHistoryCurrentManager(models.Manager):
         return super().get_queryset().filter(invoice__stallholder=stallholder)
 
 
-class PaymentHistory (models.Model):
+class PaymentHistory(models.Model):
     """
     Description: A model that records stallholder payment history includes credits as well as payment
     """
@@ -165,7 +172,7 @@ class PaymentHistory (models.Model):
     invoice = models.ForeignKey(
         Invoice,
         on_delete=models.CASCADE,
-        related_name = 'payment_history'
+        related_name='payment_history'
     )
     amount_to_pay = models.DecimalField(default=0.00, max_digits=8, decimal_places=2)
     amount_paid = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
@@ -187,18 +194,18 @@ class PaymentHistory (models.Model):
     paymenthistorymgr = PaymentHistoryManager()
     paymenthistorycurrentmgr = PaymentHistoryCurrentManager()
 
-
     class Meta:
         verbose_name = "payment"
         verbose_name_plural = "payments"
 
     def total_paid(stall_registration):
-        paid_total = PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL = Sum(
+        paid_total = PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL=Sum(
             'amount_paid'))['TOTAL']
         return paid_total
 
     def total_reconciled(stall_registration):
-        reconciled_total = PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL = Sum(
+        reconciled_total = \
+        PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL=Sum(
             'amount_reconciled'))['TOTAL']
         return reconciled_total
 
@@ -221,7 +228,7 @@ class PaymentHistory (models.Model):
 
 class InvoiceItemManager(models.Manager):
 
-    def create_invoice_items(self, registration ):
+    def create_invoice_items(self, registration):
         """
         Cycle through the billable items on the stall registration instance and create an invoice and invoice item
         for each of teh billable items on the stall registration record
@@ -231,12 +238,12 @@ class InvoiceItemManager(models.Manager):
         - field_list: A list of field names to iterate through.
         - action: A function representing the action to be performed on each field.
         """
-        fields_to_check = ['stall_category','trestle_quantity', 'vehicle_length', 'power_required', 'multi_site' ]
+        fields_to_check = ['stall_category', 'trestle_quantity', 'vehicle_length', 'power_required', 'multi_site']
         invoice = Invoice.objects.create(
-            invoice_number = Invoice.generate_invoice_number(registration.id),
-            invoice_sequence = Invoice.generate_sequence_number(registration.id),
-            stall_registration = registration,
-            stallholder = registration.stallholder,
+            invoice_number=Invoice.generate_invoice_number(registration.id),
+            invoice_sequence=Invoice.generate_sequence_number(registration.id),
+            stall_registration=registration,
+            stallholder=registration.stallholder,
         )
         total_cost = decimal.Decimal(0.00)
         # Determine if there are any discounts, if so sum them and record them as a negative amount against totle cost
@@ -244,15 +251,14 @@ class InvoiceItemManager(models.Manager):
         if discounts:
             total_cost = total_cost - sum(discounts.values_list('discount_amount', flat=True))
 
-        existing_payment_history = PaymentHistory.paymenthistorycurrentmgr.get_registration_payment_history(
-            registration)
+        existing_payment_history = PaymentHistory.paymenthistorycurrentmgr.get_registration_payment_history(registration)
         if existing_payment_history:
             existing_payment = existing_payment_history.amount_paid
         else:
             existing_payment = decimal.Decimal(0.00)
         try:
-            site_allocation = SiteAllocation.currentallocationsmgr.filter(stallholder= registration.stallholder,
-                                                                      stall_registration= registration).first()
+            site_allocation = SiteAllocation.currentallocationsmgr.filter(stallholder=registration.stallholder,
+                                                                          stall_registration=registration).first()
             if site_allocation:
                 site_size = site_allocation.event_site.site.site_size
                 site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
@@ -263,16 +269,19 @@ class InvoiceItemManager(models.Manager):
                 print('Site Size', site_price, price_rate, site_cost)
                 total_cost = total_cost + site_cost
         except ObjectDoesNotExist as e:
-            db_logger.error('For Stall Registration ID ' + str(registration.id) + ' there was an error in determining site size costs.' + str(e), extra={'custom_category': 'Invoicing'})
+            db_logger.error('For Stall Registration ID ' + str(
+                registration.id) + ' there was an error in determining site size costs.' + str(e),
+                            extra={'custom_category': 'Invoicing'})
 
         try:
             InvoiceItem.objects.create(invoice=invoice,
-                                                              inventory_item=site_size,
-                                                              item_quantity=1,
-                                                              item_cost=site_cost
-                                                              )
+                                       inventory_item=site_size,
+                                       item_quantity=1,
+                                       item_cost=site_cost
+                                       )
         except Exception as e:  # It will catch other errors related to the cost determination.
-            db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining site size costs.' + str(e),
+            db_logger.error('For Stall Registration ID ' + str(
+                registration.id) + 'there was an error in determining site size costs.' + str(e),
                             extra={'custom_category': 'Invoicing'})
 
         for field_name in fields_to_check:
@@ -290,12 +299,14 @@ class InvoiceItemManager(models.Manager):
                         total_cost = total_cost + category_cost
                         try:
                             InvoiceItem.objects.create(invoice=invoice,
-                                                                    inventory_item=field_value.inventory_item,
-                                                                    item_quantity= 1,
-                                                                    item_cost=category_cost
-                                                                    )
+                                                       inventory_item=field_value.inventory_item,
+                                                       item_quantity=1,
+                                                       item_cost=category_cost
+                                                       )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining) stall category costs. ' + str(e), extra={'custom_category': 'Invoicing'})
+                            db_logger.error('For Stall Registration ID ' + str(
+                                registration.id) + 'there was an error in determining) stall category costs. ' + str(e),
+                                            extra={'custom_category': 'Invoicing'})
                     else:
                         category_cost = decimal.Decimal(0.00)
                         print('Category', category_cost)
@@ -309,16 +320,17 @@ class InvoiceItemManager(models.Manager):
                                                                    inventory_item__item_name='Trestle Table').price_rate
                         total_trestle_cost = price_rate * trestle_price * decimal.Decimal(field_value)
                         print("Trestle", total_trestle_cost)
-                        total_cost =total_cost + total_trestle_cost
+                        total_cost = total_cost + total_trestle_cost
                         try:
                             InvoiceItem.objects.create(invoice=invoice,
-                                                                            inventory_item=inventory_item,
-                                                                            item_quantity= field_value,
-                                                                            item_cost=total_trestle_cost
-                                                                            )
+                                                       inventory_item=inventory_item,
+                                                       item_quantity=field_value,
+                                                       item_cost=total_trestle_cost
+                                                       )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining trestle costs.' + str(e),
-                                        extra={'custom_category': 'Invoicing'})
+                            db_logger.error('For Stall Registration ID ' + str(
+                                registration.id) + 'there was an error in determining trestle costs.' + str(e),
+                                            extra={'custom_category': 'Invoicing'})
                     else:
                         total_trestle_cost = decimal.Decimal(0.00)
                         print("No Trestles", total_trestle_cost)
@@ -326,20 +338,23 @@ class InvoiceItemManager(models.Manager):
                 if field_name == 'vehicle_length':
                     if field_value is not None and field_value > 6:
                         inventory_item = InventoryItem.objects.get(item_name='Over 6m vehicle on site')
-                        vehicle_price = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price
-                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id, inventory_item__item_name='Over 6m vehicle on site').price_rate
+                        vehicle_price = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                      inventory_item__item_name='Over 6m vehicle on site').price
+                        price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
+                                                                   inventory_item__item_name='Over 6m vehicle on site').price_rate
                         total_vehicle_cost = price_rate * vehicle_price
                         print("Vehicle", total_vehicle_cost)
-                        total_cost =total_cost + total_vehicle_cost
+                        total_cost = total_cost + total_vehicle_cost
                         try:
                             InvoiceItem.objects.create(invoice=invoice,
-                                                                            inventory_item=inventory_item,
-                                                                            item_quantity= 1,
-                                                                            item_cost=total_vehicle_cost
-                                                                            )
+                                                       inventory_item=inventory_item,
+                                                       item_quantity=1,
+                                                       item_cost=total_vehicle_cost
+                                                       )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining vehicle length costs.' + str(e),
-                                        extra={'custom_category': 'Invoicing'})
+                            db_logger.error('For Stall Registration ID ' + str(
+                                registration.id) + 'there was an error in determining vehicle length costs.' + str(e),
+                                            extra={'custom_category': 'Invoicing'})
                     else:
                         total_vehicle_cost = decimal.Decimal(0.00)
                         print("No Vehicle", total_vehicle_cost)
@@ -356,13 +371,14 @@ class InvoiceItemManager(models.Manager):
                             print('Power', power_price, price_rate, power_cost)
                             total_cost = total_cost + power_cost
                             InvoiceItem.objects.create(invoice=invoice,
-                                                                                inventory_item=inventory_item,
-                                                                                item_quantity= 1,
-                                                                                item_cost=power_cost
-                                                                                )
+                                                       inventory_item=inventory_item,
+                                                       item_quantity=1,
+                                                       item_cost=power_cost
+                                                       )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining vehicle length costs.' + str(e),
-                                        extra={'custom_category': 'Invoicing'})
+                            db_logger.error('For Stall Registration ID ' + str(
+                                registration.id) + 'there was an error in determining vehicle length costs.' + str(e),
+                                            extra={'custom_category': 'Invoicing'})
                     else:
                         power_cost = decimal.Decimal(0.00)
                         print('No Power', power_cost)
@@ -371,29 +387,30 @@ class InvoiceItemManager(models.Manager):
                     total_additional_site_costs = decimal.Decimal(0.00)
                     if AdditionalSiteRequirement.objects.filter(stall_registration=registration).exists():
                         try:
-                            additional_site_list = AdditionalSiteRequirement.objects.filter( stall_registration=registration)
+                            additional_site_list = AdditionalSiteRequirement.objects.filter(stall_registration=registration)
                             for additional_site in additional_site_list:
                                 site_price = InventoryItemFair.objects.get(fair=registration.fair.id,
                                                                            inventory_item__id=additional_site.site_size.id).price
                                 price_rate = InventoryItemFair.objects.get(fair=registration.fair.id,
                                                                            inventory_item__id=additional_site.site_size.id).price_rate
                                 additional_site_costs = price_rate * site_price * additional_site.site_quantity
-                                print('Additional Sites', additional_site.site_size, site_price, price_rate, additional_site.site_quantity )
+                                print('Additional Sites', additional_site.site_size, site_price, price_rate,
+                                      additional_site.site_quantity)
                                 total_additional_site_costs = total_additional_site_costs + additional_site_costs
                                 InvoiceItem.objects.create(invoice=invoice,
-                                                                                inventory_item=field_value.inventory_item,
-                                                                                item_quantity=
-                                                                                    additional_site.site_quantity,
-                                                                                item_cost=additional_site_costs
-                                                                                )
+                                                           inventory_item=additional_site.site_size,
+                                                           item_quantity= additional_site.site_quantity,
+                                                           item_cost=additional_site_costs
+                                                           )
                             print("Total Additional Site Costs", total_additional_site_costs)
                             total_cost = total_cost + total_additional_site_costs
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(registration.id) + 'there was an error in determining multi-site costs.' + str(e),
-                                        extra={'custom_category': 'Invoicing'})
+                            db_logger.error('For Stall Registration ID ' + str(
+                                registration.id) + 'there was an error in determining multi-site costs.' + str(e),
+                                            extra={'custom_category': 'Invoicing'})
         gst_component = round((total_cost * 3) / 23, 2)
-        invoice.total_cost = total_cost - existing_payment
-        invoice.gst_component= gst_component
+        invoice.total_cost = total_cost
+        invoice.gst_component = gst_component
         try:
             invoice.save()
         except Exception as e:  # It will catch other errors related to the create call
@@ -416,8 +433,7 @@ class InvoiceItemManager(models.Manager):
                 PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
         except Exception as e:  # It will catch other errors related to the create call
             db_logger.error('There was an error in creating the payment history.' + str(e),
-                        extra={'custom_category': 'Payment History'})
-
+                            extra={'custom_category': 'Payment History'})
 
 
 class InvoiceItem(models.Model):
@@ -434,22 +450,25 @@ class InvoiceItem(models.Model):
 
 
 class Meta:
-        verbose_name = "invoiceitem"
-        verbose_name_plural = "invoiceitems"
-        unique_together = ('invoice', 'inventory_item')
+    verbose_name = "invoiceitem"
+    verbose_name_plural = "invoiceitems"
+    unique_together = ('invoice', 'inventory_item')
+
 
 class DiscountItemManager(models.Manager):
     """
     Description: Methods to access discount items
     """
+
     def get_queryset(self):
-        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[ current_year, next_year])
+        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[current_year, next_year])
 
     def get_registration_discount(self, registration):
         return super().get_queryset().filter(stall_registration=registration)
 
     def get_stallholder_discounts(self, stallholder):
         return super().get_queryset().filter(stall_registration__stallholder_id=stallholder)
+
 
 class DiscountItem(models.Model):
     """
@@ -458,9 +477,11 @@ class DiscountItem(models.Model):
     stall_registration = models.ForeignKey(StallRegistration, on_delete=models.CASCADE)
     discount_amount = models.DecimalField(max_digits=8, decimal_places=2)
     date_created = models.DateTimeField(auto_now_add=True)
-    created_by = models.ForeignKey(CustomUser, related_name='discount_created_by', on_delete=models.SET_NULL, blank=True, null=True)
+    created_by = models.ForeignKey(CustomUser, related_name='discount_created_by', on_delete=models.SET_NULL,
+                                   blank=True, null=True)
     objects = models.Manager()
     discountitemmgr = DiscountItemManager()
+
 
 class Meta:
     verbose_name = "discountitem"

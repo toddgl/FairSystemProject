@@ -1264,6 +1264,8 @@ def reinvoice_stall_registration(request, id):
     registration by the convener or if a discount has been applied to the stallregistration.
     """
     stallregistration = get_object_or_404(StallRegistration, pk=id)
+    if not can_proceed(stallregistration.to_booking_status_invoiced):
+        raise PermissionDenied
 
     InvoiceItem.invoiceitemmgr.create_invoice_items(stallregistration)
 
@@ -1276,7 +1278,7 @@ def reinvoice_stall_registration(request, id):
         stallregistration.save()
     else:
         db_logger.error('There was an error with the creation of the re-invoice and payment history for '
-                        'stallregistration ID ' + stallregistration.id ,
+                        'stallregistration ID ' + str(stallregistration.id),
                         extra={'custom_category': 'Stall Registration Invoicing'})
 
     return redirect(request.META.get('HTTP_REFERER'))
