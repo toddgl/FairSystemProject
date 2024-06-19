@@ -1,0 +1,62 @@
+<!-- notices/templates/notice_partial_list.html -->
+
+{% load static %}
+{% load paginator_tags %}
+{% load notice_extras %}
+
+<div id="notice_data">
+    <div class="row g-3">
+        {% for item in notice_list %}
+            <div class="col-lg-12">
+                <div class="card border-success shadow-lg w-25 my-5 text-center">
+                    <div class="card-header bg-success"></div>
+                    <div class="card-body">
+                        <h5 class="card-title"><strong>{{ item.notice_title }}</strong></h5>
+                        <p class="card-text">{{ item.notice_content | render_markdown }}</p>
+                    </div>
+                    <div class="card-footer text-muted">
+                        2 days ago
+                    </div>
+                </div>
+                {% if user.role == 2 %}
+                    <a href="{% url 'notices:notice-detail' item.id %}" class="btn btn-primary"> View and edit Notice
+                        Detail </a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    <!-- Pagination -->
+    {% if notice_list.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if notice_list.has_previous %}
+                <li class="page-item"><a class="page-link"
+                                      tices
+                                         hx-get="{% url 'notices:notice-list' %}?page={{ notice_list.previous_page_number }}"
+                                         xtarget="notice_data">&laquo;</a></li>
+            {% else %}
+                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for i in page_range|default_if_none:notice_list.paginator.get_elided_page_range %}
+                {% if notice_list.number == i %}
+                    <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                    {% if i == notice_list.paginator.ELLIPSIS %}
+                        <li class="page-item"><span class="page-link">{{ i }}</span></li>
+                    {% else %}
+                        <li class="page-item"><a class="page-link"
+                                                 hx-get="{% url 'notices:notice-list' %}?page={{ i }}" hx-trigger="click"
+                                                 hx-target="#notice_data">{{ i }}</a></li>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            {% if notice_list.has_next %}
+                <li class="page-item"><a class="page-link"
+                                         hx-get="{% url 'notices:notice-list' %}?page={{ notice_list.next_page_number }}"
+                                         hx-trigger="click" hx-target="#notice_data">&raquo;</a></li>
+            {% else %}
+                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}
+</div>
