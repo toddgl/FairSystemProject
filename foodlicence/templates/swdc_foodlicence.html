@@ -1,0 +1,125 @@
+<!--templates/swdc_foodlicence.html -->
+<!DOCTYPE html>
+
+{% load static %}
+{% load adddaystodate_tag %}
+
+{% block body %}
+<html lang="en">
+<head>
+    <title>SWDC FoodLicence Application</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/licence.css' %}" media="all" />
+</head>
+<body class="bg-secondary text-blue">
+    <div class="container my-3">
+        <div id="page1-div" class="position-relative mb-5 p-3 bg-white border rounded">
+            <h1 class="ft01 text-center mb-3">Martinborough Fair</h1>
+            <h2 class="ft00 text-center mb-4">Food Stall Application</h2>
+            <div class="row">
+                <div class="col-sm-6"></div>
+                <div class="col-sm-3">Stallholder ID</div>
+                <div class="col-sm-3"></div>
+            </div>
+             <div class="row">
+                 <div class="col-sm-6"></div>
+                 <div class="col-sm-3">.col-sm-3</div>
+                 <div class="col-sm-3">.col-sm-3</div>
+                 <div class="col-sm-3">.col-sm-3</div>
+                 <div class="col-sm-3">.col-sm-3</div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">First Name</p>
+                    <p class="ft03">Lynn</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Last Name</p>
+                    <p class="ft03">Wong</p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">Trading Name</p>
+                    <p class="ft03">The Hungry Monkey Wellington</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Address</p>
+                    <p class="ft06">31/6 Vallance Street, Kilbirnie, Wellington 6022</p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">Tele</p>
+                    <p class="ft03">0274777998</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Email</p>
+                    <p class="ft03">thehungrymonkey.wellington@gmail.com</p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">Stall Type</p>
+                    <p class="ft03">Registered food business</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Stall Manager</p>
+                    <p class="ft03">Lynn Wong</p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">Certificate Expiry</p>
+                    <p class="ft03">1/04/2022</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Registration certificate link</p>
+                    <p class="ft04"><a href="https://www.martinboroughfair.org.nz/images/application_uploads/monkey-WCCFCP2021_rmYwlaq3iiTCj9Of.pdf">Uploaded registration certificate</a></p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">Application Status</p>
+                    <p class="ft05">Pending</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Site Number</p>
+                    <p class="ft04"><a href="https://martinboroughfair.org.nz/downloads/Maps/Map9_MS_West.pdf">MW47</a></p>
+                </div>
+            </div>
+            <p class="text-center mt-4">Application 12825 - Page 1</p>
+        </div>
+        <div id="page2-div" class="position-relative p-3 bg-white border rounded">
+            <h1 class="ft01 text-center mb-3">Martinborough Fair</h1>
+            <h2 class="ft00 text-center mb-4">Food Stall Application</h2>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">Proposed method and location of food utensils, appliances and equipment</p>
+                    <p class="ft03">All are inside a fully self-contained food truck.</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">What facilities are to be provided at the food stall</p>
+                    <p class="ft03">Hot Plate, Hot Storage, Wok, Steamer, Oven, Cold Storage</p>
+                </div>
+            </div>
+            <div class="row mb-2">
+                <div class="col-md-6">
+                    <p class="ft02">What arrangements have been made for hand washing</p>
+                    <p class="ft03">Truck is fully equipped with hot and cold water and a separate hand washing sink</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="ft02">Please describe any shelter to be used in conjunction with the stall</p>
+                    <p class="ft03">None</p>
+                </div>
+            </div>
+            <p class="text-center mt-4">Application 12825 - Page 2</p>
+        </div>
+    </div>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+{% endblock %}
+

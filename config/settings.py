@@ -64,6 +64,7 @@ INSTALLED_APPS = [
     'accounts',
     'fairs',
     'faq',
+    'foodlicence',
     'notices',
     'search',
     'CustomDBLogger',
@@ -177,6 +178,8 @@ ACCOUNT_ADAPTER = 'accounts.adapter.AccountAdapter'
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
+
+SWDC_FOOD_LICEMCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 
 # A list of all the people who get code error notifications. When DEBUG=False
 ADMINS = env('ADMIN_LIST')

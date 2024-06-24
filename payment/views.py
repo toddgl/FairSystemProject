@@ -32,7 +32,7 @@ def invoice_pdf_generation(request, id, seq):
     if discounts:
         total_discount = sum(discounts.values_list('discount_amount', flat=True))
     else:
-        total_discount =  decimal.Decimal(0.00)
+        total_discount = decimal.Decimal(0.00)
     # Render the template with the context
     context = {
         'invoice': invoice,
