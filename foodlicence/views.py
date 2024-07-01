@@ -1,10 +1,16 @@
 # foodlicence/views.py
 
 import io
+from django.core.mail import EmailMessage
 from django.http import HttpResponse
 import datetime
 from django.conf import settings
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
+from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.urls import reverse_lazy, reverse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.core.exceptions import PermissionDenied
+from django_fsm import can_proceed
 from weasyprint import HTML
 from pypdf import PdfWriter, PdfReader
 from django.core.files.base import ContentFile
@@ -69,9 +75,39 @@ def generate_combined_pdf(request):
     # Update FoodLicence objects to reference the new batch
     selected_licences.update(food_licence_batch=food_licence_batch)
 
+    # Render email body
+    email_body = render_to_string('email_template.html', {'batch': food_licence_batch})
+
+    # Create and send email
+    email = EmailMessage(
+        subject='Martinborough Fair - Food Licence Batch Notification',
+        body=email_body,
+        from_email=settings.EMAIL_HOST_USER,
+        to=[recipient_email],
+    )
+
+    # Attach PDF
+    email.attach('combined.pdf', combined_pdf, 'application/pdf')
+
+    # Send email
+    email.send()
+
     # Return the combined PDF as a response
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = 'attachment; filename="combined.pdf"'
     response.write(combined_pdf)
 
     return response
+
+def add_licence_to_batch(request, id):
+    """
+    Description: Called from foodlicence list to set the status of teh food licence to batched ready to be included
+    in SWDC Licence request combined pdf.
+    """
+    success_url = reverse_lazy('foodlicence:foodlicence-list')
+    foodlicence = get_object_or_404(FoodLicence, pk=id)
+    if not can_proceed(foodlicence.to_booking_status_submitted):
+        raise PermissionDenied
+    foodlicence.to_licence_status_batched()
+    return HttpResponseRedirect(success_url)
+

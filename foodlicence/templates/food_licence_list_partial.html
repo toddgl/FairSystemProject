@@ -1,0 +1,31 @@
+<!-- foodlicence/templates/food_licence_list_partial.html -->
+
+{% load static %}
+{% load paginator_tags %}
+
+<div id="food_licence_data">
+        <div id="foodlicence-{{ foodlicence.id}}">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Registration ID</th>
+                    <th scope="col">Submitted Date</th>
+                    <th scope="col">Completed Date</th>
+                    <th scope="col"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for foodlicence in foodlicence_list %}
+                <tr>
+                    <td>{{ foodlicence.foodlicence_status }}</td>
+                    <td>{{ foodlicence.food_registration.registration.id }}</td>
+                    <td>{{ foodlicence.date_requested.datetime|date:"jS F Y"|default_if_none:""}}</td>
+                    <td>{{ foodlicence.date_completed.datetime|date:"jS F Y"|default_if_none:"" }}</td>
+                    <td><a class = "btn btn-success" hx-post= '{% url 'foodlicence:add-to-batch' foodlicence.id %}' hx-trigger='click' hx-target='#food_licence_data' ><i class="bi bi-arrow-up-right-square"></i></a></td>
+                </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+</div>

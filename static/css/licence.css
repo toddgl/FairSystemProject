@@ -1,5 +1,9 @@
 @page {
- size: portrait;
+ size: A4 portrait;
+ @bottom-center {
+
+        content: "Page " counter(page) " of " counter(pages);
+    }
 }
 
 .clearfix:after {
