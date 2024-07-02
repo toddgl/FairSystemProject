@@ -11,7 +11,7 @@ from .models import (
     FoodLicence,
 )
 
-class LicenceStatusFilerForm(Form):
+class FoodlicenceStatusFilterForm(Form):
 
     zone = ModelChoiceField(
         queryset=FoodLicence.foodlicencecurrentmgr.all(),
@@ -30,5 +30,6 @@ class LicenceStatusFilerForm(Form):
         fields = [
             'licence_status',
         ]
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
 

@@ -8,6 +8,7 @@ from django.conf import settings
 from django.template.loader import get_template, render_to_string
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse_lazy, reverse
+from django.template.response import TemplateResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
@@ -17,6 +18,9 @@ from django.core.files.base import ContentFile
 from .models import (
     FoodLicenceBatch,
     FoodLicence
+)
+from .forms import (
+    FoodlicenceStatusFilterForm
 )
 
 def generate_pdf(object):
@@ -110,4 +114,54 @@ def add_licence_to_batch(request, id):
         raise PermissionDenied
     foodlicence.to_licence_status_batched()
     return HttpResponseRedirect(success_url)
+
+def foodlicence_listview(request):
+    """
+    Description: view for displaying food licences in a table with filter based on licence_status and providing
+    functionality to change the status from Created to Batched, Submitted to Completed and Submitted to Rejected.
+    Plus the ability to drillddown to see the respective StallRegistration / Food Registration
+    """
+    global foodlicence_status_filter_dict
+    template_name = 'foodlicence_list.html'
+    filterform = FoodlicenceStatusFilterForm(request.POST or None)
+    foodlicence_list = FoodLicence.foodlicencecurrentmgr.all()
+    alert_message = 'There are no food licences created yet.'
+    if request.htmx:
+        form_purpose = filterform.data.get('form_purpose', '')
+        if form_purpose == 'filter':
+            if filterform.is_valid():
+                foodlicence_status = filterform.cleaned_data['licence_status']
+                attr_foodlicence_status = 'foodlicence_status'
+                if foodlicence_status:
+                    alert_message = 'There are no food licences for status ' + str(foodlicence_status)
+                    foodlicence_status_filter_dict = {
+                        attr_foodlicence_status: foodlicence_status,
+                    }
+            else:
+                alert_message = 'There are no food licences created yet'
+                foodlicence_status_filter_dict = {}
+        else:
+            # Handle pagination
+            # The stallregistration_filter _dict is retained from the filter selection which ensures that the correct
+            # data is applied
+            # to subsequent pages
+            pass
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter( **foodlicence_status_filter_dict).all()
+        template_name = 'foodlicence_list_partial.html'
+        return TemplateResponse(request, template_name, {
+            'food_licence_list': foodlicence_list,
+            'alert_mgr': alert_message,
+        })
+    else:
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'food_licence_list': foodlicence_list,
+            'alert_mgr': alert_message,
+        })
+
+
+
+
+
+
 

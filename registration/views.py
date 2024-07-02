@@ -191,7 +191,7 @@ def stall_registration_listview(request):
         else:
             # Handle pagination
             # The stallregistration_filter _dict is retained from the filter selection which ensures that the correct
-            # data is appplied
+            # data is applied
             # to subsequent pages
             pass
         filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
