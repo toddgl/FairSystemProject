@@ -2,9 +2,12 @@
 
 {% load static %}
 {% load paginator_tags %}
+{% load hasfoodlicences_tag %}
 
 <div id="food_licence_data">
-        <div id="foodlicence-{{ foodlicence.id}}">
+    <div>
+        {% get_has_foodlicences as has_foodlicences %}
+        {% if has_foodlicences %}
             <table class="table table-striped">
                 <thead>
                 <tr>
@@ -12,7 +15,9 @@
                     <th scope="col">Registration ID</th>
                     <th scope="col">Submitted Date</th>
                     <th scope="col">Completed Date</th>
-                    <th scope="col"></th>
+                    <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -22,11 +27,17 @@
                     <td>{{ foodlicence.food_registration.registration.id }}</td>
                     <td>{{ foodlicence.date_requested.datetime|date:"jS F Y"|default_if_none:""}}</td>
                     <td>{{ foodlicence.date_completed.datetime|date:"jS F Y"|default_if_none:"" }}</td>
-                    <td><a class = "btn btn-primary" hx-post= '{% url 'foodlicence:add-to-batch' foodlicence.id %}'
-                        hx-trigger='click' hx-target='#food_licence_data' ><i class="bi bi-arrow-up-right-square"></i></a></td>
+                    <td><a class = "btn btn-primary btn-small" hx-post= "{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-arrow-up-right-square"></i></a></td>
+                    <td><a class = "btn btn-primary btn-small" hx-post= "{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-check-square"></i></a></td>
+                    <td><a class = "btn btn-primary btn-small" hx-post= "{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-binoculars-fill"></i></a></td>
                 </tr>
+                {% empty %}
+                    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
                 {% endfor %}
                 </tbody>
             </table>
-        </div>
+        {% else %}
+            <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+        {% endif %}
+    </div>
 </div>

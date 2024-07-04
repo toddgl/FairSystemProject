@@ -65,10 +65,11 @@ class FoodLicence(models.Model):
         related_name='food_licence'
     )
     date_requested = models.DateTimeField(auto_now_add=True)
-    date_completed = models.DateTimeField()
+    date_completed = models.DateTimeField(blank=True, null=True)
     food_licence_batch = models.ForeignKey(
         FoodLicenceBatch,
         null=True,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name='food_licence_batch'
     )
