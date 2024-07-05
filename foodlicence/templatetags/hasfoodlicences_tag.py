@@ -13,7 +13,6 @@ def get_has_foodlicences():
     Used in the convener foodlicence list
     """
     foodlicence_exists = FoodLicence.foodlicencecurrentmgr.exists()
-    print('tag reached', foodlicence_exists)
     if foodlicence_exists:
         return True
     else:

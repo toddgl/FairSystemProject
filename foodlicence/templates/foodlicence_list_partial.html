@@ -18,18 +18,27 @@
                     <th scope="col-sm"></th>
                     <th scope="col-sm"></th>
                     <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
                 </tr>
                 </thead>
                 <tbody>
-                {% for foodlicence in foodlicence_list %}
+                {% for foodlicence in food_licence_list %}
                 <tr>
-                    <td>{{ foodlicence.foodlicence_status }}</td>
+                    <td>{{ foodlicence.licence_status }}</td>
                     <td>{{ foodlicence.food_registration.registration.id }}</td>
-                    <td>{{ foodlicence.date_requested.datetime|date:"jS F Y"|default_if_none:""}}</td>
-                    <td>{{ foodlicence.date_completed.datetime|date:"jS F Y"|default_if_none:"" }}</td>
-                    <td><a class = "btn btn-primary btn-small" hx-post= "{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-arrow-up-right-square"></i></a></td>
-                    <td><a class = "btn btn-primary btn-small" hx-post= "{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-check-square"></i></a></td>
-                    <td><a class = "btn btn-primary btn-small" hx-post= "{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-binoculars-fill"></i></a></td>
+                    <td>{{ foodlicence.date_requested }}</td>
+                    <td>{{ foodlicence.date_completed | default_if_none:"" }}</td>
+                    <td><a class = "btn btn-primary btn-small"  data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="Change status to Batch" hx-post="{% url 'foodlicence:add-to-batch' foodlicence.id %}" hx-trigger="click" hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-arrow-up-right-square"></i></a></td>
+                    <td><a class = "btn btn-success btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="Change status to Complete" hx-post= "{% url 'foodlicence:mark-as-complete' foodlicence.id %}" hx-trigger="click"
+                           hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-check-square"></i></a></td>
+                    <td><a class = "btn btn-danger btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="Change status to Rejected" hx-post=
+                                   "{% url 'foodlicence:mark-as-rejected' foodlicence.id %}" hx-trigger="click"
+                           hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-x-square-fill"></i></a></td>
+                    <td><a class = "btn btn-info btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="View Stall registration" href= "{% url 'registration:convener-stall-food-registration-detail' foodlicence.food_registration.registration.id %}"><i class="bi bi-binoculars-fill"></i></a></td>
                 </tr>
                 {% empty %}
                     <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>

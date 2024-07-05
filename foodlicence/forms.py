@@ -3,7 +3,7 @@
 from django import forms
 from django.forms import (
     Form,
-    ModelChoiceField,
+    ChoiceField,
     Select,
 )
 
@@ -12,24 +12,28 @@ from .models import (
 )
 
 class FoodlicenceStatusFilterForm(Form):
+    """
+    Description: A filter form used in the listing  of food licences.  The LICENCE_CHOICES are a copy of the ones set
+    up on the FoodLicence Model
+    """
+    LICENCE_CHOICES =(
+        ("", "Show All"),
+        ("Created",  "Created"),
+        ("Batched", "Batched"),
+        ("Submitted", "Submitted"),
+        ("Rejected", "Rejected"),
+        ("Approved", "Approved")
+    )
 
-    zone = ModelChoiceField(
-        queryset=FoodLicence.foodlicencecurrentmgr.all(),
-        empty_label='Show All',
+    licence_status = ChoiceField(
+        choices=LICENCE_CHOICES,
         label='Licence Status',
         required=False,
         widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#food_Licence_data',
         }),
     )
-    class Meta:
-        fields = [
-            'licence_status',
-        ]
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
 

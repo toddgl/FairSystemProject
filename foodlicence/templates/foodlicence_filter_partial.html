@@ -8,7 +8,7 @@
         <span><strong>Fair Filters</strong></span>
         <span class="hr"></span>
       </div>
-      <form action="." method="post"  hx-post="." hx-target="#replacearea">
+      <form action="." hx-trigger="change" method="post"  hx-post="." hx-target="#food_licence_data">
         {% csrf_token %}
         {{ filterform.as_p }}
       </form>
