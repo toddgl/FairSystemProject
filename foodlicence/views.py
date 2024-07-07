@@ -49,7 +49,7 @@ def merge_pdfs(pdf_files):
 def generate_combined_pdf(request):
     # Fetch selected objects
 
-    selected_licences = FoodLicence.objects.filter(licence_status=FoodLicence.CREATED)  # Adjust filter as needed
+    selected_licences = FoodLicence.objects.filter(licence_status="Batched")  # Adjust filter as needed
 
     if not selected_licences.exists():
         return HttpResponse("No licences found.", content_type="text/plain")
@@ -152,18 +152,21 @@ def foodlicence_listview(request):
     foodlicence_status_filter_dict = {}
     template_name = 'foodlicence_list.html'
     filterform = FoodlicenceStatusFilterForm(request.POST or None)
-    foodlicence_list = FoodLicence.foodlicencecurrentmgr.all()
-    alert_message = 'There are no food licences created yet.'
+    licence_status=request.GET.get('licence_status', '')
+    if licence_status:
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(licence_status=licence_status).all()
+        alert_message = 'There are no Food Licences of status ' + str(licence_status) + ' created yet'
+    else:
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.all()
+        alert_message = 'There are no food licences created yet.'
+
     if request.htmx:
         form_purpose = filterform.data.get('form_purpose', '')
-        print(form_purpose)
         if form_purpose == 'filter':
             if filterform.is_valid():
                 foodlicence_status = filterform.cleaned_data['licence_status']
-                print(foodlicence_status)
                 attr_foodlicence_status = 'licence_status'
                 if foodlicence_status:
-                    print('Foodlicence_status exists')
                     alert_message = 'There are no food licences for status ' + str(foodlicence_status)
                     foodlicence_status_filter_dict = { attr_foodlicence_status: foodlicence_status }
                 else:
@@ -175,7 +178,6 @@ def foodlicence_listview(request):
             # data is applied
             # to subsequent pages
             pass
-        print(foodlicence_status_filter_dict)
         foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter( **foodlicence_status_filter_dict).all()
         template_name = 'foodlicence_list_partial.html'
         return TemplateResponse(request, template_name, {
@@ -188,6 +190,28 @@ def foodlicence_listview(request):
             'food_licence_list': foodlicence_list,
             'alert_mgr': alert_message,
         })
+
+def foodlicence_dashboard_view(request):
+    """
+    Populate the Foodlicence Dashboard with counts of the various food licences statuses
+    """
+    total_counts = FoodLicence.foodlicencecurrentmgr.count()
+    created_counts = FoodLicence.foodlicencecurrentmgr.get_created().count()
+    batched_counts = FoodLicence.foodlicencecurrentmgr.get_batched().count()
+    submitted_counts = FoodLicence.foodlicencecurrentmgr.get_submitted().count()
+    rejected_counts = FoodLicence.foodlicencecurrentmgr.get_rejected().count()
+    approved_counts = FoodLicence.foodlicencecurrentmgr.get_approved().count()
+
+    return TemplateResponse(request, 'dashboard_foodlicences.html', {
+        'total_counts': total_counts,
+        'created_counts': created_counts,
+        'batched_counts': batched_counts,
+        'submitted_counts': submitted_counts,
+        'rejected_counts': rejected_counts,
+        'approved_counts': approved_counts
+    })
+
+
 
 
 

@@ -6,14 +6,32 @@
 
 {% block body %}
 <div class="container" xmlns="http://www.w3.org/1999/html">
+    <h1> Food Licences</h1>
   <div class="row g-3">
-  <h1> Food Licences</h1>
-      <div class="row">
-          <div class="col-md-6">
-              {% include 'foodlicence_filter_partial.html' %}
+      <div class="col-md-6">
+          {% include 'foodlicence_filter_partial.html' %}
+      </div>
+      <div class="col-md-6">
+          <div class="title-hr">
+              <span class="hr fix"></span>
+              <span><strong>Generate Food Licence Batch PDFs </strong></span>
+              <span class="hr"></span>
+          </div>
+          <div>
+              <strong>Number of Batched Licences : {% get_number_batched_foodlicences %} </strong>
+              <div>
+                  <a class = "btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top"
+                     title="Generate batch pdf for SWDC" href="{% url 'foodlicence:licence-batch-generate' %}">Run PDF
+                      Generation</a>
+              </div>
           </div>
       </div>
+      <hr>
   </div>
-    {% include 'foodlicence_list_partial.html' %}
+  <div class="row g-3">
+      <div class="col-md-12">
+          {% include 'foodlicence_list_partial.html' %}
+      </div>
+  </div>
 </div>
 {% endblock %}

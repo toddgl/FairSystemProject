@@ -7,7 +7,8 @@ from foodlicence.views import (
     add_licence_to_batch,
     foodlicence_listview,
     mark_licence_as_complete,
-    mark_licence_as_rejected
+    mark_licence_as_rejected,
+    foodlicence_dashboard_view
 )
 
 app_name = 'foodlicence'  # This is the namespace, so you can reverse urls with payment:*
@@ -17,4 +18,6 @@ urlpatterns = [
     path('foodlicence/completed/<int:id>', mark_licence_as_complete, name='mark-as-complete'),
     path('foodlicence/rejected/<int:id>', mark_licence_as_rejected, name='mark-as-rejected'),
     path('foodlicence/list/', foodlicence_listview, name='foodlicence-list'),
+    path('foodlicence/batch/', generate_combined_pdf, name='licence-batch-generate'),
+    path('dashboard/foodlicences/', foodlicence_dashboard_view, name='foodlicence-dashboard'),
 ]
