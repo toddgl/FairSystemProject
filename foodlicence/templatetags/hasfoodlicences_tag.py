@@ -1,7 +1,10 @@
 # foodlicence/templatetags/hasfoodlicences_tags.py
 
 from django import template
-from foodlicence.models import FoodLicence
+from foodlicence.models import (
+    FoodLicence,
+    FoodLicenceBatch
+)
 
 
 register = template.Library()
@@ -25,3 +28,16 @@ def get_number_batched_foodlicences():
     """
     batched_foodlicence_count = FoodLicence.foodlicencecurrentmgr.filter(licence_status='Batched').count()
     return batched_foodlicence_count
+
+@register.simple_tag
+def get_has_foodlicence_batches():
+    """
+    Templatetag to provide a boolean answer whether there are any foodlicence batches
+    Used in the convener foodlicence batch list
+    """
+    foodlicence_batch_exists = FoodLicenceBatch.foodlicencebatchcurrentmgr.exists()
+    if foodlicence_batch_exists:
+        return True
+    else:
+        return False
+

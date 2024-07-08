@@ -5,10 +5,12 @@ from django.forms import (
     Form,
     ChoiceField,
     Select,
+    DateInput
 )
 
 from .models import (
     FoodLicence,
+    FoodLicenceBatch
 )
 
 class FoodlicenceStatusFilterForm(Form):
@@ -36,4 +38,21 @@ class FoodlicenceStatusFilterForm(Form):
     )
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
+class FoodLicenceBatchDateForm(Form):
+    """
+    Description: a form used in a model on the food licence batch view to update the returned and closed date
+    """
+    class Meta:
+        model = FoodLicenceBatch
+        fields = ['date_returned', 'date_closed' ]
+        widgets = {
+            'date_returned': DateInput(attrs={
+                'class': "form-control",
+                'readonly': 'readonly'
+            }),
+            'date_closed': DateInput(attrs={
+                'class': "form-control",
+                'readonly': 'readonly'
+            }),
+        }
 

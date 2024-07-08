@@ -211,11 +211,16 @@ def foodlicence_dashboard_view(request):
         'approved_counts': approved_counts
     })
 
+def foodlicence_batch_view(request):
+    """
+    Description: to view and set completed date for the FoodLicenceBatched instannces including the ability to view
+    the generated PDF's
+    """
+    template_name = 'foodlicence_batch_list.html'
+    foodlicence_batch_list = FoodLicenceBatch.foodlicencebatchcurrentmgr.all()
+    alert_message = 'There are no food licences batches created yet.'
 
-
-
-
-
-
-
-
+    return TemplateResponse(request, template_name, {
+        'food_licence_batch_list': foodlicence_batch_list,
+        'alert_mgr': alert_message,
+    })

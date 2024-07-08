@@ -12,6 +12,13 @@ from registration.models import (
 current_year = datetime.datetime.now().year
 next_year = current_year + 1
 
+class FoodLicenceBatchCurrentManager(models.Manager):
+    """
+    Description: Methods to access current FoodLicencBbatch instances
+    """
+    def get_queryset(self):
+        return super().get_queryset().filter(date_created__year__in=[current_year, next_year])
+
 class FoodLicenceBatch(models.Model):
     """
     Description: A Model to record the batches of Foodlicence Requests that are passed to the SWDC for consideration
@@ -24,6 +31,7 @@ class FoodLicenceBatch(models.Model):
     date_closed = models.DateTimeField(null=True, blank=True)
     batch_count = models.IntegerField()
     pdf_file = models.FileField(upload_to='pdfs/', null=True, blank=True)
+    foodlicencebatchcurrentmgr = FoodLicenceBatchCurrentManager()
 
 class FoodLicenceCurrentManager(models.Manager):
     """

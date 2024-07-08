@@ -1,0 +1,99 @@
+<!-- foodlicence/templates/foodlicence_list.html -->
+
+{% extends 'base.html' %}
+{% load paginator_tags %}
+{% load hasfoodlicences_tag %}
+
+{% block body %}
+<div id="foodlicence_batch_data" class="container" xmlns="http://www.w3.org/1999/html">
+    <h1> Food Licences Batches</h1>
+  <div class="row g-3">
+      <div class="col-md-12">
+          {% get_has_foodlicence_batches as has_foodlicence_batches %}
+          {% if has_foodlicence_batches %}
+          <table class="table table-striped">
+              <thead>
+              <tr>
+                  <th scope="col">Batch ID</th>
+                  <th scope="col">Created Date</th>
+                  <th scope="col">Returned Date</th>
+                  <th scope="col">Completed Date</th>
+                  <th scope="col-sm"></th>
+                  <th scope="col-sm"></th>
+              </tr>
+              </thead>
+              <tbody>
+              {% for batch in food_licence_batch_list %}
+              <tr>
+                  <td>{{ batch.id }}</td>
+                  <td>{{ batch.date_created }}</td>
+                  <td>{{ batch.date_returned | default_if_none:"" }}</td>
+                  <td>{{ batch.date_closed | default_if_none:"" }}</td>
+                  <td><button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                                   data-bs-target="#foodlicencebatchModal" data-bs-toggle="tooltip" data-bs-placement="top"
+                         title="Click to update Food Licence Batch">
+                      <i class="bi bi-pencil-square"></i></button></td>
+                  <td><button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                              data-bs-target="#batchpdfModal" data-bs-toggle="tooltip" data-bs-placement="top"
+                              title="Click to view batch PDF">
+                      <i class="bi bi-binoculars-fill"></i></button></td>
+              </tr>
+              {% empty %}
+              <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+              {% endfor %}
+              </tbody>
+          </table>
+          {% else %}
+          <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+          {% endif %}
+      </div>
+  </div>
+</div>
+<!--Update selected Foodlicence Batch data Bootstrap modal -->
+<div class="modal fade" id="foodlicencebatchModal" tabindex="-1" role="dialog"
+     aria-labelledby="foodlicencebatchModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+        <div class="modal-content">
+            <!-- Modal heading -->
+            <div class="modal-header bg-info text-dark">
+                <h4 class="modal-title" id="registrationModalLabel">Food Licence Batch Update</h4>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+                </button>
+            </div>
+            <!-- Modal body with update form -->
+            <div class="modal-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {{ foodlicencebatchupdateform.as_p }}
+                    <input type="submit" class="btn btn-primary" value="Update" >
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!--Food Licence Batch PDF Bootstrap modal -->
+<div class="modal fade" id="batchpdfModal" tabindex="-1" role="dialog" aria-labelledby="batchpdfModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
+        <div class="modal-content">
+            <!-- Modal heading -->
+            <div class="modal-header bg-info text-dark">
+                <h4 class="modal-title" id="certModalLabel">Food Licence Batch PDF</h4>
+                <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
+                </button>
+            </div>
+            <!-- Modal body with pdf -->
+            <div class="modal-body">
+                <iframe src="{{ batch,pdf_file.url }}"
+                        frameBorder="0"
+                        scrolling="auto"
+                        height="100%"
+                        width="100%"
+                ></iframe>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
