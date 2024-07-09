@@ -15,7 +15,7 @@
                         <p class="card-text"lh-sm>{{ item.notice_content | render_markdown }}</p>
                     </div>
                     <div class="card-footer text-muted">
-                        2 days ago
+                        Updated {{ item.days_since_last_update }} days ago
                     </div>
                 </div>
                 {% if user.role == 2 %}

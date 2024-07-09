@@ -88,15 +88,13 @@
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Registration certificate link</div>
         <div class="col-sm-9 ft06">
-          <a
-            href="https://www.martinboroughfair.org.nz/images/application_uploads/monkey-WCCFCP2021_rmYwlaq3iiTCj9Of.pdf"
-            >Uploaded registration certificate</a
+          <a href="{{ object.food_registration_certificate.url }}">Uploaded registration certificate</a
           >
         </div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Certificate Expiry</div>
-        <div class="col-sm-9 ft06">1/04/2023</div>
+        <div class="col-sm-9 ft06">{{ object.certificate_expiry_date }}</div>
       </div>
       <div class="row gx-100">
         <div class="col-sm-9 ft02">

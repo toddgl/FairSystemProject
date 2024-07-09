@@ -2,6 +2,7 @@
 
 from django.db import models
 from django.db.models import F, ExpressionWrapper, DateTimeField
+from datetime import datetime, timezone
 
 # Create your models here.
 class ActiveNoticeManager(models.Manager):
@@ -33,6 +34,11 @@ class Notice(models.Model):
 
     def __str__(self):
         return self.notice_content
+
+    def days_since_last_update(self):
+        latest_update = max(self.date_created, self.date_updated)
+        today = datetime.now()
+        return (today - latest_update).days
 
     class Meta:
         verbose_name_plural = "Notices"

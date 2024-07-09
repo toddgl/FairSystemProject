@@ -1,5 +1,4 @@
 <!-- foodlicence/templates/foodlicence_list.html -->
-
 {% extends 'base.html' %}
 {% load paginator_tags %}
 {% load hasfoodlicences_tag %}
@@ -29,14 +28,20 @@
                   <td>{{ batch.date_created }}</td>
                   <td>{{ batch.date_returned | default_if_none:"" }}</td>
                   <td>{{ batch.date_closed | default_if_none:"" }}</td>
-                  <td><button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                                   data-bs-target="#foodlicencebatchModal" data-bs-toggle="tooltip" data-bs-placement="top"
-                         title="Click to update Food Licence Batch">
-                      <i class="bi bi-pencil-square"></i></button></td>
-                  <td><button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                  <td>
+                      <button type="button" class="btn btn-primary" data-bs-toggle="modal"
+                              data-bs-target="#foodlicencebatchModal" data-batch-id="{{ batch.id }}" data-bs-toggle="tooltip" data-bs-placement="top"
+                              title="Click to update Food Licence Batch">
+                          <i class="bi bi-pencil-square"></i>
+                      </button>
+                  </td>
+                  <td>
+                      <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                               data-bs-target="#batchpdfModal" data-bs-toggle="tooltip" data-bs-placement="top"
                               title="Click to view batch PDF">
-                      <i class="bi bi-binoculars-fill"></i></button></td>
+                          <i class="bi bi-binoculars-fill"></i>
+                      </button>
+                  </td>
               </tr>
               {% empty %}
               <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
@@ -49,7 +54,7 @@
       </div>
   </div>
 </div>
-<!--Update selected Foodlicence Batch data Bootstrap modal -->
+<!-- Update selected Foodlicence Batch data Bootstrap modal -->
 <div class="modal fade" id="foodlicencebatchModal" tabindex="-1" role="dialog"
      aria-labelledby="foodlicencebatchModalLabel"
      aria-hidden="true">
@@ -63,9 +68,9 @@
             </div>
             <!-- Modal body with update form -->
             <div class="modal-body">
-                <form method="post">
+                <form id="updateForm" action="" method="post">
                     {% csrf_token %}
-                    {{ foodlicencebatchupdateform.as_p }}
+                    {{ foodlicence_batch_update_form.as_p }}
                     <input type="submit" class="btn btn-primary" value="Update" >
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </form>
@@ -73,7 +78,7 @@
         </div>
     </div>
 </div>
-<!--Food Licence Batch PDF Bootstrap modal -->
+<!-- Food Licence Batch PDF Bootstrap modal -->
 <div class="modal fade" id="batchpdfModal" tabindex="-1" role="dialog" aria-labelledby="batchpdfModalLabel"
      aria-hidden="true">
     <div class="modal-dialog modal-dialog-scrollable" role="document" style="max-width : 700px;">
@@ -86,7 +91,7 @@
             </div>
             <!-- Modal body with pdf -->
             <div class="modal-body">
-                <iframe src="{{ batch,pdf_file.url }}"
+                <iframe src="{{ batch.pdf_file.url }}"
                         frameBorder="0"
                         scrolling="auto"
                         height="100%"
@@ -97,3 +102,14 @@
     </div>
 </div>
 {% endblock %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var foodlicencebatchModal = document.getElementById('foodlicencebatchModal');
+    foodlicencebatchModal.addEventListener('show.bs.modal', function (event) {
+        var button = event.relatedTarget; // Button that triggered the modal
+        var batchId = button.getAttribute('data-batch-id'); // Extract info from data-* attributes
+        var form = foodlicencebatchModal.querySelector('#updateForm');
+        form.action = "{% url 'foodlicence:licence-batch-update' '' %}".slice(0, -1) + batchId; // Update form action
+    });
+});
+</script>

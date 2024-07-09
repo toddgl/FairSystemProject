@@ -38,7 +38,7 @@ class FoodlicenceStatusFilterForm(Form):
     )
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
-class FoodLicenceBatchDateForm(Form):
+class FoodLicenceBatchUpUpdateForm(Form):
     """
     Description: a form used in a model on the food licence batch view to update the returned and closed date
     """

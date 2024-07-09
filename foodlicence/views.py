@@ -20,7 +20,8 @@ from .models import (
     FoodLicence
 )
 from .forms import (
-    FoodlicenceStatusFilterForm
+    FoodlicenceStatusFilterForm,
+    FoodLicenceBatchUpUpdateForm
 )
 
 def generate_pdf(object):
@@ -154,10 +155,10 @@ def foodlicence_listview(request):
     filterform = FoodlicenceStatusFilterForm(request.POST or None)
     licence_status=request.GET.get('licence_status', '')
     if licence_status:
-        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(licence_status=licence_status).all()
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(licence_status=licence_status).all().select_related('food_licence_batch')
         alert_message = 'There are no Food Licences of status ' + str(licence_status) + ' created yet'
     else:
-        foodlicence_list = FoodLicence.foodlicencecurrentmgr.all()
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.all().select_related('food_licence_batch')
         alert_message = 'There are no food licences created yet.'
 
     if request.htmx:
@@ -178,7 +179,7 @@ def foodlicence_listview(request):
             # data is applied
             # to subsequent pages
             pass
-        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter( **foodlicence_status_filter_dict).all()
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter( **foodlicence_status_filter_dict).all().select_related('food_licence_batch')
         template_name = 'foodlicence_list_partial.html'
         return TemplateResponse(request, template_name, {
             'food_licence_list': foodlicence_list,
@@ -211,16 +212,33 @@ def foodlicence_dashboard_view(request):
         'approved_counts': approved_counts
     })
 
-def foodlicence_batch_view(request):
+def foodlicence_batch_listview(request):
     """
     Description: to view and set completed date for the FoodLicenceBatched instannces including the ability to view
     the generated PDF's
     """
     template_name = 'foodlicence_batch_list.html'
     foodlicence_batch_list = FoodLicenceBatch.foodlicencebatchcurrentmgr.all()
+    foodlicencebatchupdateform = FoodLicenceBatchUpUpdateForm(request.POST or None)
     alert_message = 'There are no food licences batches created yet.'
 
     return TemplateResponse(request, template_name, {
         'food_licence_batch_list': foodlicence_batch_list,
+        'foodlicence_batch_update_form': foodlicencebatchupdateform,
         'alert_mgr': alert_message,
     })
+
+def foodlicence_batch_update(request, id):
+    """
+    Description: Function is update Foodlicence Batch limited to date date_returned and date_clased
+    """
+    foodlicence_batch = get_object_or_404(FoodLicenceBatch, id=id)
+    foodlicencebatchupdateform = FoodLicenceBatchUpUpdateForm(request.Post or None, instance = foodlicence_batch)
+    if foodlicencebatchupdateform.is_valid():
+        foodlicence_batch.save()
+
+    return redirect(request.META.get('HTTP_REFERER'))
+
+
+
+
