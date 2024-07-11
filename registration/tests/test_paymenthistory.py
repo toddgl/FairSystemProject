@@ -27,26 +27,26 @@ class CreatePaymentHistoryManagerTest(TransactionTestCase):
 
     def setUp(self):
         total_cost = round(random.randint(1, 1000) * random.random(), 2)
-        gst_value =round((total_cost * 3) / 23, 2)
+        gst_component =round((total_cost * 3) / 23, 2)
 
         current_fair = Fair.currentfairmgr.last()
 
         self.registration = StallRegistration(
-        fair =  current_fair,
-        stallholder = CustomUser.objects.all().get(email='thehungrymonkey.wellington@gmail.com'),
-        stall_manager_name = factory.LazyAttribute(lambda _: fake.name()),
-        stall_category = StallCategory.objects.all().get(category_name='Hats'),
-        stall_description = factory.LazyAttribute(lambda _: fake.text()),
-        products_on_site = factory.LazyAttribute(lambda _: fake.text()),
-        total_charge = total_cost
+            fair=current_fair,
+            stallholder=CustomUser.objects.all().get(email='thehungrymonkey.wellington@gmail.com'),
+            stall_manager_name=factory.LazyAttribute(lambda _: fake.name()),
+            stall_category=StallCategory.objects.all().get(category_name='Hats'),
+            stall_description=factory.LazyAttribute(lambda _: fake.text()),
+            products_on_site=factory.LazyAttribute(lambda _: fake.text()),
+            total_charge=total_cost
         )
         self.registration.save()
 
         self.invoice = Invoice(
-        stall_registration = self.registration,
-        stallholder = CustomUser.objects.all().get(email='thehungrymonkey.wellington@gmail.com'),
-        total_cost = total_cost,
-        gst_value =  gst_value
+            stall_registration=self.registration,
+            stallholder=CustomUser.objects.all().get(email='thehungrymonkey.wellington@gmail.com'),
+            total_cost=total_cost,
+            gst_component=gst_component
         )
         self.invoice.save()
 
@@ -65,7 +65,7 @@ class CreatePaymentHistoryManagerTest(TransactionTestCase):
         self.assertEqual(payment_history.invoice, invoice)
         self.assertEqual(payment_history.amount_to_pay, amount_to_pay)
         self.assertEqual(payment_history.payment_status,'Pending')
-        self.assertEqual(payment_history.amount_paid, None)
+        self.assertEqual(payment_history.amount_paid, 0.0)
 
     def tearDown(self):
         # Clean up any created objects in the database

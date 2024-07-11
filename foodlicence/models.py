@@ -8,15 +8,14 @@ from django_fsm import FSMField, transition
 from registration.models import (
     FoodRegistration
 )
-# Global Variables
-current_year = datetime.datetime.now().year
-next_year = current_year + 1
 
 class FoodLicenceBatchCurrentManager(models.Manager):
     """
     Description: Methods to access current FoodLicencBbatch instances
     """
     def get_queryset(self):
+        current_year = datetime.datetime.now().year
+        next_year = current_year + 1
         return super().get_queryset().filter(date_created__year__in=[current_year, next_year])
 
 class FoodLicenceBatch(models.Model):
@@ -31,6 +30,8 @@ class FoodLicenceBatch(models.Model):
     date_closed = models.DateTimeField(null=True, blank=True)
     batch_count = models.IntegerField()
     pdf_file = models.FileField(upload_to='pdfs/', null=True, blank=True)
+
+    objects = models.Manager()
     foodlicencebatchcurrentmgr = FoodLicenceBatchCurrentManager()
 
 class FoodLicenceCurrentManager(models.Manager):
