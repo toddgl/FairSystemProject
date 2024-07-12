@@ -2,7 +2,6 @@
 <!DOCTYPE html>
 
 {% load static %}
-{% load adddaystodate_tag %}
 
 {% block body %}
 <html lang="en">
@@ -21,51 +20,59 @@
       <div class="row gx-5">
         <div class="col-sm-6"></div>
         <div class="col-sm-3">Stallholder ID</div>
-        <div class="col-sm-3">{{ object.registration.stallholder.id }}</div>
+        <div class="col-sm-3">{{ object.food_registration.registration.stallholder.id }}</div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-6"></div>
         <div class="col-sm-3">Application ID</div>
-        <div class="col-sm-3">{{ object.registration.id }}</div>
+        <div class="col-sm-3">{{ object.food_registration.registration.id }}</div>
       </div>
       <div class="row gx-5">
-        <div class="col-sm-3">Site Number</div>
-        <div class="col-sm-3">{{ site_name }}</div>
+        {% for allocation in object.food_registration.registration.site_allocation.all %}
+          <div class="col-sm-3">Event </div>
+          <div class="col-sm-3">{{ allocation.event_site.event.event_name }}</div>
+          <div class="col-sm-3">Site Name </div>
+          <div class="col-sm-3">{{ allocation.event_site.site.zone.zone_name }} - {{ allocation.event_site.site.site_name }}</div>
+        {% endfor %}
+      </div>
+      <div class="row gx-5">
+        <div class="col-sm-6"></div>
         <div class="col-sm-3">Application Status</div>
-        <div class="col-sm-3">Pending</div>
+        <div class="col-sm-3">{{ object.food_registration.registration.booking_status</div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">First Name</div>
-        <div class="col-sm-3 ft03">Lynn</div>
+        <div class="col-sm-3 ft03">{{ stallholder_detail.first_name }}</div>
         <div class="col-sm-6"></div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Last Name</div>
-        <div class="col-sm-3 ft03">Wong</div>
+        <div class="col-sm-3 ft03">{{ stallholder_detail.last_name }}</div>
         <div class="col-sm-6"></div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Trading Name</div>
-        <div class="col-sm-3 ft03">The Hungry Monkey Wellington</div>
+        <div class="col-sm-3 ft03">{{ stallholder_detail.org_name }}</div>
         <div class="col-sm-6"></div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Address</div>
         <div class="col-sm-3 ft06">
-          31/6 Vallance Street,<br />
-          Kilbirnie, <br />Wellington 6022
+          {{ stallholder_detail.address1 }}<br>
+          {{ stallholder_detail.address2 <br>
+          { { stallholder_detail.town }}, {{ stallholder_detail.postcode }}
         </div>
         <div class="col-sm-6"></div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Tele</div>
-        <div class="col-sm-3 ft03">0274777998</div>
+        <div class="col-sm-3 ft03">{{ object.food_registration.registration.stallholder.phone }}</div>
         <div class="col-sm-3 ft02">Email</div>
-        <div class="col-sm-3 ft03">thehungrymonkey.wellington@gmail.com</div>
+        <div class="col-sm-3 ft03">{{ object.food_registration.registration.stallholder.email }} </div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Stall Manager</div>
-        <div class="col-sm-3 ft06">Lynn Wong</div>
+        <div class="col-sm-3 ft06">{{ object.food_registration.registration.stall_manager_name }}</div>
         <div class="col-sm-6"></div>
       </div>
       <div class="row gx-5">
@@ -75,26 +82,22 @@
       <div class="row gx-5">
         <div class="col-sm-3"></div>
         <div class="col-sm-9 ft02">
-          Malaysian style street food. Steamed bun, pillow soft bao with roasted
-          pork belly or tofu, beef or lamb rendang, beer battered curly potato
-          and banana fritters with ice-cream. All our product are handcrafted.
-          We focus on using eco-friendly packaging, prov
+          {{ object.food_registration.registration.stall_description }}
         </div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Stall Type</div>
-        <div class="col-sm-9 ft06">Registered food business</div>
+        <div class="col-sm-9 ft06">{{  object.food_registration.registration.stall_category }}</div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Registration certificate link</div>
         <div class="col-sm-9 ft06">
-          <a href="{{ object.food_registration_certificate.url }}">Uploaded registration certificate</a
-          >
+          <a href="{{ object.food_registration.food_registration_certificate.url }}">Uploaded registration certificate</a>
         </div>
       </div>
       <div class="row gx-5">
         <div class="col-sm-3 ft02">Certificate Expiry</div>
-        <div class="col-sm-9 ft06">{{ object.certificate_expiry_date }}</div>
+        <div class="col-sm-9 ft06">{{ object.food_registration.certificate_expiry_date|date "d-m-Y" }}</div>
       </div>
       <div class="row gx-100">
         <div class="col-sm-9 ft02">
@@ -106,7 +109,7 @@
       <div class="row gx-5">
         <div class="col-sm-3"></div>
         <div class="col-sm-9 ft02">
-          All are inside a fully self-contained food truck.
+          {{ object.food_registration.food_storage_prep }}
         </div>
       </div>
       <div class="row gx-5">
@@ -118,7 +121,9 @@
       <div class="row gx-5">
         <div class="col-sm-3"></div>
         <div class="col-sm-9 ft02">
-          Hot Plate, Hot Storage, Wok, Steamer, Oven, Cold Storage
+          {% for equipment in object.food_registration.food_prep_equipment.all %}
+            {{ equipment.equipment_name }}
+          {% endfor %}
         </div>
       </div>
       <div class="row gx-5">
@@ -130,8 +135,7 @@
       <div class="row gx-5">
         <div class="col-sm-3"></div>
         <div class="col-sm-9 ft02">
-          Truck is fully equipped with hot and cold water and a separate hand
-          washing sink
+          {{ object.food_registration.hygiene_methods }}
         </div>
       </div>
       <div class="row gx-5">
@@ -142,7 +146,7 @@
       </div>
       <div class="row gx-5">
         <div class="col-sm-3"></div>
-        <div class="col-sm-9 ft02">None</div>
+        <div class="col-sm-9 ft02">{{ object.food_registration.registration.stall_shelter }}</div>
       </div>
     </div>
 </body>

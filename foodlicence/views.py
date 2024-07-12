@@ -15,6 +15,12 @@ from django_fsm import can_proceed
 from weasyprint import HTML
 from pypdf import PdfWriter, PdfReader
 from django.core.files.base import ContentFile
+from accounts.models import (
+    Profile
+)
+from registration.models import (
+    StallRegistration
+)
 from .models import (
     FoodLicenceBatch,
     FoodLicence
@@ -26,7 +32,12 @@ from .forms import (
 
 def generate_pdf(object):
     # Render a template to HTML
-    html_template = get_template('swdc_foodlicence.html', {'object': object})
+    stall_registration =StallRegistration.objects.get(id=object.food_registration.registration.id)
+    stallholder_detail =  Profile.objects.get(user=stall_registration.stallholder)
+    html_template = get_template('swdc_foodlicence.html', {
+        'object': object,
+        'stallholder_detail': stallholder_detail,
+    })
 
     # Convert HTML to PDF
     pdf_file = HTML(string=html_template).write_pdf()
