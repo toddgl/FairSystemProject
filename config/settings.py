@@ -188,7 +188,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
-SWDC_FOOD_LICEMCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
+SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 
 # A list of all the people who get code error notifications. When DEBUG=False
 ADMINS = env('ADMIN_LIST')

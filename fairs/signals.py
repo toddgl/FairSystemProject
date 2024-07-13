@@ -1,9 +1,19 @@
 # fairs/signals.py
 
-from django.db.models.signals import pre_delete, post_save, post_delete
+from django.db.models.signals import pre_save, pre_delete, post_save, post_delete
 from django.dispatch import receiver
-from .models import SiteAllocation, EventSite
+from django.db import transaction
+from .models import Fair, SiteAllocation, EventSite
 
+@receiver(pre_save, sender=Fair)
+def archive_event_sites_on_deactivate(sender, instance, **kwargs):
+    if instance.pk:
+        previous_fair = Fair.objects.get(pk=instance.pk)
+        if previous_fair.is_activated and not instance.is_activated:
+            # The fair is being deactivated
+            event_sites = EventSite.objects.filter(event__fair=previous_fair)
+            with transaction.atomic():
+                event_sites.update(site_status=EventSite.ARCHIVED)
 
 @receiver(post_save, sender=SiteAllocation)
 def set_allocation_status(sender, instance, **kwargs):

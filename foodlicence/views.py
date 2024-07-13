@@ -34,13 +34,13 @@ def generate_pdf(object):
     # Render a template to HTML
     stall_registration =StallRegistration.objects.get(id=object.food_registration.registration.id)
     stallholder_detail =  Profile.objects.get(user=stall_registration.stallholder)
-    html_template = get_template('swdc_foodlicence.html', {
+    # Use render_to_string to render the template with context
+    html_content = render_to_string('swdc_foodlicence.html', {
         'object': object,
         'stallholder_detail': stallholder_detail,
     })
-
     # Convert HTML to PDF
-    pdf_file = HTML(string=html_template).write_pdf()
+    pdf_file = HTML(string=html_content).write_pdf()
 
     return pdf_file
 

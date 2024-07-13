@@ -24,6 +24,7 @@ from django.views.generic.base import RedirectView
 
 from search.views import search_view
 
+handler404 = 'notices.views.custom_404'
 
 urlpatterns = [
     path('admin/', admin.site.urls),

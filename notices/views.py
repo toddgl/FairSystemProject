@@ -1,5 +1,6 @@
 # notices/views.py
 
+from django.shortcuts import render
 from django.urls import reverse_lazy
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -78,5 +79,8 @@ def notice_listview(request):
         'page_range': page_range,
     })
 
+# custom 404 view
+def custom_404(request, exception):
+    return render(request, '404.html', status=404)
 
 

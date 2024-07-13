@@ -9,6 +9,10 @@ from registration.models import (
     FoodRegistration
 )
 
+current_year = datetime.datetime.now().year
+next_year = current_year + 1
+
+
 class FoodLicenceBatchCurrentManager(models.Manager):
     """
     Description: Methods to access current FoodLicencBbatch instances

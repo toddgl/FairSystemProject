@@ -33,6 +33,12 @@ ul.errorlist {
     color: #00246c;
 }
 
+/* 404 Page */
+.emoji {
+     font-size: 8rem;
+     margin-bottom: 20px;
+}
+
 /* Login Form */
 
 .form-outline
