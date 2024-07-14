@@ -1,5 +1,5 @@
 <!-- foodlicence/templates/foodlicence_list.html -->
-{% extends 'base.html' %}
+{% extends 'foodlicence_list_base.html' %}
 {% load paginator_tags %}
 {% load hasfoodlicences_tag %}
 
@@ -37,7 +37,7 @@
                   </td>
                   <td>
                       <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                              data-bs-target="#batchpdfModal" data-bs-toggle="tooltip" data-bs-placement="top"
+                              data-bs-target="#batchpdfModal" data-batch-pdf="{{ batch.pdf_file.url }}" data-bs-toggle="tooltip" data-bs-placement="top"
                               title="Click to view batch PDF">
                           <i class="bi bi-binoculars-fill"></i>
                       </button>
@@ -91,25 +91,14 @@
             </div>
             <!-- Modal body with pdf -->
             <div class="modal-body">
-                <iframe src="{{ batch.pdf_file.url }}"
-                        frameBorder="0"
+                <iframe id="batchPdfIframe" src=""
+                        frameborder="0"
                         scrolling="auto"
-                        height="100%"
-                        width="100%"
-                ></iframe>
+                        height="400"
+                        width="100%">
+                </iframe>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    var foodlicencebatchModal = document.getElementById('foodlicencebatchModal');
-    foodlicencebatchModal.addEventListener('show.bs.modal', function (event) {
-        var button = event.relatedTarget; // Button that triggered the modal
-        var batchId = button.getAttribute('data-batch-id'); // Extract info from data-* attributes
-        var form = foodlicencebatchModal.querySelector('#updateForm');
-        form.action = "{% url 'foodlicence:licence-batch-update' '' %}".slice(0, -1) + batchId; // Update form action
-    });
-});
-</script>

@@ -1,63 +1,36 @@
 @page {
  size: A4 portrait;
+ font-family: Arial, Helvetica, sans-serif;
+ font-size: 10px;
  @bottom-center {
 
         content: "Page " counter(page) " of " counter(pages);
     }
 }
-
-.clearfix:after {
-  content: "";
-  display: table;
-  clear: both;
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+}
+.container-2col {
+    display: grid;
+    grid-template-columns: auto auto;
+    gap: 10px;
+}
+.container-4col {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    gap: 10px;
+}
+.full-width {
+    grid-column: span 2;
+}
+.item-title {
+    font-weight: bold;
+}
+.item-answer {
+    padding-left: 8px;
+}
+.text-center {
+    text-align: center;
 }
 
-a {
-  color: #5D6975;
-  text-decoration: underline;
-}
-
-body {
-  position: relative;
-  width: 21cm;  
-  height: 29.7cm; 
-  margin: 0 auto;
-  color: #001028;
-  background: #FFFFFF; 
-  font-family: Arial, sans-serif; 
-  font-size: 12px; 
-  font-family: Arial;
-}
-.xflip {
-    transform: scaleX(-1);
-}
-.yflip {
-    transform: scaleY(-1);
-}
-.xyflip {
-    transform: scaleX(-1) scaleY(-1);
-}
-.ft00 {
-    font-size: 27px;
-    color: #7e7e7e;
-}
-.ft01 {
-    font-size: 36px;
-    color: #7e7e7e;
-}
-.ft02, .ft03, .ft04, .ft05, .ft06 {
-    font-size: 16px;
-}
-.ft03 {
-    color: #404040;
-}
-.ft04 {
-    color: #0462c1;
-}
-.ft05 {
-    color: #212a35;
-}
-.ft06 {
-    color: #404040;
-    line-height: 20px;
-}

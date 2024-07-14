@@ -12,7 +12,8 @@ class FoodLicenceAdmin(admin.ModelAdmin):
         return qs.select_related('food_licence_batch')
 
 class FoodLicenceBatchAdmin(admin.ModelAdmin):
-    list_display = ('id', 'recipient_email', 'date_created', 'date_sent', 'date_returned', 'date_closed', 'batch_count')
+    list_display = ('id', 'recipient_email', 'date_created', 'date_sent', 'date_returned', 'date_closed',
+                    'batch_count', 'pdf_file')
 
 admin.site.register(FoodLicence, FoodLicenceAdmin)
 admin.site.register(FoodLicenceBatch, FoodLicenceBatchAdmin)

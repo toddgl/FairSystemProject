@@ -13,78 +13,97 @@
     <link rel="stylesheet" href="{% static 'css/licence.css' %}" media="all" />
 </head>
 <body>
-    <div class="container">
+    <div class="container-2col">
         <h1 class="full-width text-center">Martinborough Fair</h1>
         <h2 class="full-width text-center">Food Stall Application</h2>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Stallholder ID</div>
         <div class="item-answer">{{ object.food_registration.registration.stallholder.id }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Application ID</div>
         <div class="item-answer">{{ object.food_registration.registration.id }}</div>
-
+    </div>
+    <div class="container-4col">
         {% for allocation in object.food_registration.registration.site_allocation.all %}
             <div class="item-title">Event</div>
             <div class="item-answer">{{ allocation.event_site.event.event_name }}</div>
             <div class="item-title">Site Name</div>
             <div class="item-answer">{{ allocation.event_site.site.zone.zone_name }} - {{ allocation.event_site.site.site_name }}</div>
         {% endfor %}
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Application Status</div>
         <div class="item-answer">{{ object.food_registration.registration.booking_status }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">First Name</div>
         <div class="item-answer">{{ stallholder_detail.first_name }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Last Name</div>
         <div class="item-answer">{{ stallholder_detail.last_name }}</div>
-
+    </div>
+    <div class="container">
         <div class="item-title">Trading Name</div>
         <div class="item-answer">{{ stallholder_detail.org_name }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Address</div>
         <div class="item-answer">
             {{ stallholder_detail.address1 }}<br>
             {{ stallholder_detail.address2 }}<br>
             {{ stallholder_detail.town }}, {{ stallholder_detail.postcode }}
         </div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Tele</div>
         <div class="item-answer">{{ object.food_registration.registration.stallholder.phone }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Email</div>
         <div class="item-answer">{{ object.food_registration.registration.stallholder.email }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Stall Manager</div>
         <div class="item-answer">{{ object.food_registration.registration.stall_manager_name }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title full-width">The type of food to be sold</div>
         <div class="item-answer full-width">{{ object.food_registration.registration.stall_description }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Stall Type</div>
         <div class="item-answer">{{ object.food_registration.registration.stall_category }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Registration certificate link</div>
         <div class="item-answer">
             <a href="{{ object.food_registration.food_registration_certificate.url }}">Uploaded registration certificate</a>
         </div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title">Certificate Expiry</div>
         <div class="item-answer">{{ object.food_registration.certificate_expiry_date|date:'d-m-Y' }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title full-width">Proposed method and location of food utensils, appliances and equipment</div>
         <div class="item-answer full-width">{{ object.food_registration.food_storage_prep }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title full-width">What facilities are to be provided at the food stall</div>
         <div class="item-answer full-width">
             {% for equipment in object.food_registration.food_prep_equipment.all %}
                 {{ equipment.equipment_name }}
             {% endfor %}
         </div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title full-width">What arrangements have been made for hand washing</div>
         <div class="item-answer full-width">{{ object.food_registration.hygiene_methods }}</div>
-
+    </div>
+    <div class="container-2col">
         <div class="item-title full-width">Please describe any shelter to be used in conjunction with the stall</div>
         <div class="item-answer full-width">{{ object.food_registration.registration.stall_shelter }}</div>
     </div>

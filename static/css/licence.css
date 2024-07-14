@@ -1,14 +1,25 @@
 @page {
  size: A4 portrait;
+ font-family: Arial, Helvetica, sans-serif;
+ font-size: 10px;
  @bottom-center {
 
         content: "Page " counter(page) " of " counter(pages);
     }
 }
-.container {
+* {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 10px;
+}
+.container-2col {
     display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
+    grid-template-columns: auto auto;
+    gap: 10px;
+}
+.container-4col {
+    display: grid;
+    grid-template-columns: auto auto auto auto;
+    gap: 10px;
 }
 .full-width {
     grid-column: span 2;

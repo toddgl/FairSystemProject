@@ -1,9 +1,9 @@
 # foodlicence/views.py
 
 import io
+import os
+from django.utils.timezone import now
 from django.core.mail import EmailMessage
-from django.http import HttpResponse
-import datetime
 from django.conf import settings
 from django.template.loader import get_template, render_to_string
 from django.http import HttpResponseRedirect, HttpResponse, Http404
@@ -12,7 +12,7 @@ from django.template.response import TemplateResponse
 from django.shortcuts import render, get_object_or_404, redirect
 from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
-from weasyprint import HTML
+from weasyprint import HTML, CSS
 from pypdf import PdfWriter, PdfReader
 from django.core.files.base import ContentFile
 from accounts.models import (
@@ -39,8 +39,9 @@ def generate_pdf(object):
         'object': object,
         'stallholder_detail': stallholder_detail,
     })
+    css_file = os.path.join(settings.STATIC_ROOT, 'css', 'licence.css')
     # Convert HTML to PDF
-    pdf_file = HTML(string=html_content).write_pdf()
+    pdf_file = HTML(string=html_content).write_pdf(stylesheets=[CSS(filename=css_file)])
 
     return pdf_file
 
@@ -60,7 +61,6 @@ def merge_pdfs(pdf_files):
 
 def generate_combined_pdf(request):
     # Fetch selected objects
-
     selected_licences = FoodLicence.objects.filter(licence_status="Batched")  # Adjust filter as needed
 
     if not selected_licences.exists():
@@ -78,14 +78,24 @@ def generate_combined_pdf(request):
     # Create and populate FoodLicenceBatch instance
     food_licence_batch = FoodLicenceBatch(
         recipient_email=recipient_email,
-        date_sent=datetime.datetime.now(),
+        date_sent=now(),
         date_returned=None,
         date_closed=None,
         batch_count=len(selected_licences)
     )
+    food_licence_batch.save()  # Save first to get the ID
+
+    # Retrieve the batch ID
+    batch_id = food_licence_batch.id
+
+    # Get the current datetime
+    current_datetime = now().strftime('%Y%m%d_%H%M%S')
+
+    # Create the filename with batch ID and datetime
+    filename = f'combined_{batch_id}_{current_datetime}.pdf'
 
     # Save the PDF to the instance
-    food_licence_batch.pdf_file.save('combined.pdf', ContentFile(combined_pdf))
+    food_licence_batch.pdf_file.save(filename, ContentFile(combined_pdf))
     food_licence_batch.save()
 
     # Update FoodLicence objects to reference the new batch
@@ -103,14 +113,14 @@ def generate_combined_pdf(request):
     )
 
     # Attach PDF
-    email.attach('combined.pdf', combined_pdf, 'application/pdf')
+    email.attach(filename, combined_pdf, 'application/pdf')
 
     # Send email
     email.send()
 
     # Return the combined PDF as a response
     response = HttpResponse(content_type='application/pdf')
-    response['Content-Disposition'] = 'attachment; filename="combined.pdf"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     response.write(combined_pdf)
 
     return response
@@ -137,7 +147,7 @@ def mark_licence_as_complete(request, id):
     if not can_proceed(foodlicence.to_booking_status_completed):
         raise PermissionDenied
     foodlicence.to_licence_status_completed()
-    foodlicence.date_completed = datetime.now()
+    foodlicence.date_completed = now()
     foodlicence.save()
     return HttpResponseRedirect(success_url)
 
@@ -151,7 +161,7 @@ def mark_licence_as_rejected(request, id):
     if not can_proceed(foodlicence.to_booking_status_rejected):
         raise PermissionDenied
     foodlicence.to_licence_status_rejected()
-    foodlicence.date_completed = datetime.now()
+    foodlicence.date_completed = now()
     foodlicence.save()
     return HttpResponseRedirect(success_url)
 
