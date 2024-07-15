@@ -1,11 +1,36 @@
 <!-- notices/templates/notice_list.html -->
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block body %}
 <div class="container" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
     <div class="row g-3">
         <h1>Fair Notices</h1>
+        {% if user.role != 2 %}
+        <div class="container-fluid border border-5 rounded-5 border-primary">
+            <div class="row">
+                <div class="col-4">
+                    <div class="p-3">
+                       <img class="img-fluid" src="{% static '/img/rotary_mbf.jpg' %}" alt="Martinborough Fair Logo">
+                    </div>
+                </div>
+                <div class="col-7">
+                    <div class="p-3">
+                        <h2 class="text-center text-primary"><em>Welcome to the Martinborough Fair<br>Stallholder
+                            Management
+                            System</em></h2>
+                        <p>This is the portal to book MartinBorough Fair sites, make payments,
+                            view the status of your application, and communicate with the Fair Convener</p>
+                        <p>If you are an existing Martinborough Fair Stallholder, <b>Log in</b>
+                            using the menu button above to get started.</p>
+                        <p>If you wish to be a Martinborough Fair Stallholder, <b>Sign up</b>
+                            using the menu button above to register.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
         <div class="row">
             <div class="col-md-3">
                 {% if user.role == 2 %}
