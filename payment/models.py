@@ -86,8 +86,8 @@ class Invoice(models.Model):
         """
         Used to Generate invoice number for a new invoice
         - if there are no invoices in the system it starts at 1
-        - if there has already been an invoice created for the stall registration this number is reused
-        - if there is no invoices created for the stall registration it finds the highest invoice number in the
+        - if there has already been an invoice created for the stall Application this number is reused
+        - if there is no invoices created for the stall Application it finds the highest invoice number in the
         system and increments this by 1
         """
         if Invoice.objects.filter(stall_registration__pk=stallregistration_pk).exists():
@@ -230,11 +230,11 @@ class InvoiceItemManager(models.Manager):
 
     def create_invoice_items(self, registration):
         """
-        Cycle through the billable items on the stall registration instance and create an invoice and invoice item
-        for each of teh billable items on the stall registration record
+        Cycle through the billable items on the stall Application instance and create an invoice and invoice item
+        for each of teh billable items on the stall Application record
 
         Parameters:
-        - registration: The instance of the StallRegistration.
+        - Application: The instance of the StallRegistration.
         - field_list: A list of field names to iterate through.
         - action: A function representing the action to be performed on each field.
         """
@@ -328,7 +328,7 @@ class InvoiceItemManager(models.Manager):
                                                        item_cost=total_trestle_cost
                                                        )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(
+                            db_logger.error('For Stall Application ID ' + str(
                                 registration.id) + 'there was an error in determining trestle costs.' + str(e),
                                             extra={'custom_category': 'Invoicing'})
                     else:
@@ -352,7 +352,7 @@ class InvoiceItemManager(models.Manager):
                                                        item_cost=total_vehicle_cost
                                                        )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(
+                            db_logger.error('For Stall Application ID ' + str(
                                 registration.id) + 'there was an error in determining vehicle length costs.' + str(e),
                                             extra={'custom_category': 'Invoicing'})
                     else:
@@ -376,7 +376,7 @@ class InvoiceItemManager(models.Manager):
                                                        item_cost=power_cost
                                                        )
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(
+                            db_logger.error('For Stall Application ID ' + str(
                                 registration.id) + 'there was an error in determining vehicle length costs.' + str(e),
                                             extra={'custom_category': 'Invoicing'})
                     else:
@@ -405,7 +405,7 @@ class InvoiceItemManager(models.Manager):
                             print("Total Additional Site Costs", total_additional_site_costs)
                             total_cost = total_cost + total_additional_site_costs
                         except Exception as e:  # It will catch other errors related to the cost determination.
-                            db_logger.error('For Stall Registration ID ' + str(
+                            db_logger.error('For Stall Application ID ' + str(
                                 registration.id) + 'there was an error in determining multi-site costs.' + str(e),
                                             extra={'custom_category': 'Invoicing'})
         gst_component = round((total_cost * 3) / 23, 2)
@@ -415,13 +415,13 @@ class InvoiceItemManager(models.Manager):
             invoice.save()
         except Exception as e:  # It will catch other errors related to the create call
             db_logger.error('There was an error in creating the invoice.' + str(e),
-                            extra={'custom_category': 'Registration Invoice'})
+                            extra={'custom_category': 'Application Invoice'})
         try:
             registration.is_invoiced = True
             registration.save(update_fields=["is_invoiced"])
         except Exception as e:  # It will catch other errors related to the create call
-            db_logger.error('There was an error in updating the registration - ' + str(registration.id) + str(e),
-                            extra={'custom_category': 'Registration Invoice'})
+            db_logger.error('There was an error in updating the Application - ' + str(registration.id) + str(e),
+                            extra={'custom_category': 'Application Invoice'})
         # create a payment history instance if there was a previous one transfer payment and reconciliation amounts
         try:
             if existing_payment_history:

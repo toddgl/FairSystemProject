@@ -228,7 +228,7 @@ class VehiclesOnSiteManager(models.Manager):
 
 class IsMultiSiteRegistrationManager(models.Manager):
     """
-    Queryset of Stall Registration  for current fairs and the specified stall registration that
+    Queryset of Stall Application  for current fairs and the specified stall application that
     is a multisite request.  Used to determine if the Stallregistration can be submitted for payment
     use something like to get ta True ? False response
     is_multi_site = StallRegistration.ismultisiteregistrationmgr.filter_by_stallregistration(stallregistration_id)
@@ -415,7 +415,7 @@ class CommentType(models.Model):
 
 class HasUnactionedCommentsManager(models.Manager):
     """
-    Queryset of Registration comments for current fairs and the specified stallholder that
+    Queryset of Application comments for current fairs and the specified stallholder that
     has unactioned comments.  Used to determine if the Stallregistration can be submitted for payment
     use something like to get ta True ? False response
     has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(stallholder_id).exists()
@@ -431,7 +431,7 @@ class HasUnactionedCommentsManager(models.Manager):
 class CreateRegistrationCommentManager(models.Manager):
     """
     Used to create a comment to advise the Stall holder if there are any issues with their efforts to submit
-    a stall registration for payment.
+    a stall application for payment.
     """
     def create_comment(self, stallholder, current_fair, comment_type, comment, is_done=False):
         obj = RegistrationComment.objects.create(stallholder= stallholder, fair=current_fair,
@@ -441,7 +441,7 @@ class CreateRegistrationCommentManager(models.Manager):
 
 class RegistrationComment(models.Model):
     """
-    Description a model to capture stallholder and convener comments related to a Stall Registration instance.
+    Description a model to capture stallholder and convener comments related to a Stall Application instance.
     Convener comments can be made private so cannot be seen by Stallholders if required
     """
     stallholder = models.ForeignKey(

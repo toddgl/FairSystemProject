@@ -6,14 +6,14 @@
 {% block body %}
 <main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
     <div class="container">
-        <h4>Registration Move or Remove Site Allocation</h4>
+        <h4>Application Move or Remove Site Allocation</h4>
         <hr>
         <div class="row">
             <!-- Passed on Stallregistration for siteallocation -->
             <div class="col-md-4">
                 <div class="title-hr">
                     <span class="hr fix"></span>
-                    <span><strong>Stallholder Registration Details</strong></span>
+                    <span><strong>Stallholder Application Details</strong></span>
                     <span class="hr"></span>
                 </div>
                 <form action="." method="post" >
@@ -23,7 +23,7 @@
                             <h4 class="card-title">{{ stallregistration.fair }} - {{ stallregistration.stallholder}}</h4>
                         </div>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item"><strong>Registration ID:</strong> {{ stallregistration.id }}</li>
+                            <li class="list-group-item"><strong>Application ID:</strong> {{ stallregistration.id }}</li>
                             <li class="list-group-item"><strong>Stall Category:</strong> {{ stallregistration.stall_category }}</li>
                             <li class="list-group-item"><strong>Site Size:</strong> {{ stallregistration.site_size }}</li>
                             <li class="list-group-item"><strong>Status:</strong> {{ stallregistration.booking_status }}</li>

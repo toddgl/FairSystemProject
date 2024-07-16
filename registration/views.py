@@ -105,7 +105,7 @@ def pagination_data(cards_per_page, filtered_data, request):
 @permission_required('registration.change_stallregistration', raise_exception=True)
 def stall_registration_listview(request):
     """
-    List stall registration used by the Fair Conveners in the view and management of stall registrations
+    List stall application used by the Fair Conveners in the view and management of stall registrations
     """
     global stallregistration_filter_dict
     global stallholder
@@ -117,7 +117,7 @@ def stall_registration_listview(request):
     if booking_status:
         filtered_data = StallRegistration.registrationcurrentallmgr.filter(booking_status=booking_status).order_by('stall_category').prefetch_related('site_allocation').all()
         filtered_data = filtered_data.prefetch_related('additional_sites_required')
-        alert_message = 'There are no stall registration of status ' + str(booking_status) + ' created yet'
+        alert_message = 'There are no stall application of status ' + str(booking_status) + ' created yet'
     else:
         filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related('site_allocation').all()
         filtered_data = filtered_data.prefetch_related('additional_sites_required')
@@ -186,7 +186,7 @@ def stall_registration_listview(request):
                         attr_site_size: site_size,
                     }
                 else:
-                    alert_message = 'There are no stall registration created yet'
+                    alert_message = 'There are no stall application created yet'
                     stallregistration_filter_dict = {}
         else:
             # Handle pagination
@@ -221,7 +221,7 @@ def stall_registration_listview(request):
 @permission_required('registration.add_stallregistration', raise_exception=True)
 def stall_registration_create(request):
     """
-    Create a Stall Registration includes determining the total charge for the stall site based on site size,
+    Create a Stall Application includes determining the total charge for the stall site based on site size,
     Trestles based on quantity requested place food licence fees if the food stall flag is set.
     """
     template_name = 'stallregistration/stallregistration_create.html'
@@ -297,9 +297,9 @@ def stall_registration_create(request):
             else:
                 return HttpResponseRedirect(success_url)
         else:
-            db_logger.error('There was an error with saving the stall registration. '
+            db_logger.error('There was an error with saving the stall application. '
                             + registrationform.errors.as_data(),
-                            extra={'custom_category': 'Stall Registration'})
+                            extra={'custom_category': 'Stall Application'})
             return TemplateResponse(request, template_name, {
                 'allocation_item': allocation_item,
                 'billing': total_cost,
@@ -327,7 +327,7 @@ def stall_registration_create(request):
 @require_http_methods(['DELETE'])
 def stall_registration_cancel_view(request, pk):
     """
-    Remove a stall registration
+    Remove a stall application
     """
     stallregistration = get_object_or_404(StallRegistration, id=pk)
     stallholder = stallregistration.stallholder
@@ -344,7 +344,7 @@ def stall_registration_cancel_view(request, pk):
             siteallocation.save(update_fields=['stall_registration'])
     except Exception as e:  # It will catch other errors related to the cancel call.
         db_logger.error('There was an error cancelling the stallregistration.' + str(e),
-                        extra={'custom_category': 'Stall Registration'})
+                        extra={'custom_category': 'Stall Application'})
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
 def get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None,
@@ -353,7 +353,7 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     total_additional_site_costs = decimal.Decimal(0.00)
     total_vehicle_cost = decimal.Decimal(0.00)
 
-    # check to see if this a stall registration update
+    # check to see if this a stall application update
     if parent_id:
         # Check to see if there are additional sites required
         if AdditionalSiteRequirement.objects.filter(stall_registration_id=parent_id ).exists():
@@ -499,7 +499,7 @@ def stall_registration_update_view(request, pk):
             if stall_registration.selling_food:
                 new_instance = get_object_or_404(StallRegistration, id=pk)
                 try:
-                    # get Food Registration object
+                    # get Food Application object
                     obj = FoodRegistration.objects.get(registration=new_instance)
                 except FoodRegistration.DoesNotExist:  #f FoodRegistration object does not exist
                     # create FoodRegistration object
@@ -509,9 +509,9 @@ def stall_registration_update_view(request, pk):
             else:
                 return HttpResponseRedirect(success_url)
         else:
-            db_logger.error('There was an error with saving the stall Registration. '
+            db_logger.error('There was an error with saving the stall Application. '
                             + registrationform.errors.as_data(),
-                            extra={'custom_category': 'Stall Registration'})
+                            extra={'custom_category': 'Stall Application'})
             return TemplateResponse(request, template_name, context)
 
     return TemplateResponse(request, template_name, context)
@@ -848,7 +848,7 @@ def add_site_requirement(request, pk):
     if request.htmx:
         if site_requirement_form.is_valid():
             stall_registration_obj= StallRegistration.objects.get(id=pk)
-            # if stall registration object exist
+            # if stall application object exist
             if stall_registration_obj:
                 # create site requirement object
                 site_requirement = site_requirement_form.save(commit=False)
@@ -872,7 +872,7 @@ def add_food_prep_equipment(request):
     if request.htmx:
         if food_equipment_form.is_valid():
             food_registration_obj = None
-            # get parent food registration from hidden input
+            # get parent food application from hidden input
             try:
                 # id integer e.g. 15
                 food_registration_id = int(request.POST.get('food_registration_id'))
@@ -881,7 +881,7 @@ def add_food_prep_equipment(request):
             # if food_registration_id has been submitted get the food_registration_obj id
             if food_registration_id:
                 food_registration_obj= FoodRegistration.objects.get(id=food_registration_id)
-                # if food registration object exist
+                # if food application object exist
                 if food_registration_obj:
                     # create food_registration requirement object
                     food_prep_equipment = food_equipment_form.save(commit=False)
@@ -1061,7 +1061,7 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
 
 def convener_stall_registration_detail_view(request, id):
     """
-    Display the details of the stall and food registration data provided by the stallholder
+    Display the details of the stall and food application data provided by the stallholder
     Includes functionality to update details that have an impact on pricing
     """
     template = "stallregistration/convener_stall_registration_detail.html"
@@ -1142,7 +1142,7 @@ def convener_stall_registration_detail_view(request, id):
             if applydiscountform.is_valid():
                 # create DiscountItem object but do not save to database
                 new_discount = applydiscountform.save(commit=False)
-                # assign stall registration to the DiscountItem
+                # assign stall application to the DiscountItem
                 new_discount.stall_registration = stall_registration
                 new_discount.created_by = request.user
                 try:
@@ -1171,9 +1171,9 @@ def convener_stall_registration_detail_view(request, id):
                 food_registration.save()
 
             else:
-                db_logger.error('There was an error with updating the stall Registration. '
+                db_logger.error('There was an error with updating the stall Application. '
                                 + registrationupdateform.errors.as_data(),
-                                extra={'custom_category': 'Stall Registration'})
+                                extra={'custom_category': 'Stall Application'})
                 return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
@@ -1181,7 +1181,7 @@ def convener_stall_registration_detail_view(request, id):
 
 def stallholder_stall_registration_detail_view(request, id):
     """
-    Display the details of the stall and food registration data provided by the stallholder
+    Display the details of the stall and food application data provided by the stallholder
     """
     template = "stallregistration/stallholder_stall_registration_detail.html"
     comment_filter_message= 'Showing current comments of the current fair'
@@ -1228,16 +1228,16 @@ def stallholder_stall_registration_detail_view(request, id):
             food_registration.save()
 
         else:
-            db_logger.error('There was an error with updating the stall Registration. '
+            db_logger.error('There was an error with updating the stall Application. '
                             + registrationupdateform.errors.as_data(),
-                            extra={'custom_category': 'Stall Registration'})
+                            extra={'custom_category': 'Stall Application'})
             return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
 
 def submit_stall_registration(request, id):
     """
-    Stall holder driven request to submit a stall registration  to status submitted for the convener to  review
+    Stall holder driven request to submit a stall application  to status submitted for the convener to  review
     """
     success_url = reverse_lazy('registration:stallregistration-dashboard')
     stallregistration = get_object_or_404(StallRegistration, pk=id)
@@ -1261,7 +1261,7 @@ def submit_stall_registration(request, id):
 def reinvoice_stall_registration(request, id):
     """
     Convener driven request to re-invoice a stallregistration. it is needed if cost driven items are added to a stall
-    registration by the convener or if a discount has been applied to the stallregistration.
+    application by the convener or if a discount has been applied to the stallregistration.
     """
     stallregistration = get_object_or_404(StallRegistration, pk=id)
     if not can_proceed(stallregistration.to_booking_status_invoiced):
@@ -1279,14 +1279,14 @@ def reinvoice_stall_registration(request, id):
     else:
         db_logger.error('There was an error with the creation of the re-invoice and payment history for '
                         'stallregistration ID ' + str(stallregistration.id),
-                        extra={'custom_category': 'Stall Registration Invoicing'})
+                        extra={'custom_category': 'Stall Application Invoicing'})
 
     return redirect(request.META.get('HTTP_REFERER'))
 
 
 def invoice_stall_registration(request, id):
     """
-    Stall holder driven request to submit a stall registration to the status invoiced.  This initiates a multi-step
+    Stall holder driven request to submit a stall application to the status invoiced.  This initiates a multi-step
     process to firstly check to see whether the registration can be moved to invoiced without convener review. If it
     passes the tests the status of the registration is changed to invoiced, if it fails a comment is created
     detailing why it requires the convener's review, and it's status is changed to submitted.

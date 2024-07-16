@@ -48,6 +48,12 @@ class CustomSignupForm(SignupForm):
             user.phone = self.cleaned_data['phone']
             user.save()
 
+             # Log the user in immediately after signup
+            from allauth.account.utils import complete_signup
+            from allauth.account import app_settings
+
+            complete_signup(request, user, app_settings.EMAIL_VERIFICATION, "profile")
+
             return user
 
 
@@ -133,7 +139,7 @@ class CustomUserChangeForm(ModelForm):
         }
 
 
-class ProfileChangeForm(ModelForm):
+class ProfileForm(ModelForm):
 
     phone2 = forms.CharField(
         max_length=13,

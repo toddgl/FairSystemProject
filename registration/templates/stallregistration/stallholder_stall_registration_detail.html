@@ -7,7 +7,7 @@
 <div class="container">
   <div class="row">
     <div class="px-5 my-5 text-center">
-      <h1>{{ stall_data.fair }} Registration Detail for
+      <h1>{{ stall_data.fair }} Application Detail for
         {% if stallholder_detail.org_name is None %}
           {{ stall_data.stallholder }}
         {% else %}
@@ -22,10 +22,10 @@
       <div class="col-12 col-md-12 col-lg-12">
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title text-primary">Stall Registration Detail</h4>
+            <h4 class="card-title text-primary">Stall Application Detail</h4>
           </div>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Registration ID:</strong> {{ stall_data.id }}</li>
+            <li class="list-group-item"><strong>Application ID:</strong> {{ stall_data.id }}</li>
             <li class="list-group-item"><strong>Status:</strong> {{ stall_data.booking_status }}</li>
             <li class="list-group-item"><strong>Stall Manager:</strong> {{ stall_data.stall_manager_name }}</li>
             <li class="list-group-item"><strong>Vehicle Registration:</strong> {{ stall_data.manager_vehicle_registration}}</li>
@@ -83,7 +83,7 @@
       {% if stall_data.selling_food %}
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title text-primary">Food Registration Detail</h4>
+            <h4 class="card-title text-primary">Food Application Detail</h4>
           </div>
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><strong>Food Stall Type:</strong> {{ food_data.food_stall_type }}</li>
@@ -114,7 +114,7 @@
     {% endif %}
         <hr>
         <div>
-          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrationModal"> Click to update registration data</button>
+          <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#registrationModal"> Click to update Application data</button>
           <a type="button" class="ms-4 btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
         </div>
     </div>
@@ -178,7 +178,7 @@
     <div class="modal-content">
       <!-- Modal heading -->
       <div class="modal-header bg-info text-dark">
-        <h4 class="modal-title" id="registrationModalLabel">Registration Update</h4>
+        <h4 class="modal-title" id="registrationModalLabel">Application Update</h4>
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
         </button>
       </div>

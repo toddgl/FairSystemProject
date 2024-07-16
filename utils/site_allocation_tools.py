@@ -21,7 +21,7 @@ db_logger = logging.getLogger('db')
 def site_allocation_emails():
     """
     Function to create stallholder emails to advise them that they have been preallocted a site based on their registration
-    history asking them to register for the fair before the activation date.
+    history asking them to apply for the fair before the activation date.
     The function is called from the management process dashboard . Processing information is recorded in the CustomDBLogger
     table which can be viewed using Django Admin
     """

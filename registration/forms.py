@@ -303,7 +303,7 @@ class StallRegistrationCreateForm(ModelForm):
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
-            'multi-site': 'Do you want more than a single site with this registration?',
+            'multi-site': 'Do you want more than a single site with this application?',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
@@ -408,7 +408,7 @@ class StallRegistrationCreateForm(ModelForm):
 
 class StallRegistrationStallholderEditForm(ModelForm):
     """
-    Form to allow a stallholder to update information once the registration is invoiced.  The changes must not affect pricing
+    Form to allow a stallholder to update information once the application is invoiced.  The changes must not affect pricing
     so is limited to manager name, vehicle registration, vehicle on site images
     """
     class Meta:
@@ -508,7 +508,7 @@ class StallRegistrtionConvenerEditForm(ModelForm):
             'selling_food'
         ]
         labels = {
-            'multi-site': 'Do you want more than a single site with this registration?',
+            'multi-site': 'Do you want more than a single site with this application?',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
@@ -615,7 +615,7 @@ class StallRegistrationUpdateForm(ModelForm):
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
-            'multi-site': 'Do you want more than a single site with this registration?',
+            'multi-site': 'Do you want more than a single site with this application?',
             'selling_food': 'Are you selling food?',
         }
         widgets = {
@@ -720,7 +720,7 @@ class StallRegistrationUpdateForm(ModelForm):
 
 class FoodRegistrationForm(ModelForm):
     """
-    Form for capturing details need for a food stall registration
+    Form for capturing details need for a food stall application
     """
 
     food_stall_type = ModelChoiceField(
@@ -757,7 +757,7 @@ class FoodRegistrationForm(ModelForm):
             'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
             'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
             'hygiene_methods': 'What arrangements do you have for hand washing',
-            'has_food_certificate': 'Do you have a food registration certificate',
+            'has_food_certificate': 'Do you have a food application certificate',
             'certificate_expiry_date': 'What is the expiry date of the certificate',
             'food_registration_certificate': 'Please upload your food certificate',
         }
@@ -826,7 +826,7 @@ class FoodRegistrationForm(ModelForm):
 
 class FoodRegistrationStallholderEditForm(ModelForm):
     """
-    Form for tall holder to update non-financial items  releated to Food registration
+    Form for tall holder to update non-financial items  releated to Food Application
     """
 
     class Meta:
@@ -852,7 +852,7 @@ class FoodRegistrationStallholderEditForm(ModelForm):
             'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
             'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
             'hygiene_methods': 'What arrangements do you have for hand washing',
-            'has_food_certificate': 'Do you have a food registration certificate',
+            'has_food_certificate': 'Do you have a food application certificate',
             'certificate_expiry_date': 'What is the expiry date of the certificate',
             'food_registration_certificate': 'Please upload your food certificate',
         }
@@ -943,7 +943,7 @@ class FoodRegistrationConvenerEditForm(ModelForm):
 
 class FoodPrepEquipReqForm(ModelForm):
     """
-    Form for populating the junction table between food registration and food preparation equipment
+    Form for populating the junction table between food application and food preparation equipment
     """
     food_prep_equipment = ModelChoiceField(
         queryset=FoodPrepEquipment.objects.all(),
@@ -1047,7 +1047,7 @@ class CommentFilterForm(Form):
 
 class RegistrationCommentForm(ModelForm):
     """
-    Form for capturing Stallholder comments typically associated with stall registration
+    Form for capturing Stallholder comments typically associated with stall application
     """
 
     comment_type = ModelChoiceField(
@@ -1078,7 +1078,7 @@ class RegistrationCommentForm(ModelForm):
 
 class CommentReplyForm(ModelForm):
     """
-    Form for capturing replies to comments typically associated with stall registration
+    Form for capturing replies to comments typically associated with stall application
     """
 
     class Meta:
@@ -1129,7 +1129,7 @@ class StallRegistrationFilterForm(Form):
 
 class RegistrationDiscountForm(ModelForm):
     """
-    Form for add a discount amount to a stall registration
+    Form for add a discount amount to a stall application
     """
 
     class Meta:

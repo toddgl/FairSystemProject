@@ -16,7 +16,8 @@
 {% block body %}
 <div class="container" id="registration-list">
   <h1>MyFair Dashboard for  {{ user.first_name }}</h1>
-    <button class="btn btn-primary btn-sm" onclick="location.href='{% url 'registration:stallregistration-create' %}'">Register for a fair stall</button>
+    <button class="btn btn-primary btn-sm"
+            onclick="location.href='{% url 'registration:stallregistration-create' %}'">Apply for a fair stall</button>
   <hr>
   <div class="row">
     <div class="col-md-6">
@@ -78,7 +79,7 @@
               {% get_is_foodstall registration.id as foodstall %}
               {% if not invoiced %}
                 <a href="{% url 'registration:stallregistration-detail' registration.pk %}" class="btn btn-primary">
-                  View and edit Stall Registration Detail
+                  View and edit Stall Application Detail
                 </a>
               {% elif foodstall %}
                 <a href="{% url 'registration:stallholder-stall-food-registration-detail' registration.pk %}" class="btn btn-primary">
@@ -86,7 +87,7 @@
                 </a>
               {% else %}
                 <a href="{% url 'registration:stallholder-stall-food-registration-detail' registration.pk %}" class="btn btn-primary">
-                  View Stall Registration Detail and update vehicle details
+                  View Stall Application Detail and update vehicle details
                 </a>
               {% endif %}
               {% get_is_invoiced registration.id as invoiced %}
@@ -104,7 +105,7 @@
           </div>
         </div>
         {% empty %}
-         <div class="alert alert-info" role="alert">You have no current fair registrations.</div>
+         <div class="alert alert-info" role="alert">You have no current fair applications.</div>
         {% endfor %}
       </div>
     </div>

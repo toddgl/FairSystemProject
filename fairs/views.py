@@ -1355,7 +1355,7 @@ def siteallocation_delete_view(request, pk):
 @permission_required('fairs.view_siteallocation', raise_exception=True)
 def stall_registration_dashboard_view(request):
     """
-    Populate the Stall Registration dashboard with counts of a selected group of registration statuses
+    Populate the Stall Application dashboard with counts of a selected group of Application statuses
     """
     stall_registrations = StallRegistration.objects.all()
     template_name = 'dashboards/dashboard_registrations.html'
@@ -1992,7 +1992,7 @@ def stallholder_history_dashboard_view(request):
 
 def stallregistration_siteallocation_view(request, id):
     """
-    Function to set siteallocation for a stall registration.  Called from the conveners stallregistraion list display
+    Function to set siteallocation for a stall Application.  Called from the conveners stallregistraion list display
     """
     template = 'stallregistrations/siteallocation_filter.html'
     sitefilterform = SiteAllocationFilerForm(request.POST or None)
@@ -2071,7 +2071,7 @@ def stallregistration_detail_view(request, stallregistration_id):
 
 def stallregistration_move_cancel_view(request, id):
     """
-    Function to cancel or move siteallocation for a stall registration.  Called from the conveners stallregistraion list display
+    Function to cancel or move siteallocation for a stall Application.  Called from the conveners stallregistraion list display
     """
     template = 'stallregistrations/siteallocation_move_filter.html'
     sitefilterform = SiteAllocationFilerForm(request.POST or None)

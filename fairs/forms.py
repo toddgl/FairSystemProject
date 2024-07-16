@@ -1025,7 +1025,7 @@ class SiteAllocationCreateForm(ModelForm):
     stall_registration = ModelChoiceField(
         queryset=StallRegistration.objects.all(),
         empty_label='Please Select',
-        label='Stall Registration',
+        label='Stall Application',
         required=False,
         widget=Select(attrs={
             'class': "form-select",
@@ -1198,7 +1198,7 @@ class StallHolderIDForm(Form):
 
 class DashboardRegistrationFilterForm(Form):
     """
-    Form for selecting filters for the registration dashboard
+    Form for selecting filters for the Application dashboard
     """
     fair = ModelChoiceField(
         queryset=Fair.objects.all(),
@@ -1290,7 +1290,7 @@ class MessageFilterForm(Form):
 
 class MessageReplyForm(ModelForm):
     """
-    Form for capturing replies to comments typically associated with stall registration
+    Form for capturing replies to comments typically associated with stall Application
     """
     convener_only_comment = BooleanField(
         required=False,

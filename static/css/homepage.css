@@ -57,6 +57,11 @@ ul.errorlist {
         width: 49%;
     }
 
+/* Password reset */
+.reset-list li {
+    text-align: left;
+}
+
 /* Dashboard  */
 .h5, h5 {
     font-size: 1.07rem;

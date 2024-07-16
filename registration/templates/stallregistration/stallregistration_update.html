@@ -6,7 +6,7 @@
 {% block body %}
 <div class="container">
   <div class="row">
-  <h4>Update Fair Stall Registration for {{ user.first_name }} {{ user.last_name }}</h4>
+  <h4>Update Fair Stall Application for {{ user.first_name }} {{ user.last_name }}</h4>
   <h5>Status - {{ stallregistration.get_booking_status_display }}</h5>
     <div id="registration_data">
       {% if allocations %}
@@ -43,7 +43,7 @@
       <div id='required_sites'>
         <h3>Additional Site Requirements</h3>
         <div class="alert alert-primary" role="alert">
-          If you want nore than one site with this Stall Registration.  Please us the Add Additional Sites button below to list these requirements.
+          If you want nore than one site with this Stall Application.  Please us the Add Additional Sites button below to list these requirements.
         </div>
         {% include 'stallregistration/stallregistration_inline_partial.html' %}
         <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSiteModal">Add Additonal Sites</button>

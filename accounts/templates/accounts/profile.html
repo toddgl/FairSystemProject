@@ -1,0 +1,23 @@
+<!-- templates/accounts/profile.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container">
+  <h2>Complete Profile Details</h2>
+  <form method="post">
+    <!-- For error messages -->
+      {% if messages %}
+      <ul class="messages">
+          {% for message in messages %}
+          <li {% if message.tags %} class=" {{ message.tags }} " {% endif %}> {{ message }} </li>
+          {% endfor %}
+      </ul>
+      {% endif %}
+    {% csrf_token %}
+    {{ profile_form.as_p }}
+    <button type="submit" class="btn btn-primary" >Save</button>
+  </form>
+    <button class="btn btn-secondary" type="button" onclick="javascript:history.back()">Cancel</button>
+</div>
+{% endblock %}
