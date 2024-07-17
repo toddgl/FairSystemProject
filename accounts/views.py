@@ -14,15 +14,15 @@ from django.shortcuts import (
 
 @login_required
 def profile_view(request):
-    if request.method == "POST":
-        profile_form = ProfileForm(request.POST)
-        if profile_form.is_valid():
-            profile_form.save()
-            messages.success(request, 'Your profile information was successfully created')
-        else:
-            messages.error(request, 'Unable to complete request')
-        return redirect("accounts:user-update")
-    return render(request, 'accounts/profile.html')
+    if request.method == 'POST':
+        form = ProfileForm(request.POST, instance=request.user.profile)
+        if form.is_valid():
+            form.save()
+            return redirect('profile')
+    else:
+        form = ProfileForm(instance=request.user.profile)
+
+    return render(request, 'accounts/profile.html', {'form': form})
 
 def customuser_update_view(request):
     if request.method == "POST":

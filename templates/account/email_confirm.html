@@ -1,0 +1,12 @@
+<!-- templates/account/email_confirm.html -->
+
+{% extends "base.html" %}
+{% block body %}
+<div class="container">
+    <form method="post">
+      {% csrf_token %}
+      <p> Please confirm that <strong>{{ confirmation.email_address.email }}</strong> is your email address </p>
+      <button class="btn btn-primary" type="submit">Confirm</button>
+    </form>
+</div>
+{% endblock %}
