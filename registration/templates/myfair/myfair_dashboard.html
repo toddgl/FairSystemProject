@@ -9,6 +9,7 @@
 {% load isinvoiced_tag %}
 {% load isfoodstall_tag %}
 {% load hasdiscount_tag %}
+{% load hasopenapplications_tag %}
 
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
@@ -16,8 +17,12 @@
 {% block body %}
 <div class="container" id="registration-list">
   <h1>MyFair Dashboard for  {{ user.first_name }}</h1>
-    <button class="btn btn-primary btn-sm"
-            onclick="location.href='{% url 'registration:stallregistration-create' %}'">Apply for a fair stall</button>
+    {% if has_open_applications %}
+      <button class="btn btn-primary btn-sm"
+            onclick="location.href='{% url 'registration:stallregistration-create' %}'">Apply for a fair stall site</button>
+    {% else %}
+      <div class="alert alert-warning" role="alert">Applications for stall sites are not available yet - try on the 1st October.</div>
+    {% endif %}
   <hr>
   <div class="row">
     <div class="col-md-6">

@@ -119,6 +119,7 @@ class Fair(models.Model):
         through='InventoryItemFair',
         related_name='fairs'
     )
+    is_open = models.BooleanField(default=False)
 
     objects = models.Manager()
     currentfairmgr = CurrentFairManager()

@@ -145,7 +145,7 @@ class FairDetailForm(ModelForm):
     class Meta:
         model = Fair
         fields = ['fair_year', 'fair_name', 'date_cancelled', 'fair_description', 'is_cancelled',
-                  'activation_date', 'allocation_email_date', 'is_activated']
+                  'activation_date', 'allocation_email_date', 'is_activated', 'is_open']
         widgets = {
             'fair_year': TextInput(attrs={
                 'class': "form-control",
@@ -177,7 +177,9 @@ class FairDetailForm(ModelForm):
                 'class': 'form-check-input',
                 'readonly': 'readonly'
             }),
-
+            'is_open': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
         }
 
 
