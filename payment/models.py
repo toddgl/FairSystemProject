@@ -190,6 +190,10 @@ class PaymentHistory(models.Model):
     )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+    stripe_checkout_id = models.CharField(
+        blank=True,
+        null=True
+    )
     objects = models.Manager()
     paymenthistorymgr = PaymentHistoryManager()
     paymenthistorycurrentmgr = PaymentHistoryCurrentManager()

@@ -1,0 +1,19 @@
+<!--templates/usewr_payment/payment_successful.html -->
+
+{% extends 'base.html' %}
+{% load static %}
+
+{% block body %}
+
+<body>
+
+  <div class="container home_msg">
+    <h1>Thanks for your order {{ customer.name }}!</h1>
+    <br>
+    <a href="/" class="btn btn-secondary">Close</a>
+  </div>
+
+</body>
+
+{% endblock %}
+

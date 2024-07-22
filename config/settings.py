@@ -220,6 +220,10 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm',
 }
+# Stripe
+PRICE = env('PRICE')
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -257,3 +261,5 @@ LOGGING = {
         }
     }
 }
+
+REDIRECT_DOMAIN = 'http://127.0.0.1:8000'

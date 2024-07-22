@@ -52,6 +52,9 @@
             </div>
             <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
                class="btn btn-secondary">View / Download Invoice</a>
+            <a href="{% url 'payment:stripe-payment' payment_history.id  %}"
+               class="btn btn-primary" data-bs-toggle="popover" data-bs-trigger="hover"
+                    data-bs-placement="left" title="Only credit card payments are available, click button to process the payment by Stripe">Pay Amount Owing</a>
           {% endif %}
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">
