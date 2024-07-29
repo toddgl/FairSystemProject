@@ -1,11 +1,15 @@
 # accounts/forms.py
+
+import logging
 from django import forms
 from django.contrib.auth.models import Group
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, AuthenticationForm
 from allauth.account.forms import SignupForm
 from django.forms import TextInput, EmailInput, ModelForm
 from.models import CustomUser, Profile
 from django.core.validators import RegexValidator
+
+logger = logging.getLogger(__name__)
 
 
 class CustomSignupForm(SignupForm):

@@ -29,8 +29,8 @@ handler404 = 'notices.views.custom_404'
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('pages.urls')),  # pages at the root URL
-    path('accounts/', include('allauth.urls')),
     path('', include('accounts.urls')),
+    path('accounts/', include('allauth.urls')),
     path('', include('faq.urls')),
     path('', include('notices.urls')),
     path('foodlicence/', include('foodlicence.urls')),

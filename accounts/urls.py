@@ -8,8 +8,5 @@ from .views import (
 app_name = 'accounts'
 
 urlpatterns = [
-    # <pk> is identification for id field,
-    # <slug> can also be used
-    # path('update', CustomUserUpdateView.as_view(), name='update'),
     path('accounts/update', customuser_update_view, name='user-update'),
 ]

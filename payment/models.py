@@ -229,6 +229,12 @@ class PaymentHistory(models.Model):
     def to_payment_status_reconciled(self):
         pass
 
+    def update_payment(self, amount_paid):
+        self.amount_paid += amount_paid
+        self.amount_to_pay -= amount_paid
+        self.save()
+        if self.amount_to_pay <= 0:
+            self.to_payment_status_completed()
 
 class InvoiceItemManager(models.Manager):
 

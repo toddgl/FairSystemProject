@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+from django.urls import reverse_lazy
 
 import environ
 
@@ -184,6 +185,8 @@ MEDIA_URL = '/media/'
 
 ACCOUNT_ADAPTER = 'accounts.adapter.AccountAdapter'
 
+LOGIN_REDIRECT_URL = reverse_lazy('registration:stallregistration-dashboard')
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
@@ -193,15 +196,16 @@ SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 # A list of all the people who get code error notifications. When DEBUG=False
 ADMINS = env('ADMIN_LIST')
 
-AUTHENTICATION_BACKENDS = (
+AUTHENTICATION_BACKENDS = [
+    # Allow all users to login, regardless of the "is_active" status
+    'accounts.backends.InactiveUserBackend',
     # Needed to login by username in Django admin, regardless of allauth
-    "django.contrib.auth.backends.ModelBackend",
-
+    'django.contrib.auth.backends.ModelBackend',
     # allauth specific authentication methods e.g. login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
-    "allauth.account.auth_backends.AuthenticationBackend"
-
-)
+AUTHENTICATION_FORM = 'accounts.forms.AuthenticationFormWithInactiveUsersOkay'
 
 SITE_ID = 1
 
@@ -220,10 +224,12 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm',
 }
+
 # Stripe
 PRICE = env('PRICE')
-STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY')
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY')
+STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY_TEST')
+STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY_TEST')
+STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET_TEST')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
@@ -248,6 +254,9 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'CustomDBLogger.db_log_handler.DatabaseLogHandler'
         },
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
     },
     'loggers': {
         'db': {
@@ -258,7 +267,7 @@ LOGGING = {
             'handlers': ['db_log'],
             'level': 'ERROR',
             'propagate': False,
-        }
+        },
     }
 }
 

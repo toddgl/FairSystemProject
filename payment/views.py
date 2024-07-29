@@ -76,15 +76,14 @@ def stripe_webhook(request):
 		return HttpResponse(status=400)
 	except stripe.error.SignatureVerificationError as e:
 		return HttpResponse(status=400)
+
 	if event['type'] == 'checkout.session.completed':
 		session = event['data']['object']
 		session_id = session.get('id', None)
 		time.sleep(15)
-		amount_paid = session.get('amount_total')
+		amount_paid = session.get('amount_total') / 100
 		payment_history = PaymentHistory.objects.get(stripe_checkout_id=session_id)
-		payment_history.amount_paid = payment_history.amount_paid + amount_paid
-		payment_history.amount_to_pay =  payment_history.amount_to_pay - amount_paid
-		payment_history.save()
+		payment_history.update_payment(amount_paid)
 
 	return HttpResponse(status=200)
 

@@ -1,16 +1,15 @@
 # accounts/view.py
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required
+from django.contrib.auth import views as auth_views
 from .forms import (
     CustomUserChangeForm,
-    ProfileForm
+    ProfileForm,
 )
 from django.shortcuts import (
     redirect,
     render
 )
-
-# Create your views here.
 
 def customuser_update_view(request):
     if request.method == "POST":
