@@ -197,8 +197,6 @@ SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 ADMINS = env('ADMIN_LIST')
 
 AUTHENTICATION_BACKENDS = [
-    # Allow all users to login, regardless of the "is_active" status
-    'accounts.backends.InactiveUserBackend',
     # Needed to login by username in Django admin, regardless of allauth
     'django.contrib.auth.backends.ModelBackend',
     # allauth specific authentication methods e.g. login by email
