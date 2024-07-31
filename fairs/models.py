@@ -565,11 +565,12 @@ class EventPower(models.Model):
 
 class FourYearHistoryManager(models.Manager):
     """
-    Manager that returns all the site history for the past four years
+    Manager that returns all the site history for the past four years of stallholder who are currently active
     SiteHistory.fouryearhistorymgr.all()
     """
     def get_queryset(self):
-        return super().get_queryset().filter(year__lte=current_year, year__gte=four_years_past).order_by('year')
+        return super().get_queryset().filter(stallholder__is_active=True,year__lte=current_year,
+                                             year__gte=four_years_past).order_by('year')
 
 
 class SiteHistory(models.Model):

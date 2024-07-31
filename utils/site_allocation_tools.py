@@ -56,7 +56,7 @@ def site_allocations():
     """
     # Create a pandas dataframe(df) of the SiteHistory data
 
-    df = pd.DataFrame.from_records(SiteHistory.objects.all().values())
+    df = pd.DataFrame.from_records(SiteHistory.fouryearhistorymgr.all().values())
     df['year'] = pd.to_datetime(df['year'], format='%Y')
     today = pd.to_datetime('today')
     begin = today - pd.offsets.Day(4 * 365)

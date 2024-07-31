@@ -27,7 +27,7 @@ def stripe_payment(request, id):
 			payment_method_types=['card'],
 			line_items=[{
 				'price_data': {
-					'currency': 'usd',
+					'currency': 'nzd',
 					'product_data': {
 						'name': 'Fair Stall Application',
 					},
