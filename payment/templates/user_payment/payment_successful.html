@@ -8,9 +8,16 @@
 <body>
 
   <div class="container home_msg">
-    <h1>Thanks for your order {{ customer.name }}!</h1>
+    <h2>Payment Successful</h2>
+      <p>Thank you for your payment {{ customer.name }}! </p>
+      <p>If you have any questions, please let us know using the comments functionality.</p>
     <br>
-    <a href="/" class="btn btn-secondary">Close</a>
+    <form id="success-form" method="POST"
+          action="{% url 'payment:payment-successful' %}">
+        {% csrf_token %}
+        <input type="hidden" name="session_id" value="{{ session_id }}">
+        <button class= "btn btn-primary" type="submit">Continue</button>
+    </form>
   </div>
 
 </body>

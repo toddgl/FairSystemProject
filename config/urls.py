@@ -34,7 +34,7 @@ urlpatterns = [
     path('', include('faq.urls')),
     path('', include('notices.urls')),
     path('foodlicence/', include('foodlicence.urls')),
-    path('payment/', include('payment.urls')),
+    path('', include('payment.urls')),
     path('registration/', include('registration.urls')),
     path('', include('fairs.urls')),
     path('',include('search.urls')),

@@ -20,7 +20,8 @@ from .models import (
 )
 @login_required()
 def stripe_payment(request, id):
-	stripe.api_key = settings.STRIPE_SECRET
+	stripe.api_key = settings.STRIPE_SECRET_KEY
+	print('Stripe payment method called')
 	if request.method == 'POST':
 		payment_history = PaymentHistory.objects.get(id=id)
 		checkout_session = stripe.checkout.Session.create(
@@ -31,14 +32,14 @@ def stripe_payment(request, id):
 					'product_data': {
 						'name': 'Fair Stall Application',
 					},
-					'unit_amount': (payment_history.amount_to_pay - payment_history.amount_paid) * 100,
+					'unit_amount': int(payment_history.amount_to_pay - payment_history.amount_paid) * 100,
 				},
 				'quantity': 1,
 			}],
 			mode='payment',
 			metadata={'product_history_id': id},
 			customer_creation='always',
-			success_url=settings.REDIRECT_DOMAIN + '/payment/payment_successful?session_id={CHECKOUT_SESSION_ID}',
+			success_url=settings.REDIRECT_DOMAIN + '/payment/payment_successful/?session_id={CHECKOUT_SESSION_ID}',
 			cancel_url=settings.REDIRECT_DOMAIN + '/payment/payment_cancelled',
 		)
 		return redirect(checkout_session.url, code=303)
@@ -46,7 +47,7 @@ def stripe_payment(request, id):
 
 
 def payment_successful(request):
-	stripe.api_key = settings.STRIPE_SECRET_KEY_TEST
+	stripe.api_key = settings.STRIPE_SECRET_KEY
 	checkout_session_id = request.GET.get('session_id', None)
 	session = stripe.checkout.Session.retrieve(checkout_session_id)
 	customer = stripe.Customer.retrieve(session.customer)
@@ -55,7 +56,7 @@ def payment_successful(request):
 	payment_history.payment_type = payment_type
 	payment_history.stripe_checkout_id = checkout_session_id
 	payment_history.save()
-	return render(request, 'user_payment/payment_successful.html', {'customer': customer})
+	return render(request, 'user_payment/payment_successful.html', {'customer': customer, 'session': session})
 
 def payment_cancelled(request):
 	stripe.api_key = settings.STRIPE_SECRET_KEY
@@ -63,6 +64,7 @@ def payment_cancelled(request):
 
 @csrf_exempt
 def stripe_webhook(request):
+	print('Stripe webhook called')
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 	time.sleep(10)
 	payload = request.body
@@ -83,7 +85,8 @@ def stripe_webhook(request):
 		time.sleep(15)
 		amount_paid = session.get('amount_total') / 100
 		payment_history = PaymentHistory.objects.get(stripe_checkout_id=session_id)
-		payment_history.update_payment(amount_paid)
+		payment_history.update_payment(decimal.Decimal(amount_paid))
+		payment_history.save()
 
 	return HttpResponse(status=200)
 

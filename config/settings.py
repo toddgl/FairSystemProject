@@ -1,4 +1,4 @@
-# config/base.py
+# config/settings.py
 
 """
 Django settings for FairSystemProject project.
@@ -34,7 +34,8 @@ SECRET_KEY = env('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env('DEBUG')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS')
+print(env.list('ALLOWED_HOSTS'))
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
 SECURE_SSL_REDIRECT = False
 
@@ -228,6 +229,11 @@ PRICE = env('PRICE')
 STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY_TEST')
 STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY_TEST')
 STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET_TEST')
+
+CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
+SESSION_COOKIE_SECURE = False  # Set to True if using HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_AGE = 8640  # 1 day, adjust as needed
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
