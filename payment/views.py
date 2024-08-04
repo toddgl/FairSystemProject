@@ -48,8 +48,10 @@ def stripe_payment(request, id):
 
 def payment_successful(request):
 	stripe.api_key = settings.STRIPE_SECRET_KEY
-	checkout_session_id = request.GET.get('session_id', None)
+	checkout_session_id = request.GET.get('session_id')
+	print("Checkout Session id", checkout_session_id)
 	session = stripe.checkout.Session.retrieve(checkout_session_id)
+
 	customer = stripe.Customer.retrieve(session.customer)
 	payment_type = PaymentType.objects.get(payment_type_name='Stripe')
 	payment_history = PaymentHistory.objects.get(id=session.metadata['product_history_id'])

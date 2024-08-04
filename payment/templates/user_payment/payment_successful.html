@@ -13,7 +13,7 @@
       <p>If you have any questions, please let us know using the comments functionality.</p>
     <br>
     <form id="success-form" method="POST"
-          action="{% url 'payment:payment-successful' %}">
+          action="{% url 'registration:stallregistration-dashboard' %}">
         {% csrf_token %}
         <input type="hidden" name="session_id" value="{{ session_id }}">
         <button class= "btn btn-primary" type="submit">Continue</button>
