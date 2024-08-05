@@ -46,6 +46,7 @@ def stripe_payment(request, id):
 	return render(request, 'myfair_dashboard.html')
 
 
+@csrf_exempt
 def payment_successful(request):
 	stripe.api_key = settings.STRIPE_SECRET_KEY
 	checkout_session_id = request.GET.get('session_id')
@@ -56,7 +57,11 @@ def payment_successful(request):
 	payment_type = PaymentType.objects.get(payment_type_name='Stripe')
 	payment_history = PaymentHistory.objects.get(id=session.metadata['product_history_id'])
 	payment_history.payment_type = payment_type
+	amount_paid = session.get('amount_total') / 100
 	payment_history.stripe_checkout_id = checkout_session_id
+	payment_history.amount_to_pay = payment_history.amount_to_pay - decimal.Decimal(amount_paid)
+	payment_history.amount_paid = decimal.Decimal(amount_paid)
+	payment_history.to_payment_status_completed()
 	payment_history.save()
 	return render(request, 'user_payment/payment_successful.html', {'customer': customer, 'session': session})
 
@@ -85,9 +90,9 @@ def stripe_webhook(request):
 		session = event['data']['object']
 		session_id = session.get('id', None)
 		time.sleep(15)
-		amount_paid = session.get('amount_total') / 100
+		webhook_amount = session.get('amount_total') / 100
 		payment_history = PaymentHistory.objects.get(stripe_checkout_id=session_id)
-		payment_history.update_payment(decimal.Decimal(amount_paid))
+		payment_history.webhook_amount=decimal.Decimal(webhook_amount)
 		payment_history.save()
 
 	return HttpResponse(status=200)

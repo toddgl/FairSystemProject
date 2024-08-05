@@ -10,6 +10,7 @@
 {% load isfoodstall_tag %}
 {% load hasdiscount_tag %}
 {% load hasopenapplications_tag %}
+{% load hassomethingtopay_tag %}
 
 <link rel="stylesheet" href="{% static 'registration/css/style.css' %}" type="text/css">
   <title>MyFair</title>
@@ -50,13 +51,19 @@
                 </div>
               </div>
             </div>
+            <div class="d-flex gap-2">
             <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
                class="btn btn-secondary">View / Download Invoice</a>
-            <a href="{% url 'payment:stripe-payment' payment_history.id %}" class="btn btn-primary" data-bs-toggle="popover" data-bs-trigger="hover"
-                    data-bs-placement="left" title="Only credit card payments are available, click button to process the payment by Stripe" onclick="event.preventDefault(); document.getElementById('stripe-payment-form-{{ payment_history.id }}').submit();"> Pay Amount Owing </a>
-            <form id="stripe-payment-form-{{ payment_history.id }}" action="{% url 'payment:stripe-payment' payment_history.id %}" method="POST" style="display: none;">
+            {% get_has_something_to_pay payment_history.id as something_to_pay_result %}
+            {% if something_to_pay_result %}
+            <form id="stripe-payment-form-{{ payment_history.id }}" action="{% url 'payment:stripe-payment' payment_history.id %}" method="POST" >
               {% csrf_token %}
+              <button  type = "submit" class="btn btn-primary" data-bs-toggle="popover" data-bs-trigger="hover"
+                    data-bs-placement="left"
+                       title="Only credit card payments are available, click button to process the payment by Stripe">Pay Amount Owing</button>
             </form>
+              {% endif %}
+            </div>
           {% endif %}
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">
