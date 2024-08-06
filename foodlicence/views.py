@@ -196,7 +196,7 @@ def foodlicence_listview(request):
                     foodlicence_status_filter_dict = {}
         else:
             # Handle pagination
-            # The stallregistration_filter _dict is retained from the filter selection which ensures that the correct
+            # The foodlicence_status_filter _dict is retained from the filter selection which ensures that the correct
             # data is applied
             # to subsequent pages
             pass

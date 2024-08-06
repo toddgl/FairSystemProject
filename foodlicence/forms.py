@@ -9,7 +9,6 @@ from django.forms import (
 )
 
 from .models import (
-    FoodLicence,
     FoodLicenceBatch
 )
 

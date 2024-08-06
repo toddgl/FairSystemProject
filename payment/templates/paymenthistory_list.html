@@ -1,0 +1,22 @@
+<!-- payment/templates/paymenthistory_list.html -->
+
+{% extends 'base.html' %}
+{% load paginator_tags %}
+{% load haspaymenthistories_tag %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <h1>Payment Histories</h1>
+  <div class="row g-3">
+      <div class="col-md-6">
+          {% include 'paymenthistory_filter_partial.html' %}
+      </div>
+      <hr>
+  </div>
+  <div class="row g-3">
+      <div class="col-md-12">
+          {% include 'paymenthistory_list_partial.html' %}
+      </div>
+  </div>
+</div>
+{% endblock %}

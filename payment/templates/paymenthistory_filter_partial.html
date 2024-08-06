@@ -1,14 +1,14 @@
-<!--foodlicence/templates/foodlicence_filter_partial.html -->
+<!--payment/templates/paymenthistory_filter_partial.html -->
 
 <div id="replacearea">
   <div class="row">
     <div class="col-md-9">
       <div class="title-hr">
         <span class="hr fix"></span>
-        <span><strong>Food Licence Filters</strong></span>
+        <span><strong>Payment History Filters</strong></span>
         <span class="hr"></span>
       </div>
-      <form action="." hx-trigger="change" method="post"  hx-post="." hx-target="#food_licence_data">
+      <form action="." hx-trigger="change" method="post"  hx-post="." hx-target="#payment_history_data">
         {% csrf_token %}
         {{ filterform.as_p }}
       </form>

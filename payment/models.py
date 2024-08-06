@@ -151,6 +151,21 @@ class PaymentHistoryCurrentManager(models.Manager):
     def get_stallholder_payment_history(self, stallholder):
         return super().get_queryset().filter(invoice__stallholder=stallholder)
 
+    def get_pending(self):
+        return super().get_queryset().filter(payment_status="Pending")
+
+    def get_cancelled(self):
+        return super().get_queryset().filter(payment_status="Cancelled")
+
+    def get_completed(self):
+        return super().get_queryset().filter(payment_status="Completed")
+
+    def get_failed(self):
+        return super().get_queryset().filter(payment_status="Failed")
+
+    def get_reconciled(self):
+        return super().get_queryset().filter(payment_status="Reconciled")
+
 
 class PaymentHistory(models.Model):
     """

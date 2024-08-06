@@ -1,0 +1,55 @@
+<!-- payment/templates/paymenthistory_list_partial.html -->
+
+{% load static %}
+{% load paginator_tags %}
+{% load haspaymenthistories_tag %}
+
+<div id="payment_history_data">
+    <div>
+        {% get_has_paymenthistories as has_paymenthistories %}
+        {% if has_paymenthistories %}
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Registration ID</th>
+                    <th scope="col">Amount Paid</th>
+                    <th scope="col">Amount to Pay</th>
+                    <th scope="col">Amount Reconciled</th>
+                    <th scope="col">Created Date</th>
+                    <th scope="col">Updated Date</th>
+                    <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for paymenthistory in payment_history_list %}
+                <tr>
+                    <td>{{ paymenthistory.payment_status }}</td>
+                    <td>{{ paymenthistory.invoice.stall_registration.id }}</td>
+                    <td>{{ paymenthistory.amount_paid }}</td>
+                    <td>{{ paymenthistory.amount_to_pay }}</td>
+                    <td>{{ paymenthistory.amount_reconciled }}</td>
+                    <td>{{ paymenthistory.date_created }}</td>
+                    <td>{{ paymenthistory.date_updated | default_if_none:"" }}</td>
+                    <td><a class = "btn btn-success btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="Change status to Cancelled" hx-post= "{% url 'payment:mark-as-cancelled' paymenthistory.id %}" hx-trigger="click"
+                           hx-target="#payment_history_data" hx-swap="outerHTML"><i class="bi bi-x-square-fill"></i></a></td>
+                    <td><a class = "btn btn-danger btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="Change status to Reconciled" hx-post= "{% url 'payment:mark-as-reconciled' paymenthistory.id %}" hx-trigger="click"
+                           hx-target="#payment_history_data" hx-swap="outerHTML"><i class="bi bi-check-square"></i></a></td>
+                    <td><a class = "btn btn-info btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="View Stall registration" href=
+                                   "{% url 'registration:convener-stall-food-registration-detail' paymenthistory.invoice.stall_registration.id %}"><i class="bi bi-binoculars-fill"></i></a></td>
+                </tr>
+                {% empty %}
+                    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+        {% endif %}
+    </div>
+</div>

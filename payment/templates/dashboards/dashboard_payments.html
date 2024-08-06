@@ -1,0 +1,156 @@
+<!-- foodlicence/templates/dashboards/dashboard_payments.html -->
+
+{% extends 'dashboard_base.html' %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+  <!-- Top Nav -->
+  <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+    <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+  </nav>
+  <!--End Top Nav -->
+  <h4>Payment Dashboard</h4>
+  <div class="row">
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Pending Payments</h5>
+              <p class="card-text">{{ pending_counts }}</p>
+             <!--  <p class="card-text">{% widthratio pending_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart green">
+                  <path class="circle-bg"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                    stroke-dasharray="{% widthratio pending_counts total_counts 100 %}, 100"
+                    d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio pending_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
+              <a class = "btn btn-primary" href="{% url 'payment:payment-list' %}?payment_status=Pending"
+                 role="button">View</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Cancelled Payments</h5>
+              <p class="card-text">{{ cancelled_counts }}</p>
+              <!-- <p class="card-text">{% widthratio cancelled_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart blue">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio cancelled_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio cancelled_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
+              <a class = "btn btn-primary" href="{% url 'payment:payment-list' %}?payment_status=Cancelled"
+                 role="button">View</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Completed Payments</h5>
+              <p class="card-text">{{ completed_counts }}</p>
+              <!-- <p class="card-text">{% widthratio completed_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart orange">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio completed_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio completed_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
+              <a class = "btn btn-primary" href="{% url 'payment:payment-list' %}?payment_status=Completed"
+                 role="button">View</a>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Failed Payments</h5>
+              <p class="card-text">{{ failed_counts }}</p>
+              <!-- <p class="card-text">{% widthratio failed_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart green">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio failed_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio failed_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
+              <a class = "btn btn-primary" href="{% url 'payment:payment-list' %}?payment_status=Failed"
+                 role="button">View</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+            <div class="card-body">
+              <h5 class="card-title">Reconciled Payments</h5>
+              <p class="card-text">{{ reconciled_counts }}</p>
+              <!-- <p class="card-text">{% widthratio reconciled_counts total_counts 100 %} %</p> -->
+              <div class="single-chart ">
+                <svg viewBox="0 0 36 36" class="circular-chart red">
+                  <path class="circle-bg"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <path class="circle"
+                        stroke-dasharray="{% widthratio reconciled_counts total_counts 100 %}, 100"
+                        d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                  />
+                  <text x="18" y="20.35" class="percentage">{% widthratio reconciled_counts total_counts 100 %}%</text>
+                </svg>
+              </div>
+              <a class = "btn btn-primary" href="{% url 'payment:payment-list' %}?payment_status=Reconciled"
+                 role="button">
+                View</a>
+            </div>
+          </div>
+        </div>
+      </div>
+</main>
+</div>
+{% endblock %}
