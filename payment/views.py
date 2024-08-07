@@ -191,11 +191,11 @@ def paymenthistory_listview(request):
         form_purpose = filterform.data.get('form_purpose', '')
         if form_purpose == 'filter':
             if filterform.is_valid():
-                payment_history_status = filterform.cleaned_data['payment_status']
+                payment_status = filterform.cleaned_data['payment_status']
                 attr_payment_history_status = 'payment_status'
-                if payment_history_status:
-                    alert_message = 'There are no Payment Histories for status ' + str(payment_history_status)
-                    payment_history_status_filter_dict = {attr_payment_history_status: payment_history_status}
+                if payment_status:
+                    alert_message = 'There are no Payment Histories for status ' + str(payment_status)
+                    payment_history_status_filter_dict = {attr_payment_history_status: payment_status}
                 else:
                     alert_message = 'There are no Payment Histories created yet'
                     payment_history_status_filter_dict = {}
@@ -204,16 +204,19 @@ def paymenthistory_listview(request):
             # The payment_history_status_filter _dict is retained from the filter selection which ensures that the
             # correct data is applied to subsequent pages
             pass
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter( **payment_history_status_filter_dict).all()
+        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
+            **payment_history_status_filter_dict).all()
         template_name = 'paymenthistory_list_partial.html'
         return TemplateResponse(request, template_name, {
             'payment_history_list': payment_history_list,
+            'payment_status': payment_status,
             'alert_mgr': alert_message,
         })
     else:
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'payment_history_list': payment_history_list,
+            'payment_status': payment_status,
             'alert_mgr': alert_message,
         })
 
@@ -222,7 +225,7 @@ def payment_dashboard_view(request):
     """
     Populate the Payments Dashboard with counts of the various payment statuses
     """
-    total_counts = PaymentHistory.paymenthistorycurrentmgr.count()
+    total_counts = PaymentHistory.paymenthistorycurrentmgr.get_all_except_superceded().count()
     pending_counts = PaymentHistory.paymenthistorycurrentmgr.get_pending().count()
     cancelled_counts = PaymentHistory.paymenthistorycurrentmgr.get_cancelled().count()
     completed_counts = PaymentHistory.paymenthistorycurrentmgr.get_completed().count()

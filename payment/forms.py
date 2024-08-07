@@ -7,14 +7,16 @@ from django.forms import (
     Select,
 )
 
+
 class PaymentHistoryStatusFilterForm(Form):
     """
-    Description: A filter form used in the listing  of Payment Histories.  The PAYMENT_CHOICES are a copy of the ones set
-    up on the PaymentHistory Model
+    Description: A filter form used in the listing  of Payment Histories.  The PAYMENT_CHOICES are a copy of the ones
+    set up on the PaymentHistory Model
     """
-    PAYMENT_CHOICES =(
+    PAYMENT_CHOICES = (
         ("", "Show All"),
-        ("Pending",  "Pending"),
+        ("Pending", "Pending"),
+        ("Superceded", "Superceded"),
         ("Cancelled", "Cancelled"),
         ("Completed", "Completed"),
         ("Failed", "Failed"),
@@ -30,5 +32,13 @@ class PaymentHistoryStatusFilterForm(Form):
             'style': 'max-width: 300px;',
         }),
     )
-    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
+    class Meta:
+        fields = [
+            'payment_status',
+        ]
+        labels = {
+            'payment_status': 'Select Payment History status',
+        }
+
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')

@@ -1,4 +1,4 @@
-#payment/models.py
+# payment/models.py
 
 import decimal
 import datetime
@@ -148,6 +148,9 @@ class PaymentHistoryCurrentManager(models.Manager):
     def get_registration_payment_history(self, registration):
         return super().get_queryset().filter(invoice__stall_registration=registration).last()
 
+    def get_all_except_superceded(self):
+        return super().get_queryset().all().exclude(payment_status="Superceded")
+
     def get_stallholder_payment_history(self, stallholder):
         return super().get_queryset().filter(invoice__stallholder=stallholder)
 
@@ -172,13 +175,16 @@ class PaymentHistory(models.Model):
     Description: A model that records stallholder payment history includes credits as well as payment
     """
     PENDING = "Pending"
+    SUPERCEDED = "Superceded"
     CANCELLED = "Cancelled"
     COMPLETED = "Completed"
     FAILED = "Failed"
     RECONCILED = "Reconciled"
 
+
     PAYMENT_STATUS_CHOICES = [
         (PENDING, _("pending")),
+        (SUPERCEDED, _("superceded")),
         (CANCELLED, _("cancelled")),
         (COMPLETED, _("completed")),
         (FAILED, _("failed")),
@@ -202,6 +208,7 @@ class PaymentHistory(models.Model):
     payment_type = models.ForeignKey(
         PaymentType,
         on_delete=models.CASCADE,
+        blank=True,
         null=True
     )
     date_created = models.DateTimeField(auto_now_add=True)
@@ -228,6 +235,10 @@ class PaymentHistory(models.Model):
         PaymentHistory.objects.filter(invoice__stall_registration=stall_registration).aggregate(TOTAL=Sum(
             'amount_reconciled'))['TOTAL']
         return reconciled_total
+
+    @transition(field=payment_status, source="Pending", target="Superceded")
+    def to_payment_status_superceded(self):
+        pass
 
     @transition(field=payment_status, source="Pending", target="Cancelled")
     def to_payment_status_cancelled(self):
@@ -455,6 +466,8 @@ class InvoiceItemManager(models.Manager):
                 PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, amount_to_pay,
                                                                        existing_payment_history.amount_paid,
                                                                        existing_payment_history.amount_reconciled)
+                existing_payment_history.to_payment_status_superceded()
+                existing_payment_history.save()
             else:
                 PaymentHistory.paymenthistorymgr.create_paymenthistory(invoice, total_cost)
         except Exception as e:  # It will catch other errors related to the create call

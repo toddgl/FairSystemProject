@@ -9,13 +9,12 @@ register = template.Library()
 
 
 @register.simple_tag
-def get_has_paymenthistories():
+def get_has_paymenthistories(value):
     """
     Templatetag to provide a boolean answer whether there are any Payment Histories
     Used in the convener payment list
     """
-    paymenthistory_exists = PaymentHistory.paymenthistorycurrentmgr.exists()
-    if paymenthistory_exists:
-        return True
+    if value:
+        return PaymentHistory.paymenthistorycurrentmgr.filter(payment_status=value).exists()
     else:
-        return False
+        return PaymentHistory.paymenthistorycurrentmgr.all().exists()

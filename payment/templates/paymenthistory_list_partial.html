@@ -6,7 +6,7 @@
 
 <div id="payment_history_data">
     <div>
-        {% get_has_paymenthistories as has_paymenthistories %}
+        {% get_has_paymenthistories payment_status as has_paymenthistories %}
         {% if has_paymenthistories %}
             <table class="table table-striped">
                 <thead>
