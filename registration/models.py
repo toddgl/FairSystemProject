@@ -133,6 +133,7 @@ class RegistrationCurrentAllManager(models.Manager):
     """
     Queryset of Stall Registrations for current Fairs
     """
+
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True)
@@ -142,6 +143,7 @@ class RegistrationCurrentManager(models.Manager):
     """
     Queryset of Stall Registrations for current Fairs excluded cancelled stall registrations
     """
+
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True).exclude(is_cancelled=True)
@@ -151,6 +153,7 @@ class RegistrationSellingFoodManager(models.Manager):
     """
     Queryset of Stall Registrations for current fairs that are selling food
     """
+
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, selling_food=True)
@@ -175,6 +178,7 @@ class RegistrationSubmittedManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Submitted')
 
+
 class RegistrationInvoicedManager(models.Manager):
     """
     Queryset of Stall Registrations for current fairs that the booking status is invoiced
@@ -183,6 +187,7 @@ class RegistrationInvoicedManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Invoiced')
+
 
 class RegistrationBookedManager(models.Manager):
     """
@@ -193,6 +198,7 @@ class RegistrationBookedManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Booked')
 
+
 class RegistrationCancelledManager(models.Manager):
     """
     Queryset of Stall Registrations for current fairs that the booking status is cancelled
@@ -202,15 +208,15 @@ class RegistrationCancelledManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Cancelled')
 
+
 class VehiclesOnSiteManager(models.Manager):
     """
-    Queryset of StallRegistration for current fairs and the specified stallholder that
-    that has inddicated that they have a vehicle on site and that it sze has been defined and it is not over 6 metres in length
-    and an image of the vehicle has been uploaded.  Used to determine if the Stallregistration can be submitted for payment
-    use something like to get ta True / False response
-    has_size = StallRegistration.vehicleonsitemgr.has_size(registration_id)
-    not_oversize = StallRegistration.vehicleonsitemgr.not_oversize(registration_id)
-    has_image = StallRegistration.vehicleonsitemgr.has_image(registration_id)
+    Queryset of StallRegistration for current fairs and the specified stallholder that that has inddicated that they
+    have a vehicle on site and that it sze has been defined and it is not over 6 metres in length and an image of the
+    vehicle has been uploaded.  Used to determine if the Stallregistration can be submitted for payment use something
+    like to get ta True / False response has_size = StallRegistration.vehicleonsitemgr.has_size(registration_id)
+    not_oversize = StallRegistration.vehicleonsitemgr.not_oversize(registration_id) has_image =
+    StallRegistration.vehicleonsitemgr.has_image(registration_id)
     """
 
     def get_queryset(self):
@@ -225,6 +231,7 @@ class VehiclesOnSiteManager(models.Manager):
 
     def has_image(self, registration_id):
         return self.get_queryset().filter(id=registration_id, vehicle_image__isnull=False).exists()
+
 
 class IsMultiSiteRegistrationManager(models.Manager):
     """
@@ -249,9 +256,6 @@ class StallRegistration(models.Model):
     CREATED = 'Created'
     SUBMITTED = 'Submitted'
     INVOICED = 'Invoiced'
-    MANUALPAYMENT = 'Manual Payment'
-    POLIPAYMENT = 'Poli Payment'
-    STRIPEPAYMENT = 'Stripe Payment'
     PAYMENTCOMPLETED = 'Payment Completed'
     ALLOCATIONREVIEW = 'Allocation Review'
     ALLOCATIONPENDING = 'Allocation Pending'
@@ -268,9 +272,6 @@ class StallRegistration(models.Model):
         (CREATED, _('Created')),
         (SUBMITTED, _('Submitted')),
         (INVOICED, _('Invoiced')),
-        (MANUALPAYMENT, _('Manual Payment')),
-        (POLIPAYMENT, _('Poli Payment')),
-        (STRIPEPAYMENT, _('Stripe Payment')),
         (PAYMENTCOMPLETED, _('Payment Completed')),
         (ALLOCATIONREVIEW, _('Allocation Review')),
         (ALLOCATIONPENDING, _('Allocation Pending')),
@@ -351,7 +352,7 @@ class StallRegistration(models.Model):
     def booking_id(self):
         return self.id
 
-    def save(self, *args ,**kwargs):
+    def save(self, *args, **kwargs):
         # Identify whether a new file has been uploaded
         if self.vehicle_image:
             # Delete existing file
@@ -361,7 +362,7 @@ class StallRegistration(models.Model):
                     this.vehicle_image.delete()
             except:
                 pass
-        super(StallRegistration,self).save(*args,**kwargs)
+        super(StallRegistration, self).save(*args, **kwargs)
 
     @transition(field=booking_status, source="Created", target="Cancelled")
     def to_booking_status_cancelled(self):
@@ -371,30 +372,37 @@ class StallRegistration(models.Model):
     def to_booking_status_submitted(self):
         pass
 
-    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced"], target="Invoiced")
+    @transition(field=booking_status, source=["Created", "Submitted", "Payment Completed", "Booked"], target="Invoiced")
     def to_booking_status_invoiced(self):
         pass
 
-    @transition(field=booking_status, source="Invoiced", target="Manual Payment")
-    def to_booking_status_manual_payment(self):
+    @transition(field=booking_status, source=["Invoiced"], target="Payment Completed")
+    def to_booking_status_payment_completed(self):
         pass
 
-    @transition(field=booking_status, source="Invoiced", target="Poli Payment")
-    def to_booking_status_poli_payment(self):
-        pass
-
-    @transition(field=booking_status, source="Invoiced", target="Stripe Payment")
-    def to_booking_status_stripe_payment(self):
-        pass
-
-    @transition(field=booking_status, source=["Manual Payment", "Poli Payment", "Stripe Payment"], target="Payment Completed")
-    def to_booking_status_payment_complete(self):
+    @transition(field=booking_status, source=["Payment Completed"], target="Booked")
+    def to_booking_status_booked(self):
         pass
 
     @transition(field=booking_status, source=["Submitted", "Invoiced", "Payment Completed"], target="Cancelled")
     def to_booking_status_cancelled(self):
         pass
 
+    @transition(field=booking_status, source=["Cancelled"], target="Refund Review")
+    def to_booking_status_payment_refund_review(self):
+        pass
+
+    @transition(field=booking_status, source=["Cancelled", "Refund Review"], target="Refund Donated")
+    def to_booking_status_payment_refund_donated(self):
+        pass
+
+    @transition(field=booking_status, source=["Refund Review"], target="Refund Rejected")
+    def to_booking_status_payment_refund_rejected(self):
+        pass
+
+    @transition(field=booking_status, source=["Refund Review"], target="Refund Approved")
+    def to_booking_status_payment_refund_approved(self):
+        pass
 
 
 class CommentType(models.Model):
@@ -413,12 +421,13 @@ class CommentType(models.Model):
         ordering = ('type_name',)
         verbose_name_plural = "CommentTypes"
 
+
 class HasUnactionedCommentsManager(models.Manager):
     """
-    Queryset of Application comments for current fairs and the specified stallholder that
-    has unactioned comments.  Used to determine if the Stallregistration can be submitted for payment
-    use something like to get ta True ? False response
-    has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(stallholder_id).exists()
+    Queryset of Application comments for current fairs and the specified stallholder that has unactioned comments.
+    Used to determine if the Stallregistration can be submitted for payment use something like to get ta True ? False
+    response has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(
+    stallholder_id).exists()
     """
 
     def get_queryset(self):
@@ -428,14 +437,16 @@ class HasUnactionedCommentsManager(models.Manager):
     def filter_by_stallholder(self, stallholder_id):
         return self.get_queryset().filter(stallholder=stallholder_id)
 
+
 class CreateRegistrationCommentManager(models.Manager):
     """
     Used to create a comment to advise the Stall holder if there are any issues with their efforts to submit
     a stall application for payment.
     """
+
     def create_comment(self, stallholder, current_fair, comment_type, comment, is_done=False):
-        obj = RegistrationComment.objects.create(stallholder= stallholder, fair=current_fair,
-                                                comment_type=comment_type, comment=comment, is_done=is_done)
+        obj = RegistrationComment.objects.create(stallholder=stallholder, fair=current_fair,
+                                                 comment_type=comment_type, comment=comment, is_done=is_done)
         return obj
 
 
@@ -489,6 +500,7 @@ class RegistrationComment(models.Model):
     def __str__(self):
         return 'Comment by {}'.format(str(self.created_by))
 
+
 class CertificateValidityManager(models.Manager):
 
     def get_queryset(self):
@@ -496,7 +508,8 @@ class CertificateValidityManager(models.Manager):
         return super().get_queryset().filter(registration__fair=current_fair.id)
 
     def has_certificate(self, registration_id):
-        return self.get_queryset().filter(registration=registration_id, food_registration_certificate__isnull=False).exists()
+        return self.get_queryset().filter(registration=registration_id,
+                                          food_registration_certificate__isnull=False).exists()
 
     def not_expiring(self, registration_id):
         current_event = Event.currenteventfiltermgr.all().last()
@@ -505,6 +518,7 @@ class CertificateValidityManager(models.Manager):
             return food_registration.filter(certificate_expiry_date__gt=current_event.postponement_event_date).exists()
         else:
             return food_registration.filter(certificate_expiry_date__gt=current_event.original_event_date).exists()
+
 
 class FoodRegistration(models.Model):
     """
@@ -518,7 +532,8 @@ class FoodRegistration(models.Model):
     )
     food_display_method = models.TextField(blank=True, null=True)
     has_food_certificate = models.BooleanField(null=True, default=False)
-    food_registration_certificate = models.FileField(blank=True, null=True, upload_to='food_certificates/' + str(current_year))
+    food_registration_certificate = models.FileField(blank=True, null=True,
+                                                     upload_to='food_certificates/' + str(current_year))
     certificate_expiry_date = models.DateField(blank=True, null=True)
     food_fair_consumed = models.BooleanField(null=True, default=False)
     food_prep_equipment = models.ManyToManyField(
@@ -540,7 +555,7 @@ class FoodRegistration(models.Model):
     food_storage_prep_method = models.TextField(blank=True, null=True)
     hygiene_methods = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField(blank=True, null=True)
-    cert_filetype = models.CharField(default="image",blank=True, null=True, max_length=50)
+    cert_filetype = models.CharField(default="image", blank=True, null=True, max_length=50)
     objects = models.Manager()
     certificatevaliditymgr = CertificateValidityManager()
 
@@ -564,7 +579,7 @@ class FoodRegistration(models.Model):
     def get_equipment_children(self):
         return self.foodprepequiprequired_set.all()
 
-    def save(self, *args ,**kwargs):
+    def save(self, *args, **kwargs):
         # Identify whether the certificated uploaded is an image or pdf
         if self.food_registration_certificate:
             # Delete existing file
@@ -574,12 +589,13 @@ class FoodRegistration(models.Model):
                     this.food_registration_certificate.delete()
             except:
                 pass
-            cert_file=self.food_registration_certificate.read(1000)
+            cert_file = self.food_registration_certificate.read(1000)
             self.food_registration_certificate.seek(0)
-            mime= magic.from_buffer(cert_file,mime=True)
-            if "pdf" in mime :
+            mime = magic.from_buffer(cert_file, mime=True)
+            if "pdf" in mime:
                 self.cert_filetype = "pdf"
-        super(FoodRegistration,self).save(*args,**kwargs)
+        super(FoodRegistration, self).save(*args, **kwargs)
+
 
 class AdditionalSiteRequirementManager(models.Manager):
     def get_queryset(self):
@@ -594,8 +610,8 @@ class AdditionalSiteRequirement(models.Model):
     Description of a StallRegistration related table that can be used to store additional site requirements
     over and above the single site that is automatically associiated with the registration
     """
-    JOINED ="1"
-    SEPARATE="2"
+    JOINED = "1"
+    SEPARATE = "2"
 
     LOCATION_CHOICE = [
         (JOINED, _('Joined')),
@@ -624,8 +640,6 @@ class AdditionalSiteRequirement(models.Model):
     site_quantity = models.IntegerField(default=1)
     objects = models.Manager()
     additionalsiterequirementmgr = AdditionalSiteRequirementManager()
-
-
 
     class Meta:
         verbose_name = "addiitionalsiterequired"
@@ -697,6 +711,7 @@ class FoodPrepEquipReq(models.Model):
 def create_food_registration(sender, instance, created, **kwargs):
     if created and instance.selling_food:
         FoodRegistration.objects.create(registration=instance)
+
 
 @receiver(pre_save, sender=StallRegistration)
 def remove_food_registration(sender, instance, **kwargs):
