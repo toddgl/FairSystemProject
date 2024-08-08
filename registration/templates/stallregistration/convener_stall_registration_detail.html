@@ -279,7 +279,7 @@
           {% csrf_token %}
           {{ registrationupdateform.as_p }}
           {{ foodregistrationupdateform.as_p }}
-          <input type="submit" class="btn btn-primary" value="Update" >
+          <button type="submit" class="btn btn-primary" name="update" data-bs-dismiss="modal" >Save Changes</button>
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </form>
       </div>

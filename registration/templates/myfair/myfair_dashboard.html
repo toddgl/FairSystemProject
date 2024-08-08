@@ -52,7 +52,7 @@
               </div>
             </div>
             <div class="d-flex gap-2">
-            <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}"
+            <a href="{% url 'payment:create-pdf-invoice' payment_history.invoice.id payment_history.invoice.invoice_sequence %}" target="_blank"
                class="btn btn-secondary">View / Download Invoice</a>
             {% get_has_something_to_pay payment_history.id as something_to_pay_result %}
             {% if something_to_pay_result %}

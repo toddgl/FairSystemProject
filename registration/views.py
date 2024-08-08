@@ -937,7 +937,7 @@ def comments_view_add (request):
                                                   convener_only_comment=False, comment_parent__isnull=True,
                                                   fair=current_fair.id)
     else:
-        comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False,
+        comments = RegistrationComment.objects.filter(stallholder=request.user.id, is_archived=False,
                                                   convener_only_comment=False, comment_parent__isnull=True,
                                                   fair=current_fair.id)
     if request.htmx:

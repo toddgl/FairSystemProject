@@ -21,7 +21,6 @@ import environ
 env = environ.Env()
 environ.Env.read_env()
 
-
 # Build paths inside the project using pathlib
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
@@ -35,6 +34,13 @@ SECRET_KEY = env('SECRET_KEY')
 DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://lynx-dashing-chamois.ngrok-free.app',
+    'http://ruru:8000',
+    "http://127.0.0.1:8000",
+    "http://localhost:8000"
+]
 
 SECURE_SSL_REDIRECT = False
 
@@ -73,11 +79,11 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -86,7 +92,6 @@ MIDDLEWARE = [
     # Add the account middleware:
     "allauth.account.middleware.AccountMiddleware",
 ]
-
 
 X_FRAME_OPTIONS = 'SAMEORIGIN'
 ROOT_URLCONF = 'config.urls'
@@ -109,7 +114,6 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/3,1/ref/settings/#databases
 
@@ -123,7 +127,6 @@ DATABASES = {
         'PORT': '',
     }
 }
-
 
 # Password validation
 # https://docs.djangoproject.com/en/3.1/ref/settings/#auth-password-validators
@@ -160,12 +163,11 @@ USE_L10N = True
 
 USE_TZ = False
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.22howto/static-files/
 
 STATIC_URL = 'static/'
-STATICFILES_DIRS = [BASE_DIR / 'static',]
+STATICFILES_DIRS = [BASE_DIR / 'static', ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STORAGES = {
     "default": {
@@ -178,7 +180,7 @@ STORAGES = {
 
 FIXTURE_DIRS = [BASE_DIR / 'fixtures']
 
-MEDIA_ROOT = BASE_DIR/'media'
+MEDIA_ROOT = BASE_DIR / 'media'
 MEDIA_URL = '/media/'
 
 # allauth settings
@@ -214,7 +216,7 @@ ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
 ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
-ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL ='stallregistration-dashboard'
+ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'stallregistration-dashboard'
 
 # Stop the are you sure you want to logout page being shown
 ACCOUNT_LOGOUT_ON_GET = True
@@ -268,7 +270,7 @@ LOGGING = {
             'handlers': ['db_log'],
             'level': 'INFO'
         },
-        'django.request': { # logging 500 errors to database
+        'django.request': {  # logging 500 errors to database
             'handlers': ['db_log'],
             'level': 'ERROR',
             'propagate': False,
@@ -276,4 +278,5 @@ LOGGING = {
     }
 }
 
-REDIRECT_DOMAIN = 'http://127.0.0.1:8000'
+# REDIRECT_DOMAIN = 'http://127.0.0.1:8000'
+REDIRECT_DOMAIN = 'https://lynx-dashing-chamois.ngrok-free.app'
