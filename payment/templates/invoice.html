@@ -4,6 +4,7 @@
 {% load static %}
 {% load adddaystodate_tag %}
 {% load hasdiscount_tag %}
+{% load custom_filters %}
 
 {% block body %}
 <html lang="en">
@@ -85,12 +86,27 @@
           <td colspan="4" class="unit">Less Payments to date</td>
           <td class="unit">${{ total_payments }}</td>
         </tr>
-        <tr>
-          <td colspan="4" class="grand total">Amount to pay</td>
-          <td class="grand total">${{ amount_to_pay }}</td>
-        </tr>
         </tbody>
       </table>
+      {% endif %}
+      {% if amount_to_pay < 0 %}
+        <table>
+          <tbody>
+            <tr>
+              <td colspan="4" class="grand total">Account in credit</td>
+              <td class="grand total">(${{ amount_to_pay|abs }})</td>
+            </tr>
+          </tbody>
+        </table>
+      {% else %}
+        <table>
+          <tbody>
+            <tr>
+              <td colspan="4" class="grand total">Amount to pay</td>
+              <td class="grand total">${{ amount_to_pay }}</td>
+            </tr>
+          </tbody>
+        </table>
       {% endif %}
       <div id="notices">
         <div>NOTICE:</div>

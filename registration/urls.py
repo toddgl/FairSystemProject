@@ -30,6 +30,7 @@ from registration.views import (
     submit_stall_registration,
     invoice_stall_registration,
     reinvoice_stall_registration,
+    transition_booking_status,
 )
 
 app_name = 'registration'
@@ -66,4 +67,5 @@ urlpatterns = [
     path('foodequipment/add', add_food_prep_equipment, name='add-food-prep-equipment'),
     path('foodequipment/remove/<int:parent_id>/<int:id>/', remove_equipment, name='remove-equipment'),
     path('registration/comment/<int:pk>/',  archive_comments, name='archive'),
+    path('stall/transition/<int:stall_registration_id>/<str:target_status>/', transition_booking_status, name='transition_booking_status'),
 ]

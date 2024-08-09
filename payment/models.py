@@ -163,6 +163,9 @@ class PaymentHistoryCurrentManager(models.Manager):
     def get_completed(self):
         return super().get_queryset().filter(payment_status="Completed")
 
+    def get_credit(self):
+        return super().get_queryset().filter(payment_status="Credit")
+
     def get_failed(self):
         return super().get_queryset().filter(payment_status="Failed")
 
@@ -178,6 +181,7 @@ class PaymentHistory(models.Model):
     SUPERCEDED = "Superceded"
     CANCELLED = "Cancelled"
     COMPLETED = "Completed"
+    CREDIT = "Credit"
     FAILED = "Failed"
     RECONCILED = "Reconciled"
 
@@ -187,6 +191,7 @@ class PaymentHistory(models.Model):
         (SUPERCEDED, _("superceded")),
         (CANCELLED, _("cancelled")),
         (COMPLETED, _("completed")),
+        (CREDIT, _("credit")),
         (FAILED, _("failed")),
         (RECONCILED, _("reconciled")),
     ]
@@ -250,6 +255,10 @@ class PaymentHistory(models.Model):
 
     @transition(field=payment_status, source="Pending", target="Completed")
     def to_payment_status_completed(self):
+        pass
+
+    @transition(field=payment_status, source=["Pending", "Completed"], target="Credit")
+    def to_payment_status_credit(self):
         pass
 
     @transition(field=payment_status, source="Completed", target="Reconciled")

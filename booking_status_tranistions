@@ -1,0 +1,32 @@
+digraph {
+	subgraph cluster_registration_StallRegistration_booking_status {
+		graph [label="registration.StallRegistration.booking_status"]
+		"registration.stallregistration.booking_status.Refund Rejected" [label="Refund Rejected" shape=doublecircle]
+		"registration.stallregistration.booking_status.Refund Approved" [label="Refund Approved" shape=doublecircle]
+		"registration.stallregistration.booking_status.Refund Donated" [label="Refund Donated" shape=doublecircle]
+		"registration.stallregistration.booking_status.Invoiced" [label=Invoiced shape=circle]
+		"registration.stallregistration.booking_status.Payment Completed" [label="Payment Completed" shape=circle]
+		"registration.stallregistration.booking_status.Created" [label=Created shape=circle]
+		"registration.stallregistration.booking_status._initial" [label="" shape=point]
+		"registration.stallregistration.booking_status._initial" -> "registration.stallregistration.booking_status.Created"
+		"registration.stallregistration.booking_status.Booked" [label=Booked shape=circle]
+		"registration.stallregistration.booking_status.Refund Review" [label="Refund Review" shape=circle]
+		"registration.stallregistration.booking_status.Cancelled" [label=Cancelled shape=circle]
+		"registration.stallregistration.booking_status.Submitted" [label=Submitted shape=circle]
+		"registration.stallregistration.booking_status.Payment Completed" -> "registration.stallregistration.booking_status.Booked" [label=to_booking_status_booked]
+		"registration.stallregistration.booking_status.Invoiced" -> "registration.stallregistration.booking_status.Payment Completed" [label=to_booking_status_payment_completed]
+		"registration.stallregistration.booking_status.Payment Completed" -> "registration.stallregistration.booking_status.Cancelled" [label=to_booking_status_cancelled]
+		"registration.stallregistration.booking_status.Payment Completed" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Refund Review" -> "registration.stallregistration.booking_status.Refund Rejected" [label=to_booking_status_payment_refund_rejected]
+		"registration.stallregistration.booking_status.Invoiced" -> "registration.stallregistration.booking_status.Cancelled" [label=to_booking_status_cancelled]
+		"registration.stallregistration.booking_status.Submitted" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Cancelled" -> "registration.stallregistration.booking_status.Refund Donated" [label=to_booking_status_payment_refund_donated]
+		"registration.stallregistration.booking_status.Refund Review" -> "registration.stallregistration.booking_status.Refund Donated" [label=to_booking_status_payment_refund_donated]
+		"registration.stallregistration.booking_status.Created" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Refund Review" -> "registration.stallregistration.booking_status.Refund Approved" [label=to_booking_status_payment_refund_approved]
+		"registration.stallregistration.booking_status.Created" -> "registration.stallregistration.booking_status.Submitted" [label=to_booking_status_submitted]
+		"registration.stallregistration.booking_status.Submitted" -> "registration.stallregistration.booking_status.Cancelled" [label=to_booking_status_cancelled]
+		"registration.stallregistration.booking_status.Booked" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Cancelled" -> "registration.stallregistration.booking_status.Refund Review" [label=to_booking_status_payment_refund_review]
+	}
+}

@@ -1,0 +1,62 @@
+digraph {
+	subgraph cluster_registration_StallRegistration_booking_status {
+		graph [label="registration.StallRegistration.booking_status"]
+		"registration.stallregistration.booking_status.Refund Donated" [label="Refund Donated" shape=doublecircle]
+		"registration.stallregistration.booking_status.Refund Approved" [label="Refund Approved" shape=doublecircle]
+		"registration.stallregistration.booking_status.Refund Rejected" [label="Refund Rejected" shape=doublecircle]
+		"registration.stallregistration.booking_status.Cancelled" [label=Cancelled shape=circle]
+		"registration.stallregistration.booking_status.Payment Completed" [label="Payment Completed" shape=circle]
+		"registration.stallregistration.booking_status.Booked" [label=Booked shape=circle]
+		"registration.stallregistration.booking_status.Created" [label=Created shape=circle]
+		"registration.stallregistration.booking_status._initial" [label="" shape=point]
+		"registration.stallregistration.booking_status._initial" -> "registration.stallregistration.booking_status.Created"
+		"registration.stallregistration.booking_status.Submitted" [label=Submitted shape=circle]
+		"registration.stallregistration.booking_status.Refund Review" [label="Refund Review" shape=circle]
+		"registration.stallregistration.booking_status.Invoiced" [label=Invoiced shape=circle]
+		"registration.stallregistration.booking_status.Invoiced" -> "registration.stallregistration.booking_status.Cancelled" [label=to_booking_status_cancelled]
+		"registration.stallregistration.booking_status.Payment Completed" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Refund Review" -> "registration.stallregistration.booking_status.Refund Rejected" [label=to_booking_status_payment_refund_rejected]
+		"registration.stallregistration.booking_status.Cancelled" -> "registration.stallregistration.booking_status.Refund Review" [label=to_booking_status_payment_refund_review]
+		"registration.stallregistration.booking_status.Cancelled" -> "registration.stallregistration.booking_status.Refund Donated" [label=to_booking_status_payment_refund_donated]
+		"registration.stallregistration.booking_status.Payment Completed" -> "registration.stallregistration.booking_status.Cancelled" [label=to_booking_status_cancelled]
+		"registration.stallregistration.booking_status.Invoiced" -> "registration.stallregistration.booking_status.Payment Completed" [label=to_booking_status_payment_completed]
+		"registration.stallregistration.booking_status.Payment Completed" -> "registration.stallregistration.booking_status.Booked" [label=to_booking_status_booked]
+		"registration.stallregistration.booking_status.Refund Review" -> "registration.stallregistration.booking_status.Refund Approved" [label=to_booking_status_payment_refund_approved]
+		"registration.stallregistration.booking_status.Submitted" -> "registration.stallregistration.booking_status.Cancelled" [label=to_booking_status_cancelled]
+		"registration.stallregistration.booking_status.Booked" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Created" -> "registration.stallregistration.booking_status.Submitted" [label=to_booking_status_submitted]
+		"registration.stallregistration.booking_status.Submitted" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+		"registration.stallregistration.booking_status.Refund Review" -> "registration.stallregistration.booking_status.Refund Donated" [label=to_booking_status_payment_refund_donated]
+		"registration.stallregistration.booking_status.Created" -> "registration.stallregistration.booking_status.Invoiced" [label=to_booking_status_invoiced]
+	}
+	subgraph cluster_foodlicence_FoodLicence_licence_status {
+		graph [label="foodlicence.FoodLicence.licence_status"]
+		"foodlicence.food_licence.licence_status.Approved" [label=Approved shape=doublecircle]
+		"foodlicence.food_licence.licence_status.Rejected" [label=Rejected shape=doublecircle]
+		"foodlicence.food_licence.licence_status.Batched" [label=Batched shape=circle]
+		"foodlicence.food_licence.licence_status.Created" [label=Created shape=circle]
+		"foodlicence.food_licence.licence_status._initial" [label="" shape=point]
+		"foodlicence.food_licence.licence_status._initial" -> "foodlicence.food_licence.licence_status.Created"
+		"foodlicence.food_licence.licence_status.Submitted" [label=Submitted shape=circle]
+		"foodlicence.food_licence.licence_status.Batched" -> "foodlicence.food_licence.licence_status.Submitted" [label=to_licence_status_submitted]
+		"foodlicence.food_licence.licence_status.Created" -> "foodlicence.food_licence.licence_status.Batched" [label=to_licence_status_batched]
+		"foodlicence.food_licence.licence_status.Submitted" -> "foodlicence.food_licence.licence_status.Rejected" [label=to_licence_status_rejected]
+		"foodlicence.food_licence.licence_status.Submitted" -> "foodlicence.food_licence.licence_status.Approved" [label=to_licence_status_approved]
+	}
+	subgraph cluster_payment_PaymentHistory_payment_status {
+		graph [label="payment.PaymentHistory.payment_status"]
+		"payment.payment.payment_status.Reconciled" [label=Reconciled shape=doublecircle]
+		"payment.payment.payment_status.Cancelled" [label=Cancelled shape=doublecircle]
+		"payment.payment.payment_status.Superceded" [label=Superceded shape=doublecircle]
+		"payment.payment.payment_status.Failed" [label=Failed shape=doublecircle]
+		"payment.payment.payment_status.Pending" [label=Pending shape=circle]
+		"payment.payment.payment_status._initial" [label="" shape=point]
+		"payment.payment.payment_status._initial" -> "payment.payment.payment_status.Pending"
+		"payment.payment.payment_status.Completed" [label=Completed shape=circle]
+		"payment.payment.payment_status.Completed" -> "payment.payment.payment_status.Reconciled" [label=to_payment_status_reconciled]
+		"payment.payment.payment_status.Pending" -> "payment.payment.payment_status.Completed" [label=to_payment_status_completed]
+		"payment.payment.payment_status.Pending" -> "payment.payment.payment_status.Failed" [label=to_payment_status_failed]
+		"payment.payment.payment_status.Pending" -> "payment.payment.payment_status.Cancelled" [label=to_payment_status_cancelled]
+		"payment.payment.payment_status.Pending" -> "payment.payment.payment_status.Superceded" [label=to_payment_status_superceded]
+	}
+}

@@ -69,10 +69,14 @@ def payment_successful(request):
     payment_history = PaymentHistory.objects.get(id=session.metadata['product_history_id'])
     payment_history.payment_type = payment_type
     amount_paid = session.get('amount_total') / 100
+    amount_to_pay = payment_history.amount_to_pay - decimal.Decimal(amount_paid)
     payment_history.stripe_checkout_id = checkout_session_id
-    payment_history.amount_to_pay = payment_history.amount_to_pay - decimal.Decimal(amount_paid)
+    payment_history.amount_to_pay = amount_to_pay
     payment_history.amount_paid = decimal.Decimal(amount_paid)
-    payment_history.to_payment_status_completed()
+    if amount_to_pay < 0.00:
+        payment_history.to_payment_status_credit()
+    else:
+        payment_history.to_payment_status_completed()
     payment_history.save()
     # Update StallRegistration instance to Payment Completed if amount to pay is zero
     if payment_history.amount_to_pay == 0.00:
