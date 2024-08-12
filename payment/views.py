@@ -2,7 +2,7 @@
 
 import stripe
 import time
-from django.utils.timezone import now
+import logging
 from django.views.decorators.csrf import csrf_exempt
 import decimal
 from weasyprint import HTML, CSS
@@ -28,31 +28,36 @@ from .forms import (
     PaymentHistoryStatusFilterForm
 )
 
+db_logger = logging.getLogger('db')
 
 @login_required()
 def stripe_payment(request, id):
     stripe.api_key = settings.STRIPE_SECRET_KEY
-    print('Stripe payment method called')
     if request.method == 'POST':
         payment_history = PaymentHistory.objects.get(id=id)
-        checkout_session = stripe.checkout.Session.create(
-            payment_method_types=['card'],
-            line_items=[{
-                'price_data': {
-                    'currency': 'nzd',
-                    'product_data': {
-                        'name': 'Fair Stall Application',
+        try:
+            checkout_session = stripe.checkout.Session.create(
+                payment_method_types=['card'],
+                line_items=[{
+                    'price_data': {
+                        'currency': 'nzd',
+                        'product_data': {
+                            'name': 'Fair Stall Application',
+                        },
+                        'unit_amount': int(payment_history.amount_to_pay * 100),
                     },
-                    'unit_amount': int(payment_history.amount_to_pay - payment_history.amount_paid) * 100,
-                },
-                'quantity': 1,
-            }],
-            mode='payment',
-            metadata={'product_history_id': id},
-            customer_creation='always',
-            success_url=settings.REDIRECT_DOMAIN + '/payment/payment_successful/?session_id={CHECKOUT_SESSION_ID}',
-            cancel_url=settings.REDIRECT_DOMAIN + '/payment/payment_cancelled',
-        )
+                    'quantity': 1,
+                }],
+                mode='payment',
+                metadata={'product_history_id': id},
+                customer_creation='always',
+                success_url=settings.REDIRECT_DOMAIN + '/payment/payment_successful/?session_id={CHECKOUT_SESSION_ID}',
+                cancel_url=settings.REDIRECT_DOMAIN + '/payment/payment_cancelled',
+            )
+        except Exception as e:  # It will catch other errors related to the cancel call.
+            db_logger.error('There was an error making the stripe payment.' + str(e),
+                            extra={'custom_category': 'Stripe Payment'})
+            print(str(e))
         return redirect(checkout_session.url, code=303)
     return render(request, 'myfair_dashboard.html')
 
@@ -67,12 +72,13 @@ def payment_successful(request):
     customer = stripe.Customer.retrieve(session.customer)
     payment_type = PaymentType.objects.get(payment_type_name='Stripe')
     payment_history = PaymentHistory.objects.get(id=session.metadata['product_history_id'])
+    amount_already_paid = payment_history.amount_paid
     payment_history.payment_type = payment_type
     amount_paid = session.get('amount_total') / 100
     amount_to_pay = payment_history.amount_to_pay - decimal.Decimal(amount_paid)
     payment_history.stripe_checkout_id = checkout_session_id
     payment_history.amount_to_pay = amount_to_pay
-    payment_history.amount_paid = decimal.Decimal(amount_paid)
+    payment_history.amount_paid = decimal.Decimal(amount_paid) + amount_already_paid
     if amount_to_pay < 0.00:
         payment_history.to_payment_status_credit()
     else:

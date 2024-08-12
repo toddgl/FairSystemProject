@@ -13,17 +13,18 @@ from fairs.models import (
     EventSite,
     SiteAllocation,
     SiteHistory,
-
+    Site,
 )
 
 db_logger = logging.getLogger('db')
 
+
 def site_allocation_emails():
     """
-    Function to create stallholder emails to advise them that they have been preallocted a site based on their registration
-    history asking them to apply for the fair before the activation date.
-    The function is called from the management process dashboard . Processing information is recorded in the CustomDBLogger
-    table which can be viewed using Django Admin
+    Function to create stallholder emails to advise them that they have been preallocted a site based on their
+    registration history asking them to apply for the fair before the activation date. The function is called from
+    the management process dashboard . Processing information is recorded in the CustomDBLogger table which can be
+    viewed using Django Admin
     """
     current_fair = Fair.currentfairmgr.last()
     site_allocations = SiteAllocation.currentallocationsmgr.all()
@@ -50,12 +51,10 @@ def site_allocation_emails():
 
 def site_allocations():
     """
-    Function to create stallholder site allocations based on their historical registration site useages.
+    Function to create stallholder site allocations based on their historical registration site usages.
     The function is called from the management process dashboard and creates new instances in the SiteAllocation
-    database table. processing information is recorded in the CustomDBLogger table which can be viewed using Django Admin
+    database table. Processing information is recorded in the CustomDBLogger table which can be viewed using Django Admin.
     """
-    # Create a pandas dataframe(df) of the SiteHistory data
-
     df = pd.DataFrame.from_records(SiteHistory.fouryearhistorymgr.all().values())
     df['year'] = pd.to_datetime(df['year'], format='%Y')
     today = pd.to_datetime('today')
@@ -68,15 +67,26 @@ def site_allocations():
     to make sure that the EventSite site_status is set to Available this should be sufficient to prevent duplicates from 
     being created without resorting to test for duplicates before a save 
     """
+
     events = Event.currenteventfiltermgr.all()
     count = 4
     while count > 0:
-        year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id']) == count
-        year_sites = [i for i, j in year_series.items() if j == True]
-        db_logger.info(str(count) + ' ' + str(year_sites), extra={'custom_category': 'Site Allocation'})
-        for stallholder, site in year_sites:
+        year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id', 'year']) == count
+        year_sites = [i for i, j in year_series.items() if j]
+
+        for stallholder, site, year in year_sites:
+            # Fetch the specific SiteHistory record for this stallholder, site, and year
+            site_history = SiteHistory.objects.get(stallholder_id=stallholder, site_id=site, year=year.year)
+
+            is_half_size = site_history.is_half_size
+
+            # Determine the required site size based on the is_half_size flag
+            required_site_size = 'Half Size Fair Site' if is_half_size else 'Full Size Fair Site'
+            site_name = Site.objects.get(id=site).site_name
+
             for event in events:
-                if EventSite.objects.filter(event_id=event.id, site_id=site).exists():
+                if EventSite.objects.filter(event_id=event.id, site_id=site,
+                                            site__site_size__item_name=required_site_size).exists():
                     eventsite = EventSite.objects.get(event_id=event.id, site_id=site)
                     if eventsite.site_status == 1:
                         SiteAllocation.objects.create(
@@ -87,16 +97,14 @@ def site_allocations():
                         eventsite.site_status = 2
                         eventsite.save()
                     else:
-                        db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
-                            event.event_name) + ' and Site name' + str(
-                            eventsite.site.site_name) + 'has not been created, as the EventSite has been taken.',
-                                          extra={'custom_category': 'Site Allocation'})
+                        db_logger.warning(
+                            f'SiteAllocation for Stallholder ID {stallholder} Event Name {event.event_name} and Site name {eventsite.site.site_name} has not been created, as the EventSite has been taken.',
+                            extra={'custom_category': 'Site Allocation'})
                 else:
-                    db_logger.warning('SiteAllocation for Stallholder ID ' + str(stallholder) + ' Event Name' + str(
-                        event.event_name) + ' and Site name' + str(
-                        eventsite.site.site_name) + 'has not been created, as the EventSite does not exist.',
-                                      extra={'custom_category': 'Site Allocation'})
-        count = count - 1
+                    db_logger.warning(
+                        f'SiteAllocation for Stallholder ID {stallholder} Event Name {event.event_name} and Site name {site_name} and Site Size {required_site_size} has not been created, as the EventSite does not exist.',
+                        extra={'custom_category': 'Site Allocation'})
+        count -= 1
 
 def delete_unregistered_allocations():
     """
@@ -113,8 +121,5 @@ def delete_unregistered_allocations():
             try:
                 allocation.delete()
                 eventsite.save()
-            except Exception as e:          # It will catch other errors related to the delete call.
-                db_logger.error('There was an error deleting the unregistered site allocations.'+ e,  extra={'custom_category':'Site Allocations'})
-
-
-
+            except Exception as e:  # It will catch other errors related to the delete call.
+                db_logger.error('There was an error deleting the unregistered site allocations.' + e, extra={'custom_category': 'Site Allocations'})

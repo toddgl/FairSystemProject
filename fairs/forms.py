@@ -428,6 +428,10 @@ class ZoneCreateForm(ModelForm):
                 'style': 'max-width: 100px; text-transform: uppercase;',
                 'placeholder': 'XX'
             }),
+            'trestle_source': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
         }
 
     def __init__(self, *args, **kwargs):
@@ -463,6 +467,10 @@ class ZoneDetailForm(ModelForm):
                 'class': "form-control",
                 'style': 'text-transform: uppercase;',
                 'placeholder': 'XX'
+            }),
+            'trestle_source': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
             }),
         }
 

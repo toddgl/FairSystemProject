@@ -154,12 +154,25 @@ class Zone(models.Model):
     """
     Description: Stores the details of the fair zones.
     """
+    RED = 1
+    BLUE = 2
+
+    TRESTLE_SOURCE_CHOICE = [
+        (RED, _('Red')),
+        (BLUE, _('Blue'))
+    ]
+
     zone_name = models.CharField(
         max_length=40,
         unique=True
     )
     zone_code = models.CharField(max_length=2, default=None, null=True)
-    trestle_source = models.BooleanField(default=False)
+    trestle_source = models.PositiveSmallIntegerField(
+        choices=TRESTLE_SOURCE_CHOICE,
+        default=None,
+        blank=True,
+        null=True
+    )
     location = models.ForeignKey(
         Location,
         related_name='zone_location',
