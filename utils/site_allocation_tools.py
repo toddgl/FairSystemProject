@@ -71,26 +71,29 @@ def site_allocations():
     events = Event.currenteventfiltermgr.all()
     count = 4
     while count > 0:
-        year_series = four_year_data.value_counts(subset=['stallholder_id', 'site_id', 'year']) == count
-        year_sites = [i for i, j in year_series.items() if j]
+        # Group by stallholder_id and site_id, then count the occurrences
+        group_counts = four_year_data.groupby(['stallholder_id', 'site_id']).size()
+        # Filter those that have exactly 4 entries (indicating 4 different years)
+        year_sites = group_counts[group_counts == count]
 
-        for stallholder, site, year in year_sites:
-            # Fetch the specific SiteHistory record for this stallholder, site, and year
-            site_history = SiteHistory.objects.get(stallholder_id=stallholder, site_id=site, year=year.year)
-
-            is_half_size = site_history.is_half_size
+        for stallholder_id, site_id in year_sites.index:
+            # Fetch the latest SiteHistory record for this stallholder and site
+            site_histories = SiteHistory.objects.filter(stallholder_id=stallholder_id, site_id=site_id)
+            # Use the most recent history
+            recent_history = site_histories.order_by('-year').first()
+            is_half_size = recent_history.is_half_size
 
             # Determine the required site size based on the is_half_size flag
             required_site_size = 'Half Size Fair Site' if is_half_size else 'Full Size Fair Site'
-            site_name = Site.objects.get(id=site).site_name
+            site_name = Site.objects.get(id=site_id).site_name
 
             for event in events:
-                if EventSite.objects.filter(event_id=event.id, site_id=site,
+                if EventSite.objects.filter(event_id=event.id, site_id=site_id,
                                             site__site_size__item_name=required_site_size).exists():
-                    eventsite = EventSite.objects.get(event_id=event.id, site_id=site)
+                    eventsite = EventSite.objects.get(event_id=event.id, site_id=site_id)
                     if eventsite.site_status == 1:
                         SiteAllocation.objects.create(
-                            stallholder_id=stallholder,
+                            stallholder_id=stallholder_id,
                             event_site_id=eventsite.id,
                             created_by_id=3,
                         )
@@ -98,11 +101,13 @@ def site_allocations():
                         eventsite.save()
                     else:
                         db_logger.warning(
-                            f'SiteAllocation for Stallholder ID {stallholder} Event Name {event.event_name} and Site name {eventsite.site.site_name} has not been created, as the EventSite has been taken.',
+                            f'SiteAllocation for Stallholder ID {stallholder_id} Event Name {event.event_name} and '
+                            f'Site name {eventsite.site.site_name} has not been created, as the EventSite has been taken.',
                             extra={'custom_category': 'Site Allocation'})
                 else:
                     db_logger.warning(
-                        f'SiteAllocation for Stallholder ID {stallholder} Event Name {event.event_name} and Site name {site_name} and Site Size {required_site_size} has not been created, as the EventSite does not exist.',
+                        f'SiteAllocation for Stallholder ID {stallholder_id} Event Name {event.event_name} and Site '
+                        f'name {site_name} and Site Size {required_site_size} has not been created, as the EventSite does not exist.',
                         extra={'custom_category': 'Site Allocation'})
         count -= 1
 

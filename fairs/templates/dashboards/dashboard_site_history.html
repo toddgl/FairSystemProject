@@ -18,7 +18,11 @@
                 <tr>
                     <td> {{ site }}</td>
                     {% for site_history in site_histories %}
-                    <td>{{ site_history.1}}</td>
+                    <td>{{ site_history.1}}
+                        {% if site_history.2 %}
+                        <span class="badge rounded-pill bg-danger text-uppercase">h</span>
+                        {% endif %}
+                    </td>
                     {% endfor %}
                 </tr>
             </tbody>

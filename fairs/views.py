@@ -1946,7 +1946,6 @@ def stallholder_history_dashboard_view(request):
     stallholder_filter_message = 'Search for and select a stall holder to see their site allocation history'
     request.session['stallhistory'] = 'fair:history-dashboard'
     historyfilterform =  SiteHistoryFilerForm(request.POST or None)
-    site_histories = SiteHistory.fouryearhistorymgr.all().filter(stallholder=40)
     stallholder_histories_transposed = defaultdict(list)
     site_histories_transposed = defaultdict(list)
     if request.htmx:
@@ -1960,7 +1959,7 @@ def stallholder_history_dashboard_view(request):
             }
             stallholder_histories =  SiteHistory.fouryearhistorymgr.all().filter(**stallholder_filter_dict)
             for stallholder_history in stallholder_histories:
-                stallholder_histories_transposed[stallholder_history.stallholder.id].append((stallholder_history.year, stallholder_history.site))
+                stallholder_histories_transposed[stallholder_history.stallholder.id].append((stallholder_history.year, stallholder_history.site, stallholder_history.is_half_size))
             template = 'dashboards/dashboard_stallholder_history.html'
             return TemplateResponse(request, template, {
                 'stallholder_filter': stallholder_filter_message,
@@ -1976,7 +1975,7 @@ def stallholder_history_dashboard_view(request):
             }
             site_histories =  SiteHistory.fouryearhistorymgr.all().filter(**zone_filter_dict).order_by('year','site')
             for site_history in site_histories:
-                site_histories_transposed[site_history.site].append((site_history.year, site_history.stallholder.id))
+                site_histories_transposed[site_history.site].append((site_history.year, site_history.stallholder.id, site_history.is_half_size))
             template = 'dashboards/dashboard_site_history.html'
             return TemplateResponse(request, template, {
                 'site_filter': site_filter_message,
