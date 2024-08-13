@@ -52,6 +52,9 @@ from utils.site_allocation_tools import (
     delete_unregistered_allocations
 )
 
+from utils.stallholder_history_tools import(
+    update_site_history_site_size
+)
 
 from .forms import (
     FairDetailForm,

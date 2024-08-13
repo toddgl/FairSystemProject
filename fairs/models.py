@@ -604,6 +604,13 @@ class SiteHistory(models.Model):
         verbose_name='site',
         related_name='site_history'
     )
+    site_size = models.ForeignKey(
+        InventoryItem,
+        related_name='site_size_name',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
     is_half_size = models.BooleanField(default=False)
     is_skipped = models.BooleanField(default=False)
     number_events = models.IntegerField()
