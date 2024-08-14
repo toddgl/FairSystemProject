@@ -626,7 +626,7 @@ class CurrentSiteAllocationManager(models.Manager):
 
 class SiteAllocation(models.Model):
     """
-    Description: A model to hold teh alloction of sites firstly based on historical Stallholder site preferences plus
+    Description: A model to hold teh allocation of sites firstly based on historical Stallholder site preferences plus
     for the convener to handle request for site moves and allocation of sites to new stallholders
     """
     stallholder = models.ForeignKey(

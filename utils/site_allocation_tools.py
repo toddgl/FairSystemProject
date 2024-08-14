@@ -91,19 +91,25 @@ def site_allocations():
                 if EventSite.objects.filter(event_id=event.id, site_id=site_id,
                                             site__site_size__item_name=required_site_size).exists():
                     eventsite = EventSite.objects.get(event_id=event.id, site_id=site_id)
-                    if eventsite.site_status == 1:
-                        SiteAllocation.objects.create(
-                            stallholder_id=stallholder_id,
-                            event_site_id=eventsite.id,
-                            created_by_id=3,
-                        )
-                        eventsite.site_status = 2
-                        eventsite.save()
+                    # Check to see if stallholder has an allocation for this event (note not the eventsite) in
+                    #  that case don't create another allocation
+                    if SiteAllocation.objects.filter(event_site__event__id=eventsite.event.id,
+                                                  stallholder__id=stallholder_id).exists():
+                        db_logger.info('Siteallocation already exists for Stallholder {} in Event {} '.format( stallholder_id, eventsite.event.event_name))
                     else:
-                        db_logger.warning(
-                            f'SiteAllocation for Stallholder ID {stallholder_id} Event Name {event.event_name} and '
-                            f'Site name {eventsite.site.site_name} has not been created, as the EventSite has been taken.',
-                            extra={'custom_category': 'Site Allocation'})
+                        if eventsite.site_status == 1:
+                            SiteAllocation.objects.create(
+                                stallholder_id=stallholder_id,
+                                event_site_id=eventsite.id,
+                                created_by_id=3,
+                            )
+                            eventsite.site_status = 2
+                            eventsite.save()
+                        else:
+                            db_logger.warning(
+                                f'SiteAllocation for Stallholder ID {stallholder_id} Event Name {event.event_name} and '
+                                f'Site name {eventsite.site.site_name} has not been created, as the EventSite has been taken.',
+                                extra={'custom_category': 'Site Allocation'})
                 else:
                     db_logger.warning(
                         f'SiteAllocation for Stallholder ID {stallholder_id} Event Name {event.event_name} and Site '
