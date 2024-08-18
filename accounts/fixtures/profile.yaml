@@ -7,7 +7,7 @@
         town: Greytown
         postcode: '5794'
         phone2: (04)4792555
-        org_name: ''
+        org_name: Home
 -   model: accounts.profile
     pk: 7
     fields:
@@ -12638,3 +12638,13 @@
         postcode: ''
         phone2: ''
         org_name: Lily'S Garden
+-   model: accounts.profile
+    pk: 1274
+    fields:
+        user: 1308
+        address1: ''
+        address2: ''
+        town: ''
+        postcode: ''
+        phone2: ''
+        org_name: ''

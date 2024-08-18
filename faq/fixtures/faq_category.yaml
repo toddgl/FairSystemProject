@@ -1,0 +1,24 @@
+-   model: faq.faqcategory
+    pk: 1
+    fields:
+        name: Shopping
+-   model: faq.faqcategory
+    pk: 2
+    fields:
+        name: Logging In
+-   model: faq.faqcategory
+    pk: 3
+    fields:
+        name: Applications
+-   model: faq.faqcategory
+    pk: 10
+    fields:
+        name: On the Day
+-   model: faq.faqcategory
+    pk: 11
+    fields:
+        name: Food Stalls
+-   model: faq.faqcategory
+    pk: 12
+    fields:
+        name: Buskers

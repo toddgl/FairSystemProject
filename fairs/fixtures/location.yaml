@@ -1,0 +1,4 @@
+-   model: fairs.location
+    pk: 1
+    fields:
+        location_name: Martinborough

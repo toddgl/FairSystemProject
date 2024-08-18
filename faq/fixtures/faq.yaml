@@ -1,27 +1,3 @@
--   model: faq.faqcategory
-    pk: 1
-    fields:
-        name: Shopping
--   model: faq.faqcategory
-    pk: 2
-    fields:
-        name: Logging In
--   model: faq.faqcategory
-    pk: 3
-    fields:
-        name: Applications
--   model: faq.faqcategory
-    pk: 10
-    fields:
-        name: On the Day
--   model: faq.faqcategory
-    pk: 11
-    fields:
-        name: Food Stalls
--   model: faq.faqcategory
-    pk: 12
-    fields:
-        name: Buskers
 -   model: faq.faq
     pk: 1
     fields:
@@ -186,11 +162,12 @@
     fields:
         category: 2
         location: 1
-        question: What's the difference between 'Signing up ' and 'Site Application'
+        question: What's the difference between 'Signing up ' and 'Apply for a fair
+            stall'
         answer: "Signing up  is where you set up an account on this web site to store
             your application data.  This is intended to make application easier for
-            you.\r\n\r\nSite Application is where you apply for a stall site at a
-            Martinborough Fair."
+            you.\r\n\r\nApply for a fair stall is where you apply for a stall site
+            at a Martinborough Fair."
         is_active: true
 -   model: faq.faq
     pk: 13
@@ -207,7 +184,7 @@
             read the forgotten credentials FAQ (under the logging in tab) about it
             before emailing for assistance.\r\n\r\nSo, assuming you have registered
             your account:\r\n\r\nLog in to our web-site using the Log In button and
-            select the 'Site Application' button on the MyFair dashboard  to APPLY
+            select the 'Site Registration' button on the MyFair dashboard  to APPLY
             for your stall for the current year.  \r\n\r\nOnce you have submitted
             your application, remember to pay your stall fee. If paying by Bank transfer,
             our bank account number will be provided on your application acknowledgement
@@ -220,8 +197,8 @@
         category: 3
         location: 1
         question: How do I apply for a stall – this is my first time?
-        answer: "Sign up\r\n\r\nIf you don't already have an account, locate the
-            'Sign up' button on the top menu and fill in your details.\r\nYou'll
+        answer: "Register\r\n\r\nIf you don't already have an account, locate the
+            'Register' button on the top menu and fill in your details.\r\nYou'll
             receive an activation link to complete the process. \r\n \r\nLog in\r\n\r\nLocate
             the login button and - well - log in.\r\n\r\nApply\r\n\r\nThe application
             form will be available to registered site users from the 1st of October\r\n\r\nYou
@@ -516,7 +493,7 @@
             food, you MUST have been issued a licence to do so for this event specifically.\r\n\r\nPrevious
             licences or permissions for other events are not considered valid and
             you risk being closed down on the day if you do not comply.\r\n\r\nFood
-            stall providing food that can be consumed at the Fair should apply
+            stall providing food that can be consumed at the Fair should register
             under the Food/Drink (consumable on site) Category, other foodstuffs like
             honey, water, olive oil or packaged tea/coffee etc, should choose Food/Drink
             (Other).\r\n\r\nOn-site food stalls will contribute towards health and
@@ -525,7 +502,7 @@
             form will include a section where you can provide all the information
             required to applying for a SWDC food stall license. If the applicant is
             a registered food business, they will need to provide a scanned copy of
-            their current Application certificate.\r\n\r\nWe will forward the application
+            their current registration certificate.\r\n\r\nWe will forward the application
             information to the Council and pay any fees, and they will contact the
             applicant if there are any questions.\r\n\r\nThe Council will evaluate
             your application and then inform the Convener of their decision, at which

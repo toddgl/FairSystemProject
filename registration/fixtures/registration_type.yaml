@@ -1,3 +1,140 @@
+-   model: registration.foodprepequipment
+    pk: 1
+    fields:
+        equipment_name: Food Warmer
+        power_load_maximum: '2000.00'
+        power_load_minimum: '1000.00'
+        power_load_factor: '60'
+        date_created: 2022-01-12 19:16:17.369604
+        date_updated: 2022-01-12 19:17:28.542051
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 2
+    fields:
+        equipment_name: Hot Water Urn
+        power_load_maximum: '3000.00'
+        power_load_minimum: '2000.00'
+        power_load_factor: '70'
+        date_created: 2022-01-12 19:28:00.576121
+        date_updated: 2022-01-12 19:28:00.576142
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 3
+    fields:
+        equipment_name: Double Cooktop Hob
+        power_load_maximum: '2500.00'
+        power_load_minimum: '2000.00'
+        power_load_factor: '70'
+        date_created: 2022-01-12 19:43:29.097635
+        date_updated: 2022-01-12 19:43:29.097655
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 4
+    fields:
+        equipment_name: Single Cooktop Hob
+        power_load_maximum: '1900.00'
+        power_load_minimum: '1500.00'
+        power_load_factor: '70'
+        date_created: 2022-01-12 19:44:11.072939
+        date_updated: 2022-01-12 19:44:11.072958
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 5
+    fields:
+        equipment_name: Steamer
+        power_load_maximum: '500.00'
+        power_load_minimum: '300.00'
+        power_load_factor: '50'
+        date_created: 2022-03-07 21:13:22.163461
+        date_updated: 2022-03-07 21:13:22.163483
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 6
+    fields:
+        equipment_name: Wok
+        power_load_maximum: '300.00'
+        power_load_minimum: '200.00'
+        power_load_factor: '30'
+        date_created: 2022-03-07 21:14:04.494043
+        date_updated: 2022-03-07 21:14:04.494063
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 7
+    fields:
+        equipment_name: Oven
+        power_load_maximum: '2000.00'
+        power_load_minimum: '1000.00'
+        power_load_factor: '40'
+        date_created: 2022-03-07 21:14:26.616553
+        date_updated: 2022-03-07 21:14:26.616576
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 8
+    fields:
+        equipment_name: Cold Storage
+        power_load_maximum: '500.00'
+        power_load_minimum: '300.00'
+        power_load_factor: '70'
+        date_created: 2022-03-07 21:15:04.571208
+        date_updated: 2022-03-07 21:15:04.571228
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 9
+    fields:
+        equipment_name: BBQ
+        power_load_maximum: '0.00'
+        power_load_minimum: '0.00'
+        power_load_factor: '0'
+        date_created: 2023-07-18 21:41:23.525679
+        date_updated: 2023-07-18 21:41:23.525699
+        created_by: 3
+        updated_by: null
+-   model: registration.foodprepequipment
+    pk: 10
+    fields:
+        equipment_name: Toaster
+        power_load_maximum: '1000.00'
+        power_load_minimum: '400.00'
+        power_load_factor: '50'
+        date_created: 2023-08-11 15:26:03.560664
+        date_updated: 2023-08-11 15:26:03.560687
+        created_by: 3
+        updated_by: null
+-   model: registration.foodsaletype
+    pk: 1
+    fields:
+        food_sale_type: One-off occassion (Martinborough Fair Only)
+        is_active: true
+        date_created: 2022-01-15 17:38:42.400546
+        date_updated: 2022-01-15 17:38:42.400566
+        created_by: 3
+        updated_by: null
+-   model: registration.foodsaletype
+    pk: 2
+    fields:
+        food_sale_type: Regular charity fundraiser (Max 20 per year NZ)
+        is_active: true
+        date_created: 2022-01-15 17:38:59.679271
+        date_updated: 2022-01-15 17:38:59.679291
+        created_by: 3
+        updated_by: null
+-   model: registration.foodsaletype
+    pk: 3
+    fields:
+        food_sale_type: Regular Food Stall Business
+        is_active: true
+        date_created: 2022-01-15 17:39:12.189514
+        date_updated: 2022-01-15 17:39:12.189542
+        created_by: 3
+        updated_by: null
 -   model: registration.stallcategory
     pk: 1
     fields:
@@ -394,3 +531,48 @@
         date_updated: 2022-09-16 22:05:21.549609
         created_by: 3
         updated_by: null
+-   model: registration.commenttype
+    pk: 1
+    fields:
+        type_name: Site Move
+        is_active: true
+-   model: registration.commenttype
+    pk: 2
+    fields:
+        type_name: Information request
+        is_active: true
+-   model: registration.commenttype
+    pk: 3
+    fields:
+        type_name: Power provisioning
+        is_active: true
+-   model: registration.commenttype
+    pk: 4
+    fields:
+        type_name: Invoicing
+        is_active: true
+-   model: registration.commenttype
+    pk: 5
+    fields:
+        type_name: Cancellation
+        is_active: true
+-   model: registration.commenttype
+    pk: 6
+    fields:
+        type_name: Application Errors
+        is_active: true
+-   model: registration.commenttype
+    pk: 7
+    fields:
+        type_name: Help Needed
+        is_active: true
+-   model: registration.commenttype
+    pk: 8
+    fields:
+        type_name: Submission Error
+        is_active: true
+-   model: registration.commenttype
+    pk: 9
+    fields:
+        type_name: Additional Application Items
+        is_active: true

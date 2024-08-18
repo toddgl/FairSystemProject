@@ -1,0 +1,198 @@
+-   model: fairs.zone
+    pk: 1
+    fields:
+        zone_name: Quadrangle West
+        zone_code: QW
+        trestle_source: 1
+        location: 1
+        date_created: 2021-10-29 16:08:44.029085
+        date_updated: 2024-08-11 08:11:56.470798
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 2
+    fields:
+        zone_name: Quadrangle East
+        zone_code: QE
+        trestle_source: 2
+        location: 1
+        date_created: 2021-10-29 16:27:53.874452
+        date_updated: 2024-08-11 08:10:35.491817
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 3
+    fields:
+        zone_name: Quadrangle South
+        zone_code: QS
+        trestle_source: 1
+        location: 1
+        date_created: 2022-02-05 16:47:25.752626
+        date_updated: 2024-08-11 08:11:24.956618
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 4
+    fields:
+        zone_name: Quadrangle North
+        zone_code: QN
+        trestle_source: 2
+        location: 1
+        date_created: 2022-02-05 16:48:14.593078
+        date_updated: 2024-08-11 08:10:57.492822
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 5
+    fields:
+        zone_name: Cambridge Road
+        zone_code: CA
+        trestle_source: 2
+        location: 1
+        date_created: 2022-05-28 21:33:13.161205
+        date_updated: 2024-08-11 08:06:02.349129
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 6
+    fields:
+        zone_name: Oxford Street
+        zone_code: OX
+        trestle_source: 1
+        location: 1
+        date_created: 2022-05-28 21:37:05.277555
+        date_updated: 2024-08-11 08:09:59.151984
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 7
+    fields:
+        zone_name: Mitre 10
+        zone_code: MT
+        trestle_source: null
+        location: 1
+        date_created: 2022-05-28 21:54:00.122371
+        date_updated: 2022-06-01 22:00:42.318805
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 8
+    fields:
+        zone_name: Texas Street East
+        zone_code: TE
+        trestle_source: 2
+        location: 1
+        date_created: 2022-06-23 21:32:38.400112
+        date_updated: 2024-08-11 08:12:25.587535
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 9
+    fields:
+        zone_name: Texas Street West
+        zone_code: TW
+        trestle_source: 2
+        location: 1
+        date_created: 2022-06-23 21:32:56.483883
+        date_updated: 2024-08-11 08:12:41.903849
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 10
+    fields:
+        zone_name: Kitchener Street
+        zone_code: KI
+        trestle_source: 2
+        location: 1
+        date_created: 2022-06-23 21:35:58.304264
+        date_updated: 2024-08-11 08:07:05.039762
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 11
+    fields:
+        zone_name: Kansas Street South
+        zone_code: KS
+        trestle_source: 1
+        location: 1
+        date_created: 2022-06-23 21:36:48.630140
+        date_updated: 2024-08-11 08:06:46.868197
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 12
+    fields:
+        zone_name: Jellicoe Street
+        zone_code: JE
+        trestle_source: 1
+        location: 1
+        date_created: 2022-06-23 21:38:40.868743
+        date_updated: 2024-08-11 08:06:26.646837
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 13
+    fields:
+        zone_name: Ohio Street North
+        zone_code: 'ON'
+        trestle_source: 2
+        location: 1
+        date_created: 2022-06-23 21:39:55.405952
+        date_updated: 2024-08-11 08:09:39.757479
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 14
+    fields:
+        zone_name: Memorial Square North
+        zone_code: MN
+        trestle_source: 2
+        location: 1
+        date_created: 2022-06-23 21:51:28.544604
+        date_updated: 2024-08-11 08:08:13.382716
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 15
+    fields:
+        zone_name: Memorial Square South
+        zone_code: MS
+        trestle_source: 1
+        location: 1
+        date_created: 2022-06-23 21:51:55.138203
+        date_updated: 2024-08-11 08:08:43.558196
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 16
+    fields:
+        zone_name: Memorial Square West
+        zone_code: MW
+        trestle_source: 1
+        location: 1
+        date_created: 2022-06-23 21:52:20.485242
+        date_updated: 2024-08-11 08:09:08.251803
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 17
+    fields:
+        zone_name: Memorial Square East
+        zone_code: ME
+        trestle_source: 2
+        location: 1
+        date_created: 2022-06-23 21:52:38.386954
+        date_updated: 2024-08-11 08:07:39.173867
+        created_by: 3
+        updated_by: 3
+-   model: fairs.zone
+    pk: 18
+    fields:
+        zone_name: Kansas Street North
+        zone_code: KN
+        trestle_source: null
+        location: 1
+        date_created: 2023-03-15 22:13:46.636285
+        date_updated: 2023-03-15 22:13:46.636308
+        created_by: 3
+        updated_by: null

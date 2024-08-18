@@ -129,6 +129,30 @@
         -   - view_zone
             - fairs
             - zone
+        -   - add_faq
+            - faq
+            - faq
+        -   - change_faq
+            - faq
+            - faq
+        -   - add_notice
+            - notices
+            - notice
+        -   - change_notice
+            - notices
+            - notice
+        -   - add_invoice
+            - payment
+            - invoice
+        -   - change_invoice
+            - payment
+            - invoice
+        -   - delete_invoice
+            - payment
+            - invoice
+        -   - change_invoiceitem
+            - payment
+            - invoiceitem
         -   - add_commenttype
             - registration
             - commenttype

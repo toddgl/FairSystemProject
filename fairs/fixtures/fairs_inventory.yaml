@@ -1,48 +1,3 @@
--   model: fairs.fair
-    pk: 1
-    fields:
-        fair_year: '2022'
-        fair_name: Martinborough Fair 2022
-        date_created: 2021-09-23 22:00:13
-        date_updated: 2023-01-15 22:19:11.897006
-        date_cancelled: null
-        fair_description: Rotary managed Martinborough Fair - 2022
-        is_cancelled: false
-        activation_date: 2021-10-01 00:59:00
-        is_activated: false
-        allocation_email_date: null
-        created_by: null
-        updated_by: 3
--   model: fairs.fair
-    pk: 4
-    fields:
-        fair_year: '2023'
-        fair_name: Martinborough Fair 2023
-        date_created: 2023-01-30 21:30:36.196463
-        date_updated: 2023-11-19 15:18:13.853940
-        date_cancelled: null
-        fair_description: SW Rotary managed Martinborough Fair
-        is_cancelled: false
-        activation_date: 2022-09-30 00:00:00
-        is_activated: false
-        allocation_email_date: null
-        created_by: 3
-        updated_by: 3
--   model: fairs.fair
-    pk: 5
-    fields:
-        fair_year: '2024'
-        fair_name: Martinborough Fair 2024
-        date_created: 2023-11-19 15:19:09.060943
-        date_updated: 2023-12-31 12:02:24.363590
-        date_cancelled: null
-        fair_description: SW Rotary managed Martinborough Fair
-        is_cancelled: false
-        activation_date: 2023-10-01 00:00:00
-        is_activated: true
-        allocation_email_date: 2023-12-31 12:02:24.363356
-        created_by: 3
-        updated_by: 3
 -   model: fairs.inventoryitem
     pk: 3
     fields:
@@ -144,157 +99,27 @@
         date_updated: 2024-01-22 21:56:29.723387
         created_by: 3
         updated_by: 3
--   model: fairs.inventoryitemfair
-    pk: 2
-    fields:
-        fair: 1
-        inventory_item: 3
-        price_rate: 1
-        price: '370.00'
--   model: fairs.inventoryitemfair
-    pk: 3
-    fields:
-        fair: 1
-        inventory_item: 4
-        price_rate: 1
-        price: '220.00'
--   model: fairs.inventoryitemfair
-    pk: 4
-    fields:
-        fair: 1
-        inventory_item: 5
-        price_rate: 1
-        price: '100.00'
--   model: fairs.inventoryitemfair
-    pk: 5
-    fields:
-        fair: 1
-        inventory_item: 6
-        price_rate: 2
-        price: '20.00'
--   model: fairs.inventoryitemfair
-    pk: 6
-    fields:
-        fair: 1
-        inventory_item: 7
-        price_rate: 2
-        price: '30.00'
--   model: fairs.inventoryitemfair
-    pk: 7
-    fields:
-        fair: 1
-        inventory_item: 8
-        price_rate: 1
-        price: '20.00'
--   model: fairs.inventoryitemfair
-    pk: 8
-    fields:
-        fair: 4
-        inventory_item: 5
-        price_rate: 1
-        price: '120.00'
--   model: fairs.inventoryitemfair
-    pk: 9
-    fields:
-        fair: 4
-        inventory_item: 4
-        price_rate: 1
-        price: '240.00'
--   model: fairs.inventoryitemfair
-    pk: 10
-    fields:
-        fair: 4
-        inventory_item: 3
-        price_rate: 1
-        price: '390.00'
--   model: fairs.inventoryitemfair
+-   model: fairs.inventoryitem
     pk: 11
     fields:
-        fair: 4
-        inventory_item: 6
-        price_rate: 1
-        price: '40.00'
--   model: fairs.inventoryitemfair
+        item_name: Large 7x3 Site
+        item_type: 1
+        item_description: Oversize site 7x3 metres
+        item_quantity: 1
+        site_size: 7x3
+        date_created: 2024-02-20 08:56:03.621990
+        date_updated: 2024-02-20 08:56:03.622013
+        created_by: 3
+        updated_by: null
+-   model: fairs.inventoryitem
     pk: 12
     fields:
-        fair: 4
-        inventory_item: 7
-        price_rate: 2
-        price: '80.00'
--   model: fairs.inventoryitemfair
-    pk: 13
-    fields:
-        fair: 4
-        inventory_item: 8
-        price_rate: 1
-        price: '30.00'
--   model: fairs.inventoryitemfair
-    pk: 14
-    fields:
-        fair: 4
-        inventory_item: 9
-        price_rate: 2
-        price: '90.00'
--   model: fairs.inventoryitemfair
-    pk: 15
-    fields:
-        fair: 5
-        inventory_item: 3
-        price_rate: 1
-        price: '390.00'
--   model: fairs.inventoryitemfair
-    pk: 16
-    fields:
-        fair: 5
-        inventory_item: 4
-        price_rate: 1
-        price: '240.00'
--   model: fairs.inventoryitemfair
-    pk: 17
-    fields:
-        fair: 5
-        inventory_item: 9
-        price_rate: 2
-        price: '90.00'
--   model: fairs.inventoryitemfair
-    pk: 18
-    fields:
-        fair: 5
-        inventory_item: 5
-        price_rate: 1
-        price: '120.00'
--   model: fairs.inventoryitemfair
-    pk: 19
-    fields:
-        fair: 5
-        inventory_item: 6
-        price_rate: 1
-        price: '40.00'
--   model: fairs.inventoryitemfair
-    pk: 20
-    fields:
-        fair: 5
-        inventory_item: 7
-        price_rate: 2
-        price: '80.00'
--   model: fairs.inventoryitemfair
-    pk: 21
-    fields:
-        fair: 5
-        inventory_item: 8
-        price_rate: 1
-        price: '40.00'
--   model: fairs.inventoryitemfair
-    pk: 22
-    fields:
-        fair: 5
-        inventory_item: 10
-        price_rate: 2
-        price: '50.00'
--   model: fairs.inventoryitemfair
-    pk: 23
-    fields:
-        fair: 4
-        inventory_item: 10
-        price_rate: 2
-        price: '50.00'
+        item_name: Large 9x3 Site
+        item_type: 1
+        item_description: Extra large 9x3 site effectively a full and half site combined
+        item_quantity: 1
+        site_size: 9x3
+        date_created: 2024-02-20 08:57:02.363293
+        date_updated: 2024-02-20 08:57:02.363315
+        created_by: 3
+        updated_by: null
