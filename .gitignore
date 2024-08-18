@@ -5,6 +5,7 @@
 /registration/__pycache__/
 .kdev4
 /config/.env
+/config/env.dist
 FairSystemProject.kdev4
 FairSystemProject.sublime-project
 FairSystemProject.sublime-workspace

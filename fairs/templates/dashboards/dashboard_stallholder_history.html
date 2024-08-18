@@ -16,7 +16,11 @@
         </thead>
             <tbody>
                 <tr>
-                    <td> {{ stallholder }}</td>
+                    <td> {{ stallholder }}
+                        {% if not stallholder.is_active %}
+                        <span class="badge rounded-pill bg-warning text-uppercase">X</span>
+                        {% endif %}
+                    </td>
                     {% for site_history in site_histories %}
                     <td>{{ site_history.1 }}
                         {% if site_history.2 %}

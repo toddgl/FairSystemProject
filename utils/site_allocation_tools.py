@@ -50,7 +50,7 @@ def site_allocation_emails():
 
 
 def site_allocations():
-    df = pd.DataFrame.from_records(SiteHistory.fouryearhistorymgr.all().values())
+    df = pd.DataFrame.from_records(SiteHistory.fouryearhistorymgr.filter(stallholder__is_active=True).values())
     df['year'] = pd.to_datetime(df['year'], format='%Y')
     today = pd.to_datetime('today')
     begin = today - pd.offsets.Day(4 * 365)

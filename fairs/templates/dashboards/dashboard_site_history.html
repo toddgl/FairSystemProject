@@ -22,6 +22,9 @@
                         {% if site_history.2 %}
                         <span class="badge rounded-pill bg-danger text-uppercase">h</span>
                         {% endif %}
+                        {% if site_history.3 != True %}
+                        <span class="badge rounded-pill bg-warning text-uppercase">X</span>
+                        {% endif %}
                     </td>
                     {% endfor %}
                 </tr>
