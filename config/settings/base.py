@@ -1,4 +1,4 @@
-# config/settings.py
+# config/settings/base.py
 
 """
 Django settings for FairSystemProject project.
@@ -22,7 +22,7 @@ env = environ.Env()
 environ.Env.read_env()
 
 # Build paths inside the project using pathlib
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
@@ -35,12 +35,6 @@ DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
-CSRF_TRUSTED_ORIGINS = [
-    'https://lynx-dashing-chamois.ngrok-free.app',
-    'http://ruru:8000',
-    "http://127.0.0.1:8000",
-    "http://localhost:8000"
-]
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
 
@@ -119,7 +113,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
+        'ENGINE': 'django.db.backends.postgresql',
         'NAME': env('DATABASE_NAME'),
         'USER': env('DATABASE_USER'),
         'PASSWORD': env('DATABASE_PASS'),
