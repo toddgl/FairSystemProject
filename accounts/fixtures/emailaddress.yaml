@@ -1,0 +1,8 @@
+-   model: account.emailaddress
+    pk: 1
+    fields:
+        user:
+        - rotary
+        email: convener@martinboroughfair.org.nz
+        verified: true
+        primary: false

@@ -13,25 +13,30 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 from django.urls import reverse_lazy
 
 import environ
 
+print('Base loaded')
+
 # Initialise environment variables
 env = environ.Env()
-environ.Env.read_env()
 
 # Build paths inside the project using pathlib
+
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent.parent
+
+print(BASE_DIR)
+
+# Take environment variables from .env file
+environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
-
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = env('DEBUG')
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
 
@@ -54,6 +59,7 @@ INSTALLED_APPS = [
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
+    'anymail',
     'django_htmx',
     'widget_tweaks',
     'django_extensions',
@@ -183,11 +189,6 @@ ACCOUNT_ADAPTER = 'accounts.adapter.AccountAdapter'
 
 LOGIN_REDIRECT_URL = reverse_lazy('registration:stallregistration-dashboard')
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
-EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
-
-SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 
 # A list of all the people who get code error notifications. When DEBUG=False
 ADMINS = env('ADMIN_LIST')
@@ -218,11 +219,6 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm',
 }
-
-# Stripe
-STRIPE_PUBLISHABLE_KEY = env('STRIPE_PUBLISHABLE_KEY_TEST')
-STRIPE_SECRET_KEY = env('STRIPE_SECRET_KEY_TEST')
-STRIPE_WEBHOOK_SECRET = env('STRIPE_WEBHOOK_SECRET_TEST')
 
 CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
 SESSION_COOKIE_SECURE = False  # Set to True if using HTTPS
