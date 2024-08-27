@@ -38,8 +38,6 @@ environ.Env.read_env(os.path.join(BASE_DIR, '.env'))
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = env('SECRET_KEY')
 
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
-
 CSRF_COOKIE_SECURE = True
 SECURE_SSL_REDIRECT = False
 

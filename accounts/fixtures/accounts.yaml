@@ -2,7 +2,7 @@
     pk: 1
     fields:
         password: pbkdf2_sha256$600000$Zg5uUYZb8bEl37O6rp9gSx$kdwmLf7x9MIRjiVFsZBjfPLllljIBj+DSi0BH5VWFkg=
-        last_login: 2024-08-15 21:42:37.825233
+        last_login: 2024-08-27 09:03:33.661658
         is_superuser: true
         username: glenn
         first_name: Glenn
@@ -202,7 +202,7 @@
     pk: 3
     fields:
         password: pbkdf2_sha256$600000$3kj4Mu9pjXs65uXuRYZCqd$adwfg2phQX2oyBLUXYNby3qjNVAwF1K1K6MS/RbjM9k=
-        last_login: 2024-08-15 21:46:35.051915
+        last_login: 2024-08-27 09:02:15.195111
         is_superuser: false
         username: rotary
         first_name: Rotary
@@ -18513,8 +18513,8 @@
         last_name: Mathews
         email: earthandseajewellery.nz@gmail.com
         is_staff: false
-        is_active: true
-        date_joined: 2022-07-10 08:39:26.291357
+        is_active: false
+        date_joined: 2022-07-10 08:39:26
         uid: bf399821-27c5-48a8-9081-01c9c7a904b8
         role: 3
         reference_id: '16307'

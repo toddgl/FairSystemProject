@@ -5,7 +5,15 @@ from .base import *
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-print('In the test environment')
+ANYMAIL = {
+    # (exact settings here depend on your ESP...)
+    "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),
+    "MAILGUN_SENDER_DOMAIN": 'mbfairsystem.org',  # your Mailgun domain, if needed
+}
+
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+DEFAULT_FROM_EMAIL = 'convener@martinboroughfair.org.nz'
+EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
 CSRF_TRUSTED_ORIGINS = [
     'https://mbfairsystem.org',

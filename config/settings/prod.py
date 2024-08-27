@@ -2,10 +2,15 @@
 
 from .base import *
 
+ALLOWED_HOSTS = [
+    'mbfairsystem.org',
+    'localhost',
+    '127.0.0.1',
+]
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-print('Production environment')
 ANYMAIL = {
     # (exact settings here depend on your ESP...)
     "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),

@@ -7,6 +7,14 @@ DEBUG = True
 
 print('In the dev environment')
 
+ALLOWED_HOSTS = [
+   'ruru',
+    'karearea',
+    'localhost',
+    '127.0.0.1',
+    'lynx-dashing-chamois.ngrok-free.app'
+]
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
