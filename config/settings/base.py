@@ -18,8 +18,6 @@ from django.urls import reverse_lazy
 
 import environ
 
-print('Base loaded')
-
 # Initialise environment variables
 env = environ.Env()
 

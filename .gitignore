@@ -3,6 +3,8 @@
 /fairs/__pycache__/
 /pages/__pycache__/
 /registration/__pycache__/
+/staticfiles/
+/venv/
 .kdev4
 .env
 config/env.dist
@@ -17,4 +19,3 @@ FairSystemProject.sublime-workspace
 /.idea/modules.xml
 /.idea/inspectionProfiles/profiles_settings.xml
 /.idea/vcs.xml
-/staticfiles/
