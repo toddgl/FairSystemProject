@@ -1,0 +1,711 @@
+-   model: auth.group_permissions
+    pk: 1
+    fields:
+        group:
+        - convener
+        permission:
+        - add_fair
+        - fairs
+        - fair
+-   model: auth.group_permissions
+    pk: 2
+    fields:
+        group:
+        - convener
+        permission:
+        - change_fair
+        - fairs
+        - fair
+-   model: auth.group_permissions
+    pk: 3
+    fields:
+        group:
+        - convener
+        permission:
+        - view_fair
+        - fairs
+        - fair
+-   model: auth.group_permissions
+    pk: 4
+    fields:
+        group:
+        - convener
+        permission:
+        - add_event
+        - fairs
+        - event
+-   model: auth.group_permissions
+    pk: 5
+    fields:
+        group:
+        - convener
+        permission:
+        - change_event
+        - fairs
+        - event
+-   model: auth.group_permissions
+    pk: 6
+    fields:
+        group:
+        - convener
+        permission:
+        - view_event
+        - fairs
+        - event
+-   model: auth.group_permissions
+    pk: 10
+    fields:
+        group:
+        - convener
+        permission:
+        - view_zone
+        - fairs
+        - zone
+-   model: auth.group_permissions
+    pk: 11
+    fields:
+        group:
+        - convener
+        permission:
+        - add_site
+        - fairs
+        - site
+-   model: auth.group_permissions
+    pk: 12
+    fields:
+        group:
+        - convener
+        permission:
+        - change_site
+        - fairs
+        - site
+-   model: auth.group_permissions
+    pk: 13
+    fields:
+        group:
+        - convener
+        permission:
+        - view_site
+        - fairs
+        - site
+-   model: auth.group_permissions
+    pk: 14
+    fields:
+        group:
+        - convener
+        permission:
+        - add_zone
+        - fairs
+        - zone
+-   model: auth.group_permissions
+    pk: 15
+    fields:
+        group:
+        - convener
+        permission:
+        - change_zone
+        - fairs
+        - zone
+-   model: auth.group_permissions
+    pk: 16
+    fields:
+        group:
+        - convener
+        permission:
+        - add_inventoryitem
+        - fairs
+        - inventoryitem
+-   model: auth.group_permissions
+    pk: 17
+    fields:
+        group:
+        - convener
+        permission:
+        - change_inventoryitem
+        - fairs
+        - inventoryitem
+-   model: auth.group_permissions
+    pk: 18
+    fields:
+        group:
+        - convener
+        permission:
+        - view_inventoryitem
+        - fairs
+        - inventoryitem
+-   model: auth.group_permissions
+    pk: 19
+    fields:
+        group:
+        - convener
+        permission:
+        - view_eventsite
+        - fairs
+        - eventsite
+-   model: auth.group_permissions
+    pk: 20
+    fields:
+        group:
+        - convener
+        permission:
+        - add_eventsite
+        - fairs
+        - eventsite
+-   model: auth.group_permissions
+    pk: 21
+    fields:
+        group:
+        - convener
+        permission:
+        - change_eventsite
+        - fairs
+        - eventsite
+-   model: auth.group_permissions
+    pk: 22
+    fields:
+        group:
+        - convener
+        permission:
+        - change_emailaddress
+        - account
+        - emailaddress
+-   model: auth.group_permissions
+    pk: 23
+    fields:
+        group:
+        - convener
+        permission:
+        - view_emailaddress
+        - account
+        - emailaddress
+-   model: auth.group_permissions
+    pk: 24
+    fields:
+        group:
+        - convener
+        permission:
+        - add_profile
+        - accounts
+        - profile
+-   model: auth.group_permissions
+    pk: 25
+    fields:
+        group:
+        - convener
+        permission:
+        - change_profile
+        - accounts
+        - profile
+-   model: auth.group_permissions
+    pk: 26
+    fields:
+        group:
+        - convener
+        permission:
+        - view_profile
+        - accounts
+        - profile
+-   model: auth.group_permissions
+    pk: 27
+    fields:
+        group:
+        - convener
+        permission:
+        - add_customuser
+        - accounts
+        - customuser
+-   model: auth.group_permissions
+    pk: 28
+    fields:
+        group:
+        - convener
+        permission:
+        - change_customuser
+        - accounts
+        - customuser
+-   model: auth.group_permissions
+    pk: 29
+    fields:
+        group:
+        - convener
+        permission:
+        - view_customuser
+        - accounts
+        - customuser
+-   model: auth.group_permissions
+    pk: 30
+    fields:
+        group:
+        - convener
+        permission:
+        - add_inventoryitemfair
+        - fairs
+        - inventoryitemfair
+-   model: auth.group_permissions
+    pk: 31
+    fields:
+        group:
+        - convener
+        permission:
+        - change_inventoryitemfair
+        - fairs
+        - inventoryitemfair
+-   model: auth.group_permissions
+    pk: 32
+    fields:
+        group:
+        - convener
+        permission:
+        - view_inventoryitemfair
+        - fairs
+        - inventoryitemfair
+-   model: auth.group_permissions
+    pk: 33
+    fields:
+        group:
+        - convener
+        permission:
+        - view_powerbox
+        - fairs
+        - powerbox
+-   model: auth.group_permissions
+    pk: 34
+    fields:
+        group:
+        - convener
+        permission:
+        - add_eventpower
+        - fairs
+        - eventpower
+-   model: auth.group_permissions
+    pk: 35
+    fields:
+        group:
+        - convener
+        permission:
+        - change_eventpower
+        - fairs
+        - eventpower
+-   model: auth.group_permissions
+    pk: 36
+    fields:
+        group:
+        - convener
+        permission:
+        - view_eventpower
+        - fairs
+        - eventpower
+-   model: auth.group_permissions
+    pk: 37
+    fields:
+        group:
+        - convener
+        permission:
+        - add_powerbox
+        - fairs
+        - powerbox
+-   model: auth.group_permissions
+    pk: 38
+    fields:
+        group:
+        - convener
+        permission:
+        - change_powerbox
+        - fairs
+        - powerbox
+-   model: auth.group_permissions
+    pk: 39
+    fields:
+        group:
+        - convener
+        permission:
+        - view_location
+        - fairs
+        - location
+-   model: auth.group_permissions
+    pk: 40
+    fields:
+        group:
+        - convener
+        permission:
+        - add_location
+        - fairs
+        - location
+-   model: auth.group_permissions
+    pk: 41
+    fields:
+        group:
+        - convener
+        permission:
+        - change_location
+        - fairs
+        - location
+-   model: auth.group_permissions
+    pk: 42
+    fields:
+        group:
+        - convener
+        permission:
+        - add_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 43
+    fields:
+        group:
+        - convener
+        permission:
+        - change_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 44
+    fields:
+        group:
+        - convener
+        permission:
+        - view_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 45
+    fields:
+        group:
+        - convener
+        permission:
+        - add_foodsaletype
+        - registration
+        - foodsaletype
+-   model: auth.group_permissions
+    pk: 46
+    fields:
+        group:
+        - convener
+        permission:
+        - change_foodsaletype
+        - registration
+        - foodsaletype
+-   model: auth.group_permissions
+    pk: 47
+    fields:
+        group:
+        - convener
+        permission:
+        - view_foodsaletype
+        - registration
+        - foodsaletype
+-   model: auth.group_permissions
+    pk: 48
+    fields:
+        group:
+        - convener
+        permission:
+        - add_stallcategory
+        - registration
+        - stallcategory
+-   model: auth.group_permissions
+    pk: 49
+    fields:
+        group:
+        - convener
+        permission:
+        - change_stallcategory
+        - registration
+        - stallcategory
+-   model: auth.group_permissions
+    pk: 50
+    fields:
+        group:
+        - convener
+        permission:
+        - view_stallcategory
+        - registration
+        - stallcategory
+-   model: auth.group_permissions
+    pk: 51
+    fields:
+        group:
+        - stallholder
+        permission:
+        - view_stallregistration
+        - registration
+        - stallregistration
+-   model: auth.group_permissions
+    pk: 53
+    fields:
+        group:
+        - stallholder
+        permission:
+        - add_stallregistration
+        - registration
+        - stallregistration
+-   model: auth.group_permissions
+    pk: 54
+    fields:
+        group:
+        - stallholder
+        permission:
+        - change_stallregistration
+        - registration
+        - stallregistration
+-   model: auth.group_permissions
+    pk: 55
+    fields:
+        group:
+        - stallholder
+        permission:
+        - add_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 56
+    fields:
+        group:
+        - stallholder
+        permission:
+        - change_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 57
+    fields:
+        group:
+        - stallholder
+        permission:
+        - delete_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 58
+    fields:
+        group:
+        - stallholder
+        permission:
+        - view_foodprepequipment
+        - registration
+        - foodprepequipment
+-   model: auth.group_permissions
+    pk: 59
+    fields:
+        group:
+        - stallholder
+        permission:
+        - add_foodprepequipreq
+        - registration
+        - foodprepequipreq
+-   model: auth.group_permissions
+    pk: 60
+    fields:
+        group:
+        - stallholder
+        permission:
+        - change_foodprepequipreq
+        - registration
+        - foodprepequipreq
+-   model: auth.group_permissions
+    pk: 61
+    fields:
+        group:
+        - stallholder
+        permission:
+        - delete_foodprepequipreq
+        - registration
+        - foodprepequipreq
+-   model: auth.group_permissions
+    pk: 62
+    fields:
+        group:
+        - stallholder
+        permission:
+        - view_foodprepequipreq
+        - registration
+        - foodprepequipreq
+-   model: auth.group_permissions
+    pk: 63
+    fields:
+        group:
+        - convener
+        permission:
+        - view_siteallocation
+        - fairs
+        - siteallocation
+-   model: auth.group_permissions
+    pk: 64
+    fields:
+        group:
+        - convener
+        permission:
+        - change_siteallocation
+        - fairs
+        - siteallocation
+-   model: auth.group_permissions
+    pk: 65
+    fields:
+        group:
+        - convener
+        permission:
+        - delete_siteallocation
+        - fairs
+        - siteallocation
+-   model: auth.group_permissions
+    pk: 66
+    fields:
+        group:
+        - convener
+        permission:
+        - add_siteallocation
+        - fairs
+        - siteallocation
+-   model: auth.group_permissions
+    pk: 67
+    fields:
+        group:
+        - convener
+        permission:
+        - view_stallregistration
+        - registration
+        - stallregistration
+-   model: auth.group_permissions
+    pk: 68
+    fields:
+        group:
+        - convener
+        permission:
+        - change_stallregistration
+        - registration
+        - stallregistration
+-   model: auth.group_permissions
+    pk: 69
+    fields:
+        group:
+        - convener
+        permission:
+        - add_registrationcomment
+        - registration
+        - registrationcomment
+-   model: auth.group_permissions
+    pk: 70
+    fields:
+        group:
+        - convener
+        permission:
+        - change_registrationcomment
+        - registration
+        - registrationcomment
+-   model: auth.group_permissions
+    pk: 71
+    fields:
+        group:
+        - convener
+        permission:
+        - view_registrationcomment
+        - registration
+        - registrationcomment
+-   model: auth.group_permissions
+    pk: 72
+    fields:
+        group:
+        - convener
+        permission:
+        - add_commenttype
+        - registration
+        - commenttype
+-   model: auth.group_permissions
+    pk: 73
+    fields:
+        group:
+        - convener
+        permission:
+        - change_commenttype
+        - registration
+        - commenttype
+-   model: auth.group_permissions
+    pk: 74
+    fields:
+        group:
+        - convener
+        permission:
+        - view_commenttype
+        - registration
+        - commenttype
+-   model: auth.group_permissions
+    pk: 76
+    fields:
+        group:
+        - stallholder
+        permission:
+        - delete_stallregistration
+        - registration
+        - stallregistration
+-   model: auth.group_permissions
+    pk: 77
+    fields:
+        group:
+        - convener
+        permission:
+        - add_faq
+        - faq
+        - faq
+-   model: auth.group_permissions
+    pk: 78
+    fields:
+        group:
+        - convener
+        permission:
+        - change_faq
+        - faq
+        - faq
+-   model: auth.group_permissions
+    pk: 79
+    fields:
+        group:
+        - convener
+        permission:
+        - change_invoiceitem
+        - payment
+        - invoiceitem
+-   model: auth.group_permissions
+    pk: 80
+    fields:
+        group:
+        - convener
+        permission:
+        - add_invoice
+        - payment
+        - invoice
+-   model: auth.group_permissions
+    pk: 81
+    fields:
+        group:
+        - convener
+        permission:
+        - change_invoice
+        - payment
+        - invoice
+-   model: auth.group_permissions
+    pk: 82
+    fields:
+        group:
+        - convener
+        permission:
+        - delete_invoice
+        - payment
+        - invoice
+-   model: auth.group_permissions
+    pk: 83
+    fields:
+        group:
+        - convener
+        permission:
+        - add_notice
+        - notices
+        - notice
+-   model: auth.group_permissions
+    pk: 84
+    fields:
+        group:
+        - convener
+        permission:
+        - change_notice
+        - notices
+        - notice

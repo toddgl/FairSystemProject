@@ -1,0 +1,1847 @@
+-   model: auth.permission
+    pk: 1
+    fields:
+        name: Can add log entry
+        content_type:
+        - admin
+        - logentry
+        codename: add_logentry
+-   model: auth.permission
+    pk: 2
+    fields:
+        name: Can change log entry
+        content_type:
+        - admin
+        - logentry
+        codename: change_logentry
+-   model: auth.permission
+    pk: 3
+    fields:
+        name: Can delete log entry
+        content_type:
+        - admin
+        - logentry
+        codename: delete_logentry
+-   model: auth.permission
+    pk: 4
+    fields:
+        name: Can view log entry
+        content_type:
+        - admin
+        - logentry
+        codename: view_logentry
+-   model: auth.permission
+    pk: 5
+    fields:
+        name: Can add permission
+        content_type:
+        - auth
+        - permission
+        codename: add_permission
+-   model: auth.permission
+    pk: 6
+    fields:
+        name: Can change permission
+        content_type:
+        - auth
+        - permission
+        codename: change_permission
+-   model: auth.permission
+    pk: 7
+    fields:
+        name: Can delete permission
+        content_type:
+        - auth
+        - permission
+        codename: delete_permission
+-   model: auth.permission
+    pk: 8
+    fields:
+        name: Can view permission
+        content_type:
+        - auth
+        - permission
+        codename: view_permission
+-   model: auth.permission
+    pk: 9
+    fields:
+        name: Can add group
+        content_type:
+        - auth
+        - group
+        codename: add_group
+-   model: auth.permission
+    pk: 10
+    fields:
+        name: Can change group
+        content_type:
+        - auth
+        - group
+        codename: change_group
+-   model: auth.permission
+    pk: 11
+    fields:
+        name: Can delete group
+        content_type:
+        - auth
+        - group
+        codename: delete_group
+-   model: auth.permission
+    pk: 12
+    fields:
+        name: Can view group
+        content_type:
+        - auth
+        - group
+        codename: view_group
+-   model: auth.permission
+    pk: 13
+    fields:
+        name: Can add user
+        content_type:
+        - auth
+        - user
+        codename: add_user
+-   model: auth.permission
+    pk: 14
+    fields:
+        name: Can change user
+        content_type:
+        - auth
+        - user
+        codename: change_user
+-   model: auth.permission
+    pk: 15
+    fields:
+        name: Can delete user
+        content_type:
+        - auth
+        - user
+        codename: delete_user
+-   model: auth.permission
+    pk: 16
+    fields:
+        name: Can view user
+        content_type:
+        - auth
+        - user
+        codename: view_user
+-   model: auth.permission
+    pk: 17
+    fields:
+        name: Can add content type
+        content_type:
+        - contenttypes
+        - contenttype
+        codename: add_contenttype
+-   model: auth.permission
+    pk: 18
+    fields:
+        name: Can change content type
+        content_type:
+        - contenttypes
+        - contenttype
+        codename: change_contenttype
+-   model: auth.permission
+    pk: 19
+    fields:
+        name: Can delete content type
+        content_type:
+        - contenttypes
+        - contenttype
+        codename: delete_contenttype
+-   model: auth.permission
+    pk: 20
+    fields:
+        name: Can view content type
+        content_type:
+        - contenttypes
+        - contenttype
+        codename: view_contenttype
+-   model: auth.permission
+    pk: 21
+    fields:
+        name: Can add session
+        content_type:
+        - sessions
+        - session
+        codename: add_session
+-   model: auth.permission
+    pk: 22
+    fields:
+        name: Can change session
+        content_type:
+        - sessions
+        - session
+        codename: change_session
+-   model: auth.permission
+    pk: 23
+    fields:
+        name: Can delete session
+        content_type:
+        - sessions
+        - session
+        codename: delete_session
+-   model: auth.permission
+    pk: 24
+    fields:
+        name: Can view session
+        content_type:
+        - sessions
+        - session
+        codename: view_session
+-   model: auth.permission
+    pk: 25
+    fields:
+        name: Can add user
+        content_type:
+        - accounts
+        - customuser
+        codename: add_customuser
+-   model: auth.permission
+    pk: 26
+    fields:
+        name: Can change user
+        content_type:
+        - accounts
+        - customuser
+        codename: change_customuser
+-   model: auth.permission
+    pk: 27
+    fields:
+        name: Can delete user
+        content_type:
+        - accounts
+        - customuser
+        codename: delete_customuser
+-   model: auth.permission
+    pk: 28
+    fields:
+        name: Can view user
+        content_type:
+        - accounts
+        - customuser
+        codename: view_customuser
+-   model: auth.permission
+    pk: 29
+    fields:
+        name: Can add site
+        content_type:
+        - sites
+        - site
+        codename: add_site
+-   model: auth.permission
+    pk: 30
+    fields:
+        name: Can change site
+        content_type:
+        - sites
+        - site
+        codename: change_site
+-   model: auth.permission
+    pk: 31
+    fields:
+        name: Can delete site
+        content_type:
+        - sites
+        - site
+        codename: delete_site
+-   model: auth.permission
+    pk: 32
+    fields:
+        name: Can view site
+        content_type:
+        - sites
+        - site
+        codename: view_site
+-   model: auth.permission
+    pk: 33
+    fields:
+        name: Can add email address
+        content_type:
+        - account
+        - emailaddress
+        codename: add_emailaddress
+-   model: auth.permission
+    pk: 34
+    fields:
+        name: Can change email address
+        content_type:
+        - account
+        - emailaddress
+        codename: change_emailaddress
+-   model: auth.permission
+    pk: 35
+    fields:
+        name: Can delete email address
+        content_type:
+        - account
+        - emailaddress
+        codename: delete_emailaddress
+-   model: auth.permission
+    pk: 36
+    fields:
+        name: Can view email address
+        content_type:
+        - account
+        - emailaddress
+        codename: view_emailaddress
+-   model: auth.permission
+    pk: 37
+    fields:
+        name: Can add email confirmation
+        content_type:
+        - account
+        - emailconfirmation
+        codename: add_emailconfirmation
+-   model: auth.permission
+    pk: 38
+    fields:
+        name: Can change email confirmation
+        content_type:
+        - account
+        - emailconfirmation
+        codename: change_emailconfirmation
+-   model: auth.permission
+    pk: 39
+    fields:
+        name: Can delete email confirmation
+        content_type:
+        - account
+        - emailconfirmation
+        codename: delete_emailconfirmation
+-   model: auth.permission
+    pk: 40
+    fields:
+        name: Can view email confirmation
+        content_type:
+        - account
+        - emailconfirmation
+        codename: view_emailconfirmation
+-   model: auth.permission
+    pk: 41
+    fields:
+        name: Can add social account
+        content_type:
+        - socialaccount
+        - socialaccount
+        codename: add_socialaccount
+-   model: auth.permission
+    pk: 42
+    fields:
+        name: Can change social account
+        content_type:
+        - socialaccount
+        - socialaccount
+        codename: change_socialaccount
+-   model: auth.permission
+    pk: 43
+    fields:
+        name: Can delete social account
+        content_type:
+        - socialaccount
+        - socialaccount
+        codename: delete_socialaccount
+-   model: auth.permission
+    pk: 44
+    fields:
+        name: Can view social account
+        content_type:
+        - socialaccount
+        - socialaccount
+        codename: view_socialaccount
+-   model: auth.permission
+    pk: 45
+    fields:
+        name: Can add social application
+        content_type:
+        - socialaccount
+        - socialapp
+        codename: add_socialapp
+-   model: auth.permission
+    pk: 46
+    fields:
+        name: Can change social application
+        content_type:
+        - socialaccount
+        - socialapp
+        codename: change_socialapp
+-   model: auth.permission
+    pk: 47
+    fields:
+        name: Can delete social application
+        content_type:
+        - socialaccount
+        - socialapp
+        codename: delete_socialapp
+-   model: auth.permission
+    pk: 48
+    fields:
+        name: Can view social application
+        content_type:
+        - socialaccount
+        - socialapp
+        codename: view_socialapp
+-   model: auth.permission
+    pk: 49
+    fields:
+        name: Can add social application token
+        content_type:
+        - socialaccount
+        - socialtoken
+        codename: add_socialtoken
+-   model: auth.permission
+    pk: 50
+    fields:
+        name: Can change social application token
+        content_type:
+        - socialaccount
+        - socialtoken
+        codename: change_socialtoken
+-   model: auth.permission
+    pk: 51
+    fields:
+        name: Can delete social application token
+        content_type:
+        - socialaccount
+        - socialtoken
+        codename: delete_socialtoken
+-   model: auth.permission
+    pk: 52
+    fields:
+        name: Can view social application token
+        content_type:
+        - socialaccount
+        - socialtoken
+        codename: view_socialtoken
+-   model: auth.permission
+    pk: 53
+    fields:
+        name: Can add fair
+        content_type:
+        - fairs
+        - fair
+        codename: add_fair
+-   model: auth.permission
+    pk: 54
+    fields:
+        name: Can change fair
+        content_type:
+        - fairs
+        - fair
+        codename: change_fair
+-   model: auth.permission
+    pk: 55
+    fields:
+        name: Can delete fair
+        content_type:
+        - fairs
+        - fair
+        codename: delete_fair
+-   model: auth.permission
+    pk: 56
+    fields:
+        name: Can view fair
+        content_type:
+        - fairs
+        - fair
+        codename: view_fair
+-   model: auth.permission
+    pk: 57
+    fields:
+        name: Can add event
+        content_type:
+        - fairs
+        - event
+        codename: add_event
+-   model: auth.permission
+    pk: 58
+    fields:
+        name: Can change event
+        content_type:
+        - fairs
+        - event
+        codename: change_event
+-   model: auth.permission
+    pk: 59
+    fields:
+        name: Can delete event
+        content_type:
+        - fairs
+        - event
+        codename: delete_event
+-   model: auth.permission
+    pk: 60
+    fields:
+        name: Can view event
+        content_type:
+        - fairs
+        - event
+        codename: view_event
+-   model: auth.permission
+    pk: 61
+    fields:
+        name: Can add zone
+        content_type:
+        - fairs
+        - zone
+        codename: add_zone
+-   model: auth.permission
+    pk: 62
+    fields:
+        name: Can change zone
+        content_type:
+        - fairs
+        - zone
+        codename: change_zone
+-   model: auth.permission
+    pk: 63
+    fields:
+        name: Can delete zone
+        content_type:
+        - fairs
+        - zone
+        codename: delete_zone
+-   model: auth.permission
+    pk: 64
+    fields:
+        name: Can view zone
+        content_type:
+        - fairs
+        - zone
+        codename: view_zone
+-   model: auth.permission
+    pk: 65
+    fields:
+        name: Can add site
+        content_type:
+        - fairs
+        - site
+        codename: add_site
+-   model: auth.permission
+    pk: 66
+    fields:
+        name: Can change site
+        content_type:
+        - fairs
+        - site
+        codename: change_site
+-   model: auth.permission
+    pk: 67
+    fields:
+        name: Can delete site
+        content_type:
+        - fairs
+        - site
+        codename: delete_site
+-   model: auth.permission
+    pk: 68
+    fields:
+        name: Can view site
+        content_type:
+        - fairs
+        - site
+        codename: view_site
+-   model: auth.permission
+    pk: 69
+    fields:
+        name: Can add event site
+        content_type:
+        - fairs
+        - eventsite
+        codename: add_eventsite
+-   model: auth.permission
+    pk: 70
+    fields:
+        name: Can change event site
+        content_type:
+        - fairs
+        - eventsite
+        codename: change_eventsite
+-   model: auth.permission
+    pk: 71
+    fields:
+        name: Can delete event site
+        content_type:
+        - fairs
+        - eventsite
+        codename: delete_eventsite
+-   model: auth.permission
+    pk: 72
+    fields:
+        name: Can view event site
+        content_type:
+        - fairs
+        - eventsite
+        codename: view_eventsite
+-   model: auth.permission
+    pk: 73
+    fields:
+        name: Can add inventory item
+        content_type:
+        - fairs
+        - inventoryitem
+        codename: add_inventoryitem
+-   model: auth.permission
+    pk: 74
+    fields:
+        name: Can change inventory item
+        content_type:
+        - fairs
+        - inventoryitem
+        codename: change_inventoryitem
+-   model: auth.permission
+    pk: 75
+    fields:
+        name: Can delete inventory item
+        content_type:
+        - fairs
+        - inventoryitem
+        codename: delete_inventoryitem
+-   model: auth.permission
+    pk: 76
+    fields:
+        name: Can view inventory item
+        content_type:
+        - fairs
+        - inventoryitem
+        codename: view_inventoryitem
+-   model: auth.permission
+    pk: 77
+    fields:
+        name: Can add profile
+        content_type:
+        - accounts
+        - profile
+        codename: add_profile
+-   model: auth.permission
+    pk: 78
+    fields:
+        name: Can change profile
+        content_type:
+        - accounts
+        - profile
+        codename: change_profile
+-   model: auth.permission
+    pk: 79
+    fields:
+        name: Can delete profile
+        content_type:
+        - accounts
+        - profile
+        codename: delete_profile
+-   model: auth.permission
+    pk: 80
+    fields:
+        name: Can view profile
+        content_type:
+        - accounts
+        - profile
+        codename: view_profile
+-   model: auth.permission
+    pk: 81
+    fields:
+        name: Can add inventory item fair
+        content_type:
+        - fairs
+        - inventoryitemfair
+        codename: add_inventoryitemfair
+-   model: auth.permission
+    pk: 82
+    fields:
+        name: Can change inventory item fair
+        content_type:
+        - fairs
+        - inventoryitemfair
+        codename: change_inventoryitemfair
+-   model: auth.permission
+    pk: 83
+    fields:
+        name: Can delete inventory item fair
+        content_type:
+        - fairs
+        - inventoryitemfair
+        codename: delete_inventoryitemfair
+-   model: auth.permission
+    pk: 84
+    fields:
+        name: Can view inventory item fair
+        content_type:
+        - fairs
+        - inventoryitemfair
+        codename: view_inventoryitemfair
+-   model: auth.permission
+    pk: 85
+    fields:
+        name: Can add power item
+        content_type:
+        - fairs
+        - poweritem
+        codename: add_poweritem
+-   model: auth.permission
+    pk: 86
+    fields:
+        name: Can change power item
+        content_type:
+        - fairs
+        - poweritem
+        codename: change_poweritem
+-   model: auth.permission
+    pk: 87
+    fields:
+        name: Can delete power item
+        content_type:
+        - fairs
+        - poweritem
+        codename: delete_poweritem
+-   model: auth.permission
+    pk: 88
+    fields:
+        name: Can view power item
+        content_type:
+        - fairs
+        - poweritem
+        codename: view_poweritem
+-   model: auth.permission
+    pk: 89
+    fields:
+        name: Can add site item
+        content_type:
+        - fairs
+        - siteitem
+        codename: add_siteitem
+-   model: auth.permission
+    pk: 90
+    fields:
+        name: Can change site item
+        content_type:
+        - fairs
+        - siteitem
+        codename: change_siteitem
+-   model: auth.permission
+    pk: 91
+    fields:
+        name: Can delete site item
+        content_type:
+        - fairs
+        - siteitem
+        codename: delete_siteitem
+-   model: auth.permission
+    pk: 92
+    fields:
+        name: Can view site item
+        content_type:
+        - fairs
+        - siteitem
+        codename: view_siteitem
+-   model: auth.permission
+    pk: 93
+    fields:
+        name: Can add power box
+        content_type:
+        - fairs
+        - powerbox
+        codename: add_powerbox
+-   model: auth.permission
+    pk: 94
+    fields:
+        name: Can change power box
+        content_type:
+        - fairs
+        - powerbox
+        codename: change_powerbox
+-   model: auth.permission
+    pk: 95
+    fields:
+        name: Can delete power box
+        content_type:
+        - fairs
+        - powerbox
+        codename: delete_powerbox
+-   model: auth.permission
+    pk: 96
+    fields:
+        name: Can view power box
+        content_type:
+        - fairs
+        - powerbox
+        codename: view_powerbox
+-   model: auth.permission
+    pk: 97
+    fields:
+        name: Can add event power
+        content_type:
+        - fairs
+        - eventpower
+        codename: add_eventpower
+-   model: auth.permission
+    pk: 98
+    fields:
+        name: Can change event power
+        content_type:
+        - fairs
+        - eventpower
+        codename: change_eventpower
+-   model: auth.permission
+    pk: 99
+    fields:
+        name: Can delete event power
+        content_type:
+        - fairs
+        - eventpower
+        codename: delete_eventpower
+-   model: auth.permission
+    pk: 100
+    fields:
+        name: Can view event power
+        content_type:
+        - fairs
+        - eventpower
+        codename: view_eventpower
+-   model: auth.permission
+    pk: 101
+    fields:
+        name: Can add location
+        content_type:
+        - fairs
+        - location
+        codename: add_location
+-   model: auth.permission
+    pk: 102
+    fields:
+        name: Can change location
+        content_type:
+        - fairs
+        - location
+        codename: change_location
+-   model: auth.permission
+    pk: 103
+    fields:
+        name: Can delete location
+        content_type:
+        - fairs
+        - location
+        codename: delete_location
+-   model: auth.permission
+    pk: 104
+    fields:
+        name: Can view location
+        content_type:
+        - fairs
+        - location
+        codename: view_location
+-   model: auth.permission
+    pk: 105
+    fields:
+        name: Can add food prep equipment
+        content_type:
+        - registration
+        - foodprepequipment
+        codename: add_foodprepequipment
+-   model: auth.permission
+    pk: 106
+    fields:
+        name: Can change food prep equipment
+        content_type:
+        - registration
+        - foodprepequipment
+        codename: change_foodprepequipment
+-   model: auth.permission
+    pk: 107
+    fields:
+        name: Can delete food prep equipment
+        content_type:
+        - registration
+        - foodprepequipment
+        codename: delete_foodprepequipment
+-   model: auth.permission
+    pk: 108
+    fields:
+        name: Can view food prep equipment
+        content_type:
+        - registration
+        - foodprepequipment
+        codename: view_foodprepequipment
+-   model: auth.permission
+    pk: 109
+    fields:
+        name: Can add food sale type
+        content_type:
+        - registration
+        - foodsaletype
+        codename: add_foodsaletype
+-   model: auth.permission
+    pk: 110
+    fields:
+        name: Can change food sale type
+        content_type:
+        - registration
+        - foodsaletype
+        codename: change_foodsaletype
+-   model: auth.permission
+    pk: 111
+    fields:
+        name: Can delete food sale type
+        content_type:
+        - registration
+        - foodsaletype
+        codename: delete_foodsaletype
+-   model: auth.permission
+    pk: 112
+    fields:
+        name: Can view food sale type
+        content_type:
+        - registration
+        - foodsaletype
+        codename: view_foodsaletype
+-   model: auth.permission
+    pk: 113
+    fields:
+        name: Can add stall category
+        content_type:
+        - registration
+        - stallcategory
+        codename: add_stallcategory
+-   model: auth.permission
+    pk: 114
+    fields:
+        name: Can change stall category
+        content_type:
+        - registration
+        - stallcategory
+        codename: change_stallcategory
+-   model: auth.permission
+    pk: 115
+    fields:
+        name: Can delete stall category
+        content_type:
+        - registration
+        - stallcategory
+        codename: delete_stallcategory
+-   model: auth.permission
+    pk: 116
+    fields:
+        name: Can view stall category
+        content_type:
+        - registration
+        - stallcategory
+        codename: view_stallcategory
+-   model: auth.permission
+    pk: 117
+    fields:
+        name: Can add stall registration
+        content_type:
+        - registration
+        - stallregistration
+        codename: add_stallregistration
+-   model: auth.permission
+    pk: 118
+    fields:
+        name: Can change stall registration
+        content_type:
+        - registration
+        - stallregistration
+        codename: change_stallregistration
+-   model: auth.permission
+    pk: 119
+    fields:
+        name: Can delete stall registration
+        content_type:
+        - registration
+        - stallregistration
+        codename: delete_stallregistration
+-   model: auth.permission
+    pk: 120
+    fields:
+        name: Can view stall registration
+        content_type:
+        - registration
+        - stallregistration
+        codename: view_stallregistration
+-   model: auth.permission
+    pk: 121
+    fields:
+        name: Can add food prep equip req
+        content_type:
+        - registration
+        - foodprepequipreq
+        codename: add_foodprepequipreq
+-   model: auth.permission
+    pk: 122
+    fields:
+        name: Can change food prep equip req
+        content_type:
+        - registration
+        - foodprepequipreq
+        codename: change_foodprepequipreq
+-   model: auth.permission
+    pk: 123
+    fields:
+        name: Can delete food prep equip req
+        content_type:
+        - registration
+        - foodprepequipreq
+        codename: delete_foodprepequipreq
+-   model: auth.permission
+    pk: 124
+    fields:
+        name: Can view food prep equip req
+        content_type:
+        - registration
+        - foodprepequipreq
+        codename: view_foodprepequipreq
+-   model: auth.permission
+    pk: 125
+    fields:
+        name: Can add food registration
+        content_type:
+        - registration
+        - foodregistration
+        codename: add_foodregistration
+-   model: auth.permission
+    pk: 126
+    fields:
+        name: Can change food registration
+        content_type:
+        - registration
+        - foodregistration
+        codename: change_foodregistration
+-   model: auth.permission
+    pk: 127
+    fields:
+        name: Can delete food registration
+        content_type:
+        - registration
+        - foodregistration
+        codename: delete_foodregistration
+-   model: auth.permission
+    pk: 128
+    fields:
+        name: Can view food registration
+        content_type:
+        - registration
+        - foodregistration
+        codename: view_foodregistration
+-   model: auth.permission
+    pk: 129
+    fields:
+        name: Can add registration comment
+        content_type:
+        - registration
+        - registrationcomment
+        codename: add_registrationcomment
+-   model: auth.permission
+    pk: 130
+    fields:
+        name: Can change registration comment
+        content_type:
+        - registration
+        - registrationcomment
+        codename: change_registrationcomment
+-   model: auth.permission
+    pk: 131
+    fields:
+        name: Can delete registration comment
+        content_type:
+        - registration
+        - registrationcomment
+        codename: delete_registrationcomment
+-   model: auth.permission
+    pk: 132
+    fields:
+        name: Can view registration comment
+        content_type:
+        - registration
+        - registrationcomment
+        codename: view_registrationcomment
+-   model: auth.permission
+    pk: 133
+    fields:
+        name: Can add zone map
+        content_type:
+        - fairs
+        - zonemap
+        codename: add_zonemap
+-   model: auth.permission
+    pk: 134
+    fields:
+        name: Can change zone map
+        content_type:
+        - fairs
+        - zonemap
+        codename: change_zonemap
+-   model: auth.permission
+    pk: 135
+    fields:
+        name: Can delete zone map
+        content_type:
+        - fairs
+        - zonemap
+        codename: delete_zonemap
+-   model: auth.permission
+    pk: 136
+    fields:
+        name: Can view zone map
+        content_type:
+        - fairs
+        - zonemap
+        codename: view_zonemap
+-   model: auth.permission
+    pk: 137
+    fields:
+        name: Can add site history
+        content_type:
+        - fairs
+        - sitehistory
+        codename: add_sitehistory
+-   model: auth.permission
+    pk: 138
+    fields:
+        name: Can change site history
+        content_type:
+        - fairs
+        - sitehistory
+        codename: change_sitehistory
+-   model: auth.permission
+    pk: 139
+    fields:
+        name: Can delete site history
+        content_type:
+        - fairs
+        - sitehistory
+        codename: delete_sitehistory
+-   model: auth.permission
+    pk: 140
+    fields:
+        name: Can view site history
+        content_type:
+        - fairs
+        - sitehistory
+        codename: view_sitehistory
+-   model: auth.permission
+    pk: 141
+    fields:
+        name: Can add site allocation
+        content_type:
+        - fairs
+        - siteallocation
+        codename: add_siteallocation
+-   model: auth.permission
+    pk: 142
+    fields:
+        name: Can change site allocation
+        content_type:
+        - fairs
+        - siteallocation
+        codename: change_siteallocation
+-   model: auth.permission
+    pk: 143
+    fields:
+        name: Can delete site allocation
+        content_type:
+        - fairs
+        - siteallocation
+        codename: delete_siteallocation
+-   model: auth.permission
+    pk: 144
+    fields:
+        name: Can view site allocation
+        content_type:
+        - fairs
+        - siteallocation
+        codename: view_siteallocation
+-   model: auth.permission
+    pk: 145
+    fields:
+        name: Can add comment type
+        content_type:
+        - registration
+        - commenttype
+        codename: add_commenttype
+-   model: auth.permission
+    pk: 146
+    fields:
+        name: Can change comment type
+        content_type:
+        - registration
+        - commenttype
+        codename: change_commenttype
+-   model: auth.permission
+    pk: 147
+    fields:
+        name: Can delete comment type
+        content_type:
+        - registration
+        - commenttype
+        codename: delete_commenttype
+-   model: auth.permission
+    pk: 148
+    fields:
+        name: Can view comment type
+        content_type:
+        - registration
+        - commenttype
+        codename: view_commenttype
+-   model: auth.permission
+    pk: 149
+    fields:
+        name: Can add Logging
+        content_type:
+        - CustomDBLogger
+        - statuslog
+        codename: add_statuslog
+-   model: auth.permission
+    pk: 150
+    fields:
+        name: Can change Logging
+        content_type:
+        - CustomDBLogger
+        - statuslog
+        codename: change_statuslog
+-   model: auth.permission
+    pk: 151
+    fields:
+        name: Can delete Logging
+        content_type:
+        - CustomDBLogger
+        - statuslog
+        codename: delete_statuslog
+-   model: auth.permission
+    pk: 152
+    fields:
+        name: Can view Logging
+        content_type:
+        - CustomDBLogger
+        - statuslog
+        codename: view_statuslog
+-   model: auth.permission
+    pk: 153
+    fields:
+        name: Can add addiitionalsiterequired
+        content_type:
+        - registration
+        - additionalsiterequirement
+        codename: add_additionalsiterequirement
+-   model: auth.permission
+    pk: 154
+    fields:
+        name: Can change addiitionalsiterequired
+        content_type:
+        - registration
+        - additionalsiterequirement
+        codename: change_additionalsiterequirement
+-   model: auth.permission
+    pk: 155
+    fields:
+        name: Can delete addiitionalsiterequired
+        content_type:
+        - registration
+        - additionalsiterequirement
+        codename: delete_additionalsiterequirement
+-   model: auth.permission
+    pk: 156
+    fields:
+        name: Can view addiitionalsiterequired
+        content_type:
+        - registration
+        - additionalsiterequirement
+        codename: view_additionalsiterequirement
+-   model: auth.permission
+    pk: 157
+    fields:
+        name: Can add invoice
+        content_type:
+        - payment
+        - invoice
+        codename: add_invoice
+-   model: auth.permission
+    pk: 158
+    fields:
+        name: Can change invoice
+        content_type:
+        - payment
+        - invoice
+        codename: change_invoice
+-   model: auth.permission
+    pk: 159
+    fields:
+        name: Can delete invoice
+        content_type:
+        - payment
+        - invoice
+        codename: delete_invoice
+-   model: auth.permission
+    pk: 160
+    fields:
+        name: Can view invoice
+        content_type:
+        - payment
+        - invoice
+        codename: view_invoice
+-   model: auth.permission
+    pk: 161
+    fields:
+        name: Can add payment type
+        content_type:
+        - payment
+        - paymenttype
+        codename: add_paymenttype
+-   model: auth.permission
+    pk: 162
+    fields:
+        name: Can change payment type
+        content_type:
+        - payment
+        - paymenttype
+        codename: change_paymenttype
+-   model: auth.permission
+    pk: 163
+    fields:
+        name: Can delete payment type
+        content_type:
+        - payment
+        - paymenttype
+        codename: delete_paymenttype
+-   model: auth.permission
+    pk: 164
+    fields:
+        name: Can view payment type
+        content_type:
+        - payment
+        - paymenttype
+        codename: view_paymenttype
+-   model: auth.permission
+    pk: 165
+    fields:
+        name: Can add payment
+        content_type:
+        - payment
+        - paymenthistory
+        codename: add_paymenthistory
+-   model: auth.permission
+    pk: 166
+    fields:
+        name: Can change payment
+        content_type:
+        - payment
+        - paymenthistory
+        codename: change_paymenthistory
+-   model: auth.permission
+    pk: 167
+    fields:
+        name: Can delete payment
+        content_type:
+        - payment
+        - paymenthistory
+        codename: delete_paymenthistory
+-   model: auth.permission
+    pk: 168
+    fields:
+        name: Can view payment
+        content_type:
+        - payment
+        - paymenthistory
+        codename: view_paymenthistory
+-   model: auth.permission
+    pk: 169
+    fields:
+        name: Can add invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: add_ivoiceitem
+-   model: auth.permission
+    pk: 170
+    fields:
+        name: Can change invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: change_ivoiceitem
+-   model: auth.permission
+    pk: 171
+    fields:
+        name: Can delete invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: delete_ivoiceitem
+-   model: auth.permission
+    pk: 172
+    fields:
+        name: Can view invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: view_ivoiceitem
+-   model: auth.permission
+    pk: 173
+    fields:
+        name: Can add invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: add_invoiceitem
+-   model: auth.permission
+    pk: 174
+    fields:
+        name: Can change invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: change_invoiceitem
+-   model: auth.permission
+    pk: 175
+    fields:
+        name: Can delete invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: delete_invoiceitem
+-   model: auth.permission
+    pk: 176
+    fields:
+        name: Can view invoiceitem
+        content_type:
+        - payment
+        - invoiceitem
+        codename: view_invoiceitem
+-   model: auth.permission
+    pk: 177
+    fields:
+        name: Can add faq
+        content_type:
+        - faq
+        - faq
+        codename: add_faq
+-   model: auth.permission
+    pk: 178
+    fields:
+        name: Can change faq
+        content_type:
+        - faq
+        - faq
+        codename: change_faq
+-   model: auth.permission
+    pk: 179
+    fields:
+        name: Can delete faq
+        content_type:
+        - faq
+        - faq
+        codename: delete_faq
+-   model: auth.permission
+    pk: 180
+    fields:
+        name: Can view faq
+        content_type:
+        - faq
+        - faq
+        codename: view_faq
+-   model: auth.permission
+    pk: 181
+    fields:
+        name: Can add faq category
+        content_type:
+        - faq
+        - faqcategory
+        codename: add_faqcategory
+-   model: auth.permission
+    pk: 182
+    fields:
+        name: Can change faq category
+        content_type:
+        - faq
+        - faqcategory
+        codename: change_faqcategory
+-   model: auth.permission
+    pk: 183
+    fields:
+        name: Can delete faq category
+        content_type:
+        - faq
+        - faqcategory
+        codename: delete_faqcategory
+-   model: auth.permission
+    pk: 184
+    fields:
+        name: Can view faq category
+        content_type:
+        - faq
+        - faqcategory
+        codename: view_faqcategory
+-   model: auth.permission
+    pk: 185
+    fields:
+        name: Can add discount item
+        content_type:
+        - payment
+        - discountitem
+        codename: add_discountitem
+-   model: auth.permission
+    pk: 186
+    fields:
+        name: Can change discount item
+        content_type:
+        - payment
+        - discountitem
+        codename: change_discountitem
+-   model: auth.permission
+    pk: 187
+    fields:
+        name: Can delete discount item
+        content_type:
+        - payment
+        - discountitem
+        codename: delete_discountitem
+-   model: auth.permission
+    pk: 188
+    fields:
+        name: Can view discount item
+        content_type:
+        - payment
+        - discountitem
+        codename: view_discountitem
+-   model: auth.permission
+    pk: 189
+    fields:
+        name: Can add notice
+        content_type:
+        - notices
+        - notice
+        codename: add_notice
+-   model: auth.permission
+    pk: 190
+    fields:
+        name: Can change notice
+        content_type:
+        - notices
+        - notice
+        codename: change_notice
+-   model: auth.permission
+    pk: 191
+    fields:
+        name: Can delete notice
+        content_type:
+        - notices
+        - notice
+        codename: delete_notice
+-   model: auth.permission
+    pk: 192
+    fields:
+        name: Can view notice
+        content_type:
+        - notices
+        - notice
+        codename: view_notice
+-   model: auth.permission
+    pk: 193
+    fields:
+        name: Can add food licence
+        content_type:
+        - foodlicence
+        - foodlicence
+        codename: add_foodlicence
+-   model: auth.permission
+    pk: 194
+    fields:
+        name: Can change food licence
+        content_type:
+        - foodlicence
+        - foodlicence
+        codename: change_foodlicence
+-   model: auth.permission
+    pk: 195
+    fields:
+        name: Can delete food licence
+        content_type:
+        - foodlicence
+        - foodlicence
+        codename: delete_foodlicence
+-   model: auth.permission
+    pk: 196
+    fields:
+        name: Can view food licence
+        content_type:
+        - foodlicence
+        - foodlicence
+        codename: view_foodlicence
+-   model: auth.permission
+    pk: 197
+    fields:
+        name: Can add food licence batch
+        content_type:
+        - foodlicence
+        - foodlicencebatch
+        codename: add_foodlicencebatch
+-   model: auth.permission
+    pk: 198
+    fields:
+        name: Can change food licence batch
+        content_type:
+        - foodlicence
+        - foodlicencebatch
+        codename: change_foodlicencebatch
+-   model: auth.permission
+    pk: 199
+    fields:
+        name: Can delete food licence batch
+        content_type:
+        - foodlicence
+        - foodlicencebatch
+        codename: delete_foodlicencebatch
+-   model: auth.permission
+    pk: 200
+    fields:
+        name: Can view food licence batch
+        content_type:
+        - foodlicence
+        - foodlicencebatch
+        codename: view_foodlicencebatch
+-   model: auth.group
+    pk: 1
+    fields:
+        name: convener
+        permissions:
+        -   - change_emailaddress
+            - account
+            - emailaddress
+        -   - view_emailaddress
+            - account
+            - emailaddress
+        -   - add_customuser
+            - accounts
+            - customuser
+        -   - change_customuser
+            - accounts
+            - customuser
+        -   - view_customuser
+            - accounts
+            - customuser
+        -   - add_profile
+            - accounts
+            - profile
+        -   - change_profile
+            - accounts
+            - profile
+        -   - view_profile
+            - accounts
+            - profile
+        -   - add_event
+            - fairs
+            - event
+        -   - change_event
+            - fairs
+            - event
+        -   - view_event
+            - fairs
+            - event
+        -   - add_eventpower
+            - fairs
+            - eventpower
+        -   - change_eventpower
+            - fairs
+            - eventpower
+        -   - view_eventpower
+            - fairs
+            - eventpower
+        -   - add_eventsite
+            - fairs
+            - eventsite
+        -   - change_eventsite
+            - fairs
+            - eventsite
+        -   - view_eventsite
+            - fairs
+            - eventsite
+        -   - add_fair
+            - fairs
+            - fair
+        -   - change_fair
+            - fairs
+            - fair
+        -   - view_fair
+            - fairs
+            - fair
+        -   - add_inventoryitem
+            - fairs
+            - inventoryitem
+        -   - change_inventoryitem
+            - fairs
+            - inventoryitem
+        -   - view_inventoryitem
+            - fairs
+            - inventoryitem
+        -   - add_inventoryitemfair
+            - fairs
+            - inventoryitemfair
+        -   - change_inventoryitemfair
+            - fairs
+            - inventoryitemfair
+        -   - view_inventoryitemfair
+            - fairs
+            - inventoryitemfair
+        -   - add_location
+            - fairs
+            - location
+        -   - change_location
+            - fairs
+            - location
+        -   - view_location
+            - fairs
+            - location
+        -   - add_powerbox
+            - fairs
+            - powerbox
+        -   - change_powerbox
+            - fairs
+            - powerbox
+        -   - view_powerbox
+            - fairs
+            - powerbox
+        -   - add_site
+            - fairs
+            - site
+        -   - change_site
+            - fairs
+            - site
+        -   - view_site
+            - fairs
+            - site
+        -   - add_siteallocation
+            - fairs
+            - siteallocation
+        -   - change_siteallocation
+            - fairs
+            - siteallocation
+        -   - delete_siteallocation
+            - fairs
+            - siteallocation
+        -   - view_siteallocation
+            - fairs
+            - siteallocation
+        -   - add_zone
+            - fairs
+            - zone
+        -   - change_zone
+            - fairs
+            - zone
+        -   - view_zone
+            - fairs
+            - zone
+        -   - add_faq
+            - faq
+            - faq
+        -   - change_faq
+            - faq
+            - faq
+        -   - add_notice
+            - notices
+            - notice
+        -   - change_notice
+            - notices
+            - notice
+        -   - add_invoice
+            - payment
+            - invoice
+        -   - change_invoice
+            - payment
+            - invoice
+        -   - delete_invoice
+            - payment
+            - invoice
+        -   - change_invoiceitem
+            - payment
+            - invoiceitem
+        -   - add_commenttype
+            - registration
+            - commenttype
+        -   - change_commenttype
+            - registration
+            - commenttype
+        -   - view_commenttype
+            - registration
+            - commenttype
+        -   - add_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - change_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - view_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - add_foodsaletype
+            - registration
+            - foodsaletype
+        -   - change_foodsaletype
+            - registration
+            - foodsaletype
+        -   - view_foodsaletype
+            - registration
+            - foodsaletype
+        -   - add_registrationcomment
+            - registration
+            - registrationcomment
+        -   - change_registrationcomment
+            - registration
+            - registrationcomment
+        -   - view_registrationcomment
+            - registration
+            - registrationcomment
+        -   - add_stallcategory
+            - registration
+            - stallcategory
+        -   - change_stallcategory
+            - registration
+            - stallcategory
+        -   - view_stallcategory
+            - registration
+            - stallcategory
+        -   - change_stallregistration
+            - registration
+            - stallregistration
+        -   - view_stallregistration
+            - registration
+            - stallregistration
+-   model: auth.group
+    pk: 2
+    fields:
+        name: stallholder
+        permissions:
+        -   - add_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - change_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - delete_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - view_foodprepequipment
+            - registration
+            - foodprepequipment
+        -   - add_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - change_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - delete_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - view_foodprepequipreq
+            - registration
+            - foodprepequipreq
+        -   - add_stallregistration
+            - registration
+            - stallregistration
+        -   - change_stallregistration
+            - registration
+            - stallregistration
+        -   - delete_stallregistration
+            - registration
+            - stallregistration
+        -   - view_stallregistration
+            - registration
+            - stallregistration
