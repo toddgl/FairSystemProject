@@ -1,4 +1,5 @@
-#!/usr/local/bin/python3.8
+#!/usr/home/admin/www/fairsystem/venv/bin/python3
+
 """Django's command-line utility for administrative tasks."""
 import os
 import sys
