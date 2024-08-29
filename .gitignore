@@ -7,6 +7,7 @@
 /venv/
 .kdev4
 .env
+clean_yaml.py
 config/env.dist
 FairSystemProject.kdev4
 FairSystemProject.sublime-project
