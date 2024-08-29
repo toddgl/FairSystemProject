@@ -1,0 +1,45 @@
+-   model: registration.commenttype
+    pk: 1
+    fields:
+        type_name: Site Move
+        is_active: true
+-   model: registration.commenttype
+    pk: 2
+    fields:
+        type_name: Information request
+        is_active: true
+-   model: registration.commenttype
+    pk: 3
+    fields:
+        type_name: Power provisioning
+        is_active: true
+-   model: registration.commenttype
+    pk: 4
+    fields:
+        type_name: Invoicing
+        is_active: true
+-   model: registration.commenttype
+    pk: 5
+    fields:
+        type_name: Cancellation
+        is_active: true
+-   model: registration.commenttype
+    pk: 6
+    fields:
+        type_name: Application Errors
+        is_active: true
+-   model: registration.commenttype
+    pk: 7
+    fields:
+        type_name: Help Needed
+        is_active: true
+-   model: registration.commenttype
+    pk: 8
+    fields:
+        type_name: Submission Error
+        is_active: true
+-   model: registration.commenttype
+    pk: 9
+    fields:
+        type_name: Additional Application Items
+        is_active: true

@@ -1,0 +1,9 @@
+-   model: notices.notice
+    pk: 1
+    fields:
+        notice_title: Martinborough Fairs 2025
+        notice_content: "The **Martinborough Fairs** are to be run on the following
+            dates:\r\n\r\n - Saturday 1st February 2025\r\n - Saturday 1st March 2025"
+        date_created: 2024-06-19 21:58:13.459047
+        date_updated: 2024-07-04 22:05:30.033706
+        is_active: true

@@ -1,0 +1,30 @@
+-   model: registration.foodsaletype
+    pk: 1
+    fields:
+        food_sale_type: One-off occassion (Martinborough Fair Only)
+        is_active: true
+        date_created: 2022-01-15 17:38:42.400546
+        date_updated: 2022-01-15 17:38:42.400566
+        created_by:
+        - rotary
+        updated_by: null
+-   model: registration.foodsaletype
+    pk: 2
+    fields:
+        food_sale_type: Regular charity fundraiser (Max 20 per year NZ)
+        is_active: true
+        date_created: 2022-01-15 17:38:59.679271
+        date_updated: 2022-01-15 17:38:59.679291
+        created_by:
+        - rotary
+        updated_by: null
+-   model: registration.foodsaletype
+    pk: 3
+    fields:
+        food_sale_type: Regular Food Stall Business
+        is_active: true
+        date_created: 2022-01-15 17:39:12.189514
+        date_updated: 2022-01-15 17:39:12.189542
+        created_by:
+        - rotary
+        updated_by: null
