@@ -1,0 +1,414 @@
+-   model: fairs.zonemap
+    pk: 1
+    fields:
+        zone: 7
+        year: '2022'
+        map_pdf: maps/2022/Mitre10_Carpark_sCowmYS.pdf
+-   model: fairs.zonemap
+    pk: 2
+    fields:
+        zone: 3
+        year: '2022'
+        map_pdf: maps/2022/Southern_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 3
+    fields:
+        zone: 2
+        year: '2022'
+        map_pdf: maps/2022/Eastern_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 5
+    fields:
+        zone: 7
+        year: '2021'
+        map_pdf: maps/2021/Mitre10_Carpark.pdf
+-   model: fairs.zonemap
+    pk: 6
+    fields:
+        zone: 6
+        year: '2022'
+        map_pdf: maps/2022/Oxford_Street.pdf
+-   model: fairs.zonemap
+    pk: 7
+    fields:
+        zone: 5
+        year: '2022'
+        map_pdf: maps/2022/Cambridge_Road.pdf
+-   model: fairs.zonemap
+    pk: 8
+    fields:
+        zone: 1
+        year: '2022'
+        map_pdf: maps/2022/Western_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 9
+    fields:
+        zone: 13
+        year: '2022'
+        map_pdf: maps/2022/Ohio_Street_North.pdf
+-   model: fairs.zonemap
+    pk: 10
+    fields:
+        zone: 12
+        year: '2022'
+        map_pdf: maps/2022/Jellicoe_Street.pdf
+-   model: fairs.zonemap
+    pk: 11
+    fields:
+        zone: 11
+        year: '2022'
+        map_pdf: maps/2022/Kansas_Street_South.pdf
+-   model: fairs.zonemap
+    pk: 12
+    fields:
+        zone: 10
+        year: '2022'
+        map_pdf: maps/2022/Kitchener_Street.pdf
+-   model: fairs.zonemap
+    pk: 13
+    fields:
+        zone: 8
+        year: '2022'
+        map_pdf: maps/2022/Texas_Street_East.pdf
+-   model: fairs.zonemap
+    pk: 14
+    fields:
+        zone: 9
+        year: '2022'
+        map_pdf: maps/2022/Texas_Street_West.pdf
+-   model: fairs.zonemap
+    pk: 15
+    fields:
+        zone: 4
+        year: '2022'
+        map_pdf: maps/2022/North_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 16
+    fields:
+        zone: 14
+        year: '2022'
+        map_pdf: maps/2022/Memorial_Square_North.pdf
+-   model: fairs.zonemap
+    pk: 17
+    fields:
+        zone: 15
+        year: '2022'
+        map_pdf: maps/2022/Memorial_Square_South.pdf
+-   model: fairs.zonemap
+    pk: 18
+    fields:
+        zone: 16
+        year: '2022'
+        map_pdf: maps/2022/Memorial_Square_West.pdf
+-   model: fairs.zonemap
+    pk: 19
+    fields:
+        zone: 17
+        year: '2022'
+        map_pdf: maps/2022/Memorial_Square_East.pdf
+-   model: fairs.zonemap
+    pk: 20
+    fields:
+        zone: 5
+        year: '2023'
+        map_pdf: maps/2023/Cambridge_Road.pdf
+-   model: fairs.zonemap
+    pk: 21
+    fields:
+        zone: 2
+        year: '2023'
+        map_pdf: maps/2023/Eastern_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 22
+    fields:
+        zone: 3
+        year: '2023'
+        map_pdf: maps/2023/Southern_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 23
+    fields:
+        zone: 4
+        year: '2023'
+        map_pdf: maps/2023/North_Quadrant.pdf
+-   model: fairs.zonemap
+    pk: 24
+    fields:
+        zone: 1
+        year: '2023'
+        map_pdf: maps/2023/Western_Quadrant-1.pdf
+-   model: fairs.zonemap
+    pk: 25
+    fields:
+        zone: 6
+        year: '2023'
+        map_pdf: maps/2023/Oxford_Street.pdf
+-   model: fairs.zonemap
+    pk: 26
+    fields:
+        zone: 7
+        year: '2023'
+        map_pdf: maps/2023/Mitre10_Carpark.pdf
+-   model: fairs.zonemap
+    pk: 27
+    fields:
+        zone: 8
+        year: '2023'
+        map_pdf: maps/2023/Texas_Street_East.pdf
+-   model: fairs.zonemap
+    pk: 28
+    fields:
+        zone: 9
+        year: '2023'
+        map_pdf: maps/2023/Texas_Street_West.pdf
+-   model: fairs.zonemap
+    pk: 29
+    fields:
+        zone: 11
+        year: '2023'
+        map_pdf: maps/2023/Kansas_Street_South.pdf
+-   model: fairs.zonemap
+    pk: 30
+    fields:
+        zone: 10
+        year: '2023'
+        map_pdf: maps/2023/Kitchener_Street.pdf
+-   model: fairs.zonemap
+    pk: 31
+    fields:
+        zone: 13
+        year: '2023'
+        map_pdf: maps/2023/Ohio_Street_North.pdf
+-   model: fairs.zonemap
+    pk: 32
+    fields:
+        zone: 9
+        year: '2023'
+        map_pdf: maps/2023/Memorial_square_drive_West.pdf
+-   model: fairs.zonemap
+    pk: 33
+    fields:
+        zone: 15
+        year: '2023'
+        map_pdf: maps/2023/Memorial_square_drive_South.pdf
+-   model: fairs.zonemap
+    pk: 34
+    fields:
+        zone: 12
+        year: '2023'
+        map_pdf: maps/2023/Jellicoe_Street.pdf
+-   model: fairs.zonemap
+    pk: 35
+    fields:
+        zone: 14
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Square_North-2.pdf
+-   model: fairs.zonemap
+    pk: 36
+    fields:
+        zone: 14
+        year: '2023'
+        map_pdf: maps/2023/Map7_Memorial_Square_North-mk.pdf
+-   model: fairs.zonemap
+    pk: 37
+    fields:
+        zone: 14
+        year: '2023'
+        map_pdf: maps/2023/Map7_Memorial_Square_North-mk_RSxPOIQ.pdf
+-   model: fairs.zonemap
+    pk: 38
+    fields:
+        zone: 5
+        year: '2023'
+        map_pdf: maps/2023/Cambridge_Road_2ryIYWm.pdf
+-   model: fairs.zonemap
+    pk: 39
+    fields:
+        zone: 12
+        year: '2023'
+        map_pdf: maps/2023/Jellicoe_Street_M2X9QVW.pdf
+-   model: fairs.zonemap
+    pk: 40
+    fields:
+        zone: 10
+        year: '2023'
+        map_pdf: maps/2023/Kitchener_Street_g1I7EJi.pdf
+-   model: fairs.zonemap
+    pk: 41
+    fields:
+        zone: 17
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Eastern_quadrant.pdf
+-   model: fairs.zonemap
+    pk: 42
+    fields:
+        zone: 14
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Northern_quadrant.pdf
+-   model: fairs.zonemap
+    pk: 43
+    fields:
+        zone: 15
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Southern_quadrant.pdf
+-   model: fairs.zonemap
+    pk: 44
+    fields:
+        zone: 16
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Western_quadrant.pdf
+-   model: fairs.zonemap
+    pk: 45
+    fields:
+        zone: 7
+        year: '2023'
+        map_pdf: maps/2023/Mitre_10_Carpark.pdf
+-   model: fairs.zonemap
+    pk: 46
+    fields:
+        zone: 13
+        year: '2023'
+        map_pdf: maps/2023/Ohio_Street_North_dL2iYoo.pdf
+-   model: fairs.zonemap
+    pk: 47
+    fields:
+        zone: 6
+        year: '2023'
+        map_pdf: maps/2023/Oxford_Street_euoDZ5M.pdf
+-   model: fairs.zonemap
+    pk: 48
+    fields:
+        zone: 2
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Eastern_quadrant_UNjEviE.pdf
+-   model: fairs.zonemap
+    pk: 49
+    fields:
+        zone: 4
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Northern_quadrant_m84nCz4.pdf
+-   model: fairs.zonemap
+    pk: 50
+    fields:
+        zone: 3
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Southern_quadrant_8DHLlJg.pdf
+-   model: fairs.zonemap
+    pk: 51
+    fields:
+        zone: 16
+        year: '2023'
+        map_pdf: maps/2023/Memorial_Drive_Western_quadrant_c9VENqQ.pdf
+-   model: fairs.zonemap
+    pk: 52
+    fields:
+        zone: 8
+        year: '2023'
+        map_pdf: maps/2023/Texas_Street_East_12uyOm2.pdf
+-   model: fairs.zonemap
+    pk: 53
+    fields:
+        zone: 9
+        year: '2023'
+        map_pdf: maps/2023/Texas_Street_West_bl42ffb.pdf
+-   model: fairs.zonemap
+    pk: 54
+    fields:
+        zone: 2
+        year: '2024'
+        map_pdf: maps/2024/Quadrangle_East.pdf
+-   model: fairs.zonemap
+    pk: 55
+    fields:
+        zone: 3
+        year: '2024'
+        map_pdf: maps/2024/Quadrangle_South.pdf
+-   model: fairs.zonemap
+    pk: 56
+    fields:
+        zone: 1
+        year: '2024'
+        map_pdf: maps/2024/Quadrangle_West.pdf
+-   model: fairs.zonemap
+    pk: 57
+    fields:
+        zone: 4
+        year: '2024'
+        map_pdf: maps/2024/Quadrangle_North.pdf
+-   model: fairs.zonemap
+    pk: 58
+    fields:
+        zone: 5
+        year: '2024'
+        map_pdf: maps/2024/Cambridge_Road.pdf
+-   model: fairs.zonemap
+    pk: 59
+    fields:
+        zone: 6
+        year: '2024'
+        map_pdf: maps/2024/Oxford_Street.pdf
+-   model: fairs.zonemap
+    pk: 60
+    fields:
+        zone: 7
+        year: '2024'
+        map_pdf: maps/2024/Mitre10_Carpark.pdf
+-   model: fairs.zonemap
+    pk: 61
+    fields:
+        zone: 8
+        year: '2024'
+        map_pdf: maps/2024/Texas_Street_East.pdf
+-   model: fairs.zonemap
+    pk: 62
+    fields:
+        zone: 9
+        year: '2024'
+        map_pdf: maps/2024/Texas_Street_West.pdf
+-   model: fairs.zonemap
+    pk: 63
+    fields:
+        zone: 11
+        year: '2024'
+        map_pdf: maps/2024/Kansas_Street_South.pdf
+-   model: fairs.zonemap
+    pk: 64
+    fields:
+        zone: 10
+        year: '2024'
+        map_pdf: maps/2024/Kitchener_Street.pdf
+-   model: fairs.zonemap
+    pk: 65
+    fields:
+        zone: 12
+        year: '2024'
+        map_pdf: maps/2024/Jellicoe_Street.pdf
+-   model: fairs.zonemap
+    pk: 66
+    fields:
+        zone: 13
+        year: '2024'
+        map_pdf: maps/2024/Ohio_Street_North.pdf
+-   model: fairs.zonemap
+    pk: 67
+    fields:
+        zone: 14
+        year: '2024'
+        map_pdf: maps/2024/Memorial_Drive_North.pdf
+-   model: fairs.zonemap
+    pk: 68
+    fields:
+        zone: 15
+        year: '2024'
+        map_pdf: maps/2024/Memorial_Drive_South.pdf
+-   model: fairs.zonemap
+    pk: 69
+    fields:
+        zone: 16
+        year: '2024'
+        map_pdf: maps/2024/Memorial_Drive_West.pdf
+-   model: fairs.zonemap
+    pk: 70
+    fields:
+        zone: 17
+        year: '2024'
+        map_pdf: maps/2024/Memorial_Drive_East.pdf
