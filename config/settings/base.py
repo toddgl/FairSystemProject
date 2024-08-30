@@ -263,6 +263,3 @@ LOGGING = {
         },
     }
 }
-
-# REDIRECT_DOMAIN = 'http://127.0.0.1:8000'
-REDIRECT_DOMAIN = 'https://lynx-dashing-chamois.ngrok-free.app'
