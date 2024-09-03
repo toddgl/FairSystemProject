@@ -4,12 +4,15 @@ from .base import *
 
 ALLOWED_HOSTS = [
     'mbfairsystem.org',
+    '149.28.188.154',
     'localhost',
-    '127.0.0.1',
 ]
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
+
+# Set that requests over HTTP are redirected to HTTPS.
+SECURE_SSL_REDIRECT = False
 
 ANYMAIL = {
     # (exact settings here depend on your ESP...)
