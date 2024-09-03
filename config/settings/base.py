@@ -46,16 +46,6 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'django.contrib.sites',
 
-    # 3rd Party
-    'allauth',
-    'allauth.account',
-    'allauth.socialaccount',
-    'anymail',
-    'django_htmx',
-    'widget_tweaks',
-    'django_extensions',
-    'django_fsm',
-
     # Local
     'registration',
     'pages',
@@ -66,7 +56,18 @@ INSTALLED_APPS = [
     'search',
     'CustomDBLogger',
     'foodlicence',
-    'payment'
+    'payment',
+
+    # 3rd Party
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'anymail',
+    'django_htmx',
+    'widget_tweaks',
+    'django_extensions',
+    'django_fsm',
+
 ]
 
 MIDDLEWARE = [
