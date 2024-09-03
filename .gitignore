@@ -5,6 +5,7 @@
 /registration/__pycache__/
 /staticfiles/
 /static/
+/media/
 /venv/
 .kdev4
 .env
