@@ -4,6 +4,7 @@
 /pages/__pycache__/
 /registration/__pycache__/
 /staticfiles/
+/static/
 /venv/
 .kdev4
 .env
@@ -13,7 +14,6 @@ FairSystemProject.kdev4
 FairSystemProject.sublime-project
 FairSystemProject.sublime-workspace
 /logs/
-/media/
 /.idea/dbnavigator.xml
 /.idea/FairSystemProject.iml
 /.idea/misc.xml
