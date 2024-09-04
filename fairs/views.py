@@ -531,11 +531,21 @@ def pdf_view(request, pk):
         zonemap = ZoneMap.objects.filter(zone=pk).latest('year')
     except ObjectDoesNotExist:
         return HttpResponseNotFound('<h1>Zonemap has not be loaded for this zone</h1>')
-    pdf_path = settings.MEDIA_ROOT / str(zonemap.map_pdf)
+    pdf_path = os.path.join(settings.MEDIA_ROOT / str(zonemap.map_pdf))
     filename = os.path.basename(pdf_path)
     if os.path.exists(pdf_path):
-        with open(pdf_path, 'rb') as fh:
-            response = HttpResponse(fh.read(), content_type="application/pdf")
+        if settings.DEBUG:
+            # In development, serve the file directly through Django
+            with open(pdf_path, 'rb') as fh:
+                response = HttpResponse(fh.read(), content_type="application/pdf")
+                response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
+                return response
+        else:
+            # In production, let Nginx handle the file serving
+            from django.utils.http import urlquote
+            response = HttpResponse()
+            response['Content-Type'] = 'application/pdf'
+            response['X-Accel-Redirect'] = '/media/' + urlquote(str(zonemap.map_pdf))  # Let Nginx handle it
             response['Content-Disposition'] = 'attachment; filename={}'.format(filename)
             return response
     raise Http404
