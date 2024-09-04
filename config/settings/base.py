@@ -67,7 +67,6 @@ INSTALLED_APPS = [
     'widget_tweaks',
     'django_extensions',
     'django_fsm',
-
 ]
 
 MIDDLEWARE = [
