@@ -15,11 +15,21 @@ ALLOWED_HOSTS = [
     'lynx-dashing-chamois.ngrok-free.app'
 ]
 
+# Session and CSF configuraton
+CSRF_COOKIE_SECURE = False  # Set to True if using HTTPS
+SESSION_COOKIE_SECURE = False  # Set to True if using HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 8640  # 1 day, adjust as needed
+
+# CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
 SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
+
 CSRF_TRUSTED_ORIGINS = [
     'https://lynx-dashing-chamois.ngrok-free.app',
     'http://ruru:8000',

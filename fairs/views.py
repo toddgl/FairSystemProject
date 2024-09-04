@@ -531,7 +531,7 @@ def pdf_view(request, pk):
         zonemap = ZoneMap.objects.filter(zone=pk).latest('year')
     except ObjectDoesNotExist:
         return HttpResponseNotFound('<h1>Zonemap has not be loaded for this zone</h1>')
-    pdf_path = os.path.join('media', str(zonemap.map_pdf))
+    pdf_path = settings.MEDIA_ROOT / str(zonemap.map_pdf)
     filename = os.path.basename(pdf_path)
     if os.path.exists(pdf_path):
         with open(pdf_path, 'rb') as fh:

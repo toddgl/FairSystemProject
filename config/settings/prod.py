@@ -14,6 +14,15 @@ DEBUG = False
 # Set that requests over HTTP are redirected to HTTPS.
 SECURE_SSL_REDIRECT = False
 
+# Session and CSF configuraton
+CSRF_COOKIE_SECURE = True  # Set to True if using HTTPS
+SESSION_COOKIE_SECURE = True  # Set to True if using HTTPS
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_AGE = 8640  # 1 day, adjust as needed
+
+# CSRF_COOKIE_SAMESITE = 'None'
+SESSION_COOKIE_SAMESITE = 'None'
+
 ANYMAIL = {
     # (exact settings here depend on your ESP...)
     "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),

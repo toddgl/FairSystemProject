@@ -210,15 +210,6 @@ ACCOUNT_LOGOUT_ON_GET = True
 ACCOUNT_FORMS = {
     'signup': 'accounts.forms.CustomSignupForm',
 }
-
-CSRF_COOKIE_SECURE = True  # Set to True if using HTTPS
-SESSION_COOKIE_SECURE = True  # Set to True if using HTTPS
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-SESSION_COOKIE_AGE = 8640  # 1 day, adjust as needed
-
-# CSRF_COOKIE_SAMESITE = 'None'
-SESSION_COOKIE_SAMESITE = 'None'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field
 
