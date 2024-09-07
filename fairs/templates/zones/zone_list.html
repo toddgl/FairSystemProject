@@ -28,7 +28,16 @@
                         View and edit Zone Detail
                     </a>
                     <!-- Button view pdf -->
-                    <button class="btn btn-info" onclick="location.href='{% url 'fair:view-map' zone.id %}'">View Zone Map</button>
+                    {% if zone.zone_map.exists %}
+                        <!-- Loop through each zone map if there are multiple -->
+                        {% for zone_map in zone.zone_map.all %}
+                            <a href="{{ zone_map.map_pdf.url }}" target="_blank">
+                                <button class="btn btn-info">View {{ zone_map.year }} Map</button>
+                            </a>
+                        {% endfor %}
+                    {% else %}
+                        <p>No map available</p>
+                    {% endif %}
                 </div>
             </div>
         </div>
