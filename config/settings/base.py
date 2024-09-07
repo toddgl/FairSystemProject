@@ -182,7 +182,7 @@ LOGIN_REDIRECT_URL = reverse_lazy('registration:stallregistration-dashboard')
 
 
 # A list of all the people who get code error notifications. When DEBUG=False
-ADMINS = env('ADMIN_LIST')
+ADMINS = [x.split(':') for x in env.list('ADMIN_LIST')]
 
 AUTHENTICATION_BACKENDS = [
     # Needed to login by username in Django admin, regardless of allauth
