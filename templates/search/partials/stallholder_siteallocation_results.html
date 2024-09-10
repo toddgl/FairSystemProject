@@ -1,0 +1,39 @@
+<!--templates/search/partials/stallholder_siteallocations_results.html -->
+
+{% if results %}
+
+    {% csrf_token %}
+    <div>
+        <div  class="table-responsive-lg">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                  <th scope="col">Select</th>
+                  <th scope="col">ID</th>
+                  <th scope="col">First Name</th>
+                  <th scope="col">Last Name</th>
+                  <th scope="col">Business Name</th>
+                  <th scope="col">Phone</th>
+                  <th scope="col">Email</th>
+                </tr >
+            </thead>
+            <tbody>
+                {% for stallholder in results %}
+                <tr>
+                    <td><input type="radio" name="selected_stallholder" value= "{{ stallholder.id }}" hx-post="{% url siteallocation %}" hx-trigger="click" hx-target="#list_data"></td>
+                    <td>{{ stallholder.id }}</td>
+                    <td>{{ stallholder.first_name }}</td>
+                    <td>{{ stallholder.last_name }}</td>
+                    <td>{{ stallholder.profile.org_name | default_if_none:"&nbsp;" }}</td>
+                    <td>{{ stallholder.phone }}</td>
+                    <td>{{ stallholder.email }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </div>
+{% else %}
+    <div class="alert alert-info" role="alert">There are no results found.</div>
+{% endif %}
+

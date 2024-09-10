@@ -12,11 +12,11 @@
               {% include 'siteallocations/siteallocation_filter_partial.html' %}
             </div>
             <div class="col-md-6">
-              {% include 'search/partials/search_stallholders_list.html' %}
+              {% include 'search/partials/search_stallholders_siteallocations.html' %}
             </div>
           </div>
         <form action='actionUrl' method='GET'>
-            <button class='btn btn-primary' data-toggle='button' type='submit'>Add a new Site Allocation</button>
+            <a class='btn btn-primary' href="{% url 'fair:siteallocation-create' %}">Add a new Site Allocation</a>
             <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
         </form>
     </div>

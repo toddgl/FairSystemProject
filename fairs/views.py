@@ -1056,7 +1056,7 @@ def site_allocation_listview(request):
     """
     global site_allocation_filter_dict
     global stallholder
-    request.session['target'] = 'fair:siteallocation-list'
+    request.session['siteallocation'] = 'fair:siteallocation-list'
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
@@ -1242,20 +1242,21 @@ def site_allocation_create(request):
     filter_message = 'Showing unfiltered date of all events and zones'
     template_name = 'siteallocations/siteallocation_create.html'
     success_url = reverse_lazy('fair:siteallocation-list')
+    request.session['create-siteallocation'] = 'fair:siteallocation-create'
 
     filterform = SiteAllocationFilterForm(request.POST or None)
-    stallholderform = StallHolderIDForm(request.POST or None)
     siteallocationform = SiteAllocationCreateForm(request.POST or None)
     if request.htmx:
+        stallholder_id = request.POST.get('selected_stallholder')
+        print('Stallholder_id', stallholder_id)
         siteallocationform.fields['event_site'].queryset = EventSite.site_available
-        siteallocationform.fields['event_power'].queryset = EventPower.event_power_current_mgr
         if filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
+            print(zone)
+            print(event)
             attr_zonesite = 'site__zone'
             attr_eventsite = 'event'
-            attr_powerevent = 'event'
-            attr_powerzone = 'power_box__zone'
             if event and zone:
                 filter_message = 'Showing filtered data where the event is  ' + str(event) + ' and zone is ' + str(
                     zone)
@@ -1263,46 +1264,34 @@ def site_allocation_create(request):
                     attr_zonesite: zone,
                     attr_eventsite: event
                 }
-                power_filter_dict = {
-                    attr_powerevent: event,
-                    attr_powerzone: zone
-                }
             elif event:
                 filter_message = 'Showing filtered data where the event is  ' + str(event) + ' and all zones'
                 event_filter_dict = {
                     attr_eventsite: event
-                }
-                power_filter_dict = {
-                    attr_powerevent: event,
                 }
             elif zone:
                 filter_message = 'Showing filtered data where the zone is  ' + str(zone) + ' and all events'
                 event_filter_dict = {
                     attr_zonesite: zone
                 }
-                power_filter_dict = {
-                    attr_powerzone: zone
-                }
             else:
                 event_filter_dict = {}
-                power_filter_dict = {}
                 filter_message = 'Showing unfiltered data - of all current events and zones'
+            print('Event Filter Dict', event_filter_dict)
             siteallocationform.fields['event_site'].queryset = EventSite.site_available.filter(**event_filter_dict)
-            siteallocationform.fields['event_power'].queryset = EventPower.event_power_current_mgr.filter(
-                **power_filter_dict)
             if request.htmx:
                 template_name = 'siteallocations/siteallocation_partial.html'
             return TemplateResponse(request, template_name, {
                 'filterform': filterform,
                 'siteallocationform': siteallocationform,
-                'stallholderform': stallholderform,
                 'filter': filter_message,
             })
     elif request.method == 'POST':
-        if stallholderform.is_valid() and siteallocationform.is_valid():
-            stallholder = stallholderform.cleaned_data['stallholder_id']
+        stallholder_id = request.POST.get('selected_stallholder')
+        if stallholder_id and siteallocationform.is_valid():
             site_allocation = siteallocationform.save(commit=False)
-            site_allocation.stallholder_id = stallholder
+            site_allocation.stallholder_id = stallholder_id
+            site_allocation.site_status = 2
             site_allocation.created_by = request.user
             siteallocationform.save()
         else:
@@ -1315,7 +1304,6 @@ def site_allocation_create(request):
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'siteallocationform': siteallocationform,
-            'stallholderform': stallholderform,
             'filter': filter_message,
         })
 

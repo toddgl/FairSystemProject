@@ -1032,31 +1032,9 @@ class SiteAllocationCreateForm(ModelForm):
         })
     )
 
-    stall_registration = ModelChoiceField(
-        queryset=StallRegistration.objects.all(),
-        empty_label='Please Select',
-        label='Stall Application',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-
-    event_power = ModelChoiceField(
-        queryset=EventPower.objects.all(),
-        empty_label='Please Select',
-        label='Event Power',
-        required=False,
-        widget=Select(attrs={
-            'class': "form-select",
-            'style': 'max-width: 300px;',
-        })
-    )
-
     class Meta:
         model = SiteAllocation
-        fields = ('event_site', 'stall_registration', 'event_power')
+        fields = ('event_site',)
         widgets = {
             'event_site': Select(attrs={
                 'class': "form-select",
