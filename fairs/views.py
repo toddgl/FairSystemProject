@@ -1239,6 +1239,7 @@ def site_allocation_create(request):
     Create a site allocation view with filters for events, zones and stallholders to reduce the listings for
     stallholders, event_sites and event _power.
     """
+
     filter_message = 'Showing unfiltered date of all events and zones'
     template_name = 'siteallocations/siteallocation_create.html'
     success_url = reverse_lazy('fair:siteallocation-list')
@@ -1248,13 +1249,14 @@ def site_allocation_create(request):
     siteallocationform = SiteAllocationCreateForm(request.POST or None)
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
-        print('Stallholder_id', stallholder_id)
+        if stallholder_id:
+            request.session['stallholder_id'] = stallholder_id
+        else:
+            stallholder_id = request.session.get('stallholder_id')
         siteallocationform.fields['event_site'].queryset = EventSite.site_available
         if filterform.is_valid():
             event = filterform.cleaned_data['event']
             zone = filterform.cleaned_data['zone']
-            print(zone)
-            print(event)
             attr_zonesite = 'site__zone'
             attr_eventsite = 'event'
             if event and zone:
@@ -1277,7 +1279,6 @@ def site_allocation_create(request):
             else:
                 event_filter_dict = {}
                 filter_message = 'Showing unfiltered data - of all current events and zones'
-            print('Event Filter Dict', event_filter_dict)
             siteallocationform.fields['event_site'].queryset = EventSite.site_available.filter(**event_filter_dict)
             if request.htmx:
                 template_name = 'siteallocations/siteallocation_partial.html'
@@ -1286,8 +1287,17 @@ def site_allocation_create(request):
                 'siteallocationform': siteallocationform,
                 'filter': filter_message,
             })
+        if request.htmx:
+            template_name = 'siteallocations/stallholder_partial.html'
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
+            'siteallocationform': siteallocationform,
+            'filter': filter_message,
+            'stallholder_id': stallholder_id,  # Pass it back if needed
+        })
     elif request.method == 'POST':
-        stallholder_id = request.POST.get('selected_stallholder')
+        # Retrieve stallholder_id from session
+        stallholder_id = request.session.get('stallholder_id')
         if stallholder_id and siteallocationform.is_valid():
             site_allocation = siteallocationform.save(commit=False)
             site_allocation.stallholder_id = stallholder_id
@@ -1295,9 +1305,7 @@ def site_allocation_create(request):
             site_allocation.created_by = request.user
             siteallocationform.save()
         else:
-            db_logger.error('There was an error with saving the site allocation. '
-                            + siteallocationform.errors.as_data(),
-                            extra={'custom_category': 'Site Allocations'})
+            db_logger.error('There was an error with saving the site allocation. ' + str(siteallocationform.errors.as_data()), extra={'custom_category': 'Site Allocations'})
         return HttpResponseRedirect(success_url)
 
     else:

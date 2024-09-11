@@ -1,4 +1,8 @@
 <!--fairs/templates/siteallocations/stallholder_partial.html -->
-<div id="stallholder_id">
-    {{ stallholderform.as_p }}
+
+<div id="stallholder_data">
+    <!-- HTMX will replace this section with the response after selecting a stallholder -->
+    {% if stallholder_id %}
+    <p>Selected Stallholder ID: {{ stallholder_id }}</p>
+    {% endif %}
 </div>
