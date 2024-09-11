@@ -1968,9 +1968,9 @@ def stallholder_history_dashboard_view(request):
             }
             stallholder_histories = SiteHistory.fouryearhistorymgr.all().filter(**stallholder_filter_dict)
             for stallholder_history in stallholder_histories:
-                stallholder_histories_transposed[stallholder_history.stallholder.id].append((
-                    stallholder_history.year, stallholder_history.site, stallholder_history.is_half_size,
-                    stallholder_history.stallholder.is_active))
+                stallholder = stallholder_history.stallholder
+                stallholder_histories_transposed[stallholder].append((
+                    stallholder_history.year, stallholder_history.site, stallholder_history.is_half_size))
             template = 'dashboards/dashboard_stallholder_history.html'
             return TemplateResponse(request, template, {
                 'stallholder_filter': stallholder_filter_message,
