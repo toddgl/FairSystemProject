@@ -148,8 +148,7 @@
           </div>
           <div class="card-body">
             {% if email_date %}
-            <p class="card-text">Email to stallholders who have been pre-allocated sites was sent {{ email_date }}.<br>
-            There are currently {{ unregistered_allocations }} unregistered allocations and {{ registered_allocations }} registered allocations </p>
+            <p class="card-text">Email to stallholders who have been pre-allocated sites was sent {{ email_date }}.<br> There are currently {{ count_unregistered_allocations }} unregistered allocations and {{ count_registered_allocations }} registered allocations </p>
             {% elif has_current_siteallocations  and not email_date %}
             <p class="card-text">Email to stallholders who have been pre-allocated sites has yet to be sent.</p>
             <form method="post">

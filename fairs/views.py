@@ -1509,6 +1509,8 @@ def setup_process_dashboard_view(request):
     # Delete unregistered site allocations before the Fair is open to new registrations
     unregistered_allocations = SiteAllocation.currentallocationsmgr.filter(stall_registration__isnull=True, on_hold=False)
     count_unregistered_allocations = unregistered_allocations.count()
+    registered_allocations = SiteAllocation.currentallocationsmgr.filter(stall_registration__isnull=False, on_hold=False)
+    count_registered_allocations = registered_allocations.count()
     if unregistered_allocations:
         bgcolor8 = 'bg-danger'
     elif not current_fair:
@@ -1553,6 +1555,7 @@ def setup_process_dashboard_view(request):
         'email_date': email_date,
         'unregistered_allocations': unregistered_allocations,
         'count_unregistered_allocations': count_unregistered_allocations,
+        'count_registered_allocations': count_registered_allocations,
         'reached_activation_date': has_reached_activation_date
     }
 
