@@ -364,10 +364,6 @@ class StallRegistration(models.Model):
                 pass
         super(StallRegistration, self).save(*args, **kwargs)
 
-    @transition(field=booking_status, source="Created", target="Cancelled")
-    def to_booking_status_cancelled(self):
-        pass
-
     @transition(field=booking_status, source="Created", target="Submitted")
     def to_booking_status_submitted(self):
         pass
@@ -384,7 +380,8 @@ class StallRegistration(models.Model):
     def to_booking_status_booked(self):
         pass
 
-    @transition(field=booking_status, source=["Submitted", "Invoiced", "Payment Completed"], target="Cancelled")
+    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced", "Payment Completed"],
+                target="Cancelled")
     def to_booking_status_cancelled(self):
         pass
 

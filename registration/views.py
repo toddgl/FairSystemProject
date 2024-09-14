@@ -342,20 +342,25 @@ def stall_registration_cancel_view(request, pk):
     """
     stallregistration = get_object_or_404(StallRegistration, id=pk)
     stallholder = stallregistration.stallholder
-    if SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration=pk).exists():
-        siteallocation = SiteAllocation.currentallocationsmgr.get(stallholder_id=stallholder.id, stall_registration=pk)
-    else:
-        siteallocation = None
+
+    # Get all site allocations associated with the stall registration
+    siteallocations = SiteAllocation.currentallocationsmgr.filter(stallholder_id=stallholder.id, stall_registration=pk)
+
     try:
+        # Set stall registration as cancelled
         stallregistration.is_cancelled = True
         stallregistration.to_booking_status_cancelled()
         stallregistration.save(update_fields=['is_cancelled', 'booking_status'])
-        if siteallocation:
-            siteallocation.stall_registration = None
-            siteallocation.save(update_fields=['stall_registration'])
-    except Exception as e:  # It will catch other errors related to the cancel call.
-        db_logger.error('There was an error cancelling the stallregistration.' + str(e),
+
+        # If site allocations exist, update them
+        if siteallocations.exists():
+            for siteallocation in siteallocations:
+                siteallocation.stall_registration = None
+                siteallocation.save(update_fields=['stall_registration'])
+    except Exception as e:
+        db_logger.error('There was an error cancelling the stall application: ' + str(e),
                         extra={'custom_category': 'Stall Application'})
+
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
 
@@ -377,7 +382,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
                                                            inventory_item__id=additional_site.site_size.id).price_rate
                 additional_site_costs = price_rate * site_price * additional_site.site_quantity
                 total_additional_site_costs = total_additional_site_costs + additional_site_costs
-            print('Get Additional Site Costs:', total_additional_site_costs)
 
     if stall_category:
         category = StallCategory.objects.get(pk=stall_category)
@@ -392,8 +396,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     else:
         category_price = decimal.Decimal(0.00)
 
-    print('Get stallcategory Costs', category_price)
-
     if site_size:
         site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
         price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price_rate
@@ -401,7 +403,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     else:
         site_price = decimal.Decimal(0.00)
 
-    print('Get site_size costs', site_price)
 
     if trestle_num:
         trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
@@ -410,7 +411,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     else:
         total_trestle_cost = decimal.Decimal(0.00)
 
-    print('Get trestle Costs', total_trestle_cost)
     # Check if the input is not empty
     if vehicle_length and vehicle_length.isdigit():
         # Convert the input to an integer
@@ -425,7 +425,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
         else:
             total_vehicle_cost = decimal.Decimal(0.00)
 
-    print('Get vehicle length costs', total_vehicle_cost)
 
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
@@ -433,8 +432,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
         power_price = price_rate * power_price
     else:
         power_price = decimal.Decimal(0.00)
-
-    print('Get power required cost', power_price)
 
     total_cost = (category_price + site_price + total_trestle_cost + total_vehicle_cost + power_price +
                   total_additional_site_costs)
