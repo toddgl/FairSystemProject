@@ -384,6 +384,7 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
                 total_additional_site_costs = total_additional_site_costs + additional_site_costs
 
     if stall_category:
+        db_logger.debug(f"Stall category ID: {stall_category}")
         category = StallCategory.objects.get(pk=stall_category)
         if category.has_inventory_item:
             category_price = InventoryItemFair.objects.get(fair=fair_id,

@@ -305,6 +305,8 @@ class StallRegistrationCreateForm(ModelForm):
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
             'multi-site': 'Do you want more than a single site with this application?',
             'selling_food': 'Are you selling food?',
+            'vehicle_length': 'Vehicle length (metres)',
+            'vehicle_width': 'Vehicle width (metres)',
         }
         widgets = {
             'stall_manager_name': TextInput(attrs={
