@@ -88,7 +88,7 @@ def payment_successful(request):
     if payment_history.amount_to_pay == 0.00:
         stall_registration = payment_history.invoice.stall_registration
         stall_registration.to_booking_status_payment_completed()
-        stall_registration.save
+        stall_registration.save()
 
     return render(request, 'user_payment/payment_successful.html', {'customer': customer, 'session': session})
 
@@ -100,7 +100,6 @@ def payment_cancelled(request):
 
 @csrf_exempt
 def stripe_webhook(request):
-    print('Stripe webhook called')
     stripe.api_key = settings.STRIPE_SECRET_KEY
     time.sleep(10)
     payload = request.body

@@ -244,6 +244,7 @@ def stall_registration_create(request):
                                                   convener_only_comment=False, comment_parent__isnull=True,
                                                   fair=current_fair.id)
     comment_filter_message = 'Showing current comments of the current fair'
+    registration_id = None
     if siteallocation:
         fair_id = siteallocation.event_site.event.fair.id
         site_size = siteallocation.event_site.site.site_size_id
@@ -269,7 +270,7 @@ def stall_registration_create(request):
         vehicle_length = request.POST.get('vehicle_length')
         power_req = request.POST.get('power_required')
         template_name = 'stallregistration/stallregistration_partial.html'
-        total_cost = get_registration_costs(request, fair_id, site_size, stall_category,
+        total_cost = get_registration_costs(request, fair_id, registration_id, site_size, stall_category,
                                             trestle_num, vehicle_length, power_req)
         return TemplateResponse(request, template_name, {
             'allocation_item': allocation_item,
@@ -288,8 +289,8 @@ def stall_registration_create(request):
         trestle_num = request.POST.get('trestle_quantity')
         vehicle_length = request.POST.get('vehicle_length')
         power_req = request.POST.get('power_required')
-        total_cost = get_registration_costs(request, fair_id, site_size, stall_category,
-                                            trestle_num, vehicle_length, power_req)
+        total_cost = get_registration_costs(request, fair_id, registration_id, site_size, stall_category, trestle_num,
+                                            vehicle_length, power_req)
         if registrationform.is_valid():
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
@@ -364,9 +365,7 @@ def stall_registration_cancel_view(request, pk):
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
 
-def get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None,
-                           vehicle_length=None,
-                           power_req=None):
+def get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None, vehicle_length=None, power_req=None):
     total_additional_site_costs = decimal.Decimal(0.00)
     total_vehicle_cost = decimal.Decimal(0.00)
 
@@ -412,10 +411,10 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     else:
         total_trestle_cost = decimal.Decimal(0.00)
 
-    # Check if the input is not empty
-    if vehicle_length and vehicle_length.isdigit():
-        # Convert the input to an integer
-        vehicle_length = int(vehicle_length)
+    try:
+        # Attempt to convert the vehicle length to a float
+        vehicle_length = float(vehicle_length)
+
         # Check if the vehicle length is greater than 6
         if vehicle_length > 6:
             vehicle_price = InventoryItemFair.objects.get(fair=fair_id,
@@ -426,6 +425,10 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
         else:
             total_vehicle_cost = decimal.Decimal(0.00)
 
+    except ValueError:
+        # If conversion to float fails, handle the error (e.g., log or return an appropriate message)
+        print('Invalid vehicle length input:', vehicle_length)
+        total_vehicle_cost = decimal.Decimal(0.00)
 
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
@@ -1098,12 +1101,11 @@ def convener_stall_registration_detail_view(request, id):
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
+
     # Determine if there are any discounts, if so sum them and add it to the context
     discounts = DiscountItem.objects.filter(stall_registration=stall_registration)
-    if discounts:
-        total_discount = sum(discounts.values_list('discount_amount', flat=True))
-    else:
-        total_discount = decimal.Decimal(0.00)
+    total_discount = sum(discounts.values_list('discount_amount', flat=True)) if discounts else decimal.Decimal(0.00)
+
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
     additionalsiteform = AdditionalSiteReqForm(request.POST or None)
@@ -1114,98 +1116,71 @@ def convener_stall_registration_detail_view(request, id):
                                                   fair=current_fair.id)
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(
         stallholder=stall_registration.stallholder.id)
+
+    # Initialize food_registration to avoid UnboundLocalError
+    food_registration = None
+    foodregistrtionupdateform = None
+
     if stall_registration.selling_food:
         food_registration = FoodRegistration.objects.get(registration=stall_registration)
         foodregistrtionupdateform = FoodRegistrationConvenerEditForm(instance=food_registration)
-        context = {
-            'registrationupdateform': registrationupdateform,
-            'foodregistrationupdateform': foodregistrtionupdateform,
-            'additionalsiteform': additionalsiteform,
-            'applydiscountform': applydiscountform,
-            'payment_histories': payment_history_list,
-            'stallholder_detail': stallholder_detail,
-            "stall_data": stall_registration,
-            'commentfilterform': commentfilterform,
-            'comments': comments,
-            'commentform': commentform,
-            'replyform': replyform,
-            'comment_filter': comment_filter_message,
-            'discounts': discounts,
-            'total_discount': total_discount,
-        }
-    else:
-        context = {
-            'registrationupdateform': registrationupdateform,
-            'additionalsiteform': additionalsiteform,
-            'applydiscountform': applydiscountform,
-            'payment_histories': payment_history_list,
-            'stallholder_detail': stallholder_detail,
-            "stall_data": stall_registration,
-            'commentfilterform': commentfilterform,
-            'comments': comments,
-            'commentform': commentform,
-            'replyform': replyform,
-            'comment_filter': comment_filter_message,
-            'discounts': discounts,
-            'total_discount': total_discount,
-        }
 
-    # Additional Sites add and display
+    context = {
+        'registrationupdateform': registrationupdateform,
+        'additionalsiteform': additionalsiteform,
+        'applydiscountform': applydiscountform,
+        'payment_histories': payment_history_list,
+        'stallholder_detail': stallholder_detail,
+        "stall_data": stall_registration,
+        'commentfilterform': commentfilterform,
+        'comments': comments,
+        'commentform': commentform,
+        'replyform': replyform,
+        'comment_filter': comment_filter_message,
+        'discounts': discounts,
+        'total_discount': total_discount,
+    }
+
+    # Add food form and additional food-related data if applicable
+    if foodregistrtionupdateform:
+        context['foodregistrationupdateform'] = foodregistrtionupdateform
+
     additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=stall_registration)
     if additional_sites:
         context['site_requirement_list'] = additional_sites
 
     if stall_registration.multi_site:
-        context['additional_sites'] = AdditionalSiteRequirement.objects.filter(
-            stall_registration_id=stall_registration.id)
+        context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
 
     if FoodRegistration.objects.filter(registration=id).exists():
-        context["food_data"] = food_registration = FoodRegistration.objects.get(registration=id)
+        food_registration = FoodRegistration.objects.get(registration=id)
+        context["food_data"] = food_registration
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
 
     if request.method == 'POST':
         registrationupdateform = StallRegistrtionConvenerEditForm(request.POST, request.FILES or None,
                                                                   instance=stall_registration)
         foodregistrtionupdateform = FoodRegistrationConvenerEditForm(request.POST, request.FILES or None,
-                                                                     instance=food_registration)
+                                                                     instance=food_registration) if food_registration else None
         applydiscountform = RegistrationDiscountForm(request.POST or None)
-        if 'discount' in request.POST:
-            if applydiscountform.is_valid():
-                # create DiscountItem object but do not save to database
-                new_discount = applydiscountform.save(commit=False)
-                # assign stall application to the DiscountItem
-                new_discount.stall_registration = stall_registration
-                new_discount.created_by = request.user
-                try:
-                    # save discount
-                    new_discount.save()
-                except Exception:
-                    db_logger.error('There was an error with saving the discount item form. '
-                                    + applydiscountform.errors.as_data(),
-                                    extra={'custom_category': 'Discounts'})
-                try:
-                    # save set is_invoiced to False
-                    stall_registration.is_invoiced = False
-                    stall_registration.save()
-                except Exception:
-                    db_logger.error('There was an error with setting the is_invoiced flag post discount save. '
-                                    + applydiscountform.errors.as_data(),
-                                    extra={'custom_category': 'Discounts'})
-                return redirect(request.META.get('HTTP_REFERER'))
 
-        if 'update' in request.POST:
-            if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
-                stall_registration = registrationupdateform.save(commit=False)
-                stall_registration.is_invoiced = False
-                stall_registration.save()
+        if 'discount' in request.POST and applydiscountform.is_valid():
+            new_discount = applydiscountform.save(commit=False)
+            new_discount.stall_registration = stall_registration
+            new_discount.created_by = request.user
+            new_discount.save()
+            stall_registration.is_invoiced = False
+            stall_registration.save()
+            return redirect(request.META.get('HTTP_REFERER'))
+
+        if 'update' in request.POST and registrationupdateform.is_valid():
+            stall_registration = registrationupdateform.save(commit=False)
+            stall_registration.is_invoiced = False
+            stall_registration.save()
+
+            if foodregistrtionupdateform and foodregistrtionupdateform.is_valid():
                 food_registration = foodregistrtionupdateform.save(commit=False)
                 food_registration.save()
-
-            else:
-                db_logger.error('There was an error with updating the stall Application. '
-                                + registrationupdateform.errors.as_data(),
-                                extra={'custom_category': 'Stall Application'})
-                return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
 
@@ -1462,7 +1437,8 @@ def transition_booking_status(request, stall_registration_id, target_status):
     # Get the appropriate transition method based on the target_status
     for transition in stall_registration.get_available_booking_status_transitions():
         if transition.target == target_status:
-            transition.method()
+            method = getattr(stall_registration, transition.name)
+            method()  # Call the method on the stall_registration instance
             stall_registration.save()
             break
 
