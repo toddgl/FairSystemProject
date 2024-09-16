@@ -10,6 +10,18 @@ from foodlicence.models import (
 register = template.Library()
 
 @register.simple_tag
+def stallregistration_has_foodlicences(value):
+    """
+    Templatetag to provide a boolean answer whether there is a foodlicence associated with a stallregistration
+    Used in the convener foodlicence list
+    """
+    foodlicence_exists = FoodLicence.foodlicencecurrentmgr.filter(food_registration__registration_id=value).exists()
+    if foodlicence_exists:
+        return True
+    else:
+        return False
+
+@register.simple_tag
 def get_has_foodlicences():
     """
     Templatetag to provide a boolean answer whether there are any foodlicences

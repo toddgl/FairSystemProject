@@ -256,6 +256,7 @@ class StallRegistration(models.Model):
     CREATED = 'Created'
     SUBMITTED = 'Submitted'
     INVOICED = 'Invoiced'
+    AMENDED = 'Amended'
     PAYMENTCOMPLETED = 'Payment Completed'
     ALLOCATIONREVIEW = 'Allocation Review'
     ALLOCATIONPENDING = 'Allocation Pending'
@@ -272,6 +273,7 @@ class StallRegistration(models.Model):
         (CREATED, _('Created')),
         (SUBMITTED, _('Submitted')),
         (INVOICED, _('Invoiced')),
+        (AMENDED, _('Amended')),
         (PAYMENTCOMPLETED, _('Payment Completed')),
         (ALLOCATIONREVIEW, _('Allocation Review')),
         (ALLOCATIONPENDING, _('Allocation Pending')),
@@ -368,9 +370,13 @@ class StallRegistration(models.Model):
     def to_booking_status_submitted(self):
         pass
 
-    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced", "Payment Completed", "Booked"],
+    @transition(field=booking_status, source=["Created", "Submitted", "Amended", "Payment Completed", "Booked"],
                 target="Invoiced")
     def to_booking_status_invoiced(self):
+        pass
+
+    @transition(field=booking_status, source=["Invoiced", "Payment Completed", "Booked"], target="Amended")
+    def to_booking_status_amended(self):
         pass
 
     @transition(field=booking_status, source=["Invoiced"], target="Payment Completed")

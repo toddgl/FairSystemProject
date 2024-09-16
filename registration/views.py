@@ -411,24 +411,26 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
     else:
         total_trestle_cost = decimal.Decimal(0.00)
 
-    try:
-        # Attempt to convert the vehicle length to a float
-        vehicle_length = float(vehicle_length)
+    if vehicle_length:
+        try:
+            # Attempt to convert the vehicle length to a float
+            vehicle_length = float(vehicle_length)
+            print('Vehicle Length as float', vehicle_length)
 
-        # Check if the vehicle length is greater than 6
-        if vehicle_length > 6:
-            vehicle_price = InventoryItemFair.objects.get(fair=fair_id,
-                                                          inventory_item__item_name='Over 6m vehicle on site').price
-            price_rate = InventoryItemFair.objects.get(fair=fair_id,
-                                                       inventory_item__item_name='Over 6m vehicle on site').price_rate
-            total_vehicle_cost = price_rate * vehicle_price
-        else:
+            # Check if the vehicle length is greater than 6
+            if vehicle_length > 6:
+                vehicle_price = InventoryItemFair.objects.get(fair=fair_id,
+                                                              inventory_item__item_name='Over 6m vehicle on site').price
+                price_rate = InventoryItemFair.objects.get(fair=fair_id,
+                                                           inventory_item__item_name='Over 6m vehicle on site').price_rate
+                total_vehicle_cost = price_rate * vehicle_price
+            else:
+                total_vehicle_cost = decimal.Decimal(0.00)
+
+        except ValueError:
+            # If conversion to float fails, handle the error (e.g., log or return an appropriate message)
+            print('Invalid vehicle length input:', vehicle_length)
             total_vehicle_cost = decimal.Decimal(0.00)
-
-    except ValueError:
-        # If conversion to float fails, handle the error (e.g., log or return an appropriate message)
-        print('Invalid vehicle length input:', vehicle_length)
-        total_vehicle_cost = decimal.Decimal(0.00)
 
     if power_req:
         power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
@@ -439,6 +441,8 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
 
     total_cost = (category_price + site_price + total_trestle_cost + total_vehicle_cost + power_price +
                   total_additional_site_costs)
+    print('Total', total_cost, 'Category', category_price, 'Site', site_price, 'Trestle', total_trestle_cost,
+          'Vehicle', total_vehicle_cost, 'Power', power_price, 'Additional Sites', total_additional_site_costs)
     return total_cost
 
 
@@ -1171,12 +1175,20 @@ def convener_stall_registration_detail_view(request, id):
             new_discount.save()
             stall_registration.is_invoiced = False
             stall_registration.save()
+            # revert the registration to amended so that obvious to the convener that it needs to be reinvoiced
+            if can_proceed(stall_registration.to_booking_status_amended):
+                stall_registration.to_booking_status_amended()
+                stall_registration.save()
             return redirect(request.META.get('HTTP_REFERER'))
 
         if 'update' in request.POST and registrationupdateform.is_valid():
             stall_registration = registrationupdateform.save(commit=False)
             stall_registration.is_invoiced = False
             stall_registration.save()
+            # revert the registration to amended so that obvious to the convener that it needs to be reinvoiced
+            if can_proceed(stall_registration.to_booking_status_amended):
+                stall_registration.to_booking_status_amended()
+                stall_registration.save()
 
             if foodregistrtionupdateform and foodregistrtionupdateform.is_valid():
                 food_registration = foodregistrtionupdateform.save(commit=False)
@@ -1329,6 +1341,11 @@ def invoice_stall_registration(request, id):
         obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
                                                                               stallregistration.fair, comment_type,
                                                                               error_comment, is_done_flag)
+        # Set the registration to submitted
+        if can_proceed(stallregistration.to_booking_status_submitted):
+            stallregistration.to_booking_status_submitted()
+            stallregistration.save()
+
         return HttpResponseRedirect(success_url)
     InvoiceItem.invoiceitemmgr.create_invoice_items(stallregistration)
 

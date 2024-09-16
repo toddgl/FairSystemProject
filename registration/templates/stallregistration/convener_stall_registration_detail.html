@@ -6,18 +6,17 @@
 {% load isinvoiced_tag %}
 {% load hasdiscount_tag %}
 {% load stall_booking_status_transition_tag %}
+{% load hasfoodlicences_tag %}
 
 {% block body %}
 <div class="container">
   <div class="row">
     <div class="px-5 my-3 text-center">
-      <h1>{{ stall_data.fair }} Application Detail for
-        {% if stallholder_detail.org_name is None %}
-        {{ stall_data.stallholder }}
-        {% else %}
-        {{ stallholder_detail.org_name }}
-        {% endif %}
-      </h1>
+     {% if stallholder_detail.org_name %}
+      <h1>{{ stall_data.fair }} Application Detail for {{ stallholder_detail.org_name }}</h1>
+      {% else %}
+      <h1>{{ stall_data.fair }} Application Detail for {{ stall_data.stallholder }}</h1>
+      {% endif %}
       <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderdetail"> Click to view stallholder profile</button>
       {% get_has_payment_history stall_data.stallholder.id as payment_history_result %}
       {% if payment_history_result %}
@@ -40,6 +39,11 @@
           {% endfor %}
           </ul>
         </div>
+      {% endif %}
+      {% stallregistration_has_foodlicences stall_data.id as has_foodlicence_result %}
+      {% if has_foodlicence_result %}
+        <a href="{% url 'foodlicence:foodlicence-create' stall_data.id %}" class="btn btn-primary">Create
+          Foodlicence</a>
       {% endif %}
 
 <div>

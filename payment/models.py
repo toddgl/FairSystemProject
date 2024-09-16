@@ -143,7 +143,8 @@ class PaymentHistoryCurrentManager(models.Manager):
 
     def get_queryset(self):
         return super().get_queryset().filter(invoice__stall_registration__fair__fair_year__in=[current_year,
-                                                                                               next_year])
+                                                                                               next_year],
+                                             invoice__stall_registration__fair__is_activated=True )
 
     def get_registration_payment_history(self, registration):
         return super().get_queryset().filter(invoice__stall_registration=registration).last()

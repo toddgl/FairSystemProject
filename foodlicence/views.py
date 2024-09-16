@@ -19,7 +19,8 @@ from accounts.models import (
     Profile
 )
 from registration.models import (
-    StallRegistration
+    StallRegistration,
+    FoodRegistration
 )
 from .models import (
     FoodLicenceBatch,
@@ -260,6 +261,18 @@ def foodlicence_batch_update(request, id):
 
     return redirect(request.META.get('HTTP_REFERER'))
 
+def create_food_licence_from_stallregistration(request, stallregistration_id):
+    # Get the FoodRegistration instance associated with the StallRegistration ID
+    food_registration = get_object_or_404(FoodRegistration, registration_id=stallregistration_id)
+
+    # Create the FoodLicence instance with status "Created"
+    food_licence = FoodLicence.objects.create(
+        food_registration=food_registration,
+        licence_status=FoodLicence.CREATED
+    )
+
+    # Redirect to the calling view
+    return redirect(request.META.get('HTTP_REFERER'))
 
 
 

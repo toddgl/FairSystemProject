@@ -33,7 +33,7 @@ class FoodLicenceBatch(models.Model):
     date_returned = models.DateTimeField(null=True, blank=True)
     date_closed = models.DateTimeField(null=True, blank=True)
     batch_count = models.IntegerField()
-    pdf_file = models.FileField(upload_to='pdfs/', null=True, blank=True)
+    pdf_file = models.FileField(upload_to='pdfs/' + str(current_year), null=True, blank=True)
 
     objects = models.Manager()
     foodlicencebatchcurrentmgr = FoodLicenceBatchCurrentManager()

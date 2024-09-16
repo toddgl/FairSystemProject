@@ -31,7 +31,7 @@ EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 
 CSRF_TRUSTED_ORIGINS = [
-    'https://lynx-dashing-chamois.ngrok-free.app',
+    'http://lynx-dashing-chamois.ngrok-free.app',
     'http://ruru:8000',
     "http://127.0.0.1:8000",
     "http://localhost:8000"
