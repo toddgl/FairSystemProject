@@ -28,7 +28,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
-SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
+SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'g.todd@internet.co.nz'
 
 CSRF_TRUSTED_ORIGINS = [
     'http://lynx-dashing-chamois.ngrok-free.app',

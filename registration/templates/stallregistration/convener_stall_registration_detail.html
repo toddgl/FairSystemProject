@@ -40,10 +40,9 @@
           </ul>
         </div>
       {% endif %}
-      {% stallregistration_has_foodlicences stall_data.id as has_foodlicence_result %}
-      {% if has_foodlicence_result %}
-        <a href="{% url 'foodlicence:foodlicence-create' stall_data.id %}" class="btn btn-primary">Create
-          Foodlicence</a>
+      {% can_generate_foodlicence stall_data.id as missing_foodlicence_result %}
+      {% if missing_foodlicence_result %}
+        <a href="{% url 'foodlicence:foodlicence-create' stall_data.id %}" class="btn btn-primary">Create Foodlicence</a>
       {% endif %}
 
 <div>

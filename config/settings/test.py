@@ -36,6 +36,8 @@ EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 DEFAULT_FROM_EMAIL = 'convener@martinboroughfair.org.nz'
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
+SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'g.todd@internet.co.nz'
+
 CSRF_TRUSTED_ORIGINS = [
     'https://mbfairsystem.org',
     "http://127.0.0.1",

@@ -67,6 +67,7 @@ class FoodLicence(models.Model):
     consideration
     """
     CREATED = "Created"
+    STAGED = "Staged"
     BATCHED = "Batched"
     SUBMITTED = "Submitted"
     REJECTED = "Rejected"
@@ -74,6 +75,7 @@ class FoodLicence(models.Model):
 
     LICENCE_STATUS_CHOICES = [
         (CREATED, _("created")),
+        (STAGED, _("staged")),
         (BATCHED, _('batched')),
         (SUBMITTED, _("submitted")),
         (REJECTED, _("rejected")),
@@ -102,20 +104,22 @@ class FoodLicence(models.Model):
     objects = models.Manager()
     foodlicencecurrentmgr = FoodLicenceCurrentManager()
 
-    @transition(field=licence_status, source="Created", target="Batched")
+    @transition(field=licence_status, source="Created", target="Staged")
+    def to_licence_status_staged(self):
+        pass
+
+    @transition(field=licence_status, source="Staged", target="Batched")
     def to_licence_status_batched(self):
-        self.save()
+        pass
 
     @transition(field=licence_status, source="Batched", target="Submitted")
     def to_licence_status_submitted(self):
-        self.save()
+        pass
 
     @transition(field=licence_status, source="Submitted", target="Rejected")
     def to_licence_status_rejected(self):
-        self.date_completed = datetime.datetime.now()
-        self.save()
+        pass
 
     @transition(field=licence_status, source="Submitted", target="Approved")
     def to_licence_status_approved(self):
-        self.date_completed = datetime.datetime.now()
-        self.save()
+        pass

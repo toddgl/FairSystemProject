@@ -18,7 +18,11 @@
               <span class="hr"></span>
           </div>
           <div>
-              <strong>Number of Batched Licences : {% get_number_batched_foodlicences %} </strong>
+              <strong>Number of Staged Licences : {% get_number_staged_foodlicences %} </strong>
+              <br>
+              <p><em>Clicking on PDF generation button will process all the staged foodlicences creating a batch file
+                  that will be sent to SWDC for foodlicence approval</em></p>
+              <br>
               <div>
                   <a class = "btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top"
                      title="Generate batch pdf for SWDC" href="{% url 'foodlicence:licence-batch-generate' %}">Run PDF

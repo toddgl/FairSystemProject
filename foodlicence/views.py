@@ -22,6 +22,9 @@ from registration.models import (
     StallRegistration,
     FoodRegistration
 )
+from payment.models import (
+    PaymentHistory,
+)
 from .models import (
     FoodLicenceBatch,
     FoodLicence
@@ -126,28 +129,56 @@ def generate_combined_pdf(request):
 
     return response
 
-def add_licence_to_batch(request, id):
+def mark_licence_as_staged(request, id):
     """
-    Description: Called from foodlicence list to set the status of teh food licence to batched ready to be included
+    Description: Called from foodlicence list to set the status of the food licence to staged ready to be included
     in SWDC Licence request combined pdf.
+    """
+    success_url = reverse_lazy('foodlicence:foodlicence-list')
+    foodlicence = get_object_or_404(FoodLicence, pk=id)
+    if not can_proceed(foodlicence.to_licence_status_staged):
+        raise PermissionDenied
+    foodlicence.to_licence_status_staged()
+    foodlicence.save()
+    return HttpResponseRedirect(success_url)
+
+def mark_licence_as_batched(request, id):
+    """
+    Description: Called from create SWDC PDF function to set the status of the foodlicence to batched. This is a
+    transient status prior to the email being sent to SWDC
+    """
+    success_url = reverse_lazy('foodlicence:foodlicence-list')
+    foodlicence = get_object_or_404(FoodLicence, pk=id)
+    if not can_proceed(foodlicence.to_booking_status_batched):
+        raise PermissionDenied
+    foodlicence.to_licence_status_batched()
+    foodlicence.save()
+    return HttpResponseRedirect(success_url)
+
+def mark_licence_as_submitted(request, id):
+    """
+    Description: Called from create SWDC PDF function to set the status of the foodlicence to submitted. This is
+    set once the email is successfully sent to the SWDC.  The requested date is also set for tracking purposes
     """
     success_url = reverse_lazy('foodlicence:foodlicence-list')
     foodlicence = get_object_or_404(FoodLicence, pk=id)
     if not can_proceed(foodlicence.to_booking_status_submitted):
         raise PermissionDenied
-    foodlicence.to_licence_status_batched()
+    foodlicence.to_licence_status_submitted()
+    foodlicence.date_requested = now()
+    foodlicence.save()
     return HttpResponseRedirect(success_url)
 
-def mark_licence_as_complete(request, id):
+def mark_licence_as_approved(request, id):
     """
-    Description: Called from foodlicence list to set the status of the foodlicence to complete and set the
+    Description: Called from foodlicence list to set the status of the foodlicence to approved and set the
     completed date
     """
     success_url = reverse_lazy('foodlicence:foodlicence-list')
     foodlicence = get_object_or_404(FoodLicence, pk=id)
-    if not can_proceed(foodlicence.to_booking_status_completed):
+    if not can_proceed(foodlicence.to_booking_status_approved):
         raise PermissionDenied
-    foodlicence.to_licence_status_completed()
+    foodlicence.to_licence_status_approved()
     foodlicence.date_completed = now()
     foodlicence.save()
     return HttpResponseRedirect(success_url)
@@ -262,17 +293,52 @@ def foodlicence_batch_update(request, id):
     return redirect(request.META.get('HTTP_REFERER'))
 
 def create_food_licence_from_stallregistration(request, stallregistration_id):
+    success_url = reverse_lazy('foodlicence:foodlicence-list')
     # Get the FoodRegistration instance associated with the StallRegistration ID
     food_registration = get_object_or_404(FoodRegistration, registration_id=stallregistration_id)
 
-    # Create the FoodLicence instance with status "Created"
-    food_licence = FoodLicence.objects.create(
-        food_registration=food_registration,
-        licence_status=FoodLicence.CREATED
+    # Check to ensure that the StallRegistration is "Complete" and it has a foodregistration
+    ready_for_foodlicence =StallRegistration.objects.filter(id=stallregistration_id,
+        invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
+        food_registration__isnull=False
     )
 
+    if ready_for_foodlicence:
+        # Create the FoodLicence instance with status "Created"
+        food_licence = FoodLicence.objects.create(
+            food_registration=food_registration,
+            licence_status=FoodLicence.CREATED
+        )
+
     # Redirect to the calling view
-    return redirect(request.META.get('HTTP_REFERER'))
+    return HttpResponseRedirect(success_url)
 
+def create_food_licence_if_eligible(request):
+    success_url = reverse_lazy('foodlicence:foodlicence-list')
+    # Step 1: Find stall registrations with completed payments
+    eligible_stall_registrations = StallRegistration.objects.filter(
+        invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
+        food_registration__isnull=False  # Ensures that a FoodRegistration exists
+    ).distinct()
 
+    # Step 2: Filter out stall registrations that already have a FoodLicence created
+    eligible_stall_registrations = eligible_stall_registrations.exclude(
+        food_registration__food_licence__isnull=False
+    )
 
+    # Step 3: If eligible stall registrations exist, cycle through and create the Foodlicences
+    if eligible_stall_registrations.exists():
+        for stall_registration in eligible_stall_registrations:
+            food_registration = stall_registration.food_registration
+
+            # Create the FoodLicence instance
+            food_licence = FoodLicence.objects.create(
+                food_registration=food_registration,
+                licence_status=FoodLicence.CREATED
+            )
+
+        # Redirect to the Foodlicence list view page
+        return HttpResponseRedirect(success_url)
+    else:
+        # Redirect to the Foodlicence list view page
+        return HttpResponseRedirect(success_url)
