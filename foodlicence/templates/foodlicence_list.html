@@ -23,10 +23,14 @@
               <p><em>Clicking on PDF generation button will process all the staged foodlicences creating a batch file
                   that will be sent to SWDC for foodlicence approval</em></p>
               <br>
-              <div>
+              <div class="d-flex gap-2">
                   <a class = "btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top"
                      title="Generate batch pdf for SWDC" href="{% url 'foodlicence:licence-batch-generate' %}">Run PDF
                       Generation</a>
+                  {% can_generate_multiple_foodlicencs as missing_foodlicences_result %}
+                  {% if missing_foodlicences_result %}
+                    <a href="{% url 'foodlicence:foodlicence-mass-create' %}" class="btn btn-primary">Create Foodlicences</a>
+                  {% endif %}
               </div>
           </div>
       </div>

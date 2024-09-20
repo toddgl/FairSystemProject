@@ -27,8 +27,8 @@
                 <tr>
                     <td>{{ foodlicence.licence_status }}</td>
                     <td>{{ foodlicence.food_registration.registration.id }}</td>
-                    <td>{{ foodlicence.date_requested }}</td>
-                    <td>{{ foodlicence.date_completed | default_if_none:"" }}</td>
+                    <td>{{ foodlicence.date_requested |date:"jS F Y"}}</td>
+                    <td>{{ foodlicence.date_completed |date:"jS F Y" | default_if_none:"" }}</td>
                     <td>{{ foodlicence.food_licence_batch.id }}</td>
                     <td><a class = "btn btn-primary btn-small"  data-bs-toggle="tooltip" data-bs-placement="top"
                            title="Change status to Staged"

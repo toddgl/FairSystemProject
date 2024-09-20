@@ -48,7 +48,7 @@ class InvoiceCurrentManager(models.Manager):
     """
 
     def get_queryset(self):
-        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[current_year, next_year])
+        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[current_year, next_year], stall_registration__fair__is_activated=True )
 
     def get_registration_invoices(self, registration):
         return super().get_queryset().filter(stall_registration_id=registration)
@@ -142,9 +142,7 @@ class PaymentHistoryCurrentManager(models.Manager):
     """
 
     def get_queryset(self):
-        return super().get_queryset().filter(invoice__stall_registration__fair__fair_year__in=[current_year,
-                                                                                               next_year],
-                                             invoice__stall_registration__fair__is_activated=True )
+        return super().get_queryset().filter(invoice__stall_registration__fair__fair_year__in=[current_year, next_year], invoice__stall_registration__fair__is_activated=True )
 
     def get_registration_payment_history(self, registration):
         return super().get_queryset().filter(invoice__stall_registration=registration).last()
@@ -153,19 +151,19 @@ class PaymentHistoryCurrentManager(models.Manager):
         return super().get_queryset().all().exclude(payment_status="Superceded")
 
     def get_stallholder_payment_history(self, stallholder):
-        return super().get_queryset().filter(invoice__stallholder=stallholder)
+        return self.get_queryset().filter(invoice__stallholder=stallholder)
 
     def get_pending(self):
-        return super().get_queryset().filter(payment_status="Pending")
+        return self.get_queryset().filter(payment_status="Pending")
 
     def get_cancelled(self):
-        return super().get_queryset().filter(payment_status="Cancelled")
+        return self.get_queryset().filter(payment_status="Cancelled")
 
     def get_completed(self):
-        return super().get_queryset().filter(payment_status="Completed")
+        return self.get_queryset().filter(payment_status="Completed")
 
     def get_credit(self):
-        return super().get_queryset().filter(payment_status="Credit")
+        return self.get_queryset().filter(payment_status="Credit")
 
     def get_failed(self):
         return super().get_queryset().filter(payment_status="Failed")

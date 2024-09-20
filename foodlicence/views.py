@@ -14,6 +14,7 @@ from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
 from weasyprint import HTML, CSS
 from pypdf import PdfWriter, PdfReader
+from pypdf.annotations import FreeText
 from django.core.files.base import ContentFile
 from accounts.models import (
     Profile
@@ -51,6 +52,7 @@ def generate_pdf(object):
 
 def merge_pdfs(pdf_files):
     pdf_writer = PdfWriter()
+    current_page_number = 1
 
     for pdf_file in pdf_files:
         pdf_reader = PdfReader(io.BytesIO(pdf_file))
@@ -58,6 +60,17 @@ def merge_pdfs(pdf_files):
             page = pdf_reader.pages[page_num]
             pdf_writer.add_page(page)
 
+            # Add page number (this part is theoretical; actual code may vary)
+            '''
+            annotation = FreeText(
+                text=f"Page {current_page_number}",
+                rect=(50, 550, 200, 650),
+            )
+            pdf_writer.add_annotation(
+                page_num, annotation=annotation
+            )
+            current_page_number += 1
+            '''
     output = io.BytesIO()
     pdf_writer.write(output)
 
@@ -65,7 +78,7 @@ def merge_pdfs(pdf_files):
 
 def generate_combined_pdf(request):
     # Fetch selected objects
-    selected_licences = FoodLicence.objects.filter(licence_status="Batched")  # Adjust filter as needed
+    selected_licences = FoodLicence.objects.filter(licence_status="Staged")  # Adjust filter as needed
 
     if not selected_licences.exists():
         return HttpResponse("No licences found.", content_type="text/plain")
@@ -105,6 +118,12 @@ def generate_combined_pdf(request):
     # Update FoodLicence objects to reference the new batch
     selected_licences.update(food_licence_batch=food_licence_batch)
 
+    # Mark all selected licences as Batched
+    for foodlicence in selected_licences:
+        if can_proceed(foodlicence.to_licence_status_batched):
+            foodlicence.to_licence_status_batched()
+            foodlicence.save()
+
     # Render email body
     email_body = render_to_string('email_template.html', {'batch': food_licence_batch})
 
@@ -119,8 +138,18 @@ def generate_combined_pdf(request):
     # Attach PDF
     email.attach(filename, combined_pdf, 'application/pdf')
 
-    # Send email
-    email.send()
+     # Try sending the email
+    try:
+        email.send()
+    except Exception as e:
+        return HttpResponse(f"Email sending failed: {str(e)}", content_type="text/plain")
+
+    # Mark all selected licences as Submitted
+    for foodlicence in selected_licences:
+        if can_proceed(foodlicence.to_licence_status_submitted):
+            foodlicence.to_licence_status_submitted()
+            foodlicence.date_requested = now()
+            foodlicence.save()
 
     # Return the combined PDF as a response
     response = HttpResponse(content_type='application/pdf')
@@ -272,25 +301,31 @@ def foodlicence_batch_listview(request):
     """
     template_name = 'foodlicence_batch_list.html'
     foodlicence_batch_list = FoodLicenceBatch.foodlicencebatchcurrentmgr.all()
-    foodlicencebatchupdateform = FoodLicenceBatchUpUpdateForm(request.POST or None)
     alert_message = 'There are no food licences batches created yet.'
+
+    # Process form submission if request method is POST
+    if request.method == 'POST':
+        # Get the batch ID from the POST data
+        batch_id = request.POST.get('batch_id')
+        foodlicence_batch = get_object_or_404(FoodLicenceBatch, id=batch_id)
+
+        # Bind form data to the form
+        foodlicencebatchupdateform = FoodLicenceBatchUpUpdateForm(request.POST, instance=foodlicence_batch)
+
+        # Check if form is valid and save the changes
+        if foodlicencebatchupdateform.is_valid():
+            foodlicencebatchupdateform.save()
+            return redirect(request.META.get('HTTP_REFERER'))
+
+    else:
+        # If not POST, initialize an empty form
+        foodlicencebatchupdateform = FoodLicenceBatchUpUpdateForm()
 
     return TemplateResponse(request, template_name, {
         'food_licence_batch_list': foodlicence_batch_list,
-        'foodlicence_batch_update_form': foodlicencebatchupdateform,
+        'form': foodlicencebatchupdateform,
         'alert_mgr': alert_message,
     })
-
-def foodlicence_batch_update(request, id):
-    """
-    Description: Function is update Foodlicence Batch limited to date date_returned and date_clased
-    """
-    foodlicence_batch = get_object_or_404(FoodLicenceBatch, id=id)
-    foodlicencebatchupdateform = FoodLicenceBatchUpUpdateForm(request.Post or None, instance = foodlicence_batch)
-    if foodlicencebatchupdateform.is_valid():
-        foodlicence_batch.save()
-
-    return redirect(request.META.get('HTTP_REFERER'))
 
 def create_food_licence_from_stallregistration(request, stallregistration_id):
     success_url = reverse_lazy('foodlicence:foodlicence-list')
@@ -298,7 +333,7 @@ def create_food_licence_from_stallregistration(request, stallregistration_id):
     food_registration = get_object_or_404(FoodRegistration, registration_id=stallregistration_id)
 
     # Check to ensure that the StallRegistration is "Complete" and it has a foodregistration
-    ready_for_foodlicence =StallRegistration.objects.filter(id=stallregistration_id,
+    ready_for_foodlicence =StallRegistration.registrationcurrentmgr.filter(id=stallregistration_id,
         invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
         food_registration__isnull=False
     )
@@ -316,7 +351,7 @@ def create_food_licence_from_stallregistration(request, stallregistration_id):
 def create_food_licence_if_eligible(request):
     success_url = reverse_lazy('foodlicence:foodlicence-list')
     # Step 1: Find stall registrations with completed payments
-    eligible_stall_registrations = StallRegistration.objects.filter(
+    eligible_stall_registrations = StallRegistration.registrationcurrentmgr.filter(
         invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
         food_registration__isnull=False  # Ensures that a FoodRegistration exists
     ).distinct()

@@ -4,13 +4,18 @@ from django import forms
 from django.forms import (
     Form,
     ChoiceField,
+    DateField,
     Select,
-    DateInput
+    DateInput,
+    ModelForm
 )
 
 from .models import (
     FoodLicenceBatch
 )
+from django.forms.widgets import NumberInput
+from datetime import datetime
+from django.utils.timezone import make_aware
 
 class FoodlicenceStatusFilterForm(Form):
     """
@@ -37,21 +42,28 @@ class FoodlicenceStatusFilterForm(Form):
     )
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
-class FoodLicenceBatchUpUpdateForm(Form):
+
+
+class FoodLicenceBatchUpUpdateForm(ModelForm):
     """
-    Description: a form used in a model on the food licence batch view to update the returned and closed date
+    A form for updating the returned and closed date for FoodLicenceBatch instances.
     """
     class Meta:
-        model = FoodLicenceBatch
-        fields = ['date_returned', 'date_closed' ]
-        widgets = {
-            'date_returned': DateInput(attrs={
-                'class': "form-control",
-                'readonly': 'readonly'
-            }),
-            'date_closed': DateInput(attrs={
-                'class': "form-control",
-                'readonly': 'readonly'
-            }),
+        model = FoodLicenceBatch  # Link the form to the FoodLicenceBatch model
+        fields = ['date_returned', 'date_closed']  # Fields to be updated
+        labels = {
+            'date_returned': 'Date a response was received from the SWDC',
+            'date_closed':'Date that any action on the Foodlicence ceased'
         }
+        widgets = {
+            'date_returned': forms.NumberInput(attrs={'type': 'date'}),
+            'date_closed': forms.NumberInput(attrs={'type': 'date'}),
+        }
+
+    # Optionally, override the init method to make date_closed optional
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['date_closed'].required = False  # Make date_closed optional
+
+
 

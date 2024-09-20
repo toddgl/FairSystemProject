@@ -1,4 +1,4 @@
-<!-- foodlicence/templates/foodlicence_list.html -->
+<!-- foodlicence/templates/foodlicence_batch_list.html -->
 {% extends 'foodlicence_list_base.html' %}
 {% load paginator_tags %}
 {% load hasfoodlicences_tag %}
@@ -25,9 +25,9 @@
               {% for batch in food_licence_batch_list %}
               <tr>
                   <td>{{ batch.id }}</td>
-                  <td>{{ batch.date_created }}</td>
-                  <td>{{ batch.date_returned | default_if_none:"" }}</td>
-                  <td>{{ batch.date_closed | default_if_none:"" }}</td>
+                  <td>{{ batch.date_created |date:"jS F Y" }}</td>
+                  <td>{{ batch.date_returned |date:"jS F Y" | default_if_none:"" }}</td>
+                  <td>{{ batch.date_closed |date:"jS F Y" | default_if_none:"" }}</td>
                   <td>
                       <button type="button" class="btn btn-primary" data-bs-toggle="modal"
                               data-bs-target="#foodlicencebatchModal" data-batch-id="{{ batch.id }}" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -68,9 +68,10 @@
             </div>
             <!-- Modal body with update form -->
             <div class="modal-body">
-                <form id="updateForm" action="" method="post">
+                <form method="post">
                     {% csrf_token %}
-                    {{ foodlicence_batch_update_form.as_p }}
+                    {{ form.as_p }}
+                    <input type="hidden" name="batch_id" value="{{ batch.id }}">
                     <input type="submit" class="btn btn-primary" value="Update" >
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </form>

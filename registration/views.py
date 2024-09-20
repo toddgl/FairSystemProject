@@ -737,17 +737,14 @@ def myfair_dashboard_view(request):
     replyform = CommentReplyForm(request.POST or None)
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False,
-                                                  convener_only_comment=False, comment_parent__isnull=True,
-                                                  fair=current_fair.id)
+    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False, convener_only_comment=False, comment_parent__isnull=True, fair=current_fair.id)
     try:
         # Use prefetch_related to bring through the site allocation data associated with the stall registration
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user).prefetch_related(
             'site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
-    payment_history = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(
-        stallholder=request.user).last()
+    payment_history = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history( stallholder=request.user).last()
     discounts = DiscountItem.discountitemmgr.get_stallholder_discounts(stallholder=request.user)
 
     return TemplateResponse(request, template, {
@@ -1207,7 +1204,7 @@ def stallholder_stall_registration_detail_view(request, id):
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
-    stall_registration = StallRegistration.objects.get(id=id)
+    stall_registration = StallRegistration.registrationcurrentallmgr.get(id=id)
     food_registration = FoodRegistration.objects.get(registration=stall_registration)
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)

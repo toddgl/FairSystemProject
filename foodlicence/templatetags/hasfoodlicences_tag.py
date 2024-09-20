@@ -18,7 +18,7 @@ register = template.Library()
 def can_generate_foodlicence(value):
     """
     Templatetag to provide a boolean answer whether there is a need to gernerate a foodlicence for a stallregistration
-    Used in the convener foodlicence list
+    Used in the convener stall registration detail view
     """
     # Check to ensure that the StallRegistration is "Complete" and it has a FoodRegistration
     eligible_registration = StallRegistration.objects.filter(id=value,
@@ -26,6 +26,29 @@ def can_generate_foodlicence(value):
                                         food_registration__isnull=False ).exists()
     foodlicence_exists = FoodLicence.foodlicencecurrentmgr.filter(food_registration__registration_id=value).exists()
     if eligible_registration and not foodlicence_exists:
+        return True
+    else:
+        return False
+
+@register.simple_tag
+@register.simple_tag
+def can_generate_multiple_foodlicencs():
+    """
+    Templatetag to provide a boolean answer whether there is a need to gernerate foodlicences for stallregistrations
+    Used in the convener foodlicence list view
+    """
+    # Find stall registrations with completed payments
+    eligible_stall_registrations = StallRegistration.objects.filter(
+        invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
+        food_registration__isnull=False  # Ensures that a FoodRegistration exists
+    ).distinct()
+
+    # Filter out stall registrations that already have a FoodLicence created
+    eligible_stall_registrations = eligible_stall_registrations.exclude(
+        food_registration__food_licence__isnull=False
+    )
+
+    if eligible_stall_registrations.exists():
         return True
     else:
         return False

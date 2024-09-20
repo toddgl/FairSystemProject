@@ -45,7 +45,8 @@ class FoodLicenceCurrentManager(models.Manager):
 
     def get_queryset(self):
         return super().get_queryset().filter(food_registration__registration__fair__fair_year__in=[current_year,
-                                                                                                next_year])
+                                                                                                next_year],
+                                             food_registration__registration__fair__is_activated=True)
 
     def get_created(self):
         return super().get_queryset().filter(licence_status="Created")
