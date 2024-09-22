@@ -625,8 +625,16 @@ def event_site_listview(request):
     filterform = EventSiteListFilterForm(request.POST or None)
     form_purpose = filterform.data.get('form_purpose', '')
     site_status=request.GET.get('site_status','')
+
+
     if site_status:
         filtered_data = EventSite.eventsitecurrentmgr.filter(site_status=site_status).order_by("site__site_name")
+        # Define the event _site_filter_dict
+        attr_sitestatus = 'site_status'
+        event_site_filter_dict = {
+            attr_sitestatus: site_status
+        }
+
     else:
         filtered_data = EventSite.eventsitecurrentmgr.all().order_by("site__site_name")
 
@@ -1182,9 +1190,10 @@ def site_allocation_listview(request):
         else:
             # Handle pagination
             # The event_site_filter _dict is retained from the filter selection which ensures that the correct
-            # data is appplied
+            # data is applied
             # to subsequent pages
-            pass
+            site_allocation_filter_dict = {}
+            # pass
         template_name = 'siteallocations/siteallocation_list_partial.html'
         filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by(
             "event_site__site")

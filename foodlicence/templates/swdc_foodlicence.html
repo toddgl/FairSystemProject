@@ -113,7 +113,9 @@
             <div class="col-12">
                 {% if object.food_registration.food_prep_equipment.all %}
                     {% for equipment in object.food_registration.food_prep_equipment.all %}
-                    {{ equipment.equipment_name }}
+                    <ul>
+                        <li>{{ equipment.equipment_name }}</li>
+                    </ul>
                     {% endfor %}
                 {% else %}
                     None

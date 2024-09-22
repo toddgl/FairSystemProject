@@ -120,6 +120,13 @@ def stall_registration_listview(request):
             'stall_category').prefetch_related('site_allocation').all()
         filtered_data = filtered_data.prefetch_related('additional_sites_required')
         alert_message = 'There are no stall application of status ' + str(booking_status) + ' created yet'
+
+        # Define the stallregistration_filter_dict
+        attr_booking_status = 'booking_status'
+        stallregistration_filter_dict = {
+                        attr_booking_status: booking_status
+                    }
+
     else:
         filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related(
             'site_allocation').all()

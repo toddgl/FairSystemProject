@@ -66,7 +66,6 @@ def stripe_payment(request, id):
 def payment_successful(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id')
-    print("Checkout Session id", checkout_session_id)
     session = stripe.checkout.Session.retrieve(checkout_session_id)
 
     customer = stripe.Customer.retrieve(session.customer)
@@ -110,8 +109,12 @@ def stripe_webhook(request):
             payload, signature_header, settings.STRIPE_WEBHOOK_SECRET
         )
     except ValueError as e:
+        db_logger.error('There was an error with processing the webhook. ' + str(e),
+                        extra={'custom_category': 'Payments'})
         return HttpResponse(status=400)
     except stripe.error.SignatureVerificationError as e:
+        db_logger.error('There was an error with processing the webhook. ' + str(e),
+                        extra={'custom_category': 'Payments'})
         return HttpResponse(status=400)
 
     if event['type'] == 'checkout.session.completed':

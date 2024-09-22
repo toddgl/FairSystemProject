@@ -109,7 +109,7 @@
                 </a>
               {% endif %}
               {% get_is_invoiced registration.id as invoiced %}
-              {% if not invoiced %}
+              {% if not invoiced and not  registration.booking_status == 'Payment Completed' %}
                 {% get_has_site_allocation user.id as result %}
                   {% if result %}
                     <a href="{% url 'registration:stallregistration-invoice' registration.pk %}"

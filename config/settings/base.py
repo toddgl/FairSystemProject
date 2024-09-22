@@ -231,10 +231,12 @@ LOGGING = {
     'handlers': {
         'db_log': {
             'level': 'DEBUG',
-            'class': 'CustomDBLogger.db_log_handler.DatabaseLogHandler'
+            'class': 'CustomDBLogger.db_log_handler.DatabaseLogHandler',
+            'formatter': 'verbose'
         },
         'console': {
             'class': 'logging.StreamHandler',
+            'formatter': 'verbose'
         },
     },
     'loggers': {
