@@ -312,7 +312,10 @@ def site_listview(request):
     filtered_data = Site.objects.all().order_by("site_name")
     cards_per_page = 9
 
-    if request.htmx:
+    if not request.htmx:
+        filter_dict = {}
+
+    elif request.htmx:
         if filterform.is_valid():
             zone = filterform.cleaned_data['zone']
             site_size = filterform.cleaned_data['site_size']
@@ -355,15 +358,14 @@ def site_listview(request):
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
-    else:
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        site_list = page_list
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'site_list': site_list,
-            'page_range': page_range,
-            'alert_mgr': alert_message,
-        })
+    page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+    site_list = page_list
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'site_list': site_list,
+        'page_range': page_range,
+        'alert_mgr': alert_message,
+    })
 
 
 
@@ -626,20 +628,19 @@ def event_site_listview(request):
     form_purpose = filterform.data.get('form_purpose', '')
     site_status=request.GET.get('site_status','')
 
+    if not request.htmx:
+        if site_status:
+            filtered_data = EventSite.eventsitecurrentmgr.filter(site_status=site_status).order_by("site__site_name")
+            # Define the event _site_filter_dict
+            attr_sitestatus = 'site_status'
+            event_site_filter_dict = {
+                attr_sitestatus: site_status
+            }
+        else:
+            filtered_data = EventSite.eventsitecurrentmgr.all().order_by("site__site_name")
+            event_site_filter_dict = {}
 
-    if site_status:
-        filtered_data = EventSite.eventsitecurrentmgr.filter(site_status=site_status).order_by("site__site_name")
-        # Define the event _site_filter_dict
-        attr_sitestatus = 'site_status'
-        event_site_filter_dict = {
-            attr_sitestatus: site_status
-        }
-
-    else:
-        filtered_data = EventSite.eventsitecurrentmgr.all().order_by("site__site_name")
-
-
-    if request.htmx:
+    elif request.htmx:
         if form_purpose == 'filter':
             if filterform.is_valid():
                 event = filterform.cleaned_data['event']
@@ -698,7 +699,7 @@ def event_site_listview(request):
         else:
             # Handle pagination
             # The event_site_filter _dict is retained from the filter selection which ensures that the correct
-            # data is appplied
+            # data is applied
             # to subsequent pages
             pass
         filtered_data = EventSite.eventsitecurrentmgr.filter(**event_site_filter_dict).order_by("site__site_name")
@@ -710,15 +711,15 @@ def event_site_listview(request):
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
-    else:
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        eventsite_list = page_list
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'eventsite_list': eventsite_list,
-            'page_range': page_range,
-            'alert_mgr': alert_message,
-        })
+
+    page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+    eventsite_list = page_list
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'eventsite_list': eventsite_list,
+        'page_range': page_range,
+        'alert_mgr': alert_message,
+    })
 
 
 def pagination_data(cards_per_page, filtered_data, request):

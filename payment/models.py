@@ -240,7 +240,7 @@ class PaymentHistory(models.Model):
             'amount_reconciled'))['TOTAL']
         return reconciled_total
 
-    @transition(field=payment_status, source="Pending", target="Superceded")
+    @transition(field=payment_status, source=["Pending","Completed","Failed"], target="Superceded")
     def to_payment_status_superceded(self):
         pass
 

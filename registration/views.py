@@ -124,8 +124,8 @@ def stall_registration_listview(request):
         # Define the stallregistration_filter_dict
         attr_booking_status = 'booking_status'
         stallregistration_filter_dict = {
-                        attr_booking_status: booking_status
-                    }
+            attr_booking_status: booking_status
+        }
 
     else:
         filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related(

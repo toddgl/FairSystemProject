@@ -15,6 +15,7 @@
                     <th scope="col">Registration ID</th>
                     <th scope="col">Amount Paid</th>
                     <th scope="col">Amount to Pay</th>
+                    <th scope="col">Stripe Amount</th>
                     <th scope="col">Amount Reconciled</th>
                     <th scope="col">Created Date</th>
                     <th scope="col">Updated Date</th>
@@ -30,6 +31,7 @@
                     <td>{{ paymenthistory.invoice.stall_registration.id }}</td>
                     <td>{{ paymenthistory.amount_paid }}</td>
                     <td>{{ paymenthistory.amount_to_pay }}</td>
+                    <td>{{ paymenthistory.webhook_amount }}</td>
                     <td>{{ paymenthistory.amount_reconciled }}</td>
                     <td>{{ paymenthistory.date_created }}</td>
                     <td>{{ paymenthistory.date_updated | default_if_none:"" }}</td>
