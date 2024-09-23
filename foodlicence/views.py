@@ -94,7 +94,7 @@ def generate_combined_pdf(request):
         return HttpResponse("No licences found.", content_type="text/plain")
 
     # Generate PDFs for each object
-    pdf_files = [generate_pdf(obj) for obj in selected_licences]
+    pdf_files = [generate_pdf(obj, request) for obj in selected_licences]
 
     # Merge the PDFs
     combined_pdf = merge_pdfs(pdf_files)
