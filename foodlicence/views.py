@@ -10,6 +10,7 @@ from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse_lazy, reverse
 from django.template.response import TemplateResponse
 from django.shortcuts import render, get_object_or_404, redirect
+from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
 from weasyprint import HTML, CSS
@@ -35,7 +36,15 @@ from .forms import (
     FoodLicenceBatchUpUpdateForm
 )
 
-def generate_pdf(object):
+def generate_pdf(object, request):
+    # Get the current site domain
+    current_site = get_current_site(request)
+    domain = current_site.domain
+    protocol = 'https' if request.is_secure() else 'http'
+
+    # Full URL for the certificate
+    full_certificate_url = f'{protocol}://{domain}{object.food_registration.food_registration_certificate.url}'
+
     # Render a template to HTML
     stall_registration =StallRegistration.objects.get(id=object.food_registration.registration.id)
     stallholder_detail =  Profile.objects.get(user=stall_registration.stallholder)
@@ -43,6 +52,7 @@ def generate_pdf(object):
     html_content = render_to_string('swdc_foodlicence.html', {
         'object': object,
         'stallholder_detail': stallholder_detail,
+        'full_certificate_url': full_certificate_url
     })
     css_file = os.path.join(settings.STATIC_ROOT, 'css', 'licence.css')
     # Convert HTML to PDF
@@ -134,6 +144,9 @@ def generate_combined_pdf(request):
         from_email=settings.EMAIL_HOST_USER,
         to=[recipient_email],
     )
+
+    # Specify that the content is HTML
+    email.content_subtype = 'html' # This makes the email render as HTML
 
     # Attach PDF
     email.attach(filename, combined_pdf, 'application/pdf')
