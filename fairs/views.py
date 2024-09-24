@@ -309,7 +309,7 @@ def site_listview(request):
     alert_message = 'There are no sites created yet.'
     template_name = 'sites/site_list.html'
     filterform = SiteListFilterForm(request.POST or None)
-    filtered_data = Site.objects.all().order_by("site_name")
+    # filtered_data = Site.objects.all().order_by("site_name")
     cards_per_page = 9
 
     if not request.htmx:
@@ -358,6 +358,7 @@ def site_listview(request):
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
+    filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
     site_list = page_list
     return TemplateResponse(request, template_name, {
@@ -712,6 +713,7 @@ def event_site_listview(request):
             'alert_mgr': alert_message,
         })
 
+    filtered_data = EventSite.eventsitecurrentmgr.filter(**event_site_filter_dict).order_by("site__site_name")
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
     eventsite_list = page_list
     return TemplateResponse(request, template_name, {
