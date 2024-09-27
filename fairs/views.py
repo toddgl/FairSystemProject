@@ -1082,8 +1082,7 @@ def site_allocation_listview(request):
             site_allocation_filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by(
-                "event_site__site")
+            filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
             template_name = 'siteallocations/siteallocation_list_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
             allocation_list = page_list
@@ -1195,11 +1194,9 @@ def site_allocation_listview(request):
             # The event_site_filter _dict is retained from the filter selection which ensures that the correct
             # data is applied
             # to subsequent pages
-            site_allocation_filter_dict = {}
             # pass
         template_name = 'siteallocations/siteallocation_list_partial.html'
-        filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by(
-            "event_site__site")
+        filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         allocation_list = page_list
         return TemplateResponse(request, template_name, {
