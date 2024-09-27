@@ -1194,7 +1194,7 @@ def site_allocation_listview(request):
             # The event_site_filter _dict is retained from the filter selection which ensures that the correct
             # data is applied
             # to subsequent pages
-            # pass
+            pass
         template_name = 'siteallocations/siteallocation_list_partial.html'
         filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
