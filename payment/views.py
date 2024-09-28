@@ -8,7 +8,7 @@ import decimal
 from weasyprint import HTML, CSS
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required,permission_required
 from django.template.loader import get_template
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.shortcuts import get_object_or_404, redirect, render
