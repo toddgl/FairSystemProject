@@ -1412,6 +1412,7 @@ def stall_registration_dashboard_view(request):
             created_counts = StallRegistration.registrationcreatedmgr.filter(**filter_dict).count()
             submitted_counts = StallRegistration.registrationsubmittedmgr.filter(**filter_dict).count()
             invoiced_counts = StallRegistration.registrationinvoicedmgr.filter(**filter_dict).count()
+            paid_counts = StallRegistration.registrationpaymentcomplemgr.filter(**filter_dict).count()
             booked_counts = StallRegistration.registrationbookedmgr.filter(**filter_dict).count()
             cancelled_counts = StallRegistration. registrationcancelledmgr.filter(**filter_dict).count()
 
@@ -1422,6 +1423,7 @@ def stall_registration_dashboard_view(request):
         created_counts = StallRegistration.registrationcreatedmgr.count()
         submitted_counts = StallRegistration.registrationsubmittedmgr.count()
         invoiced_counts = StallRegistration.registrationinvoicedmgr.count()
+        paid_counts = StallRegistration.registrationpaymentcomplemgr.count()
         booked_counts = StallRegistration.registrationbookedmgr.count()
         cancelled_counts = StallRegistration.registrationcancelledmgr.count()
 
@@ -1433,6 +1435,7 @@ def stall_registration_dashboard_view(request):
         'created_counts': created_counts,
         'submitted_counts': submitted_counts,
         'invoiced_counts': invoiced_counts,
+        'paid_counts': paid_counts,
         'booked_counts': booked_counts,
         'cancelled_counts': cancelled_counts
     })

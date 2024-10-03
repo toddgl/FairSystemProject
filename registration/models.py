@@ -188,6 +188,15 @@ class RegistrationInvoicedManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Invoiced')
 
+class RegistrationPaymentCompleteManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is  Payment Completed
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Payment Completed')
+
 
 class RegistrationBookedManager(models.Manager):
     """
@@ -335,6 +344,7 @@ class StallRegistration(models.Model):
     registrationcreatedmgr = RegistrationCreatedManager()
     registrationsubmittedmgr = RegistrationSubmittedManager()
     registrationinvoicedmgr = RegistrationInvoicedManager()
+    registrationpaymentcomplemgr = RegistrationPaymentCompleteManager()
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
     vehicleonsitemgr = VehiclesOnSiteManager()
