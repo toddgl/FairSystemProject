@@ -116,7 +116,6 @@ def stall_registration_listview(request):
     filterform = StallRegistrationFilterForm(request.POST or None)
     booking_status = request.GET.get('booking_status', '')
     selling_food = request.GET.get('selling_food', False)
-    print('Selling Food', selling_food, 'Booking_status', booking_status)
     if booking_status:
         print('Got to the booking status section')
         alert_message = 'There are no stall application of status ' + str(booking_status) + ' created yet'
