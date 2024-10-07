@@ -117,7 +117,6 @@ def stall_registration_listview(request):
     booking_status = request.GET.get('booking_status', '')
     selling_food = request.GET.get('selling_food', False)
     if booking_status:
-        print('Got to the booking status section')
         alert_message = 'There are no stall application of status ' + str(booking_status) + ' created yet'
 
         # Define the stallregistration_filter_dict
@@ -138,7 +137,6 @@ def stall_registration_listview(request):
         })
 
     if selling_food:
-        print('Got to the selling food section')
         alert_message = 'There are no stall application of status ' + 'Selling Food' + ' created yet'
 
         # Define the stallregistration_filter_dict
@@ -159,7 +157,6 @@ def stall_registration_listview(request):
         })
 
     if request.htmx:
-        print('Got to the htmx request section')
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'stallholder'
         if stallholder_id:
@@ -167,20 +164,10 @@ def stall_registration_listview(request):
             stallregistration_filter_dict = {
                 attr_stallholder: stallholder_id
             }
-            filtered_data = StallRegistration.registrationcurrentallmgr.filter(
-                **stallregistration_filter_dict).order_by("stall_category").prefetch_related('site_allocation').all()
-            filtered_data = filtered_data.prefetch_related('additional_sites_required')
-            template_name = 'stallregistration/stallregistration_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            stallregistration_list = page_list
-            return TemplateResponse(request, template_name, {
-                'stallregistration_list': stallregistration_list,
-                'page_range': page_range,
-            })
         form_purpose = filterform.data.get('form_purpose', '')
 
         if form_purpose == 'filter':
-            print("Got to the filter section")
+            # existing filter logic...
             if filterform.is_valid():
                 fair = filterform.cleaned_data['fair']
                 site_size = filterform.cleaned_data['site_size']
@@ -227,40 +214,36 @@ def stall_registration_listview(request):
                     }
                 else:
                     alert_message = 'There are no stall application created yet'
-                    stallregistration_filter_dict = {}
         else:
-            # Handle pagination
-            # The stallregistration_filter _dict is retained from the filter selection which ensures that the correct
-            # data is applied
-            # to subsequent pages
-            print('Got to the paginator pass section')
-            pass
+            # Pagination logic
+            if 'stallregistration_filter_dict' not in locals():
+                stallregistration_filter_dict = {}
+
         filtered_data = StallRegistration.registrationcurrentallmgr.filter(**stallregistration_filter_dict).order_by(
             "stall_category").prefetch_related('site_allocation').all()
-        filtered_data = filtered_data.prefetch_related('additional_sites_required')
-        template_name = 'stallregistration/stallregistration_list_partial.html'
+
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list
+        template_name = 'stallregistration/stallregistration_list_partial.html'
         return TemplateResponse(request, template_name, {
+            'stallregistration_list': stallregistration_list,
+            'page_range': page_range,
+        })
+
+    else:
+        filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related( 'site_allocation').all()
+        filtered_data = filtered_data.prefetch_related('additional_sites_required')
+        alert_message = 'There are no stall registrations yet.'
+
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+        stallregistration_list = page_list
+        stallholder = ''
+        return TemplateResponse(request, template_name, {
+            'filterform': filterform,
             'stallregistration_list': stallregistration_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
-    print("Got to the the default section")
-    filtered_data = StallRegistration.registrationcurrentallmgr.order_by('stall_category').prefetch_related(
-        'site_allocation').all()
-    filtered_data = filtered_data.prefetch_related('additional_sites_required')
-    alert_message = 'There are no stall registrations yet.'
-
-    page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-    stallregistration_list = page_list
-    stallholder = ''
-    return TemplateResponse(request, template_name, {
-        'filterform': filterform,
-        'stallregistration_list': stallregistration_list,
-        'page_range': page_range,
-        'alert_mgr': alert_message,
-    })
 
 
 @login_required
@@ -454,7 +437,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
         try:
             # Attempt to convert the vehicle length to a float
             vehicle_length = float(vehicle_length)
-            print('Vehicle Length as float', vehicle_length)
 
             # Check if the vehicle length is greater than 6
             if vehicle_length > 6:
@@ -468,7 +450,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
 
         except ValueError:
             # If conversion to float fails, handle the error (e.g., log or return an appropriate message)
-            print('Invalid vehicle length input:', vehicle_length)
             total_vehicle_cost = decimal.Decimal(0.00)
 
     if power_req:
@@ -480,8 +461,6 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
 
     total_cost = (category_price + site_price + total_trestle_cost + total_vehicle_cost + power_price +
                   total_additional_site_costs)
-    print('Total', total_cost, 'Category', category_price, 'Site', site_price, 'Trestle', total_trestle_cost,
-          'Vehicle', total_vehicle_cost, 'Power', power_price, 'Additional Sites', total_additional_site_costs)
     return total_cost
 
 
