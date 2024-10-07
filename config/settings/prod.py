@@ -26,7 +26,7 @@ SESSION_COOKIE_SAMESITE = 'None'
 ANYMAIL = {
     # (exact settings here depend on your ESP...)
     "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),
-    "MAILGUN_SENDER_DOMAIN": 'mbfairsystem.org',  # your Mailgun domain, if needed
+    "MAILGUN_SENDER_DOMAIN": 'https://api.mailgun.net/v3',  # your Mailgun domain, if needed
 }
 
 EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
