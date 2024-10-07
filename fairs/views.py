@@ -1066,7 +1066,7 @@ def site_allocation_listview(request):
     based on the stallholder filters
     """
     global site_allocation_filter_dict
-    global stallholder
+    stallholder = ''
     request.session['siteallocation'] = 'fair:siteallocation-list'
     alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
