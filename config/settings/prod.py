@@ -30,6 +30,7 @@ SESSION_COOKIE_SAMESITE = 'None'
 #}
 
 # EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+
 EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
 EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
 
