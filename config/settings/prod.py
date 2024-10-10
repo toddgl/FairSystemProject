@@ -23,16 +23,16 @@ SESSION_COOKIE_AGE = 8640  # 1 day, adjust as needed
 # CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'None'
 
-# ANYMAIL = {
+ANYMAIL = {
     # (exact settings here depend on your ESP...)
-#    "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),
-#    "MAILGUN_SENDER_DOMAIN": 'mbfairsystem.org',  # your Mailgun domain, if needed
-#}
+    "MAILGUN_API_KEY": env('MAILGUN_API_KEY'),
+    "MAILGUN_SENDER_DOMAIN": 'mbfairsystem.org',  # your Mailgun domain, if needed
+}
 
-# EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
+EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
+# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+# EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
 
 DEFAULT_FROM_EMAIL = 'convener@martinboroughfair.org.nz'
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
