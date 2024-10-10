@@ -6,8 +6,6 @@ import boto3
 
 boto3.setup_default_session(region_name='ap-southeast-2')
 
-
-
 ALLOWED_HOSTS = [
     'mbfairsystem.org',
     '149.28.188.154',
