@@ -37,6 +37,8 @@ EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
 DEFAULT_FROM_EMAIL = 'convener@martinboroughfair.org.nz'
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
+PASSWORD_RESET_TIMEOUT = 259200 # 3 days in seconds
+
 SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 CSRF_TRUSTED_ORIGINS = [
     'https://mbfairsystem.org',
