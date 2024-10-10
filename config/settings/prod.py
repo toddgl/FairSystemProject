@@ -31,17 +31,17 @@ SESSION_COOKIE_SAMESITE = 'None'
 
 # EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
-#ANYMAIL = {
+ANYMAIL = {
     # (exact settings here depend on your ESP...),
-#    "aws_access_key_id": env('AWS_ACCESS_KEY_ID'),
-#    "aws_secret_access_key": env('AWS_SECRET_ACCESS_KEY'),
-#    "region_name": 'ap-southeast-2',
-#}
+    "aws_access_key_id": env('AWS_ACCESS_KEY_ID'),
+    "aws_secret_access_key": env('AWS_SECRET_ACCESS_KEY'),
+    "region_name": 'ap-southeast-2',
+}
 
-#EMAIL_BACKEND = 'anymail.backends.amazon_ses.EmailBackend'
+EMAIL_BACKEND = 'anymail.backends.amazon_ses.EmailBackend'
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
+# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+# EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
 
 DEFAULT_FROM_EMAIL = 'convener@martinboroughfair.org.nz'
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
