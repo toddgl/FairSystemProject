@@ -36,10 +36,14 @@ SESSION_COOKIE_SAMESITE = 'None'
 # EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
 ANYMAIL = {
+    "AMAZON_SES_SESSION_PARAMS": {
+        "region_name": "ap-southeast-2",
+    },
+    "AMAZON_SES_CLIENT_PARAMS": {
     # (exact settings here depend on your ESP...),
     "aws_access_key_id": env('AWS_ACCESS_KEY_ID'),
-    "aws_secret_access_key": env('AWS_SECRET_ACCESS_KEY'),
-    "region_name": 'ap-southeast-2',
+    "aws_secret_access_key": env('AWS_SECRET_ACCESS_KEY')
+    },
 }
 
 EMAIL_BACKEND = 'anymail.backends.amazon_ses.EmailBackend'
