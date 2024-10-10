@@ -31,13 +31,22 @@ SESSION_COOKIE_SAMESITE = 'None'
 
 # EMAIL_BACKEND = 'anymail.backends.mailgun.EmailBackend'
 
-EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
-EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
+ANYMAIL = {
+    # (exact settings here depend on your ESP...),
+    "aws_access_key_id": env('AWS_ACCESS_KEY_ID'),
+    "aws_secret_access_key": env('AWS_SECRET_ACCESS_KEY'),
+    "region_name": 'ap-southeast-2',
+}
+
+EMAIL_BACKEND = 'anymail.backends.amazon_ses.EmailBackend'
+
+# EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+# EMAIL_FILE_PATH = '/usr/home/admin/restores/mail'
 
 DEFAULT_FROM_EMAIL = 'convener@martinboroughfair.org.nz'
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
-PASSWORD_RESET_TIMEOUT = 259200 # 3 days in seconds
+# PASSWORD_RESET_TIMEOUT = 259200 # 3 days in seconds
 
 SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'health@swdc.govt.nz'
 CSRF_TRUSTED_ORIGINS = [
