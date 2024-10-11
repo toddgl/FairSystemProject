@@ -331,7 +331,7 @@ def stall_registration_create(request):
                 return HttpResponseRedirect(success_url)
         else:
             db_logger.error('There was an error with saving the stall application. '
-                            + registrationform.errors.as_data(),
+                            + str(registrationform.errors.as_data()),
                             extra={'custom_category': 'Stall Application'})
             return TemplateResponse(request, template_name, {
                 'allocation_item': allocation_item,
