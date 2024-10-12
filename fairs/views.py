@@ -2032,6 +2032,7 @@ def stallregistration_siteallocation_view(request, id):
         if sitefilterform.is_valid():
             zone = sitefilterform.cleaned_data['zone']
             event = sitefilterform.cleaned_data['event']
+            site_size = sitefilterform.cleaned_data['site_size']
             attr_site_size = 'site__site_size'
             attr_zone = 'site__zone'
             attr_event ='event'
@@ -2040,13 +2041,13 @@ def stallregistration_siteallocation_view(request, id):
                 zone_filter_dict = {
                     attr_event: event.id,
                     attr_zone: zone.id,
-                    attr_site_size: stallregistration.site_size
+                    attr_site_size: site_size.id
                 }
             elif zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
                 zone_filter_dict = {
                     attr_zone: zone.id,
-                    attr_site_size: stallregistration.site_size
+                    attr_site_size: site_size.id
                 }
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
             template = 'stallregistrations/available_sites_partial.html'
