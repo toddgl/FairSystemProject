@@ -11,6 +11,7 @@ from django.shortcuts import (
     render
 )
 
+@login_required
 def customuser_update_view(request):
     if request.method == "POST":
         user_form = CustomUserChangeForm(request.POST, instance=request.user)
