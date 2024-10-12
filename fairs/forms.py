@@ -1159,12 +1159,27 @@ class SiteAllocationFilterForm(Form):
             'hx-target': '#list_data',
         }),
     )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#list_data',
+        })
+    )
+
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
     class Meta:
         fields = [
             'event',
             'zone',
+            'site_size',
         ]
 
 
@@ -1354,9 +1369,23 @@ class SiteAllocationFilerForm(Form):
             'hx-target': '#site_allocation_data',
         }),
     )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_allocation_data',
+        })
+    )
     class Meta:
         fields = [
             'zone',
             'event',
+            'site_size'
         ]
 
