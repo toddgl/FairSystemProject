@@ -134,6 +134,8 @@ def stall_registration_listview(request):
             'stallregistration_list': stallregistration_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
+            'booking_status': booking_status,
+            'selling_food': selling_food,
         })
 
     if selling_food:
@@ -154,6 +156,8 @@ def stall_registration_listview(request):
             'stallregistration_list': stallregistration_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
+            'booking_status': booking_status,
+            'selling_food': selling_food,
         })
 
     if request.htmx:
