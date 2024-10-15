@@ -53,14 +53,18 @@ def pagination_data(faq_per_page, filtered_data, request):
         page_list = paginator.get_page(paginator.num_pages)
     return page_list, page_range
 
-
 def faq_listview(request):
     """
-    List  Fair FAQ, this is available for the genera public and those who are logged into the system
+    List Fair FAQ, available for the general public and those logged into the system
     """
-    global faq_filter_dict
+    # Initialize faq_filter_dict from GET parameters if available
+    faq_filter_dict = {}
+
+    category = request.GET.get('category', '')  # Get category from the GET request (pagination)
+    if category:
+        faq_filter_dict['category'] = category
+
     alert_message = ''
-    template_name = 'faq_list.html'
     faq_per_page = 8
     current_prices = InventoryItemFair.currentinventoryitemfairmgr.all()
 
@@ -68,24 +72,17 @@ def faq_listview(request):
     form_purpose = filterform.data.get('form_purpose', '')
 
     if request.htmx:
+        # Use the partial template for HTMX requests
+        template_name = 'faq_list_partial.html'
         if form_purpose == 'filter':
             # Handle filter form submission
             category = filterform.data.get('category', '')
             if category:
                 faq_filter_dict['category'] = category
                 alert_message = f'There are no FAQs of category {category} created yet'
-            else:
-                faq_filter_dict = {}
-                alert_message = 'There are no FAQs yet.'
-        else:
-            # Handle pagination
-            # The filter _dict is retained from the filter selection which ensures that the correct data is appplied
-            # to subsequent pages
-            pass
-        # Alert message logic
-        template_name = 'faq_list_partial.html'
     else:
-        faq_filter_dict ={}
+        # Use the full page template for normal requests
+        template_name = 'faq_list.html'
 
     # Apply filters to the queryset
     filtered_data = FAQ.activefaqmgr.filter(**faq_filter_dict).order_by("category").all()
@@ -101,8 +98,8 @@ def faq_listview(request):
         'page_range': page_range,
         'current_prices': current_prices,
         'alert_mgr': alert_message,
+        'faq_filter_dict': faq_filter_dict  # Passing filter info to the template
     })
-
 
 class FaqDetailUpdateView(PermissionRequiredMixin, UpdateView):
     """
@@ -113,5 +110,6 @@ class FaqDetailUpdateView(PermissionRequiredMixin, UpdateView):
     form_class = FaqUpdateForm
     template_name = 'faq_detail.html'
     success_url = reverse_lazy('faq:faq-list')
+
 
 
