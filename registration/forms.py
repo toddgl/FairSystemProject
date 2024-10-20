@@ -937,9 +937,16 @@ class FoodRegistrationConvenerEditForm(ModelForm):
         model = FoodRegistration
         fields = [
             'food_stall_type',
+            'food_fair_consumed',
         ]
         labels = {
             'food_stall_type': 'Food Stall Type',
+            'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
+        }
+        widgets = {
+            'food_fair_consumed': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            })
         }
 
 

@@ -1175,8 +1175,8 @@ def convener_stall_registration_detail_view(request, id):
     if stall_registration.multi_site:
         context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
 
-    if FoodRegistration.objects.filter(registration=id).exists():
-        food_registration = FoodRegistration.objects.get(registration=id)
+    if FoodRegistration.objects.filter(registration=stall_registration.id).exists():
+        food_registration = FoodRegistration.objects.get(registration=stall_registration.id)
         context["food_data"] = food_registration
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
 
