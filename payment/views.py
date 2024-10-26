@@ -17,6 +17,7 @@ from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
 from django.http import HttpResponse
 from accounts.models import Profile
+from django.core.paginator import Paginator
 from .models import (
     Invoice,
     InvoiceItem,
@@ -59,7 +60,7 @@ def stripe_payment(request, id):
                             extra={'custom_category': 'Stripe Payment'})
             print(str(e))
         return redirect(checkout_session.url, code=303)
-    return render(request, 'myfair_dashboard.html')
+    return render(request, 'myfair/myfair_dashboard.html')
 
 
 @csrf_exempt
@@ -191,49 +192,36 @@ def mark_payment_as_reconciled(request, id):
 def paymenthistory_listview(request):
     """
     Description: view for displaying payments in a table with filter based on payment_status and providing
-    functionality to change the status from Pending  to Cancelled, Completed to Reconciled and Pending to Failed.
-    Plus the ability to drill ddown to see the respective StallRegistration / Food Registration
+    functionality to change the status from Pending to Cancelled, Completed to Reconciled, and Pending to Failed.
     """
     payment_history_status_filter_dict = {}
     template_name = 'paymenthistory_list.html'
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
     payment_status = request.GET.get('payment_status', '')
+
     if payment_status:
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(payment_status=payment_status).all()
+        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(payment_status=payment_status).all().order_by('id')
         alert_message = 'There are no Payment Histories of status ' + str(payment_status) + ' created yet'
     else:
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all()
+        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all().order_by('id')
         alert_message = 'There are no Payment Histories created yet.'
 
+    # Apply pagination
+    paginator = Paginator(payment_history_list, 10)  # Show 10 items per page
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
     if request.htmx:
-        form_purpose = filterform.data.get('form_purpose', '')
-        if form_purpose == 'filter':
-            if filterform.is_valid():
-                payment_status = filterform.cleaned_data['payment_status']
-                attr_payment_history_status = 'payment_status'
-                if payment_status:
-                    alert_message = 'There are no Payment Histories for status ' + str(payment_status)
-                    payment_history_status_filter_dict = {attr_payment_history_status: payment_status}
-                else:
-                    alert_message = 'There are no Payment Histories created yet'
-                    payment_history_status_filter_dict = {}
-        else:
-            # Handle pagination
-            # The payment_history_status_filter _dict is retained from the filter selection which ensures that the
-            # correct data is applied to subsequent pages
-            pass
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
-            **payment_history_status_filter_dict).all()
         template_name = 'paymenthistory_list_partial.html'
         return TemplateResponse(request, template_name, {
-            'payment_history_list': payment_history_list,
+            'page_obj': page_obj,
             'payment_status': payment_status,
             'alert_mgr': alert_message,
         })
     else:
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
-            'payment_history_list': payment_history_list,
+            'page_obj': page_obj,
             'payment_status': payment_status,
             'alert_mgr': alert_message,
         })

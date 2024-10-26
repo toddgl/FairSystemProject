@@ -50,6 +50,32 @@
                 {% endfor %}
                 </tbody>
             </table>
+         <!-- Pagination controls -->
+            <nav aria-label="Page navigation">
+                <ul class="pagination">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" hx-get="?page={{ page_obj.previous_page_number }}" hx-target="#payment_history_data" hx-swap="outerHTML">&laquo; Previous</a>
+                    </li>
+                    {% endif %}
+
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" hx-get="?page={{ num }}" hx-target="#payment_history_data" hx-swap="outerHTML">{{ num }}</a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" hx-get="?page={{ page_obj.next_page_number }}" hx-target="#payment_history_data" hx-swap="outerHTML">Next &raquo;</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
         {% else %}
             <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
         {% endif %}
