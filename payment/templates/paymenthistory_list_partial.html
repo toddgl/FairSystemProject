@@ -25,7 +25,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for paymenthistory in payment_history_list %}
+                {% for paymenthistory in page_obj %}
                 <tr>
                     <td>{{ paymenthistory.payment_status }}</td>
                     <td>{{ paymenthistory.invoice.stall_registration.id }}</td>
