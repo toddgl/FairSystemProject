@@ -1064,6 +1064,7 @@ class SiteAllocationUpdateForm(ModelForm):
             'stallholder': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
+                'readonly': 'readonly'
             }),
             'event_site': Select(attrs={
                 'class': "form-select",
