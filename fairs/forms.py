@@ -341,6 +341,7 @@ class SiteCreateForm(ModelForm):
             'zone',
             'site_size',
             'site_note',
+            'has_power',
             'is_active',
         ]
         widgets = {
@@ -348,6 +349,9 @@ class SiteCreateForm(ModelForm):
                 'placeholder': 'Site Name',
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
+            }),
+            'has_power': CheckboxInput(attrs={
+                'class': 'form-check-input',
             }),
         }
 
@@ -394,6 +398,7 @@ class SiteDetailForm(ModelForm):
             'zone',
             'site_size',
             'site_note',
+            'has_power',
             'is_active',
         ]
         widgets = {
@@ -401,7 +406,10 @@ class SiteDetailForm(ModelForm):
                 'placeholder': 'Site Name',
                 'class': "form-control",
                 'style': 'max-width: 300px;',
-            })
+            }),
+            'has_power': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
         }
 
 
@@ -1060,7 +1068,6 @@ class SiteAllocationUpdateForm(ModelForm):
             'stallholder': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
-                'readonly': 'readonly'
             }),
             'event_site': Select(attrs={
                 'class': "form-select",
@@ -1280,6 +1287,8 @@ class MessageFilterForm(Form):
             'checked': False
         })
     )
+
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
     class Meta:
         fields = [
