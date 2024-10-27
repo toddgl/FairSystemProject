@@ -341,7 +341,6 @@ class SiteCreateForm(ModelForm):
             'zone',
             'site_size',
             'site_note',
-            'has_power',
             'is_active',
         ]
         widgets = {
@@ -349,9 +348,6 @@ class SiteCreateForm(ModelForm):
                 'placeholder': 'Site Name',
                 'class': "form-select`",
                 'style': 'max-width: 300px;',
-            }),
-            'has_power': CheckboxInput(attrs={
-                'class': 'form-check-input',
             }),
         }
 
