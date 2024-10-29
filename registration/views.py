@@ -1227,15 +1227,25 @@ def stallholder_stall_registration_detail_view(request, id):
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.registrationcurrentallmgr.get(id=id)
-    if FoodRegistration.objects.filter(registration=stall_registration).exists():
-        food_registration = FoodRegistration.objects.get(registration=stall_registration)
+
+     # Check if food_registration exists
+    food_registration = FoodRegistration.objects.filter(registration=stall_registration).first()
+
     request.session['stallholder_id'] = stall_registration.stallholder.id
     stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
-    comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False,
-                                                  convener_only_comment=False, comment_parent__isnull=True,
-                                                  fair=current_fair.id)
+    comments = RegistrationComment.objects.filter(
+        stallholder=stall_registration.stallholder.id, is_archived=False,
+        convener_only_comment=False, comment_parent__isnull=True,
+        fair=current_fair.id
+    )
+
+    # Initialize forms, setting foodregistrtionupdateform to None if food_registration doesn't exist
     registrationupdateform = StallRegistrationStallholderEditForm(instance=stall_registration)
-    foodregistrtionupdateform = FoodRegistrationStallholderEditForm(instance=food_registration)
+    foodregistrtionupdateform = (
+        FoodRegistrationStallholderEditForm(instance=food_registration)
+        if food_registration else None
+    )
+
     equipment_form = FoodPrepEquipReqForm(request.POST or None)
     context = {
         'registrationupdateform': registrationupdateform,
