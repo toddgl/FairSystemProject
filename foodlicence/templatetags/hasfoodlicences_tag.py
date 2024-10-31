@@ -22,7 +22,7 @@ def can_generate_foodlicence(value):
     Used in the convener stall registration detail view
     """
     # Check to ensure that the StallRegistration is either "Complete" "Reconciled" or "Credit" and it has a foodregistration
-    eligible_registration =StallRegistration.registrationcurrentmgr.filter(id=stallregistration_id,
+    eligible_registration =StallRegistration.registrationcurrentmgr.filter(id=value,
                                                                            food_registration__isnull=False
                                                                            ).filter(
         Q(invoice__payment_history__payment_status__in=[
