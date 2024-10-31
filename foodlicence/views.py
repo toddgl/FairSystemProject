@@ -17,6 +17,7 @@ from weasyprint import HTML, CSS
 from pypdf import PdfWriter, PdfReader
 from pypdf.annotations import FreeText
 from django.core.files.base import ContentFile
+from django.db.models import Q
 from accounts.models import (
     Profile
 )
@@ -345,10 +346,15 @@ def create_food_licence_from_stallregistration(request, stallregistration_id):
     # Get the FoodRegistration instance associated with the StallRegistration ID
     food_registration = get_object_or_404(FoodRegistration, registration_id=stallregistration_id)
 
-    # Check to ensure that the StallRegistration is "Complete" and it has a foodregistration
+    # Check to ensure that the StallRegistration is either "Complete" "Reconciled" or "Credit" and it has a foodregistration
     ready_for_foodlicence =StallRegistration.registrationcurrentmgr.filter(id=stallregistration_id,
-        invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
         food_registration__isnull=False
+    ).filter(
+        Q(invoice__payment_history__payment_status__in=[
+            PaymentHistory.COMPLETED,
+            PaymentHistory.RECONCILED,
+            PaymentHistory.CREDIT
+        ])
     )
 
     if ready_for_foodlicence:

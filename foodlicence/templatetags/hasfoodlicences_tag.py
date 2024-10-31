@@ -1,5 +1,6 @@
 # foodlicence/templatetags/hasfoodlicences_tags.py
 
+from django.db.models import Q
 from django import template
 from foodlicence.models import (
     FoodLicence,
@@ -20,10 +21,16 @@ def can_generate_foodlicence(value):
     Templatetag to provide a boolean answer whether there is a need to gernerate a foodlicence for a stallregistration
     Used in the convener stall registration detail view
     """
-    # Check to ensure that the StallRegistration is "Complete" and it has a FoodRegistration
-    eligible_registration = StallRegistration.objects.filter(id=value,
-                                            invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
-                                        food_registration__isnull=False ).exists()
+    # Check to ensure that the StallRegistration is either "Complete" "Reconciled" or "Credit" and it has a foodregistration
+    eligible_registration =StallRegistration.registrationcurrentmgr.filter(id=stallregistration_id,
+                                                                           food_registration__isnull=False
+                                                                           ).filter(
+        Q(invoice__payment_history__payment_status__in=[
+            PaymentHistory.COMPLETED,
+            PaymentHistory.RECONCILED,
+            PaymentHistory.CREDIT
+        ])
+    ).exists()
     foodlicence_exists = FoodLicence.foodlicencecurrentmgr.filter(food_registration__registration_id=value).exists()
     if eligible_registration and not foodlicence_exists:
         return True
