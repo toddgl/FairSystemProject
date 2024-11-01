@@ -24,15 +24,21 @@ def stallholder_registration_search_view(request):
     Search for Stallholders customised for the stall registrations listing
     """
     search_text = request.POST.get('search')
-    registration = request.session['registration']
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
-    context = {
-        'results': results,
-        'registration': registration
-    }
+
+    if 'registration' not in request.session:
+        context = {
+            'results': results
+        }
+    else:
+        registration = request.session['registration']
+        context = {
+            'results': results,
+            'registration': registration
+        }
     return render(request, 'search/partials/stallholder_registration_results.html', context)
 
 def stallholder_siteallocation_search_view(request):
