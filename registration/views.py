@@ -1279,9 +1279,10 @@ def stallholder_stall_registration_detail_view(request, id):
             food_registration.save()
 
         else:
-            db_logger.error('There was an error with updating the stall Application. '
-                            + registrationupdateform.errors.as_data(),
-                            extra={'custom_category': 'Stall Application'})
+            db_logger.error(
+                f'There was an error with updating the stall Application. {registrationupdateform.errors.as_data()}',
+                            extra={'custom_category': 'Stall Application'}
+            )
             return TemplateResponse(request, template, context)
 
     return TemplateResponse(request, template, context)
