@@ -1580,16 +1580,18 @@ def messages_dashboard_view(request):
     """
     A dashboard that allows the convener to monitor and respond to stallholder messages
     """
-    message_filter_dict = {}
-    global stallholder
+    global message_filter_dict
+    stallholder = ''
     request.session['message'] = 'fair:messages-dashboard'
     template = "dashboards/dashboard_messages_filter.html"
     filter_message= 'Showing current comments of the current fair'
     messagefilterform = MessageFilterForm(request.POST or None)
+    form_purpose = messagefilterform.data.get('form_purpose', '')
     replyform = MessageReplyForm(request.POST or None)
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
     comments = RegistrationComment.objects.filter( is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
+    cards_per_page = 6
     if request.htmx:
         comments = RegistrationComment.objects.filter( comment_parent__isnull=True)
         stallholder_id = request.POST.get('selected_stallholder')
@@ -1603,271 +1605,275 @@ def messages_dashboard_view(request):
                 attr_archive: False,
             }
             filter_comments = comments.all().filter(**message_filter_dict)
-            template = 'dashboards/dashboard_messages.html'
+            template = 'dashboards/dashboard_messages_partial.html'
+            page_list, page_range = pagination_data(cards_per_page, filter_comments, request)
             return TemplateResponse(request, template, {
                 'messagefilterform': messagefilterform,
                 'replyform': replyform,
-                'comments': filter_comments,
+                'page_obj': page_list,
                 'filter': filter_message,
             })
-        if messagefilterform.is_valid():
-            fair = messagefilterform.cleaned_data['fair']
-            comment_type = messagefilterform.cleaned_data['comment_type']
-            active_flag = messagefilterform.cleaned_data['is_active']
-            resolved_flag = messagefilterform.cleaned_data['is_done']
-            archive_flag = messagefilterform.cleaned_data['is_archived']
-            attr_fair = 'fair'
-            attr_comment_type = 'comment_type'
-            attr_active = 'is_active'
-            attr_resolved = 'is_done'
-            if comment_type and fair and archive_flag and stallholder:
-                filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and fair and active_flag and stallholder:
-                filter_message = 'Showing all the messages that are under action of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and resolved_flag and stallholder:
-                filter_message = 'Showing all the messages that are resolved of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and archive_flag:
-                filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and fair and active_flag:
-                filter_message = 'Showing all the messages that are under action of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and resolved_flag:
-                filter_message = 'Showing all the messages that are resolved of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and stallholder:
-                filter_message = 'Showing all the current messages of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif comment_type and archive_flag and stallholder:
-                filter_message = 'Showing all the archived messages of the current fair of comment type ' + str(
-                    comment_type) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and active_flag and stallholder:
-                filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(
-                    comment_type) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                }
-            elif comment_type and resolved_flag and stallholder:
-                filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(
-                    comment_type) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif active_flag and fair and stallholder:
-                filter_message = 'Showing all  messages under action for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag and fair and stallholder:
-                filter_message = 'Showing all resolved messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag and fair and stallholder:
-                filter_message = 'Showing all archived  messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_archive: True,
-                }
-            elif comment_type and fair:
-                filter_message = 'Showing all the current messages of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif comment_type and archive_flag:
-                filter_message = 'Showing all the archived messages of the current fair of comment type ' + str( comment_type)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and active_flag:
-                filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(comment_type)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif comment_type and resolved_flag:
-                filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(comment_type)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif active_flag and fair:
-                filter_message = 'Showing all  messages under action for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag and fair:
-                filter_message = 'Showing all resolved for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag and fair:
-                filter_message = 'Showing all archived  messages for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_archive: True,
-                }
-            elif fair and stallholder:
-                filter_message = 'Showing current messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_archive: False,
-                    attr_fair: fair
-                }
-            elif comment_type and stallholder:
-                filter_message = 'Showing all the messages of comment types of ' + str(
-                    comment_type) + ' for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif active_flag and stallholder:
-                filter_message = 'Showing all the messages that are under action for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag and stallholder:
-                filter_message = 'Showing all the messages that are resolved for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag and stallholder:
-                filter_message = 'Showing all archived messages for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_archive: True,
-                }
-            elif fair:
-                filter_message = 'Showing current messages for the ' + str(fair)
-                message_filter_dict = {
-                    attr_archive: False,
-                    attr_fair: fair
-                }
-            elif comment_type:
-                filter_message = 'Showing all the messages of comment types of ' + str(comment_type) + ' for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif active_flag:
-                filter_message = 'Showing all the messages that are under action for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag:
-                filter_message = 'Showing all the messages that are resolved for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag:
-                filter_message = 'Showing all archived messages for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_archive: True,
-                }
-            else:
-                message_filter_dict = {
-                    attr_archive: False,
-                    attr_fair: current_fair.id
-                }
-                filter_message = 'Showing current messages of the current fair'
-            template = 'dashboards/dashboard_messages.html'
-            filter_comments = comments.all().filter(**message_filter_dict)
+        if form_purpose == 'filter':
+            if messagefilterform.is_valid():
+                fair = messagefilterform.cleaned_data['fair']
+                comment_type = messagefilterform.cleaned_data['comment_type']
+                active_flag = messagefilterform.cleaned_data['is_active']
+                resolved_flag = messagefilterform.cleaned_data['is_done']
+                archive_flag = messagefilterform.cleaned_data['is_archived']
+                attr_fair = 'fair'
+                attr_comment_type = 'comment_type'
+                attr_active = 'is_active'
+                attr_resolved = 'is_done'
+                if comment_type and fair and archive_flag and stallholder:
+                    filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_archive: True,
+                    }
+                elif comment_type and fair and active_flag and stallholder:
+                    filter_message = 'Showing all the messages that are under action of comment type ' + str(
+                        comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif comment_type and fair and resolved_flag and stallholder:
+                    filter_message = 'Showing all the messages that are resolved of comment type ' + str(
+                        comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif comment_type and fair and archive_flag:
+                    filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_archive: True,
+                    }
+                elif comment_type and fair and active_flag:
+                    filter_message = 'Showing all the messages that are under action of comment type ' + str(
+                        comment_type) + ' for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif comment_type and fair and resolved_flag:
+                    filter_message = 'Showing all the messages that are resolved of comment type ' + str(
+                        comment_type) + ' for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif comment_type and fair and stallholder:
+                    filter_message = 'Showing all the current messages of comment type ' + str(
+                        comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_archive: False,
+                    }
+                elif comment_type and archive_flag and stallholder:
+                    filter_message = 'Showing all the archived messages of the current fair of comment type ' + str(
+                        comment_type) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair,
+                        attr_comment_type: comment_type,
+                        attr_archive: True,
+                    }
+                elif comment_type and active_flag and stallholder:
+                    filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(
+                        comment_type) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair,
+                        attr_comment_type: comment_type,
+                        attr_active: True,
+                    }
+                elif comment_type and resolved_flag and stallholder:
+                    filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(
+                        comment_type) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair,
+                        attr_comment_type: comment_type,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif active_flag and fair and stallholder:
+                    filter_message = 'Showing all  messages under action for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif resolved_flag and fair and stallholder:
+                    filter_message = 'Showing all resolved messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif archive_flag and fair and stallholder:
+                    filter_message = 'Showing all archived  messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: fair,
+                        attr_archive: True,
+                    }
+                elif comment_type and fair:
+                    filter_message = 'Showing all the current messages of comment type ' + str(
+                        comment_type) + ' for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_comment_type: comment_type,
+                        attr_archive: False,
+                    }
+                elif comment_type and archive_flag:
+                    filter_message = 'Showing all the archived messages of the current fair of comment type ' + str( comment_type)
+                    message_filter_dict = {
+                        attr_fair: current_fair,
+                        attr_comment_type: comment_type,
+                        attr_archive: True,
+                    }
+                elif comment_type and active_flag:
+                    filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(comment_type)
+                    message_filter_dict = {
+                        attr_fair: current_fair,
+                        attr_comment_type: comment_type,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif comment_type and resolved_flag:
+                    print('comment_type and resolved_flag')
+                    filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(comment_type)
+                    message_filter_dict = {
+                        attr_fair: current_fair,
+                        attr_comment_type: comment_type,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif active_flag and fair:
+                    filter_message = 'Showing all  messages under action for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif resolved_flag and fair:
+                    filter_message = 'Showing all resolved for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif archive_flag and fair:
+                    filter_message = 'Showing all archived  messages for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_fair: fair,
+                        attr_archive: True,
+                    }
+                elif fair and stallholder:
+                    filter_message = 'Showing current messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_archive: False,
+                        attr_fair: fair
+                    }
+                elif comment_type and stallholder:
+                    filter_message = 'Showing all the messages of comment types of ' + str(
+                        comment_type) + ' for the current fair for stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair.id,
+                        attr_comment_type: comment_type,
+                        attr_archive: False,
+                    }
+                elif active_flag and stallholder:
+                    filter_message = 'Showing all the messages that are under action for the current fair for stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair.id,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif resolved_flag and stallholder:
+                    filter_message = 'Showing all the messages that are resolved for the current fair for stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair.id,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif archive_flag and stallholder:
+                    filter_message = 'Showing all archived messages for the current fair for stallholder Id ' + str(stallholder)
+                    message_filter_dict = {
+                        attr_stallholder: stallholder,
+                        attr_fair: current_fair.id,
+                        attr_archive: True,
+                    }
+                elif fair:
+                    filter_message = 'Showing current messages for the ' + str(fair)
+                    message_filter_dict = {
+                        attr_archive: False,
+                        attr_fair: fair
+                    }
+                elif comment_type:
+                    filter_message = 'Showing all the messages of comment types of ' + str(comment_type) + ' for the current fair'
+                    message_filter_dict = {
+                        attr_fair: current_fair.id,
+                        attr_comment_type: comment_type,
+                        attr_archive: False,
+                    }
+                elif active_flag:
+                    filter_message = 'Showing all the messages that are under action for the current fair'
+                    message_filter_dict = {
+                        attr_fair: current_fair.id,
+                        attr_active: True,
+                        attr_archive: False,
+                    }
+                elif resolved_flag:
+                    filter_message = 'Showing all the messages that are resolved for the current fair'
+                    message_filter_dict = {
+                        attr_fair: current_fair.id,
+                        attr_resolved: True,
+                        attr_archive: False,
+                    }
+                elif archive_flag:
+                    filter_message = 'Showing all archived messages for the current fair'
+                    message_filter_dict = {
+                        attr_fair: current_fair.id,
+                        attr_archive: True,
+                    }
+                else:
+                    message_filter_dict = {
+                        attr_archive: False,
+                        attr_fair: current_fair.id
+                    }
+                    filter_message = 'Showing current messages of the current fair'
+        template = 'dashboards/dashboard_messages_partial.html'
+        filter_comments = comments.all().filter(**message_filter_dict)
+        page_list, page_range = pagination_data(cards_per_page, filter_comments, request)
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
             'replyform': replyform,
-            'comments': filter_comments,
+            'page_obj': page_list,
             'filter': filter_message,
         })
     elif request.method == 'POST':
@@ -1906,15 +1912,16 @@ def messages_dashboard_view(request):
                     })
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
-            'comments': comments,
+            'page_obj': comments,
             'replyform': replyform,
             'filter': filter_message,
         })
     else:
         stallholder = ''
+        page_list, page_range = pagination_data(cards_per_page, comments, request)
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
-            'comments': comments,
+            'page_obj': page_list,
             'replyform': replyform,
             'filter': filter_message,
     })

@@ -23,16 +23,32 @@
     {% endblock head %}
   </head>
   <body hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'>
+    <!-- Navbar -->
     {% block nav %}
       {% include 'navbar.html' %}
     {% endblock nav %}
+    <!-- Sidebar -->
     {% block sidebar %}
       {% include 'sidebar.html' %}
     {% endblock sidebar %}
-    {% block body %}
-      <h1>Dashboard</h1>
-      <div class="loader"></div>
-    {% endblock %}
+
+    <div class="container-fluid">
+      <div>
+        <div class="col-3">
+          {% block static_content %}
+          <!-- Sidebar content -->
+          {% endblock static_content %}
+        </div>
+
+        <div class="col-12" id="dynamic-content">
+          {% block body %}
+          <!-- Default content or dynamic content goes here -->
+          <h1>Dashboard</h1>
+          {% endblock body %}
+        </div>
+      </div>
+    </div>
+
   <!-- custom js -->
   <script>
     var menu_btn = document.querySelector("#menu-btn");
