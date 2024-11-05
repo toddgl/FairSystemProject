@@ -1918,6 +1918,13 @@ def messages_dashboard_view(request):
         })
     else:
         stallholder = ''
+        attr_archive = 'is_archived'
+        attr_fair = 'fair'
+        message_filter_dict = {
+            attr_archive: False,
+            attr_fair: current_fair.id
+        }
+        filter_message = 'Showing current messages of the current fair'
         page_list, page_range = pagination_data(cards_per_page, comments, request)
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,
