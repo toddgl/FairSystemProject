@@ -161,6 +161,7 @@ def stall_registration_listview(request):
         })
 
     if request.htmx:
+        template_name = 'stallregistration/stallregistration_list_partial.html'
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'stallholder'
         if stallholder_id:
@@ -228,7 +229,6 @@ def stall_registration_listview(request):
 
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         stallregistration_list = page_list
-        template_name = 'stallregistration/stallregistration_list_partial.html'
         return TemplateResponse(request, template_name, {
             'stallregistration_list': stallregistration_list,
             'page_range': page_range,
