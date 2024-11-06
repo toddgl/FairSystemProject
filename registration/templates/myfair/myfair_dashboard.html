@@ -30,6 +30,7 @@
     <div class="col-md-6">
         {% get_has_payment_history user.id as payment_history_result %}
           {% if payment_history_result %}
+          {% for payment_history in payment_histories %}
             <div class="container mt-3" style="width: 600px;">
               <div class="card border-primary mb-3">
                 <div class="card-body">
@@ -64,7 +65,9 @@
             </form>
               {% endif %}
             </div>
+          {% endfor %}
           {% endif %}
+      <hr>
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">
         <div class="card border-primary mb-3">
