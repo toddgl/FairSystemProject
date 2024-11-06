@@ -766,11 +766,11 @@ def myfair_dashboard_view(request):
             'site_allocation').all()
     except ObjectDoesNotExist:
         myfair_list = StallRegistration.registrationcurrentmgr.filter(stallholder=request.user)
-    payment_history = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history( stallholder=request.user).last()
+    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history( stallholder=request.user).exclude(payment_status=PaymentHistory.SUPERCEDED)
     discounts = DiscountItem.discountitemmgr.get_stallholder_discounts(stallholder=request.user)
 
     return TemplateResponse(request, template, {
-        'payment_history': payment_history,
+        'payment_histories': payment_history_list,
         'discounts': discounts,
         'registrations': myfair_list,
         'commentfilterform': commentfilterform,
