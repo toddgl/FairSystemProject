@@ -1272,10 +1272,14 @@ def stallholder_stall_registration_detail_view(request, id):
                                                                       instance=stall_registration)
         foodregistrtionupdateform = FoodRegistrationStallholderEditForm(request.POST, request.FILES or None,
                                                                         instance=food_registration)
-        if registrationupdateform.is_valid() and foodregistrtionupdateform.is_valid():
+        if registrationupdateform.is_valid():
             stall_registration = registrationupdateform.save(commit=False)
             stall_registration.save()
+
+        if registrationupdateform and foodregistrtionupdateform.is_valid():
             food_registration = foodregistrtionupdateform.save(commit=False)
+            if not food_registration.registration_id:
+                food_registration.registration = stall_registration
             food_registration.save()
 
         else:
