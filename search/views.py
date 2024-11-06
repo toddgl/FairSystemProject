@@ -1,4 +1,5 @@
 # search/views.py
+
 from django.shortcuts import render
 from django.db.models import Q
 from accounts.models import (
@@ -78,7 +79,15 @@ def stallholder_history_search_view(request):
     Search for Stallholders customised for the site history dashboard
     """
     search_text = request.POST.get('search')
-    stallhistory = request.session['stallhistory']
+    stallhistory = request.session.get('stallhistory', None)
+
+    # Handle cases where the stallhistory  might be missing
+    if not stallhistory:
+        # Optionally, set a default value or handle the error
+        return render(request, 'search/partials/stallholder_history_results.html', {
+            'error': 'Stall History not found in session',
+            'results': []
+        })
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
