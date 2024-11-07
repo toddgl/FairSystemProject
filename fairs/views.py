@@ -1073,7 +1073,6 @@ def site_allocation_listview(request):
     filterform = SiteAllocationListFilterForm(request.POST or None)
     form_purpose = filterform.data.get('form_purpose', '')
     filtered_data = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
-    site_allocation_filter_dict = {}
     cards_per_page = 6
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
@@ -1206,6 +1205,7 @@ def site_allocation_listview(request):
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         allocation_list = page_list
         stallholder = ''
+        site_allocation_filter_dict = {}
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
             'allocation_list': allocation_list,
