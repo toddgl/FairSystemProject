@@ -1073,6 +1073,7 @@ def site_allocation_listview(request):
     filterform = SiteAllocationListFilterForm(request.POST or None)
     form_purpose = filterform.data.get('form_purpose', '')
     filtered_data = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
+    site_allocation_filter_dict = {}
     cards_per_page = 6
     if request.htmx:
         stallholder_id = request.POST.get('selected_stallholder')
@@ -2226,10 +2227,10 @@ def stallregistration_move_cancel_view(request, id):
                     event_site=eventsite,
                     created_by=request.user,
                 )
-                # Update status to allocated on the affected Eventsites
+                # Update status to allocated on the affected Eventsites return to list view
                 eventsite.site_status = 2
                 eventsite.save()
-        return redirect('fair:stallregistration-detail', stallregistration_id=id)
+        return redirect('registration:stallregistration-list')
 
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,
