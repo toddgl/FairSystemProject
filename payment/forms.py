@@ -2,11 +2,18 @@
 
 from django import forms
 from django.forms import (
-    Form,
     ChoiceField,
-    Select,
+    DecimalField,
+    Form,
+    ModelForm,
+    NumberInput,
+    Select
 )
 
+from payment.models import (
+    PaymentHistory,
+    PaymentType
+)
 
 class PaymentHistoryStatusFilterForm(Form):
     """
@@ -42,3 +49,38 @@ class PaymentHistoryStatusFilterForm(Form):
         }
 
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
+
+class UpdatePaymentHistoryForm(ModelForm):
+    '''
+    Used to update Payment history in the Payment History List View
+    '''
+    class Meta:
+        model = PaymentHistory
+        fields = [ 'amount_to_pay', 'amount_paid', 'webhook_amount', 'amount_reconciled', 'payment_status', 'payment_type' ]
+        widgets = {
+            'amount_to_pay': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 100px;',
+            }),
+            'amount_paid': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'webhook_amount': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'amount_reconciled': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'payment_status': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
+            'payment_type': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
+        }
+
