@@ -197,6 +197,7 @@ def paymenthistory_listview(request):
     """
     payment_history_status_filter_dict = {}
     template_name = 'paymenthistory_list.html'
+    cards_per_page = 10
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
     updateform = UpdatePaymentHistoryForm(request.POST or None)
     payment_status = request.GET.get('payment_status', '')
@@ -209,9 +210,8 @@ def paymenthistory_listview(request):
         alert_message = 'There are no Payment Histories created yet.'
 
     # Apply pagination
-    paginator = Paginator(payment_history_list, 10)  # Show 10 items per page
-    page_number = request.GET.get('page')
-    page_obj = paginator.get_page(page_number)
+    page_list, page_range = pagination_data(cards_per_page, payment_history_list, request)
+    page_obj = page_list
 
     if request.htmx:
         template_name = 'paymenthistory_list_partial.html'
@@ -294,4 +294,22 @@ def update_payment_history(request, id):
 
     # If the request is GET, render the update form
     return render(request, "payment/update_payment_form.html", context)
+
+def pagination_data(cards_per_page, filtered_data, request):
+    """
+    Refactored pagination code that is available to all views that included pagination
+    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    """
+    paginator = Paginator(filtered_data, per_page=cards_per_page)
+    page_number = request.GET.get('page', 1)
+    page_range = paginator.get_elided_page_range(number=page_number)
+    try:
+        page_list = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        page_list = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        page_list = paginator.get_page(paginator.num_pages)
+    return page_list, page_range
 
