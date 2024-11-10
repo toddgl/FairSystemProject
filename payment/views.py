@@ -10,7 +10,7 @@ from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required,permission_required
 from django.template.loader import get_template
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.core.exceptions import PermissionDenied
@@ -26,7 +26,8 @@ from .models import (
     PaymentType
 )
 from .forms import (
-    PaymentHistoryStatusFilterForm
+    PaymentHistoryStatusFilterForm,
+    UpdatePaymentHistoryForm
 )
 
 db_logger = logging.getLogger('db')
@@ -197,6 +198,7 @@ def paymenthistory_listview(request):
     payment_history_status_filter_dict = {}
     template_name = 'paymenthistory_list.html'
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
+    updateform = UpdatePaymentHistoryForm(request.POST or None)
     payment_status = request.GET.get('payment_status', '')
 
     if payment_status:
@@ -221,6 +223,7 @@ def paymenthistory_listview(request):
     else:
         return TemplateResponse(request, template_name, {
             'filterform': filterform,
+            'updateform': updateform,
             'page_obj': page_obj,
             'payment_status': payment_status,
             'alert_mgr': alert_message,
@@ -246,3 +249,49 @@ def payment_dashboard_view(request):
         'failed_counts': failed_counts,
         'reconciled_counts': reconciled_counts
     })
+
+
+def load_update_form(request, id):
+    '''
+    Load the UpdatePaymentHistoryForm prepopulated with the instance of payment history
+    '''
+    payment_history = get_object_or_404(PaymentHistory, id=id)
+    updateform = UpdatePaymentHistoryForm(instance=payment_history)
+    return render(request, 'update_payment_form.html', {'updateform': updateform, 'payment_id': id})
+
+
+def update_payment_history(request, id):
+    """
+    Conveners function to update an existing payment history.
+    """
+    # Retrieve the payment history instance or return 404 if not found
+    obj = get_object_or_404(PaymentHistory, id=id)
+    updateform = UpdatePaymentHistoryForm(request.POST or None, instance=obj)
+    context = {
+        'updateform': updateform,
+        'payment_id': id
+    }
+
+    # Check if form is submitted and valid
+    if request.method == 'POST':
+        if updateform.is_valid():
+            # Save the updated instance
+            obj = updateform.save(commit=False)
+            obj.is_valid = True  # Set additional attributes if necessary
+            obj.save()
+            # Render the success message HTML snippet
+            context = {
+                'alert_mgr': 'Payment history updated successfully'
+            }
+            return render(request, "paymenthistory_list_partial.html", context)
+
+        else:
+            # Render the error message
+            context = {
+                'alert_mgr': 'Payment history updated failed'
+            }
+            return render(request, "paymenthistory_list_partial.html", context)
+
+    # If the request is GET, render the update form
+    return render(request, "payment/update_payment_form.html", context)
+

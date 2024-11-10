@@ -1,0 +1,9 @@
+<!-- payment/templates/update_payment_form.html -->
+
+<form hx-post="{% url 'payment:payment-update' payment_id %}" hx-target="#payment_history_data">
+    {% csrf_token %}
+    {{ updateform.as_p }}
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Update Payment History</button>
+    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</form>
+
