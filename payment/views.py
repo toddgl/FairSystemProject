@@ -19,7 +19,6 @@ from django.http import HttpResponse
 from accounts.models import Profile
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
-from utils.migrate_history import stallholder
 from .models import (
     Invoice,
     InvoiceItem,
