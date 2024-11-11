@@ -17,7 +17,7 @@ from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
 from django.http import HttpResponse
 from accounts.models import Profile
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 
 from utils.migrate_history import stallholder
 from .models import (
@@ -198,7 +198,7 @@ def paymenthistory_listview(request):
     functionality to change the status from Pending to Cancelled, Completed to Reconciled, and Pending to Failed.
     """
     global stallholder
-    payment_history_status_filter_dict = {}
+    global paymenthistory_filter_dict
     template_name = 'paymenthistory_list.html'
     cards_per_page = 10
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
@@ -212,7 +212,6 @@ def paymenthistory_listview(request):
         stallholder_id = request.POST.get('selected_stallholder')
         attr_stallholder = 'invoice__stallholder'
         if stallholder_id:
-            print('stallholder_id exists')
             stallholder = stallholder_id
             paymenthistory_filter_dict = {
                 attr_stallholder: stallholder_id
@@ -221,11 +220,9 @@ def paymenthistory_listview(request):
         form_purpose = filterform.data.get('form_purpose', '')
 
         if form_purpose == 'filter':
-            print('In the filter section')
             if filterform.is_valid():
                 payment_status =  filterform.cleaned_data['payment_status']
                 attr_payment_status = 'payment_status'
-                print(payment_status)
 
                 if payment_status and stallholder:
                     alert_message = 'There are no payment histories for stallholder ' + str(stallholder) + ' and payment status ' + str(payment_status)
@@ -245,11 +242,12 @@ def paymenthistory_listview(request):
                     }
                 else:
                     alert_message = "There are no payment histories created yet"
+        else:
+            # Pagination logic
+            if paymenthistory_filter_dict:
+                pass
             else:
-                # Pagination logic
-                print('In pagination logic section')
-                if 'paymenthistory_filter_dict' not in locals():
-                    paymenthistory_filter_dict = {}
+                paymenthistory_filter_dict = {}
 
         payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
                 **paymenthistory_filter_dict).all().order_by('id')
@@ -267,6 +265,7 @@ def paymenthistory_listview(request):
         payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all().order_by('id')
         alert_message = 'There are no Payment Histories created yet.'
         stallholder = ''
+        paymenthistory_filter_dict = {}
 
         # Apply pagination
         page_list, page_range = pagination_data(cards_per_page, payment_history_list, request)
