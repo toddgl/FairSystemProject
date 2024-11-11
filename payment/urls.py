@@ -29,6 +29,6 @@ urlpatterns = [
     path('payment/stripe_payment/<int:id>/', stripe_payment, name='stripe-payment'),
     path('payment/stripe_webhook/', csrf_exempt(stripe_webhook), name='stripe-webhook'),
     path('dashboard/payments/', payment_dashboard_view, name='payment-dashboard'),
-    path('payment/payment_update/<int:id>', update_payment_history, name='payment-update'),
+    path('payment/payment_update/<int:id>/', update_payment_history, name='payment-update'),
     path('payment/load_update_form/<int:id>/', load_update_form, name='load-update-form')
 ]

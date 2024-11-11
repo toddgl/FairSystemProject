@@ -7,6 +7,7 @@
 /static/
 /media/
 /venv/
+/utils/migrate_history.py
 .kdev4
 .env
 clean_yaml.py

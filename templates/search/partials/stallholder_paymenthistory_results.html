@@ -20,7 +20,7 @@
             <tbody>
                 {% for stallholder in results %}
                 <tr>
-                    <td><input type="radio" name="selected_stallholder" value= "{{ stallholder.id }}"  hx-post="{% url 'payment:payment-update' %}" hx-trigger="click" hx-target="#payment_history_data"></td>
+                    <td><input type="radio" name="selected_stallholder" value= "{{ stallholder.id }}"  hx-post="{% url 'payment:payment-list' %}" hx-trigger="click" hx-target="#payment_history_data"></td>
                     <td>{{ stallholder.id }}</td>
                     <td>{{ stallholder.first_name }}</td>
                     <td>{{ stallholder.last_name }}</td>

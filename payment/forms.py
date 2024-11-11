@@ -37,6 +37,9 @@ class PaymentHistoryStatusFilterForm(Form):
         widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': 'payment_history_data'
         }),
     )
 

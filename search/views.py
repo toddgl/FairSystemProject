@@ -145,4 +145,3 @@ def stallholder_payment_history_search_view(request):
         'results': results,
     }
     return render(request, 'search/partials/stallholder_paymenthistory_results.html', context)
-
