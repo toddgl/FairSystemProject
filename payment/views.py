@@ -261,7 +261,6 @@ def paymenthistory_listview(request):
         })
 
     else:
-        print('In the final else')
         payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all().order_by('id')
         alert_message = 'There are no Payment Histories created yet.'
         stallholder = ''
