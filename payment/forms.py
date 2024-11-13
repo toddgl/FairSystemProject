@@ -26,6 +26,7 @@ class PaymentHistoryStatusFilterForm(Form):
         ("Superceded", "Superceded"),
         ("Cancelled", "Cancelled"),
         ("Completed", "Completed"),
+        ("Credit", "Credit"),
         ("Failed", "Failed"),
         ("Reconciled", "Reconciled")
     )
