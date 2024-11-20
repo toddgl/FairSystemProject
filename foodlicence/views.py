@@ -43,23 +43,30 @@ def generate_pdf(object, request):
     domain = current_site.domain
     protocol = 'https' if request.is_secure() else 'http'
 
-    # Full URL for the certificate
-    full_certificate_url = f'{protocol}://{domain}{object.food_registration.food_registration_certificate.url}'
+    # Check if the certificate file exists
+    certificate_url = None
+    if object.food_registration.food_registration_certificate:
+        certificate_url = f'{protocol}://{domain}{object.food_registration.food_registration_certificate.url}'
 
     # Render a template to HTML
-    stall_registration =StallRegistration.objects.get(id=object.food_registration.registration.id)
-    stallholder_detail =  Profile.objects.get(user=stall_registration.stallholder)
+    stall_registration = StallRegistration.objects.get(id=object.food_registration.registration.id)
+    stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
+
     # Use render_to_string to render the template with context
-    html_content = render_to_string('swdc_foodlicence.html', {
+    context = {
         'object': object,
         'stallholder_detail': stallholder_detail,
-        'full_certificate_url': full_certificate_url
-    })
+        'full_certificate_url': certificate_url,  # This will be None if no file exists
+    }
+    html_content = render_to_string('swdc_foodlicence.html', context)
+
     css_file = os.path.join(settings.STATIC_ROOT, 'css', 'licence.css')
+
     # Convert HTML to PDF
     pdf_file = HTML(string=html_content).write_pdf(stylesheets=[CSS(filename=css_file)])
 
     return pdf_file
+
 
 def merge_pdfs(pdf_files):
     pdf_writer = PdfWriter()
