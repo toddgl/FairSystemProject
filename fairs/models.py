@@ -326,6 +326,7 @@ class Site(models.Model):
         null=True
     )
     is_active = models.BooleanField(default=True)
+    has_power = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
