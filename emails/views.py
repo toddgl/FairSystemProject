@@ -86,7 +86,6 @@ def email_history_listview(request):
     # Get filters from the request
     subject_type = request.GET.get('subject_type', '')
     stallholder_id = request.POST.get('selected_stallholder' or None)
-    print('Stallholder selected', stallholder_id)
     form_purpose = filterform.data.get('form_purpose', '') if filterform.is_bound else None
     email_filter_dict = {}
 
@@ -114,7 +113,6 @@ def email_history_listview(request):
     else:
         email_filter_dict['fair'] = current_fair
 
-    print('Email filter dict', email_filter_dict)
     # Fetch filtered data
     filtered_data = Email.emailhistorycurrentmgr.filter(**email_filter_dict).order_by('-date_sent')
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
