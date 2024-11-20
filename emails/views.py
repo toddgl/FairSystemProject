@@ -75,106 +75,59 @@ def email_history_dashboard_view(request):
 @login_required
 @permission_required('emails.view_email', raise_exception=True)
 def email_history_listview(request):
-    '''
-    List emails sent to stallholders abled to be filtered on subject_type and stallholder
-    '''
-    global stallholder
-    current_fair = Fair.currentfairmgr.all().last()
+    """
+    List emails sent to stallholders, filtered by subject_type and stallholder.
+    """
+    current_fair = Fair.currentfairmgr.last()
     cards_per_page = 30
     template_name = 'email_history_list.html'
     filterform = EmailHistoryFilterForm(request.POST or None)
+
+    # Get filters from the request
     subject_type = request.GET.get('subject_type', '')
-    print('Subject_type', subject_type)
+    stallholder_id = request.POST.get('selected_stallholder' or None)
+    print('Stallholder selected', stallholder_id)
+    form_purpose = filterform.data.get('form_purpose', '') if filterform.is_bound else None
+    email_filter_dict = {}
 
+    # Subject type filtering
     if subject_type:
-        alert_message = f'There are no email messages of type {{ subject_type}} created yet'
-        attr_subject_type = 'subject_type_id'
-
-        # Degine the email histoty filter dict
-        email_filter_dict = {
-            attr_subject_type: subject_type
-        }
-        filtered_data = Email.emailhistorycurrentmgr.filter(**email_filter_dict).order_by('-date_sent').all()
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        email_list = page_list
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'email_list': email_list,
-            'page_range': page_range,
-            'alert_message': alert_message,
-            'subject_type': subject_type,
-        })
-    if request.htmx:
-        template_name = 'email_history_list_partial.html'
-        stallholder_id = request.POST.get('selected_stallholder')
-        attr_stallholder = 'stallholder'
-        if stallholder_id:
-            stallholder = stallholder_id
-            email_filter_dict ={
-                attr_stallholder: stallholder_id
-            }
-        form_purpose = filterform.data.get('form_purpose', '')
-
-        if form_purpose == 'filter':
-            if filterform.is_valid():
-                fair = filterform.cleaned_data['fair']
-                attr_fair = 'fair'
-                if fair and stallholder:
-                    alert_message =f'There are no emails where the fair is {{ fair }} and stallholder ID is {{stallholder}}'
-                    email_filter_dict = {
-                        attr_fair: fair,
-                        attr_stallholder: stallholder
-                    }
-                elif fair:
-                    alert_message =f'There are no emails where the fair is {{ fair }}'
-                    email_filter_dict = {
-                        attr_fair: fair,
-                    }
-                elif stallholder:
-                    alert_message =f'There are no emails where the stallholder ID is {{stallholder}}'
-                    email_filter_dict = {
-                        attr_stallholder: stallholder,
-                        attr_fair: current_fair,
-                    }
-                else:
-                    alert_message ='There are no emails created yet.'
-        else:
-            # Pagination logic
-
-            print('Got to the pagination else')
-            if 'email_filter_dict' not in locals():
-                email_filter_dict ={
-                    attr_fair: current_fair
-                }
-
-        print("Filter Dict", email_filter_dict)
-        filtered_data = Email.objects.filter(**email_filter_dict).order_by('-date_sent').all()
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        email_list = page_list
-        return TemplateResponse(request, template_name, {
-            'email_list': email_list,
-            'page_range': page_range,
-            'alert_message': alert_message,
-        })
+        email_filter_dict['subject_type_id'] = subject_type
+        alert_message = f'There are no email messages of type {subject_type} created yet.'
     else:
         alert_message = 'There are no emails created yet.'
-        filtered_data = Email.emailhistorycurrentmgr.order_by('-date_sent').all()
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        email_list = page_list
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'email_list': email_list,
-            'page_range': page_range,
-            'alert_message': alert_message,
-        })
 
+    # Stallholder and fair filtering
+    if request.htmx and form_purpose == 'filter' and filterform.is_valid():
+        fair = filterform.cleaned_data.get('fair')
+        if stallholder_id:
+            email_filter_dict['stallholder'] = stallholder_id
+            alert_message = f'There are no emails where the stallholder ID is {stallholder_id}.'
+        if fair:
+            email_filter_dict['fair'] = fair
+            alert_message = f'There are no emails where the fair is {fair}.'
 
+    elif stallholder_id:
+            # Append stallholder if only stallholder is selected without form filtering
+            email_filter_dict['stallholder'] = stallholder_id
+            alert_message = f'There are no emails where the stallholder ID is {stallholder_id} at the current fair.'
+    else:
+        email_filter_dict['fair'] = current_fair
 
+    print('Email filter dict', email_filter_dict)
+    # Fetch filtered data
+    filtered_data = Email.emailhistorycurrentmgr.filter(**email_filter_dict).order_by('-date_sent')
+    page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+    email_list = page_list
 
+    # Adjust template for HTMX requests
+    if request.htmx:
+        template_name = 'email_history_list_partial.html'
 
-
-
-
-
-
-
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'email_list': email_list,
+        'page_range': page_range,
+        'alert_message': alert_message,
+        'subject_type': subject_type,
+    })

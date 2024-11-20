@@ -5,12 +5,6 @@
 {% load hasemailhistories_tag %}
 
 
-<!-- email/message_snippet.html -->
-<div class="alert alert-{{ status }}">
-    {{ message }}
-</div>
-
-
 <!-- Payment history table and other elements... -->
 <div id="email_history_data">
     <div>
@@ -36,7 +30,7 @@
                     <td>{{ emailhistory.date_sent }}</td>
                 </tr>
                 {% empty %}
-                    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+                    <div class="alert alert-info" role="alert">{{ alert_message }}</div>
                 {% endfor %}
                 </tbody>
             </table>
