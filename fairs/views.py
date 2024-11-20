@@ -98,6 +98,14 @@ from registration.forms import (
     CommentFilterForm,
 )
 
+from emails.forms import (
+    CreateEmailForm
+)
+
+from emails.backend import (
+    bulk_registration_emails
+)
+
 
 # Global Variables
 current_year = datetime.datetime.now().year
@@ -1377,6 +1385,7 @@ def stall_registration_dashboard_view(request):
     stall_registrations = StallRegistration.objects.all()
     template_name = 'dashboards/dashboard_registrations.html'
     filter_message = 'Showing unfiltered data - from all current and future fairs and site sizes'
+    createemailform = CreateEmailForm(request.POST or None)
 
     if request.POST:
         form = DashboardRegistrationFilterForm(request.POST)
@@ -1414,6 +1423,11 @@ def stall_registration_dashboard_view(request):
             booked_counts = StallRegistration.registrationbookedmgr.filter(**filter_dict).count()
             cancelled_counts = StallRegistration. registrationcancelledmgr.filter(**filter_dict).count()
 
+        if 'bulkemail' in request.POST and createemailform.is_valid():
+                status = 'Invoiced'
+                subject_type = 'Invoicing'
+                body = createemailform.cleaned_data['body']
+                bulk_registration_emails(status, subject_type, body)
     else:
         form = DashboardRegistrationFilterForm()
         total_counts = stall_registrations.count()
@@ -1435,7 +1449,8 @@ def stall_registration_dashboard_view(request):
         'invoiced_counts': invoiced_counts,
         'paid_counts': paid_counts,
         'booked_counts': booked_counts,
-        'cancelled_counts': cancelled_counts
+        'cancelled_counts': cancelled_counts,
+        'createemailform': createemailform
     })
 
 @login_required
@@ -1588,7 +1603,7 @@ def messages_dashboard_view(request):
     replyform = MessageReplyForm(request.POST or None)
     # list of active parent comments
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter( is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
+    comments = RegistrationComment.objects.filter( is_archived=False, comment_parent__isnull=True, fair=current_fair.id).order_by('-date_created')
     cards_per_page = 6
     if request.htmx:
         comments = RegistrationComment.objects.filter( comment_parent__isnull=True)
@@ -1602,7 +1617,7 @@ def messages_dashboard_view(request):
                 attr_stallholder: stallholder_id,
                 attr_archive: False,
             }
-            filter_comments = comments.all().filter(**message_filter_dict)
+            filter_comments = comments.all().filter(**message_filter_dict).order_by('-date_created')
             template = 'dashboards/dashboard_messages_partial.html'
             page_list, page_range = pagination_data(cards_per_page, filter_comments, request)
             return TemplateResponse(request, template, {
@@ -1866,7 +1881,7 @@ def messages_dashboard_view(request):
                     }
                     filter_message = 'Showing current messages of the current fair'
         template = 'dashboards/dashboard_messages_partial.html'
-        filter_comments = comments.all().filter(**message_filter_dict)
+        filter_comments = comments.all().filter(**message_filter_dict).order_by('-date_created')
         page_list, page_range = pagination_data(cards_per_page, filter_comments, request)
         return TemplateResponse(request, template, {
             'messagefilterform': messagefilterform,

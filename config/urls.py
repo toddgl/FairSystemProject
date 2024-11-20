@@ -31,6 +31,7 @@ urlpatterns = [
     path('', include('pages.urls')),  # pages at the root URL
     path('', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
+    path('emails/', include('emails.urls')),
     path('', include('faq.urls')),
     path('', include('notices.urls')),
     path('foodlicence/', include('foodlicence.urls')),

@@ -145,3 +145,17 @@ def stallholder_payment_history_search_view(request):
         'results': results,
     }
     return render(request, 'search/partials/stallholder_paymenthistory_results.html', context)
+
+def stallholder_email_history_search_view(request):
+    """
+    Search for Stallholders customised for the siteallocation list display
+    """
+
+    search_text = request.POST.get('search')
+
+    results = CustomUser.stallholdermgr.filter(
+        Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) | Q(profile__org_name__icontains=search_text) | Q(email__icontains=search_text))
+    context = {
+        'results': results,
+    }
+    return render(request, 'search/partials/stallholder_emailhistory_results.html', context)

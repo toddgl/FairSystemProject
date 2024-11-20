@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'CustomDBLogger',
     'foodlicence',
     'payment',
+    'emails',
 
     # 3rd Party
     'allauth',

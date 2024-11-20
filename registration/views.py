@@ -24,6 +24,18 @@ from accounts.models import (
     Profile
 )
 
+from emails.models import (
+    Email
+)
+
+from emails.backend import (
+    single_registration_email
+)
+
+from emails.forms import (
+    CreateStallholderEmailForm
+)
+
 from fairs.models import (
     Fair,
     SiteAllocation,
@@ -557,9 +569,9 @@ def stall_registration_update_view(request, pk):
             else:
                 return HttpResponseRedirect(success_url)
         else:
-            db_logger.error('There was an error with saving the stall Application. '
-                            + registrationform.errors.as_data(),
-                            extra={'custom_category': 'Stall Application'})
+            db_logger.error(f'There was an error with saving the stall Application. {registrationform.errors.as_data()}',
+                            extra={'custom_category': 'Stall Application'}
+            )
             return TemplateResponse(request, template_name, context)
 
     return TemplateResponse(request, template_name, context)
@@ -1057,9 +1069,9 @@ def comments_view_add(request):
                 # save
                 new_comment.save()
             except Exception:
-                db_logger.error('There was an error with saving the comment form. '
-                                + commentform.errors.as_data(),
-                                extra={'custom_category': 'Comments'})
+                db_logger.error(f'There was an error with saving the comment form. {commentform.errors.as_data()}',
+                                extra={'custom_category': 'Comments'}
+                )
             return redirect(request.META.get('HTTP_REFERER'))
         if replyform.is_valid():
             parent_obj = None
@@ -1121,6 +1133,7 @@ def convener_stall_registration_detail_view(request, id):
     comment_filter_message = 'Showing current comments of the current fair'
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
+    createstallholderemailform = CreateStallholderEmailForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.all().last()
     stall_registration = StallRegistration.objects.get(id=id)
@@ -1152,9 +1165,10 @@ def convener_stall_registration_detail_view(request, id):
         'registrationupdateform': registrationupdateform,
         'additionalsiteform': additionalsiteform,
         'applydiscountform': applydiscountform,
+        'createstallholderemailform': createstallholderemailform,
         'payment_histories': payment_history_list,
         'stallholder_detail': stallholder_detail,
-        "stall_data": stall_registration,
+        'stall_data': stall_registration,
         'commentfilterform': commentfilterform,
         'comments': comments,
         'commentform': commentform,
@@ -1212,6 +1226,13 @@ def convener_stall_registration_detail_view(request, id):
             if foodregistrtionupdateform and foodregistrtionupdateform.is_valid():
                 food_registration = foodregistrtionupdateform.save(commit=False)
                 food_registration.save()
+
+        if 'stallholderemail' in request.POST and createstallholderemailform.is_valid():
+            subject_type = createstallholderemailform.cleaned_data['subject_type']
+            body = createstallholderemailform.cleaned_data['body']
+            subject = f'Martinborough Fair { stall_registration.fair.fair_year } - { subject_type}'
+            recipient = stallholder_detail.user.email
+            single_registration_email(stall_registration.stallholder.id, subject_type, recipient, subject, body)
 
     return TemplateResponse(request, template, context)
 

@@ -8,7 +8,8 @@ from search.views import (
     stallholder_siteallocation_search_view,
     create_siteallocation_search_view,
     stallholder_history_search_view,
-    stallholder_payment_history_search_view
+    stallholder_payment_history_search_view,
+    stallholder_email_history_search_view
 )
 
 app_name = 'search'
@@ -25,6 +26,8 @@ htmx_urlpatterns = [
     path('search-stallholders-siteallocations/', stallholder_siteallocation_search_view, name='search-stallholders-siteallocations'),
     path('create-siteallocation/', create_siteallocation_search_view, name='create-siteallocation'),
     path('search-stallholders-paymenthistory/', stallholder_payment_history_search_view, name='search-stallholders-paymenthistory'),
+    path('search-stallholders-emailhistory/', stallholder_email_history_search_view,
+         name='search-stallholders-emails'),
 ]
 
 urlpatterns += htmx_urlpatterns
