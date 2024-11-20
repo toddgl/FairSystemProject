@@ -73,7 +73,7 @@ def bulk_registration_emails(status, subject_type, body):
                 continue
 
             context = {
-                'subject': subject_type,
+                'subject': f'Martinborough Fair {current_fair.fair_year} - {subject_type}',
                 'body': body,
             }
 
