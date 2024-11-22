@@ -393,6 +393,7 @@ class SiteDetailForm(ModelForm):
             'site_name',
             'zone',
             'site_size',
+            'has_power',
             'site_note',
             'is_active',
         ]

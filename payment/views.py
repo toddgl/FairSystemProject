@@ -60,7 +60,6 @@ def stripe_payment(request, id):
         except Exception as e:  # It will catch other errors related to the cancel call.
             db_logger.error('There was an error making the stripe payment.' + str(e),
                             extra={'custom_category': 'Stripe Payment'})
-            print(str(e))
         return redirect(checkout_session.url, code=303)
     return render(request, 'myfair/myfair_dashboard.html')
 
@@ -190,91 +189,58 @@ def mark_payment_as_reconciled(request, id):
     paymenthistory.save()
     return HttpResponseRedirect(success_url)
 
-
 def paymenthistory_listview(request):
     """
-    Description: view for displaying payments in a table with filter based on payment_status and providing
-    functionality to change the status from Pending to Cancelled, Completed to Reconciled, and Pending to Failed.
+    View for displaying payments in a table with filtering based on payment_status.
+    Provides functionality to change status between Pending, Cancelled, Completed, etc.
     """
-    global stallholder
-    global paymenthistory_filter_dict
     template_name = 'paymenthistory_list.html'
     cards_per_page = 10
+
+    # Initialize forms
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
     updateform = UpdatePaymentHistoryForm(request.POST or None)
 
+    # Initialize filter dict
+    paymenthistory_filter_dict = {}
+    alert_message = "There are no Payment Histories created yet."
 
+    # HTMX logic
     if request.htmx:
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all().order_by('id')
-        alert_message = 'There are no Payment Histories created yet.'
         template_name = 'paymenthistory_list_partial.html'
+
+        # Get stallholder from POST request
         stallholder_id = request.POST.get('selected_stallholder')
-        attr_stallholder = 'invoice__stallholder'
         if stallholder_id:
-            stallholder = stallholder_id
-            paymenthistory_filter_dict = {
-                attr_stallholder: stallholder_id
-            }
+            paymenthistory_filter_dict['invoice__stallholder'] = stallholder_id
+            alert_message = f"There are no payment histories for stallholder {stallholder_id}."
 
-        form_purpose = filterform.data.get('form_purpose', '')
+        # Process filter form
+        form_purpose = filterform.data.get('form_purpose', '') if filterform.is_bound else None
+        if form_purpose == 'filter' and filterform.is_valid():
+            payment_status = filterform.cleaned_data.get('payment_status')
+            if payment_status:
+                paymenthistory_filter_dict['payment_status'] = payment_status
+                alert_message = f"There are no payment histories with status {payment_status}."
+            if stallholder_id and payment_status:
+                alert_message = f"There are no payment histories for stallholder {stallholder_id} with status {payment_status}."
 
-        if form_purpose == 'filter':
-            if filterform.is_valid():
-                payment_status =  filterform.cleaned_data['payment_status']
-                attr_payment_status = 'payment_status'
+    # Query filtered data
+    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
+        **paymenthistory_filter_dict
+    ).order_by('-date_created')
 
-                if payment_status and stallholder:
-                    alert_message = 'There are no payment histories for stallholder ' + str(stallholder) + ' and payment status ' + str(payment_status)
-                    paymenthistory_filter_dict = {
-                        attr_stallholder: stallholder_id,
-                        attr_payment_status: payment_status
-                    }
-                elif payment_status:
-                    alert_message = 'There are no payment histories for payment status ' + str(payment_status)
-                    paymenthistory_filter_dict = {
-                        attr_payment_status: payment_status
-                    }
-                elif stallholder:
-                    alert_message = 'There are no payment histories for stallholder ' + str(stallholder)
-                    paymenthistory_filter_dict = {
-                        attr_stallholder: stallholder_id,
-                    }
-                else:
-                    alert_message = "There are no payment histories created yet"
-        else:
-            # Pagination logic
-            if paymenthistory_filter_dict:
-                pass
-            else:
-                paymenthistory_filter_dict = {}
+    # Apply pagination
+    page_list, page_range = pagination_data(cards_per_page, payment_history_list, request)
 
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
-                **paymenthistory_filter_dict).all().order_by('id')
-        # Apply pagination
-        page_list, page_range = pagination_data(cards_per_page, payment_history_list, request)
-        page_obj = page_list
-        return TemplateResponse(request, template_name, {
-            'page_obj': page_obj,
-            'alert_mgr': alert_message,
-            'page_range': page_range
-        })
-
-    else:
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all().order_by('id')
-        alert_message = 'There are no Payment Histories created yet.'
-        stallholder = ''
-        paymenthistory_filter_dict = {}
-
-        # Apply pagination
-        page_list, page_range = pagination_data(cards_per_page, payment_history_list, request)
-        page_obj = page_list
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'updateform': updateform,
-            'page_obj': page_obj,
-            'alert_mgr': alert_message,
-            'page_range': page_range
-        })
+    # Prepare context and return response
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'updateform': updateform,
+        'page_obj': page_list,
+        'alert_mgr': alert_message,
+        'page_range': page_range,
+    })
 
 
 def payment_dashboard_view(request):
