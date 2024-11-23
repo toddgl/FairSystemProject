@@ -103,15 +103,13 @@ def stallholder_search_view(request):
     """
     Search for Stallholders customised for the messages listing
     """
-    search_text = request.POST.get('search')
-    message = request.session['message']
+    search_text = request.POST.get('search', '')
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
     context = {
         'results': results,
-        'message': message
     }
     return render(request, 'search/partials/stallholder_results.html', context)
 

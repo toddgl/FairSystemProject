@@ -311,71 +311,70 @@ class SiteListView(PermissionRequiredMixin, ListView):
 @permission_required('fairs.change_site', raise_exception=True)
 def site_listview(request):
     """
-    List all the sites and provide filtered views based on a dropdown filter of Zones
+    List all the sites and provide filtered views based on dropdown filters for Zones and Site Sizes.
     """
-    global filter_dict
-    alert_message = 'There are no sites created yet.'
+    request.session['site'] = 'fairs:site-list'
     template_name = 'sites/site_list.html'
-    filterform = SiteListFilterForm(request.POST or None)
-    # filtered_data = Site.objects.all().order_by("site_name")
     cards_per_page = 9
+    filterform = SiteListFilterForm(request.POST or None)
 
-    if not request.htmx:
-        filter_dict = {}
+    # Retrieve filter parameters from session
+    filter_params = request.session.get('site_filters', {})
+    query_filters = {}
 
-    elif request.htmx:
-        if filterform.is_valid():
-            zone = filterform.cleaned_data['zone']
-            site_size = filterform.cleaned_data['site_size']
-            attr_zonesite = 'zone'
-            attr_site_size = 'site_size'
-            if zone and site_size:
-                alert_message = 'There are no sites where the zone is ' + str(zone) + ' the site size is ' + str(site_size)
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_site_size: site_size
-                }
-            elif zone:
-                alert_message = 'There are no sites where the zone is ' + str(zone)
-                filter_dict = {
-                    attr_zonesite: zone
-                }
-            elif site_size:
-                alert_message = 'There are no sites where the site size is ' + str(site_size)
-                filter_dict = {
-                    attr_site_size: site_size
-                }
-            else:
-                alert_message = 'There are no event sites created yet.'
-                filter_dict = {}
-            filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
-            template_name = 'sites/site_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            site_list = page_list
-            return TemplateResponse(request, template_name, {
-                'site_list': site_list,
-                'page_range': page_range,
-                'alert_mgr': alert_message,
-            })
-        filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
+    # Populate query filters from session data
+    if 'zone' in filter_params:
+        query_filters['zone'] = Zone.objects.get(pk=filter_params['zone'])
+    if 'site_size' in filter_params:
+        query_filters['site_size'] = filter_params['site_size']
+
+    # Filter sites
+    filtered_data = Site.objects.filter(**query_filters).order_by("site_name")
+
+    # Handle HTMX requests
+    if request.htmx:
         template_name = 'sites/site_list_partial.html'
+        if filterform.is_valid():
+            zone = filterform.cleaned_data.get('zone')
+            site_size = filterform.cleaned_data.get('site_size')
+
+            # Update and save filters
+            filter_params = {}
+            if zone:
+                filter_params['zone'] = zone.pk
+            if site_size:
+                filter_params['site_size'] = site_size.pk
+            request.session['site_filters'] = filter_params
+
+            # Rebuild query filters
+            query_filters = {k: v for k, v in filter_params.items() if v}
+            filtered_data = Site.objects.filter(**query_filters).order_by("site_name")
+
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        site_list = page_list
         return TemplateResponse(request, template_name, {
-            'site_list': site_list,
+            'site_list': page_list,
             'page_range': page_range,
-            'alert_mgr': alert_message,
+            'alert_mgr': generate_site_alert_message(query_filters.get('zone'), query_filters.get('site_size')),
         })
-    filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
+
+    # Handle initial page load
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-    site_list = page_list
     return TemplateResponse(request, template_name, {
         'filterform': filterform,
-        'site_list': site_list,
+        'site_list': page_list,
         'page_range': page_range,
-        'alert_mgr': alert_message,
+        'alert_mgr': generate_site_alert_message(query_filters.get('zone'), query_filters.get('site_size')),
     })
 
+
+def generate_site_alert_message(zone, site_size):
+    """Generate an alert message based on the active filters."""
+    parts = []
+    if zone:
+        parts.append(f"zone is {zone}")
+    if site_size:
+        parts.append(f"site size is {site_size}")
+    return f"There are no sites where {' and '.join(parts)}" if parts else "There are no sites created yet."
 
 
 class SiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
@@ -1586,28 +1585,43 @@ def messages_dashboard_view(request):
         cards_per_page
     )
 
-
 def handle_htmx_request(request, message_filter_form, current_fair, comments, template_partial, cards_per_page):
     """
-    Handles HTMX requests for filtering or updating comments.
+    Handles HTMX requests for filtering or updating comments, including pagination.
     """
     filter_message = "Showing current messages of the current fair"
-    stallholder_id = request.POST.get('selected_stallholder')
-    filters = {'comment_parent__isnull': True}
+    filters = {'comment_parent__isnull': True, 'fair': current_fair.id}
 
+    # Retrieve filter parameters from GET or POST
+    stallholder_id = request.GET.get('selected_stallholder') or request.POST.get('selected_stallholder')
+    is_archived = request.GET.get('is_archived') == 'on' or request.POST.get('is_archived') == 'on'
+
+    # Apply stallholder filter if provided
     if stallholder_id:
-        filters.update({'stallholder': stallholder_id, 'is_archived': False})
-        filter_message = f"Showing all unarchived messages for Stallholder ID {stallholder_id}"
-    elif message_filter_form.data.get('form_purpose') == 'filter' and message_filter_form.is_valid():
+        filters['stallholder'] = stallholder_id
+        filter_message = f"Showing messages for Stallholder ID {stallholder_id}"
+
+    # Apply archived filter if provided
+    if is_archived:
+        filters['is_archived'] = True
+        filter_message = "Showing archived messages for the current fair"
+    else:
+        filters['is_archived'] = False
+
+    if message_filter_form.data.get('form_purpose') == 'filter' and message_filter_form.is_valid():
         filters, filter_message = build_filters(message_filter_form, current_fair)
 
-    filtered_comments = comments.filter(**filters).order_by('-date_created')
-    page_list, page_range = pagination_data(cards_per_page, filtered_comments, request)
+    # Apply filters and paginate the results
+    filtered_comments = RegistrationComment.objects.filter(**filters).order_by('-date_created')
+    paginator = Paginator(filtered_comments, cards_per_page)
+    page_number = request.GET.get('page', 1)
+    page_list = paginator.get_page(page_number)
 
     return TemplateResponse(request, template_partial, {
         'messagefilterform': message_filter_form,
         'replyform': MessageReplyForm(),
         'page_obj': page_list,
+        'page_range': paginator.get_elided_page_range(page_list.number),
         'filter': filter_message,
     })
 
@@ -1627,7 +1641,8 @@ def build_filters(form, current_fair):
 
     if fair:
         filters['fair'] = fair
-        filter_message = f"Showing messages for fair {fair}"
+        filters['is_archived'] = False
+        filter_message = f"Showing active messages for fair {fair}"
     if comment_type:
         filters['comment_type'] = comment_type
         filter_message += f", comment type {comment_type}"
@@ -1643,8 +1658,8 @@ def build_filters(form, current_fair):
         filters['is_archived'] = True
         filter_message += ", archived"
 
+    print("Filters applied:", filters)
     return filters, filter_message
-
 
 def handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair):
     """
@@ -1662,11 +1677,17 @@ def handle_reply_submission(request, reply_form, comments, message_filter_form, 
             reply_comment.fair = current_fair
             reply_comment.save()
 
+    # Apply pagination
+    cards_per_page = 6
+    page_list, page_range = pagination_data(cards_per_page, comments, request)
+
     return TemplateResponse(request, template, {
         'messagefilterform': message_filter_form,
         'comments': comments,
-        'replyform': MessageReplyForm(),
+        'replyform': MessageReplyForm(),  # Reset the form after submission
         'filter': "Reply submitted successfully",
+        'page_obj': page_list,
+        'page_range': page_range,
     })
 
 
