@@ -7,6 +7,7 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
+from urllib.parse import urlencode
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
@@ -41,6 +42,7 @@ from fairs.models import (
 )
 
 from registration.models import (
+    CommentType,
     StallRegistration,
     RegistrationComment,
     AdditionalSiteRequirement
@@ -1557,13 +1559,12 @@ def messages_dashboard_view(request):
     template = "dashboards/dashboard_messages_filter.html"
     template_partial = "dashboards/dashboard_messages_partial.html"
     current_fair = Fair.currentfairmgr.all().last()
-    cards_per_page = 6
+    cards_per_page = 2
 
     message_filter_form = MessageFilterForm(request.POST or None)
     reply_form = MessageReplyForm(request.POST or None)
 
     comments = RegistrationComment.objects.filter(
-        is_archived=False,
         comment_parent__isnull=True,
         fair=current_fair.id
     ).order_by('-date_created')
@@ -1571,8 +1572,7 @@ def messages_dashboard_view(request):
     if request.htmx:
         return handle_htmx_request(request, message_filter_form, current_fair, comments, template_partial,
                                    cards_per_page)
-
-    if request.method == 'POST':
+    elif request.method == 'POST':
         return handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair)
 
     return render_dashboard(
@@ -1595,6 +1595,7 @@ def handle_htmx_request(request, message_filter_form, current_fair, comments, te
     # Retrieve filter parameters from GET or POST
     stallholder_id = request.GET.get('selected_stallholder') or request.POST.get('selected_stallholder')
     is_archived = request.GET.get('is_archived') == 'on' or request.POST.get('is_archived') == 'on'
+    comment_type_id = request.GET.get('comment_type')
 
     # Apply stallholder filter if provided
     if stallholder_id:
@@ -1608,14 +1609,27 @@ def handle_htmx_request(request, message_filter_form, current_fair, comments, te
     else:
         filters['is_archived'] = False
 
+    # Apply comment_type filter
+    if comment_type_id:
+        try:
+            comment_type = CommentType.objects.get(pk=comment_type_id)
+            filters['comment_type'] = comment_type
+            filter_message += f", comment type {comment_type}"
+        except CommentType.DoesNotExist:
+            filters['comment_type'] = None
+
     if message_filter_form.data.get('form_purpose') == 'filter' and message_filter_form.is_valid():
         filters, filter_message = build_filters(message_filter_form, current_fair)
 
     # Apply filters and paginate the results
-    filtered_comments = RegistrationComment.objects.filter(**filters).order_by('-date_created')
+    filtered_comments = comments.filter(**filters).order_by('-date_created')
     paginator = Paginator(filtered_comments, cards_per_page)
     page_number = request.GET.get('page', 1)
     page_list = paginator.get_page(page_number)
+
+    # Include the current filters in the pagination query parameters
+    query_params = urlencode({key: value.id if key == 'comment_type' and value else value
+                              for key, value in filters.items()})
 
     return TemplateResponse(request, template_partial, {
         'messagefilterform': message_filter_form,
@@ -1623,6 +1637,7 @@ def handle_htmx_request(request, message_filter_form, current_fair, comments, te
         'page_obj': page_list,
         'page_range': paginator.get_elided_page_range(page_list.number),
         'filter': filter_message,
+        'filters_query': query_params,  # Pass to template for appending in pagination links
     })
 
 
@@ -1657,8 +1672,10 @@ def build_filters(form, current_fair):
     if is_archived:
         filters['is_archived'] = True
         filter_message += ", archived"
+    else:
+        filters['is_archived'] = False
+        filter_message += ", not archived"
 
-    print("Filters applied:", filters)
     return filters, filter_message
 
 def handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair):

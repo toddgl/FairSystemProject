@@ -1434,7 +1434,7 @@ def validate_stallregistration(stallholder_id, stallregistration):
         Boolean : True / False
         error_comment: String of the issues found that can be used to create a stall holder comment
     """
-    error_comment = "Stall registration ID " + str(stallregistration.id) + ' cannot be submitted because \n'
+    error_comment = "Stall registration ID " + str(stallregistration.id) + ' has been saved but needs to be reviewed by the convener:\n'
     is_ok = True
     has_unactioned_comments = RegistrationComment.hasunactionedcommentsmgr.filter_by_stallholder(
         stallholder_id).exists()
