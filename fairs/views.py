@@ -1559,7 +1559,7 @@ def messages_dashboard_view(request):
     template = "dashboards/dashboard_messages_filter.html"
     template_partial = "dashboards/dashboard_messages_partial.html"
     current_fair = Fair.currentfairmgr.all().last()
-    cards_per_page = 2
+    cards_per_page = 6
 
     message_filter_form = MessageFilterForm(request.POST or None)
     reply_form = MessageReplyForm(request.POST or None)
@@ -2027,3 +2027,32 @@ def stallregistration_move_cancel_view(request, id):
         'stallregistration': stallregistration,
         'siteallocations': siteallocations
     })
+
+def stallregistration_search_dashboard_view(request):
+    """
+    Search used to locate stall at a fair hased on vehicle registration, manager name, product description or stall description
+    """
+    template = 'dashboards/dashboard_stallregistration_search.html'
+    stallregistration_filter_message = 'Search for and select a stallregistration to view'
+    if request.htmx:
+        stallregistration_id = request.POST.get('selected_stallregistration')
+        attr_stallregistration = 'stallregistration'
+        if stallregistration_id:
+            stallregistration_filter_message = f'Showing stallregistration for Stallregistration ID {stallregistration_id}'
+            stallregistration_filter_dict = {
+                attr_stallregistration: stallregistration_id
+            }
+            stallregistration = StallRegistration.objects.get(id=stallregistration_id)
+            template = 'dashboards/stallregistration_result_partial.html'
+            return TemplateResponse(request, template, {
+                'stallregistration_filter': stallregistration_filter_message,
+                'stallregistration': stallregistration
+            })
+    else:
+        stallregistration_filter_dict = {}
+
+
+    return TemplateResponse(request, template, {
+        'stallregistration_filter': stallregistration_filter_message
+    })
+

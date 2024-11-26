@@ -54,7 +54,8 @@ from fairs.views import (
     set_message_to_done,
     set_message_to_active,
     stallregistration_siteallocation_view,
-    stallregistration_move_cancel_view
+    stallregistration_move_cancel_view,
+    stallregistration_search_dashboard_view
 )
 
 app_name = 'fair'  # This is the namespace, so you can reverse urls with fair:*
@@ -90,6 +91,7 @@ urlpatterns = [
     path('dashboard/registrations/', stall_registration_dashboard_view, name='registration-dashboard'),
     path('dashboard/messages/', messages_dashboard_view, name='messages-dashboard'),
     path('dashboard/history/', stallholder_history_dashboard_view, name='history-dashboard'),
+    path('dashboard/search-registrations/', stallregistration_search_dashboard_view, name='stallregistration-search'),
     path('registration/management/', site_dashboard_view, name='stallregistration-list'),
     path('registration/<int:id>/siteallocation/', stallregistration_siteallocation_view, name='stallregistration-siteallocation'),
     path('registration/<int:id>/move/', stallregistration_move_cancel_view, name='stallregistration-move-siteallocation'),

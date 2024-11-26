@@ -1,10 +1,14 @@
 # search/views.py
+from lib2to3.fixes.fix_input import context
 from re import search
 
 from django.shortcuts import render
 from django.db.models import Q
 from accounts.models import (
     CustomUser,
+)
+from registration.models import(
+    StallRegistration
 )
 
 
@@ -157,3 +161,24 @@ def stallholder_email_history_search_view(request):
         'results': results,
     }
     return render(request, 'search/partials/stallholder_emailhistory_results.html', context)
+
+
+def stall_search_view(request):
+    """
+    Search used to locate stall at a fair hased on vehicle registration, manager name, product description or stall description
+    """
+    search_text = request.POST.get('search')
+
+    stalls = StallRegistration.registrationcurrentallmgr.exclude(booking_status='Cancelled').prefetch_related('site_allocation')
+
+    results = stalls.filter(
+        Q(stall_manager_name__icontains=search_text) |
+        Q(manager_vehicle_registration__icontains=search_text) |
+        Q(stall_description__icontains=search_text) |
+        Q(products_on_site__icontains=search_text)
+    )
+    context = {
+        'results': results
+    }
+    return render(request, 'search/partials/stall_search_results.html', context)
+
