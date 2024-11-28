@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'foodlicence',
     'payment',
     'emails',
+    'reports',
 
     # 3rd Party
     'allauth',
