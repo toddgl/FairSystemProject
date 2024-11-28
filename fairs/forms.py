@@ -2,6 +2,7 @@
 
 from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
 from django import forms
+from django.db.models.functions import Power
 from django.forms import (
     BooleanField,
     Form,
@@ -329,6 +330,13 @@ class SiteCreateForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
+    powerbox = ModelChoiceField(
+        queryset=PowerBox.objects.all(),
+        empty_label='Please Select',
+        label='Powerbox',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
     site_note = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class':'form-control', 'style': 'max-width: 400px;','placeholder':'Please enter a note if required'})
@@ -342,6 +350,8 @@ class SiteCreateForm(ModelForm):
             'site_size',
             'site_note',
             'is_active',
+            'has_power',
+            'powerbox'
         ]
         widgets = {
             'site_name': TextInput(attrs={
@@ -382,6 +392,13 @@ class SiteDetailForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
+    powerbox = ModelChoiceField(
+        queryset=PowerBox.objects.all(),
+        empty_label='Please Select',
+        label='Powerbox',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
     site_note = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class':'form-control', 'style': 'max-width: 400px;','placeholder':'Please enter a note if required'})
@@ -396,7 +413,9 @@ class SiteDetailForm(ModelForm):
             'has_power',
             'site_note',
             'is_active',
-        ]
+            'has_power',
+            'powerbox'
+       ]
         widgets = {
             'site_name': TextInput(attrs={
                 'placeholder': 'Site Name',
@@ -1384,10 +1403,22 @@ class SiteAllocationFilerForm(Form):
             'hx-target': '#site_allocation_data',
         })
     )
+    has_power = BooleanField(
+        required=False,
+        widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_allocation_data',
+            'checked': False
+        })
+    )
+
     class Meta:
         fields = [
             'zone',
             'event',
-            'site_size'
+            'site_size',
+            'has_power'
         ]
 

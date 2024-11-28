@@ -303,58 +303,6 @@ class ZoneMap(models.Model):
         unique_together = ('year', 'map_pdf')
 
 
-class Site(models.Model):
-    """
-    Description: Stores the details of the fair stallholder sites
-    """
-    site_name = models.CharField(
-        max_length=40,
-        unique= True
-    )
-    site_size = models.ForeignKey(
-        InventoryItem,
-        related_name='site_sizes',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    zone = models.ForeignKey(
-        Zone,
-        related_name='zones',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    is_active = models.BooleanField(default=True)
-    has_power = models.BooleanField(default=False)
-    date_created = models.DateTimeField(auto_now_add=True)
-    date_updated = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(
-        CustomUser,
-        related_name='site_created_by',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    updated_by = models.ForeignKey(
-        CustomUser,
-        related_name='site_updated_by',
-        on_delete=models.SET_NULL,
-        blank=True,
-        null=True
-    )
-    site_note = models.TextField(null=True, blank=True, default=None)
-
-    def __str__(self):
-        return self.site_name
-
-    class Meta:
-        verbose_name_plural = "Sites"
-
-    def get_absolute_url(self):
-        return reverse('fairs:site-detail', args=[self.id])
-
-
 class PowerBox(models.Model):
     """
     Description: Store the details of the power boxes used to provide power to stallholders
@@ -381,6 +329,66 @@ class PowerBox(models.Model):
 
     def __str__(self):
         return self.power_box_name
+
+
+class Site(models.Model):
+    """
+    Description: Stores the details of the fair stallholder sites
+    """
+    site_name = models.CharField(
+        max_length=40,
+        unique= True
+    )
+    site_size = models.ForeignKey(
+        InventoryItem,
+        related_name='site_sizes',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    zone = models.ForeignKey(
+        Zone,
+        related_name='zones',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    is_active = models.BooleanField(default=True)
+    has_power = models.BooleanField(default=False)
+    powerbox = models.ForeignKey(
+        PowerBox,
+        on_delete=models.SET_NULL,
+        verbose_name='powerbox',
+        related_name='site_powerbox',
+        blank = True,
+        null = True
+    )
+    date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
+    created_by = models.ForeignKey(
+        CustomUser,
+        related_name='site_created_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    updated_by = models.ForeignKey(
+        CustomUser,
+        related_name='site_updated_by',
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
+    site_note = models.TextField(null=True, blank=True, default=None)
+
+    def __str__(self):
+        return self.site_name
+
+    class Meta:
+        verbose_name_plural = "Sites"
+
+    def get_absolute_url(self):
+        return reverse('fairs:site-detail', args=[self.id])
 
 
 class CurrentEventFilterManager(models.Manager):
