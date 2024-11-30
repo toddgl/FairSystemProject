@@ -6,16 +6,17 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models.aggregates import Count
 from django.views.decorators.http import require_http_methods
 from urllib.parse import urlencode
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
+from django.db.models import F
 from django.db import transaction
 from django.views.generic import (
     CreateView,
@@ -133,7 +134,20 @@ class LocationCreateView(PermissionRequiredMixin, CreateView):
     """
     permission_required = 'fairs.add_location'
     model = Location
-    form_class = LocationCreateForm
+    form_class = LocationCreateFormpowerbox_connections = StallRegistration.objects.filter(
+    power_required=True,  # Only include stall registrations that require power
+    site_allocation__event_site__site__powerbox__isnull=False  # Ensure sites have a powerbox
+).values(
+    'site_allocation__event_site__event__event_name',  # Group by event name
+    'site_allocation__event_site__site__powerbox__power_box_name',  # Group by powerbox
+    'site_allocation__event_site__site__powerbox__socket_count'  # Include total sockets for reference
+).annotate(
+    connected_sites=Count('id'),  # Count connected stall registrations
+    free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')  # Calculate free sockets
+).order_by(
+    'site_allocation__event_site__event__event_name',
+    'site_allocation__event_site__site__powerbox__power_box_name'
+)
     template_name = 'locations/location_create.html'
     success_url = reverse_lazy('fair:location-list')
 
@@ -2160,3 +2174,42 @@ def stallregistration_search_dashboard_view(request):
         'stallregistration_filter': stallregistration_filter_message
     })
 
+
+def stallregistrations_without_power_view(request):
+    # Query the data with required annotations
+    stallregistrations = StallRegistration.objects.filter(
+        power_required=True,
+        site_allocation__event_site__site__has_power=False
+    ).annotate(
+        site_name=F('site_allocation__event_site__site__site_name'),
+        zone_name=F('site_allocation__event_site__site__zone__zone_name'),
+        has_power=F('site_allocation__event_site__site__has_power')
+    ).values(
+        'id', 'stallholder__id', 'power_required', 'site_name', 'zone_name', 'has_power'
+    )
+    # Pass data to the template
+    context = {
+        'stallregistrations': stallregistrations,
+        'alert_mgr': "No stall registrations with missing power requirements were found." if not stallregistrations else ""
+    }
+
+    return render(request, 'dashboards/dashboard_sites_without_power.html', context)
+
+
+def powerbox_connections_view(request):
+    powerbox_connections = StallRegistration.objects.filter(
+        power_required=True,  # Only include stall registrations that require power
+        site_allocation__event_site__site__powerbox__isnull=False
+    ).values(
+        'site_allocation__event_site__event__event_name',
+        'site_allocation__event_site__site__powerbox__power_box_name',
+        'site_allocation__event_site__site__powerbox__socket_count'
+    ).annotate(
+        connected_sites=Count('id'),
+        free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+    ).order_by(
+        'site_allocation__event_site__event__event_name',
+        'site_allocation__event_site__site__powerbox__power_box_name'
+    )
+
+    return render(request, 'dashboards/dashboard_powerbox_connection.html', {'powerbox_connections': powerbox_connections})

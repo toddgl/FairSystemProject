@@ -1,0 +1,38 @@
+<!-- fairs/templates/dashboards/dashboard_sites_without_power.html -->
+
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+  <!-- Top Nav -->
+  <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+    <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+  </nav>
+  <!--End Top Nav -->
+  <h3>PowerBox Connections by Event</h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th scope="col">Event</th>
+        <th scope="col">PowerBox</th>
+        <th scope="col">Total Sockets</th>
+        <th scope="col">Connected Sites</th>
+        <th scope="col">Free Sockets</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for connection in powerbox_connections %}
+      <tr>
+        <td>{{ connection.site_allocation__event_site__event__event_name }}</td>
+        <td>{{ connection.site_allocation__event_site__site__powerbox__power_box_name }}</td>
+        <td>{{ connection.site_allocation__event_site__site__powerbox__socket_count }}</td>
+        <td>{{ connection.connected_sites }}</td>
+        <td>{{ connection.free_sockets }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</main>
+{% endblock %}
