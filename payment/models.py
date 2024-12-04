@@ -203,6 +203,7 @@ class PaymentHistory(models.Model):
     amount_paid = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     webhook_amount= models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     amount_reconciled = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
+    amount_credited= models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     payment_status = FSMField(
         default=PENDING,
         verbose_name='Payment State',

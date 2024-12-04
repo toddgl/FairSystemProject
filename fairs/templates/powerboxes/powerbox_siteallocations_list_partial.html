@@ -1,0 +1,90 @@
+<!-- fairs/templates/powerbox_siteallocations_list_partial.html -->
+
+{% load static %}
+{% load paginator_tags %}
+
+
+<!-- payment/message_snippet.html -->
+<div class="alert alert-{{ status }}">
+    {{ message }}
+</div>
+
+
+<!-- Powerbox stallholder table and other elements... -->
+<div id="powerbox_siteallocation_data">
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">PowerBox</th>
+                    <th scope="col">Event</th>
+                    <th scope="col">Used Sockets</th>
+                    <th scope="col">Free Sockets</th>
+                    <th scope="col">Registration ID</th>
+                    <th scope="col">Stallholder ID</th>
+                    <th scope="col">Registration Site</th>
+                    <th scope="col-sm"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for reg in stallregistrations_by_powerbox %}
+                <tr>
+                    <td>{{ reg.power_box_name }}</td>
+                    <td>{{ reg.event_name }}</td>
+                    <td>{{ reg.connected_sites }}</td>
+                    <td>{{ reg.free_sockets }}</td>
+                    <td>{{ reg.id }}</td>
+                    <td>{{ reg.stallholderid }}</td>
+                    <td>{{ reg.allocated_site_name }}</td>
+                    <td><a class = "btn btn-info btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                           title="View Stall registration" href=
+                                   "{% url 'registration:convener-stall-food-registration-detail' reg.id %}"><i class="bi bi-binoculars-fill"></i></a></td>
+                </tr>
+                {% empty %}
+                    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+                {% endfor %}
+                </tbody>
+            </table>
+   <!-- Pagination -->
+   {% if stallregistrations_by_powerbox.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                <!-- Previous Page -->
+                {% if stallregistrations_by_powerbox.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url request.session.powerbox_stallregistration %}?page={{ stallregistrations_by_powerbox.previous_page_number }}"
+                       hx-trigger="click" hx-target="#powerbox_siteallocation_data">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+
+                <!-- Page Numbers -->
+                {% for i in page_range %}
+                {% if i == '…' %}
+                <!-- Ellipsis -->
+                <li class="disabled page-item"><span class="page-link">…</span></li>
+                {% elif stallregistrations_by_powerbox.number == i %}
+                <!-- Active Page -->
+                <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <!-- Other Pages -->
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url request.session.powerbox_stallregistration %}?page={{ i }}"
+                       hx-trigger="click" hx-target="#powerbox_siteallocation_data">{{ i }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+
+                <!-- Next Page -->
+                {% if stallregistrations_by_powerbox.has_next %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url request.session.powerbox_stallregistration %}?page={{ stallregistrations_by_powerbox.next_page_number }}"
+                       hx-trigger="click" hx-target="#powerbox_siteallocation_data">&raquo;</a>
+                </li>
+                {% else %}
+                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+   {% endif %}
+</div>

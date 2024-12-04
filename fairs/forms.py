@@ -1422,3 +1422,38 @@ class SiteAllocationFilerForm(Form):
             'has_power'
         ]
 
+class PowerboxFilterForm(Form):
+
+    event = ModelChoiceField(
+        queryset=Event.currenteventfiltermgr.all(),
+        empty_label='Show All',
+        label='Event',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#powerbox-siteallocation_data',
+        })
+    )
+    powerbox = ModelChoiceField(
+        queryset=PowerBox.objects.all(),
+        empty_label='Show All',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#powerbox-siteallocation_data',
+        })
+    )
+
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
+
+    class Meta:
+        fields = [
+            'event',
+            'powerbox',
+        ]

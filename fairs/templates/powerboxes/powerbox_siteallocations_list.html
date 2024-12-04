@@ -1,0 +1,24 @@
+<!-- fairs/templates/powerboxes/powerbox_siteallocations_list.html -->
+
+{% extends 'base.html' %}
+{% load paginator_tags %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <h1>Powerbox Connections</h1>
+  <div class="row g-3">
+      <div class="col-md-6">
+          {% include 'powerboxes/powerbox_filter_partial.html' %}
+      </div>
+      <div class="col-md-6">
+          {% include 'search/partials/search_stallholders_powerbox.html' %}
+      </div>
+      <hr>
+  </div>
+  <div class="row g-3">
+      <div class="col-md-12">
+          {% include 'powerboxes/powerbox_siteallocations_list_partial.html' %}
+      </div>
+  </div>
+</div>
+{% endblock %}

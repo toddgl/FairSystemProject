@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import Subquery, OuterRef
 from django.db.models.aggregates import Count
 from django.views.decorators.http import require_http_methods
 from urllib.parse import urlencode
@@ -94,7 +95,8 @@ from .forms import (
     MessageFilterForm,
     MessageReplyForm,
     SiteHistoryFilerForm,
-    SiteAllocationFilerForm
+    SiteAllocationFilerForm,
+    PowerboxFilterForm,
 )
 
 from registration.forms import (
@@ -747,7 +749,33 @@ def event_site_listview(request):
     })
 
 
-def pagination_data(cards_per_page, filtered_data, request):
+def pagination_data(cards_per_page, queryset, request):
+    """
+    Handles pagination of a queryset
+    """
+    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
+    page_number = request.GET.get('page', 1)  # Get the current page number
+    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
+
+    try:
+        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
+    except PageNotAnInteger:
+        # If page is not an integer, deliver the first page
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        # If the page is out of range, deliver the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    page_range = list(paginator.get_elided_page_range(
+        page_number,
+        on_each_side=1,
+        on_ends=2
+    ))  # Custom range for pagination links
+
+    return page_list, page_range
+
+
+def pagination_data2(cards_per_page, filtered_data, request):
     """
     Refactored pagination code that is available to all views that included pagination
     It takes request, cards per page, and filtered_data and returns the page_list and page_range
@@ -1031,7 +1059,6 @@ class EventPowerListView(PermissionRequiredMixin, ListView):
     model = EventPower
     template_name = 'eventpower/eventpower_list.html'
     queryset = EventPower.objects.all().order_by("event")
-
 
 class EventPowerDetailUpdateView(PermissionRequiredMixin, UpdateView):
     """
@@ -2213,3 +2240,165 @@ def powerbox_connections_view(request):
     )
 
     return render(request, 'dashboards/dashboard_powerbox_connection.html', {'powerbox_connections': powerbox_connections})
+
+
+def generate_alert_message(event, powerbox, stallholder):
+    """
+    Generate the alert message based on the filters
+    """
+    parts = []
+    if event:
+        parts.append(f'event is {event}')
+    if powerbox:
+        parts.append(f'powerbox is {powerbox}')
+    if stallholder:
+        parts.append(f'stallholder is {stallholder}')
+    return f'There are no powerbox stallregistrations where {' and '.join(parts)}' if parts else 'There are no powerbox stallregistrations yet'
+
+
+def stallregistrations_by_powerbox_view(request):
+    """
+    Creates a list stallregistrations of powerboxes that can be filered by Stallholder, Event and Powerbox
+    """
+    # Reset session filters on full page load
+    if not request.htmx:
+        request.session.pop('powerbox_stallregistration_filters', None)
+    cards_per_page = 10
+    request.session['powerbox_stallregistration'] = 'fair:powerbox-stallregistration-list'
+    template_name = 'powerboxes/powerbox_siteallocations_list.html'
+    filterform = PowerboxFilterForm(request.POST or None)
+
+    # Retrieve filters from session
+    filter_params = request.session.get('powerbox_stallregistration_filters', {})
+
+    def apply_filters(data, filters):
+        """
+        Apply filters to the list of dictionaries
+        """
+        if filters.get('eventid'):
+            data = [item for item in data if item.get('site_allocation__event_site__event__id') == filters['eventid']]
+        if filters.get('powerboxid'):
+            data = [item for item in data if item.get('site_allocation__event_site__site__powerbox__id') == filters['powerboxid']]
+        if filters.get('stallholderid'):
+            data = [item for item in data if item.get('stallholderid') == int(filters['stallholderid'])]
+        return data
+
+    query_filters = {k: v for k, v in filter_params.items() if v}
+
+    # Pre-aggregate connected sites per powerbox and event
+    aggregated = (
+        StallRegistration.objects.filter(
+            power_required=True,
+            site_allocation__event_site__site__powerbox__isnull=False
+        )
+        .values(
+            'site_allocation__event_site__site__powerbox__id',
+            'site_allocation__event_site__event__event_name',
+            'site_allocation__event_site__event__id',
+            'site_allocation__event_site__site__powerbox__power_box_name',
+            'site_allocation__event_site__site__powerbox__socket_count',
+        )
+        .annotate(
+            connected_sites=Count('id'),  # Total connected registrations for each powerbox
+            free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+        )
+        .order_by('site_allocation__event_site__site__powerbox__power_box_name')
+    )
+
+    # Add stall registration-specific details for display
+    detailed_stallregistrations = StallRegistration.objects.filter(
+        power_required=True,
+        site_allocation__event_site__site__powerbox__isnull=False
+    ).annotate(
+        power_box_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
+        event_name=F('site_allocation__event_site__event__event_name'),
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        stallholderid=F('stallholder__id')
+    ).values(
+        'id',  # StallRegistration ID
+        'stallholderid',
+        'allocated_site_name',
+        'power_box_name',
+        'event_name',
+        'site_allocation__event_site__event__id',
+        'site_allocation__event_site__site__powerbox__id',
+    )
+
+    # Combine aggregated counts with detailed registrations for final data
+    stallregistrations_by_powerbox = [
+        {
+            **sr,
+            'connected_sites': next(
+                (agg['connected_sites'] for agg in aggregated if
+                 agg['site_allocation__event_site__site__powerbox__id'] == sr[
+                     'site_allocation__event_site__site__powerbox__id']),
+                0
+            ),
+            'free_sockets': next(
+                (agg['free_sockets'] for agg in aggregated if
+                 agg['site_allocation__event_site__site__powerbox__id'] == sr[
+                     'site_allocation__event_site__site__powerbox__id']),
+                0
+            ),
+        }
+        for sr in detailed_stallregistrations
+    ]
+
+     # Apply filters
+    filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+
+    if request.htmx:
+        template_name = 'powerboxes/powerbox_siteallocations_list_partial.html'
+
+        # Handle stallholder or filter form submission
+        stallholder_id = request.POST.get('selected_stallholder')
+        if stallholder_id:
+            filter_params['stallholderid'] =stallholder_id
+            request.session['powerbox_stallregistration_filters'] = filter_params # Save to session
+            query_filters = {k: v for k, v in filter_params.items() if v}
+            print('Stallholder Query Filters', query_filters)
+            # Apply filters
+            filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+
+        if request.POST.get('form_purpose') == 'filter':
+            if filterform.is_valid():
+                event = filterform.cleaned_data.get('event')
+                powerbox = filterform.cleaned_data.get('powerbox')
+                # Update and save filtere
+                filter_params['eventid'] = event.pk if event else None
+                filter_params['powerboxid'] = powerbox.pk if powerbox else None
+                request.session['powerbox_stallregistration_filters'] = {k: v for k,v in filter_params.items() if v} # Remove mepty values
+
+                query_filters = {k: v for k, v in filter_params.items() if v}
+                print('Filter Form Query Filters', query_filters)
+                # Apply filters
+                filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+
+        # Generate an alert message if no results are found
+        alert_message = (
+            generate_alert_message(
+                filter_params.get('eventid'),
+                filter_params.get('powerboxid'),
+                filter_params.get('stallholderid')
+            )
+            if not filtered_data
+            else ""
+        )
+
+        return render(request, template_name, {
+            'stallregistrations_by_powerbox': page_list,  # Paginated data
+            'page_range': page_range,  # Custom page range
+            'alert_mgr': alert_message
+        })
+
+    # Pagination
+    page_list, page_range = pagination_data(cards_per_page, stallregistrations_by_powerbox, request)
+
+    return render(request, template_name, {
+        'filterform': filterform,
+        'stallregistrations_by_powerbox': page_list,  # Paginated data
+        'page_range': page_range,  # Custom page range
+        'alert_mgr': "No stall registrations found for any powerbox." if not page_list.object_list else ""
+    })

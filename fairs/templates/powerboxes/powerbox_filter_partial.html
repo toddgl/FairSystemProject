@@ -1,0 +1,18 @@
+<!--payment/templates/paymenthistory_filter_partial.html -->
+
+<div id="replacearea">
+  <div class="row">
+    <div class="col-md-9">
+      <div class="title-hr">
+        <span class="hr fix"></span>
+        <span><strong>Powerbox Filters</strong></span>
+        <span class="hr"></span>
+      </div>
+      <form action="." hx-trigger="change" method="post"  hx-post="." hx-target="#powerbox_siteallocation_data">
+        {% csrf_token %}
+        {{ filterform.as_p }}
+      </form>
+    <hr>
+    </div>
+  </div>
+</div>
