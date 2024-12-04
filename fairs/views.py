@@ -775,25 +775,6 @@ def pagination_data(cards_per_page, queryset, request):
     return page_list, page_range
 
 
-def pagination_data2(cards_per_page, filtered_data, request):
-    """
-    Refactored pagination code that is available to all views that included pagination
-    It takes request, cards per page, and filtered_data and returns the page_list and page_range
-    """
-    paginator = Paginator(filtered_data, per_page=cards_per_page)
-    page_number = request.GET.get('page', 1)
-    page_range = paginator.get_elided_page_range(number=page_number)
-    try:
-        page_list = paginator.get_page(page_number)
-    except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        page_list = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range deliver last page of results
-        page_list = paginator.get_page(paginator.num_pages)
-    return page_list, page_range
-
-
 class EventSiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
     """
     Display an editable form of the details of a site associated with an event
@@ -2356,7 +2337,6 @@ def stallregistrations_by_powerbox_view(request):
             filter_params['stallholderid'] =stallholder_id
             request.session['powerbox_stallregistration_filters'] = filter_params # Save to session
             query_filters = {k: v for k, v in filter_params.items() if v}
-            print('Stallholder Query Filters', query_filters)
             # Apply filters
             filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
 
@@ -2370,7 +2350,6 @@ def stallregistrations_by_powerbox_view(request):
                 request.session['powerbox_stallregistration_filters'] = {k: v for k,v in filter_params.items() if v} # Remove mepty values
 
                 query_filters = {k: v for k, v in filter_params.items() if v}
-                print('Filter Form Query Filters', query_filters)
                 # Apply filters
                 filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
 
