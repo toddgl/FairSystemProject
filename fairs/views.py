@@ -2229,12 +2229,12 @@ def generate_alert_message(event, powerbox, stallholder):
     """
     parts = []
     if event:
-        parts.append(f'event is {event}')
+        parts.append(f'event is {{event}}')
     if powerbox:
-        parts.append(f'powerbox is {powerbox}')
+        parts.append(f'powerbox is {{powerbox}}')
     if stallholder:
-        parts.append(f'stallholder is {stallholder}')
-    return f'There are no powerbox stallregistrations where {' and '.join(parts)}' if parts else 'There are no powerbox stallregistrations yet'
+        parts.append(f'stallholder is {{stallholder}}')
+    return f"There are no powerbox stallregistrations where {' and '.join(parts)}" if parts else "There are no powerbox stallregistrations yet"
 
 
 def stallregistrations_by_powerbox_view(request):
