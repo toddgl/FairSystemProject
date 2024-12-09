@@ -1,6 +1,4 @@
 # search/views.py
-from lib2to3.fixes.fix_input import context
-from re import search
 
 from django.shortcuts import render
 from django.db.models import Q
@@ -53,7 +51,6 @@ def stallholder_siteallocation_search_view(request):
     """
     search_text = request.POST.get('search')
     siteallocation = request.session['siteallocation']
-    print('Using stallholder_siteallocation_search_view')
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
@@ -69,7 +66,6 @@ def create_siteallocation_search_view(request):
     """
     search_text = request.POST.get('search')
 
-    print('Using create_siteallocation_search_view')
 
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
@@ -172,6 +168,7 @@ def stall_search_view(request):
     stalls = StallRegistration.registrationcurrentallmgr.exclude(booking_status='Cancelled').prefetch_related('site_allocation')
 
     results = stalls.filter(
+        Q(id__icontains=search_text) |
         Q(stall_manager_name__icontains=search_text) |
         Q(manager_vehicle_registration__icontains=search_text) |
         Q(stall_description__icontains=search_text) |

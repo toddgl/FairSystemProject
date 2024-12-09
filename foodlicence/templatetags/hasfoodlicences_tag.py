@@ -18,7 +18,7 @@ register = template.Library()
 @register.simple_tag
 def can_generate_foodlicence(value):
     """
-    Templatetag to provide a boolean answer whether there is a need to gernerate a foodlicence for a stallregistration
+    Templatetag to provide a boolean answer whether there is a need to generate a foodlicence for a stallregistration
     Used in the convener stall registration detail view
     """
     # Check to ensure that the StallRegistration is either "Complete" "Reconciled" or "Credit" and it has a foodregistration
@@ -39,26 +39,28 @@ def can_generate_foodlicence(value):
 
 @register.simple_tag
 @register.simple_tag
-def can_generate_multiple_foodlicencs():
+def can_generate_multiple_foodlicences():
     """
     Templatetag to provide a boolean answer whether there is a need to gernerate foodlicences for stallregistrations
     Used in the convener foodlicence list view
     """
     # Find stall registrations with completed payments
     eligible_stall_registrations = StallRegistration.objects.filter(
-        invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
-        food_registration__isnull=False  # Ensures that a FoodRegistration exists
-    ).distinct()
+        food_registration__isnull=False
+    ).filter(
+        Q(invoice__payment_history__payment_status__in=[
+            PaymentHistory.COMPLETED,
+            PaymentHistory.RECONCILED,
+            PaymentHistory.CREDIT
+        ]
+    )).distinct()
 
     # Filter out stall registrations that already have a FoodLicence created
     eligible_stall_registrations = eligible_stall_registrations.exclude(
         food_registration__food_licence__isnull=False
     )
 
-    if eligible_stall_registrations.exists():
-        return True
-    else:
-        return False
+    return eligible_stall_registrations.exists()
 
 @register.simple_tag
 def get_has_foodlicences():
@@ -67,10 +69,7 @@ def get_has_foodlicences():
     Used in the convener foodlicence list
     """
     foodlicence_exists = FoodLicence.foodlicencecurrentmgr.exists()
-    if foodlicence_exists:
-        return True
-    else:
-        return False
+    return foodlicence_exists
 
 @register.simple_tag
 def get_number_staged_foodlicences():

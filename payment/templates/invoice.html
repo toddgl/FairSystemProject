@@ -4,6 +4,7 @@
 {% load static %}
 {% load adddaystodate_tag %}
 {% load hasdiscount_tag %}
+{% load haspaidcredit_tag %}
 {% load custom_filters %}
 
 {% block body %}
@@ -67,8 +68,7 @@
         </tbody>
       </table>
       {% endif %}
-      <table>
-        <tbody>
+        <tbody>PaymentHistory.paymenthistorycurrentmgr.get_credit_amount(184)
           <tr>
             <td colspan="4" class="grand total">Total Cost (INCL)</td>
             <td class="grand total">${{ invoice.total_cost }}</td>
@@ -88,6 +88,18 @@
         </tr>
         </tbody>
       </table>
+      {% endif %}
+      {% get_has_credit invoice.id as credit_item_result %}
+      {% if credit_item_result %}
+      <table>
+        <tbody>
+        <tr>
+          <td class="unit">Credit Amount Refunded</td>
+          <td class="unit">${{ total_credits }}</td>
+        </tr>
+        </tbody>
+      </table>
+      <table>
       {% endif %}
       {% if amount_to_pay < 0 %}
         <table>

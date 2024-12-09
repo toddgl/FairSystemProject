@@ -139,7 +139,12 @@ def invoice_pdf_generation(request, id, seq):
     # Determine if there are any payments, if so sum them and add it to the context
     if payments:
         total_payments = payments.amount_paid
-        amount_to_pay = invoice.total_cost - total_payments
+        total_credits = payments.amount_credited
+        if total_credits:
+            amount_to_pay = invoice.total_cost - total_payments + total_credits
+        else:
+            amount_to_pay = invoice.total_cost - total_payments
+            total_credits = decimal.Decimal(0.00)
     else:
         total_payments = decimal.Decimal(0.00)
     # Determine if there are any discounts, if so sum them and add it to the context
@@ -154,6 +159,7 @@ def invoice_pdf_generation(request, id, seq):
         'invoice_items': invoice_items,
         'total_payments': total_payments,
         'total_discount': total_discount,
+        'total_credits' : total_credits,
         'amount_to_pay': amount_to_pay,
         'profile': profile
     }
@@ -189,23 +195,30 @@ def mark_payment_as_reconciled(request, id):
     paymenthistory.save()
     return HttpResponseRedirect(success_url)
 
+
 def paymenthistory_listview(request):
     """
     View for displaying payments in a table with filtering based on payment_status.
-    Provides functionality to change status between Pending, Cancelled, Completed, etc.
+    Filters are remembered within a session but reset when the page is refreshed.
     """
     template_name = 'paymenthistory_list.html'
     cards_per_page = 10
 
+    # Session management for filters
+    if "clear_filters" in request.GET:
+        # Clear session filters on page refresh or when explicitly cleared
+        request.session.pop("paymenthistory_filters", None)
+        return redirect("payment:payment-list")
+
+    # Initialize or retrieve session filter dict
+    paymenthistory_filter_dict = request.session.get("paymenthistory_filters", {})
+
     # Initialize forms
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
     updateform = UpdatePaymentHistoryForm(request.POST or None)
-
-    # Initialize filter dict
-    paymenthistory_filter_dict = {}
     alert_message = "There are no Payment Histories created yet."
 
-    # HTMX logic
+    # HTMX-specific logic
     if request.htmx:
         template_name = 'paymenthistory_list_partial.html'
 
@@ -224,6 +237,9 @@ def paymenthistory_listview(request):
                 alert_message = f"There are no payment histories with status {payment_status}."
             if stallholder_id and payment_status:
                 alert_message = f"There are no payment histories for stallholder {stallholder_id} with status {payment_status}."
+
+        # Update session filters
+        request.session["paymenthistory_filters"] = paymenthistory_filter_dict
 
     # Query filtered data
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
@@ -308,21 +324,27 @@ def update_payment_history(request, id):
     # If the request is GET, render the update form
     return render(request, "payment/update_payment_form.html", context)
 
-def pagination_data(cards_per_page, filtered_data, request):
+def pagination_data(cards_per_page, queryset, request):
     """
-    Refactored pagination code that is available to all views that included pagination
-    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    Handles pagination of a queryset
     """
-    paginator = Paginator(filtered_data, per_page=cards_per_page)
-    page_number = request.GET.get('page', 1)
-    page_range = paginator.get_elided_page_range(number=page_number)
-    try:
-        page_list = paginator.get_page(page_number)
-    except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        page_list = paginator.page(1)
-    except EmptyPage:
-        # If page is out of range deliver last page of results
-        page_list = paginator.get_page(paginator.num_pages)
-    return page_list, page_range
+    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
+    page_number = request.GET.get('page', 1)  # Get the current page number
+    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
 
+    try:
+        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
+    except PageNotAnInteger:
+        # If page is not an integer, deliver the first page
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        # If the page is out of range, deliver the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    page_range = list(paginator.get_elided_page_range(
+        page_number,
+        on_each_side=1,
+        on_ends=2
+    ))  # Custom range for pagination links
+
+    return page_list, page_range

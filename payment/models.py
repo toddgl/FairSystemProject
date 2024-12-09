@@ -165,6 +165,9 @@ class PaymentHistoryCurrentManager(models.Manager):
     def get_credit(self):
         return self.get_queryset().filter(payment_status="Credit")
 
+    def has_credit_amount(self, invoice_id):
+        return self.get_queryset().filter(invoice_id=invoice_id, amount_credited__gt=0).exists()
+
     def get_failed(self):
         return super().get_queryset().filter(payment_status="Failed")
 

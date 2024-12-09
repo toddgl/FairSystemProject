@@ -95,22 +95,29 @@ class HTTPResponseHXRedirect(HttpResponseRedirect):
     status_code = 200
 
 
-def pagination_data(cards_per_page, filtered_data, request):
+def pagination_data(cards_per_page, queryset, request):
     """
-    Refactored pagination code that is available to all views that included pagination
-    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    Handles pagination of a queryset
     """
-    paginator = Paginator(filtered_data, per_page=cards_per_page)
-    page_number = request.GET.get('page', 1)
-    page_range = paginator.get_elided_page_range(number=page_number)
+    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
+    page_number = request.GET.get('page', 1)  # Get the current page number
+    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
+
     try:
-        page_list = paginator.get_page(page_number)
+        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
     except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        page_list = paginator.page(1)
+        # If page is not an integer, deliver the first page
+        page_obj = paginator.get_page(1)
     except EmptyPage:
-        # If page is out of range deliver last page of results
-        page_list = paginator.get_page(paginator.num_pages)
+        # If the page is out of range, deliver the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    page_range = list(paginator.get_elided_page_range(
+        page_number,
+        on_each_side=1,
+        on_ends=2
+    ))  # Custom range for pagination links
+
     return page_list, page_range
 
 def generate_alert_message(fair, site_size, stallholder, booking_status):
@@ -172,6 +179,8 @@ def stall_registration_listview(request):
         return filters
 
     query_filters = build_query_filters(filter_params)
+    # Update session filters
+    request.session["stall_registration_filters"] = query_filters
     filtered_data = StallRegistration.registrationcurrentallmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
     # Generate an alert message if no results are found
@@ -208,6 +217,7 @@ def stall_registration_listview(request):
                 request.session['stall_registration_filters'] = {k: v for k, v in filter_params.items() if v}  # Remove empty values
 
                 query_filters = build_query_filters(filter_params)  # Rebuild query filters
+                request.session["stall_registration_filters"] = query_filters
                 filtered_data = StallRegistration.registrationcurrentallmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)

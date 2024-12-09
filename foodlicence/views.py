@@ -9,13 +9,13 @@ from django.template.loader import get_template, render_to_string
 from django.http import HttpResponseRedirect, HttpResponse, Http404
 from django.urls import reverse_lazy, reverse
 from django.template.response import TemplateResponse
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.sites.shortcuts import get_current_site
 from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
 from weasyprint import HTML, CSS
 from pypdf import PdfWriter, PdfReader
-from pypdf.annotations import FreeText
 from django.core.files.base import ContentFile
 from django.db.models import Q
 from accounts.models import (
@@ -36,6 +36,16 @@ from .forms import (
     FoodlicenceStatusFilterForm,
     FoodLicenceBatchUpUpdateForm
 )
+
+from foodlicence.templatetags.hasfoodlicences_tag import get_number_staged_foodlicences
+
+def staged_licences_count_view(request):
+    """
+    Returns the updated count of staged food licences using the template tag logic.
+    """
+    staged_count = get_number_staged_foodlicences()
+    return TemplateResponse(request,"staged_licences_count.html", {"staged_count": staged_count})
+
 
 def generate_pdf(object, request):
     # Get the current site domain
@@ -247,53 +257,33 @@ def mark_licence_as_rejected(request, id):
     foodlicence.save()
     return HttpResponseRedirect(success_url)
 
-def foodlicence_listview(request):
-    """
-    Description: view for displaying food licences in a table with filter based on licence_status and providing
-    functionality to change the status from Created to Batched, Submitted to Completed and Submitted to Rejected.
-    Plus the ability to drillddown to see the respective StallRegistration / Food Registration
-    """
-    foodlicence_status_filter_dict = {}
-    template_name = 'foodlicence_list.html'
-    filterform = FoodlicenceStatusFilterForm(request.POST or None)
-    licence_status=request.GET.get('licence_status', '')
-    if licence_status:
-        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(licence_status=licence_status).all().select_related('food_licence_batch')
-        alert_message = 'There are no Food Licences of status ' + str(licence_status) + ' created yet'
-    else:
-        foodlicence_list = FoodLicence.foodlicencecurrentmgr.all().select_related('food_licence_batch')
-        alert_message = 'There are no food licences created yet.'
 
-    if request.htmx:
-        form_purpose = filterform.data.get('form_purpose', '')
-        if form_purpose == 'filter':
-            if filterform.is_valid():
-                foodlicence_status = filterform.cleaned_data['licence_status']
-                attr_foodlicence_status = 'licence_status'
-                if foodlicence_status:
-                    alert_message = 'There are no food licences for status ' + str(foodlicence_status)
-                    foodlicence_status_filter_dict = { attr_foodlicence_status: foodlicence_status }
-                else:
-                    alert_message = 'There are no food licences created yet'
-                    foodlicence_status_filter_dict = {}
-        else:
-            # Handle pagination
-            # The foodlicence_status_filter _dict is retained from the filter selection which ensures that the correct
-            # data is applied
-            # to subsequent pages
-            pass
-        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter( **foodlicence_status_filter_dict).all().select_related('food_licence_batch')
-        template_name = 'foodlicence_list_partial.html'
-        return TemplateResponse(request, template_name, {
-            'food_licence_list': foodlicence_list,
-            'alert_mgr': alert_message,
-        })
-    else:
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'food_licence_list': foodlicence_list,
-            'alert_mgr': alert_message,
-        })
+def pagination_data(cards_per_page, queryset, request):
+    """
+    Handles pagination of a queryset
+    """
+    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
+    page_number = request.GET.get('page', 1)  # Get the current page number
+    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
+
+    try:
+        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
+    except PageNotAnInteger:
+        # If page is not an integer, deliver the first page
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        # If the page is out of range, deliver the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    page_range = list(paginator.get_elided_page_range(
+        page_number,
+        on_each_side=1,
+        on_ends=2
+    ))  # Custom range for pagination links
+
+    return page_list, page_range
+
+
 
 def foodlicence_dashboard_view(request):
     """
@@ -301,6 +291,7 @@ def foodlicence_dashboard_view(request):
     """
     total_counts = FoodLicence.foodlicencecurrentmgr.count()
     created_counts = FoodLicence.foodlicencecurrentmgr.get_created().count()
+    staged_counts = FoodLicence.foodlicencecurrentmgr.get_staged().count()
     batched_counts = FoodLicence.foodlicencecurrentmgr.get_batched().count()
     submitted_counts = FoodLicence.foodlicencecurrentmgr.get_submitted().count()
     rejected_counts = FoodLicence.foodlicencecurrentmgr.get_rejected().count()
@@ -309,11 +300,80 @@ def foodlicence_dashboard_view(request):
     return TemplateResponse(request, 'dashboard_foodlicences.html', {
         'total_counts': total_counts,
         'created_counts': created_counts,
+        'staged_counts': staged_counts,
         'batched_counts': batched_counts,
         'submitted_counts': submitted_counts,
         'rejected_counts': rejected_counts,
         'approved_counts': approved_counts
     })
+
+
+def foodlicence_listview(request):
+    """
+    View for displaying food licences with filters. Filters are remembered within the session and
+    cleared on page refresh or when explicitly reset.
+    """
+    cards_per_page = 10
+    template_name = 'foodlicence_list.html'
+
+    # Clear session filters on page refresh or explicit reset
+    if "clear_filters" in request.GET:
+        request.session.pop("foodlicence_filters", None)
+        return redirect("foodlicence:foodlicence-list")
+
+    # Initialize or retrieve session filters
+    foodlicence_filters = request.session.get("foodlicence_filters", {})
+
+    # Initialize forms
+    filterform = FoodlicenceStatusFilterForm(request.POST or None)
+    alert_message = 'There are no food licences created yet.'
+
+    # Filter based on licence_status from GET (initial load)
+    licence_status = request.GET.get('licence_status', '')
+    if licence_status:
+        foodlicence_filters['licence_status'] = licence_status
+        # Save filters to session
+        request.session["foodlicence_filters"] = foodlicence_filters
+        alert_message = f'There are no Food Licences of status {licence_status} created yet.'
+
+    # HTMX-specific logic
+    if request.htmx:
+        form_purpose = filterform.data.get('form_purpose', '')
+        if form_purpose == 'filter' and filterform.is_valid():
+            foodlicence_status = filterform.cleaned_data['licence_status']
+            if foodlicence_status:
+                foodlicence_filters['licence_status'] = foodlicence_status
+                alert_message = f'There are no food licences for status {foodlicence_status}.'
+            else:
+                foodlicence_filters.pop('licence_status', None)
+                alert_message = 'There are no food licences created yet.'
+
+        # Save filters to session
+        request.session["foodlicence_filters"] = foodlicence_filters
+
+        # Query filtered data
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(
+            **foodlicence_filters
+        ).select_related('food_licence_batch').order_by('date_requested')
+        template_name = 'foodlicence_list_partial.html'
+
+    else:
+        # Query with session filters on initial or non-HTMX request
+        foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(
+            **foodlicence_filters
+        ).select_related('food_licence_batch').order_by('date_requested')
+
+    # Apply pagination
+    page_list, page_range = pagination_data(cards_per_page, foodlicence_list, request)
+
+    # Render response
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'food_licence_list': page_list,
+        'page_range': page_range,
+        'alert_mgr': alert_message,
+    })
+
 
 def foodlicence_batch_listview(request):
     """

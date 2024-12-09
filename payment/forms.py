@@ -60,7 +60,7 @@ class UpdatePaymentHistoryForm(ModelForm):
     '''
     class Meta:
         model = PaymentHistory
-        fields = [ 'amount_to_pay', 'amount_paid', 'webhook_amount', 'amount_reconciled', 'payment_status', 'payment_type' ]
+        fields = [ 'amount_to_pay', 'amount_paid', 'webhook_amount', 'amount_reconciled', 'amount_credited', 'payment_status', 'payment_type' ]
         widgets = {
             'amount_to_pay': NumberInput(attrs={
                 'class': 'form-control',
@@ -75,6 +75,10 @@ class UpdatePaymentHistoryForm(ModelForm):
                 'style': 'max-width: 100px;',
             }),
             'amount_reconciled': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'amount_credited': NumberInput(attrs={
                 'class': "form-control",
                 'style': 'max-width: 100px;',
             }),

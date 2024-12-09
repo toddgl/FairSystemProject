@@ -25,6 +25,7 @@ class FoodlicenceStatusFilterForm(Form):
     LICENCE_CHOICES =(
         ("", "Show All"),
         ("Created",  "Created"),
+        ("Staged", "Staged"),
         ("Batched", "Batched"),
         ("Submitted", "Submitted"),
         ("Rejected", "Rejected"),

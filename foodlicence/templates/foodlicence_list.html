@@ -27,7 +27,7 @@
                   <a class = "btn btn-primary " data-bs-toggle="tooltip" data-bs-placement="top"
                      title="Generate batch pdf for SWDC" href="{% url 'foodlicence:licence-batch-generate' %}">Run PDF
                       Generation</a>
-                  {% can_generate_multiple_foodlicencs as missing_foodlicences_result %}
+                  {% can_generate_multiple_foodlicences as missing_foodlicences_result %}
                   {% if missing_foodlicences_result %}
                     <a href="{% url 'foodlicence:foodlicence-mass-create' %}" class="btn btn-primary">Create Foodlicences</a>
                   {% endif %}
@@ -35,6 +35,10 @@
           </div>
       </div>
       <hr>
+      <form>
+          <a href="?clear_filters=true" class="btn btn-warning">Reset Filters</a>
+          <a href="javascript:history.go(-1)" class="btn btn-secondary">Cancel</a>
+      </form>
   </div>
   <div class="row g-3">
       <div class="col-md-12">

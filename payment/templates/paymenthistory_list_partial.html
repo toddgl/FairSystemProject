@@ -25,6 +25,7 @@
                     <th scope="col">Amount to Pay</th>
                     <th scope="col">Stripe Amount</th>
                     <th scope="col">Amount Reconciled</th>
+                    <th scope="col">Amount Credited</th>
                     <th scope="col">Created Date</th>
                     <th scope="col">Updated Date</th>
                     <th scope="col-sm"></th>
@@ -41,6 +42,7 @@
                     <td>{{ paymenthistory.amount_to_pay }}</td>
                     <td>{{ paymenthistory.webhook_amount }}</td>
                     <td>{{ paymenthistory.amount_reconciled }}</td>
+                    <td>{{ paymenthistory.amount_credited }}</td>
                     <td>{{ paymenthistory.date_created }}</td>
                     <td>{{ paymenthistory.date_updated | default_if_none:"" }}</td>
                     <td><a class = "btn btn-success btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
