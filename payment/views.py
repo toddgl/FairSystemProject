@@ -218,6 +218,14 @@ def paymenthistory_listview(request):
     updateform = UpdatePaymentHistoryForm(request.POST or None)
     alert_message = "There are no Payment Histories created yet."
 
+    # Filter based on licence_status from GET (initial load)
+    payment_status = request.GET.get('payment_status', '')
+    if payment_status:
+        paymenthistory_filter_dict['payment_status'] = payment_status
+        # Save filters to session
+        request.session["paymenthistory_filters"] = paymenthistory_filter_dict
+        alert_message = f'There are no payments of status {payment_status} created yet.'
+
     # HTMX-specific logic
     if request.htmx:
         template_name = 'paymenthistory_list_partial.html'
