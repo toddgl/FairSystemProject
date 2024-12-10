@@ -275,6 +275,7 @@ def payment_dashboard_view(request):
     pending_counts = PaymentHistory.paymenthistorycurrentmgr.get_pending().count()
     cancelled_counts = PaymentHistory.paymenthistorycurrentmgr.get_cancelled().count()
     completed_counts = PaymentHistory.paymenthistorycurrentmgr.get_completed().count()
+    credit_counts = PaymentHistory.paymenthistorycurrentmgr.get_credit().count()
     failed_counts = PaymentHistory.paymenthistorycurrentmgr.get_failed().count()
     reconciled_counts = PaymentHistory.paymenthistorycurrentmgr.get_reconciled().count()
 
@@ -283,6 +284,7 @@ def payment_dashboard_view(request):
         'pending_counts': pending_counts,
         'cancelled_counts': cancelled_counts,
         'completed_counts': completed_counts,
+        'credit_counts': credit_counts,
         'failed_counts': failed_counts,
         'reconciled_counts': reconciled_counts
     })

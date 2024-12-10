@@ -45,7 +45,7 @@ def can_generate_multiple_foodlicences():
     Used in the convener foodlicence list view
     """
     # Find stall registrations with completed payments
-    eligible_stall_registrations = StallRegistration.objects.filter(
+    eligible_stall_registrations = StallRegistration.registrationcurrentallmgr.filter(
         food_registration__isnull=False
     ).filter(
         Q(invoice__payment_history__payment_status__in=[

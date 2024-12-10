@@ -437,10 +437,15 @@ def create_food_licence_from_stallregistration(request, stallregistration_id):
 def create_food_licence_if_eligible(request):
     success_url = reverse_lazy('foodlicence:foodlicence-list')
     # Step 1: Find stall registrations with completed payments
-    eligible_stall_registrations = StallRegistration.registrationcurrentmgr.filter(
-        invoice__payment_history__payment_status=PaymentHistory.COMPLETED,
-        food_registration__isnull=False  # Ensures that a FoodRegistration exists
-    ).distinct()
+    eligible_stall_registrations = StallRegistration.registrationcurrentallmgr.filter(
+        food_registration__isnull=False # Ensures that a FoodRegistration exists
+    ).filter(
+        Q(invoice__payment_history__payment_status__in=[
+            PaymentHistory.COMPLETED,
+            PaymentHistory.RECONCILED,
+            PaymentHistory.CREDIT
+        ]
+        )).distinct()
 
     # Step 2: Filter out stall registrations that already have a FoodLicence created
     eligible_stall_registrations = eligible_stall_registrations.exclude(

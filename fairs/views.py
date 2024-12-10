@@ -1853,6 +1853,7 @@ def stallregistration_siteallocation_view(request, id):
     siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     if request.htmx:
         if sitefilterform.is_valid():
+            zone_filter_dict = {} # Initialize with an empty dictionary
             zone = sitefilterform.cleaned_data['zone']
             event = sitefilterform.cleaned_data['event']
             site_size = sitefilterform.cleaned_data['site_size']
