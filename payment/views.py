@@ -3,6 +3,7 @@
 import stripe
 import time
 import logging
+import uuid  # For generating unique idempotency keys
 from django.views.decorators.csrf import csrf_exempt
 import decimal
 from weasyprint import HTML, CSS
@@ -33,12 +34,16 @@ from .forms import (
 
 db_logger = logging.getLogger('db')
 
+
 @login_required()
 def stripe_payment(request, id):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     if request.method == 'POST':
         payment_history = PaymentHistory.objects.get(id=id)
         try:
+            # Generate a unique idempotency key for this request
+            idempotency_key = f"stripe_payment_{id}_{uuid.uuid4()}"
+
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -56,10 +61,12 @@ def stripe_payment(request, id):
                 customer_creation='always',
                 success_url=settings.REDIRECT_DOMAIN + '/payment/payment_successful/?session_id={CHECKOUT_SESSION_ID}',
                 cancel_url=settings.REDIRECT_DOMAIN + '/payment/payment_cancelled',
+                idempotency_key=idempotency_key,  # Pass the idempotency key to Stripe
             )
-        except Exception as e:  # It will catch other errors related to the cancel call.
-            db_logger.error('There was an error making the stripe payment.' + str(e),
+        except stripe.error.StripeError as e:
+            db_logger.error('Error creating Stripe checkout session: ' + str(e),
                             extra={'custom_category': 'Stripe Payment'})
+            return render(request, 'error_page.html', {'error': 'An error occurred while processing your payment.'})
         return redirect(checkout_session.url, code=303)
     return render(request, 'myfair/myfair_dashboard.html')
 
@@ -69,6 +76,13 @@ def payment_successful(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id')
     session = stripe.checkout.Session.retrieve(checkout_session_id)
+
+    # Check if this session has already been processed
+    payment_history = PaymentHistory.objects.get(id=session.metadata['product_history_id'])
+    if payment_history.stripe_checkout_id == checkout_session_id:
+        # If already processed, just render success
+        return render(request, 'user_payment/payment_successful.html',
+                      {'customer': stripe.Customer.retrieve(session.customer), 'session': session})
 
     customer = stripe.Customer.retrieve(session.customer)
     payment_type = PaymentType.objects.get(payment_type_name='Stripe')
