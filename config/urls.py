@@ -37,6 +37,7 @@ urlpatterns = [
     path('foodlicence/', include('foodlicence.urls')),
     path('', include('payment.urls')),
     path('registration/', include('registration.urls')),
+    path('', include('reports.urls')),
     path('', include('fairs.urls')),
     path('',include('search.urls')),
     path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),

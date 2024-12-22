@@ -61,10 +61,6 @@
                     <a class="page-link" hx-get="{% url 'emails:email-list' %}?page={{ email_list.next_page_number }}{% if subject_type %}&subject_type={{ subject_type }}{% endif %}"
                        hx-trigger="click" hx-target="#email_history_data">&raquo;</a>
                 </li>
-                {% else % if email_filter_dict not in locals():
-                email_filter_dict ={
-                    attr_fair: current_fair
-                }}
                 <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
                 {% endif %}
             </ul>

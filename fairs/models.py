@@ -1,6 +1,6 @@
 # fairs/model.py
 from datetime import datetime
-from django.db.models import Q
+from django.db.models import Q, Case, F, When, DateField
 from django.db import models
 from django.urls import reverse
 from accounts.models import CustomUser
@@ -396,6 +396,36 @@ class CurrentEventFilterManager(models.Manager):
         return super().get_queryset().filter(Q(original_event_date__gt=datetime.now()) |
                                              Q(postponement_event_date__gt=datetime.now()))
 
+    def annotate_event_sequence(self):
+        """
+        Annotates the queryset with dynamically calculated event sequence
+        based on the earliest date (original or postponement).
+        """
+        return self.get_queryset().annotate(
+            actual_event_date=Case(
+                When(postponement_event_date__isnull=False, then=F('postponement_event_date')),
+                default=F('original_event_date'),
+                output_field=DateField(),  # Explicitly specify the output field type
+            )
+        ).order_by('actual_event_date')
+
+    def get_event_by_position(self, position):
+        """
+        Returns the event at the specified position based on chronological order.
+        Position is 1-based (1 for first, 2 for second, etc.).
+        """
+        if position < 1:
+            raise ValueError("Position must be a positive integer.")
+
+        # Annotate and order events
+        events = self.annotate_event_sequence()
+
+        # Retrieve the event at the specified position
+        try:
+            return events[position - 1]  # Convert 1-based to 0-based index
+        except IndexError:
+            return None  # Return None if the position exceeds the queryset size
+
 
 class Event(models.Model):
     """
@@ -453,6 +483,7 @@ class EventSiteCurrentManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(event__fair__fair_year__in=[current_year, next_year],
                                              event__fair__is_activated=True)
+
 
 class SiteAvailableManager(models.Manager):
     def get_queryset(self):
