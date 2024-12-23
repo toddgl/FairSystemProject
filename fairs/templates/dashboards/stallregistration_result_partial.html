@@ -1,0 +1,44 @@
+<!-- registration/templates/stallregistration/stallregistration_list_partial.html -->
+
+{% load static %}
+
+<div id="stallregistration_data">
+    <!--Registration data -->
+    {% if stallregistration %}
+    <div class="row g-3">
+        <div class="col-12 col-md-9 col-lg-9">
+            <div class="card border border-2 border-success mb-3" style="max-width: 40rem">
+                <div class="card-body">
+                    <h4 class="card-title text-white bg-primary">{{ stallregistration.fair }} - {{ stallregistration.stallholder}}</h4>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Application ID:</strong> {{ stallregistration.id }}</li>
+                    <li class="list-group-item"><strong>Stall Category:</strong> {{ stallregistration.stall_category }}</li>
+                    <li class="list-group-item"><strong>Site Size:</strong> {{ stallregistration.site_size }}</li>
+                    <li class="list-group-item"><strong>Status:</strong> {{ stallregistration.booking_status }}</li>
+                    <li class="list-group-item"><strong>Description:</strong> {{ stallregistration.stall_description }}</li>
+                </ul>
+                    {% for allocation in stallregistration.site_allocation.all %}
+                        {% if forloop.first %}
+                            <div class="title-hr">
+                                <span class="hr fix"></span>
+                                <span><strong>Current Allocations</strong></span>
+                                <span class="hr"></span>
+                            </div>
+                            <ul> <!-- Open list here -->
+                        {% endif %}
+                            <li class="list-group-item"><strong>Event:</strong> {{ allocation.event_site.event.event_name }}</li>
+                            <li class="list-group-item"><strong>Site Name:</strong> {{ allocation.event_site.site.zone.zone_name }} - {{ allocation.event_site.site.site_name }}</li>
+                        {% if forloop.last %}
+                            </ul> <!-- Close list only when done -->
+                        {% endif %}
+                    {% endfor %}
+                <a href="{% url 'registration:convener-stall-food-registration-detail'  stallregistration.id  %}"
+                   class="bp-3 mb-2 btn btn-info">
+                    View Application Details
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>

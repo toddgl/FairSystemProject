@@ -1,0 +1,19 @@
+<!--emails/templates/email_history_filter_partial.html -->
+
+<div id="replacearea">
+  <div class="row">
+    <div class="col-md-9">
+      <div class="title-hr">
+        <span class="hr fix"></span>
+        <span><strong>Email History Filters</strong></span>
+        <span class="hr"></span>
+      </div>
+      <form action="." hx-trigger="change" method="post"  hx-post="." hx-target="#email_history_data">
+        {% csrf_token %}
+        {{ filterform.as_p }}
+        <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+      </form>
+    <hr>
+    </div>
+  </div>
+</div>

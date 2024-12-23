@@ -1,0 +1,24 @@
+<!--templates/search/partials/search_stallholders_paymenthistory.html -->
+
+   <div class="row">
+       <div class="col-md-9">
+            <div class="title-hr">
+                <span class="hr fix"></span>
+                <span><strong>Stallholder Filter</strong></span>
+                <span class="hr"></span>
+            </div>
+        </div>
+   </div>
+    <form>
+        {% csrf_token %}
+        <input type="text"
+               hx-post="{% url 'search:search-stallholders-paymenthistory' %}"
+               hx-target="#results"
+               hx-trigger="keyup changed delay:400ms"
+               name="search"
+               class="form-control-sm me-2"
+               placeholder="Start typing..."/>
+    </form>
+<div id="results">
+    {% include 'search/partials/stallholder_paymenthistory_results.html' %}
+</div>

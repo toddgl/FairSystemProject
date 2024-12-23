@@ -6,15 +6,18 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.contrib.auth.decorators import login_required, permission_required
+from django.db.models import Subquery, OuterRef
+from django.db.models.aggregates import Count
 from django.views.decorators.http import require_http_methods
+from urllib.parse import urlencode
 from django.template.response import TemplateResponse
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
 from django.contrib import messages
-from django.shortcuts import redirect
 from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
+from django.db.models import F
 from django.db import transaction
 from django.views.generic import (
     CreateView,
@@ -41,6 +44,7 @@ from fairs.models import (
 )
 
 from registration.models import (
+    CommentType,
     StallRegistration,
     RegistrationComment,
     AdditionalSiteRequirement
@@ -91,11 +95,20 @@ from .forms import (
     MessageFilterForm,
     MessageReplyForm,
     SiteHistoryFilerForm,
-    SiteAllocationFilerForm
+    SiteAllocationFilerForm,
+    PowerboxFilterForm,
 )
 
 from registration.forms import (
     CommentFilterForm,
+)
+
+from emails.forms import (
+    CreateEmailForm
+)
+
+from emails.backend import (
+    bulk_registration_emails
 )
 
 
@@ -123,7 +136,20 @@ class LocationCreateView(PermissionRequiredMixin, CreateView):
     """
     permission_required = 'fairs.add_location'
     model = Location
-    form_class = LocationCreateForm
+    form_class = LocationCreateFormpowerbox_connections = StallRegistration.objects.filter(
+    power_required=True,  # Only include stall registrations that require power
+    site_allocation__event_site__site__powerbox__isnull=False  # Ensure sites have a powerbox
+).values(
+    'site_allocation__event_site__event__event_name',  # Group by event name
+    'site_allocation__event_site__site__powerbox__power_box_name',  # Group by powerbox
+    'site_allocation__event_site__site__powerbox__socket_count'  # Include total sockets for reference
+).annotate(
+    connected_sites=Count('id'),  # Count connected stall registrations
+    free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')  # Calculate free sockets
+).order_by(
+    'site_allocation__event_site__event__event_name',
+    'site_allocation__event_site__site__powerbox__power_box_name'
+)
     template_name = 'locations/location_create.html'
     success_url = reverse_lazy('fair:location-list')
 
@@ -303,71 +329,70 @@ class SiteListView(PermissionRequiredMixin, ListView):
 @permission_required('fairs.change_site', raise_exception=True)
 def site_listview(request):
     """
-    List all the sites and provide filtered views based on a dropdown filter of Zones
+    List all the sites and provide filtered views based on dropdown filters for Zones and Site Sizes.
     """
-    global filter_dict
-    alert_message = 'There are no sites created yet.'
+    request.session['site'] = 'fairs:site-list'
     template_name = 'sites/site_list.html'
-    filterform = SiteListFilterForm(request.POST or None)
-    # filtered_data = Site.objects.all().order_by("site_name")
     cards_per_page = 9
+    filterform = SiteListFilterForm(request.POST or None)
 
-    if not request.htmx:
-        filter_dict = {}
+    # Retrieve filter parameters from session
+    filter_params = request.session.get('site_filters', {})
+    query_filters = {}
 
-    elif request.htmx:
-        if filterform.is_valid():
-            zone = filterform.cleaned_data['zone']
-            site_size = filterform.cleaned_data['site_size']
-            attr_zonesite = 'zone'
-            attr_site_size = 'site_size'
-            if zone and site_size:
-                alert_message = 'There are no sites where the zone is ' + str(zone) + ' the site size is ' + str(site_size)
-                filter_dict = {
-                    attr_zonesite: zone,
-                    attr_site_size: site_size
-                }
-            elif zone:
-                alert_message = 'There are no sites where the zone is ' + str(zone)
-                filter_dict = {
-                    attr_zonesite: zone
-                }
-            elif site_size:
-                alert_message = 'There are no sites where the site size is ' + str(site_size)
-                filter_dict = {
-                    attr_site_size: site_size
-                }
-            else:
-                alert_message = 'There are no event sites created yet.'
-                filter_dict = {}
-            filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
-            template_name = 'sites/site_list_partial.html'
-            page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            site_list = page_list
-            return TemplateResponse(request, template_name, {
-                'site_list': site_list,
-                'page_range': page_range,
-                'alert_mgr': alert_message,
-            })
-        filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
+    # Populate query filters from session data
+    if 'zone' in filter_params:
+        query_filters['zone'] = Zone.objects.get(pk=filter_params['zone'])
+    if 'site_size' in filter_params:
+        query_filters['site_size'] = filter_params['site_size']
+
+    # Filter sites
+    filtered_data = Site.objects.filter(**query_filters).order_by("site_name")
+
+    # Handle HTMX requests
+    if request.htmx:
         template_name = 'sites/site_list_partial.html'
+        if filterform.is_valid():
+            zone = filterform.cleaned_data.get('zone')
+            site_size = filterform.cleaned_data.get('site_size')
+
+            # Update and save filters
+            filter_params = {}
+            if zone:
+                filter_params['zone'] = zone.pk
+            if site_size:
+                filter_params['site_size'] = site_size.pk
+            request.session['site_filters'] = filter_params
+
+            # Rebuild query filters
+            query_filters = {k: v for k, v in filter_params.items() if v}
+            filtered_data = Site.objects.filter(**query_filters).order_by("site_name")
+
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        site_list = page_list
         return TemplateResponse(request, template_name, {
-            'site_list': site_list,
+            'site_list': page_list,
             'page_range': page_range,
-            'alert_mgr': alert_message,
+            'alert_mgr': generate_site_alert_message(query_filters.get('zone'), query_filters.get('site_size')),
         })
-    filtered_data = Site.objects.filter(**filter_dict).order_by("site_name")
+
+    # Handle initial page load
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-    site_list = page_list
     return TemplateResponse(request, template_name, {
         'filterform': filterform,
-        'site_list': site_list,
+        'site_list': page_list,
         'page_range': page_range,
-        'alert_mgr': alert_message,
+        'alert_mgr': generate_site_alert_message(query_filters.get('zone'), query_filters.get('site_size')),
     })
 
+
+def generate_site_alert_message(zone, site_size):
+    """Generate an alert message based on the active filters."""
+    parts = []
+    if zone:
+        parts.append(f"zone is {zone}")
+    if site_size:
+        parts.append(f"site size is {site_size}")
+    return f"There are no sites where {' and '.join(parts)}" if parts else "There are no sites created yet."
 
 
 class SiteDetailUpdateView(PermissionRequiredMixin, UpdateView):
@@ -619,103 +644,71 @@ class InventoryItemCreateView(PermissionRequiredMixin, CreateView):
 @permission_required('fairs.change_eventsite', raise_exception=True)
 def event_site_listview(request):
     """
-    List all the event sites and provide filtered views based on dropdown filters of events and Zones
+    List all the event sites and provide filtered views based on dropdown filters of events and zones.
     """
-    global event_site_filter_dict
     cards_per_page = 6
     alert_message = 'There are no event sites created yet.'
     template_name = 'eventsites/eventsite_list.html'
     filterform = EventSiteListFilterForm(request.POST or None)
     form_purpose = filterform.data.get('form_purpose', '')
-    site_status=request.GET.get('site_status','')
 
-    if not request.htmx:
-        if site_status:
-            filtered_data = EventSite.eventsitecurrentmgr.filter(site_status=site_status).order_by("site__site_name")
-            # Define the event _site_filter_dict
-            attr_sitestatus = 'site_status'
-            event_site_filter_dict = {
-                attr_sitestatus: site_status
-            }
+    # Initialize filter dictionary
+    event_site_filter_dict = {}
+
+    # Collect GET parameters for `site_status`
+    site_status = request.GET.get('site_status', '')
+    print("Site_status", site_status)
+
+    # Include `booking_status` in filters
+    if site_status:
+        event_site_filter_dict['site_status'] = site_status
+        request.session['event_site_filter_dict'] = event_site_filter_dict
+
+    # Check if a filter is being applied
+    if request.htmx and form_purpose == 'filter':
+        if filterform.is_valid():
+            event = filterform.cleaned_data['event']
+            zone = filterform.cleaned_data['zone']
+            status = filterform.cleaned_data['site_status']
+
+            # Build the filter dictionary
+            if event:
+                event_site_filter_dict['event'] = event.pk  # Store the primary key
+            if zone:
+                event_site_filter_dict['site__zone'] = zone.pk  # Store the primary key
+            if status:
+                event_site_filter_dict['site_status'] = status
+
+            # Save the filter dictionary in the session
+            request.session['event_site_filter_dict'] = event_site_filter_dict
         else:
-            filtered_data = EventSite.eventsitecurrentmgr.all().order_by("site__site_name")
-            event_site_filter_dict = {}
+            alert_message = 'Invalid filter form submission.'
+            request.session['event_site_filter_dict'] = {}
+    else:
+        # Retrieve the filter dictionary from the session for pagination
+        event_site_filter_dict = request.session.get('event_site_filter_dict', {})
 
-    elif request.htmx:
-        if form_purpose == 'filter':
-            if filterform.is_valid():
-                event = filterform.cleaned_data['event']
-                zone = filterform.cleaned_data['zone']
-                status = filterform.cleaned_data['site_status']
-                attr_zonesite = 'site__zone'
-                attr_eventsite = 'event'
-                attr_sitestatus = 'site_status'
-                if event and zone and status:
-                    alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
-                        zone) + ' with a status of ' + str(site_status_dict[int(status)])
-                    event_site_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_eventsite: event,
-                        attr_sitestatus: status,
-                    }
-                elif event and zone:
-                    alert_message = 'There are no event sites where the event is ' + str(event) + ' and zone is ' + str(
-                        zone)
-                    event_site_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_eventsite: event,
-                    }
-                elif event and status:
-                    alert_message = 'There are no event sites  where the event is ' + str(
-                        event) + ' with a status of ' + str(site_status_dict[int(status)])
-                    event_site_filter_dict = {
-                        attr_eventsite: event,
-                        attr_sitestatus: status,
-                    }
-                elif event:
-                    alert_message = 'There are no event sites  where the event is ' + str(event)
-                    event_site_filter_dict = {
-                        attr_eventsite: event
-                    }
-                elif zone and status:
-                    alert_message = 'There are no event sites where the zone is ' + str(zone) + ' with a status of ' + str(
-                        site_status_dict[int(status)])
-                    event_site_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_sitestatus: status,
-                    }
-                elif zone:
-                    alert_message = 'There are no event sites where the zone is ' + str(zone)
-                    event_site_filter_dict = {
-                        attr_zonesite: zone
-                    }
-                elif status:
-                    alert_message = 'There are no event sites with a status of ' + str(site_status_dict[int(status)])
-                    event_site_filter_dict = {
-                        attr_sitestatus: status,
-                    }
-                else:
-                    alert_message = 'There are no event sites created yet.'
-                    event_site_filter_dict = {}
-        else:
-            # Handle pagination
-            # The event_site_filter _dict is retained from the filter selection which ensures that the correct
-            # data is applied
-            # to subsequent pages
-            pass
-        filtered_data = EventSite.eventsitecurrentmgr.filter(**event_site_filter_dict).order_by("site__site_name")
-        template_name = 'eventsites/eventsite_list_partial.html'
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        eventsite_list = page_list
-        return TemplateResponse(request, template_name, {
-            'eventsite_list': eventsite_list,
-            'page_range': page_range,
-            'alert_mgr': alert_message,
-        })
+        # Convert primary keys back to model instances for filter form prepopulation
+        if 'event' in event_site_filter_dict:
+            event_site_filter_dict['event'] = Event.objects.get(pk=event_site_filter_dict['event'])
+        if 'site__zone' in event_site_filter_dict:
+            event_site_filter_dict['site__zone'] = Zone.objects.get(pk=event_site_filter_dict['site__zone'])
 
+    if request.POST.get('form_purpose') == 'clear_filters':
+        request.session.pop('event_site_filter_dict', None)
+        event_site_filter_dict = {}
+
+    # Apply filters and order the data
     filtered_data = EventSite.eventsitecurrentmgr.filter(**event_site_filter_dict).order_by("site__site_name")
+
+    # Handle pagination
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
     eventsite_list = page_list
+
+    # Update the template if HTMX is used
+    if request.htmx:
+        template_name = 'eventsites/eventsite_list_partial.html'
+
     return TemplateResponse(request, template_name, {
         'filterform': filterform,
         'eventsite_list': eventsite_list,
@@ -724,22 +717,29 @@ def event_site_listview(request):
     })
 
 
-def pagination_data(cards_per_page, filtered_data, request):
+def pagination_data(cards_per_page, queryset, request):
     """
-    Refactored pagination code that is available to all views that included pagination
-    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    Handles pagination of a queryset
     """
-    paginator = Paginator(filtered_data, per_page=cards_per_page)
-    page_number = request.GET.get('page', 1)
-    page_range = paginator.get_elided_page_range(number=page_number)
+    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
+    page_number = request.GET.get('page', 1)  # Get the current page number
+    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
+
     try:
-        page_list = paginator.get_page(page_number)
+        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
     except PageNotAnInteger:
-        # If page is not an integer deliver the first page
-        page_list = paginator.page(1)
+        # If page is not an integer, deliver the first page
+        page_obj = paginator.get_page(1)
     except EmptyPage:
-        # If page is out of range deliver last page of results
-        page_list = paginator.get_page(paginator.num_pages)
+        # If the page is out of range, deliver the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    page_range = list(paginator.get_elided_page_range(
+        page_number,
+        on_each_side=1,
+        on_ends=2
+    ))  # Custom range for pagination links
+
     return page_list, page_range
 
 
@@ -1009,7 +1009,6 @@ class EventPowerListView(PermissionRequiredMixin, ListView):
     template_name = 'eventpower/eventpower_list.html'
     queryset = EventPower.objects.all().order_by("event")
 
-
 class EventPowerDetailUpdateView(PermissionRequiredMixin, UpdateView):
     """
     Display an editable form of the details of a Powerbox associated with an event
@@ -1057,169 +1056,129 @@ class EventPowerCreateView(PermissionRequiredMixin, CreateView):
         return kwargs
 
 
+def generate_alert_message(event, zone, on_hold):
+    """Generate the alert message based on filters."""
+    parts = []
+    if event:
+        parts.append(f"event is {event}")
+    if zone:
+        parts.append(f"zone is {zone}")
+    if on_hold:
+        parts.append("sites are on hold")
+    return f"There are no sites allocated where {' and '.join(parts)}" if parts else "There are no sites allocated yet."
+
+# Utility function to convert filter parameters for session storage
+def build_filter_dict(event, zone, stallholder, on_hold):
+    filter_dict = {}
+    if event:
+        filter_dict['event'] = event.pk  # Store primary key
+    if zone:
+        filter_dict['zone'] = zone.pk  # Store primary key
+    if stallholder:
+        filter_dict['stallholder'] = stallholder  # Stallholder is likely already serializable
+    if on_hold is not None:
+        filter_dict['on_hold'] = on_hold  # Boolean or integer
+    return filter_dict
+
+
 @login_required
 @permission_required('fairs.add_siteallocation', raise_exception=True)
 @permission_required('fairs.change_siteallocation', raise_exception=True)
 def site_allocation_listview(request):
     """
-    Populate the site allocation forms in particular provide a filtered view of dropdown boxes
-    based on the stallholder filters
+    Populate the site allocation forms with filtered dropdowns based on stallholder filters.
     """
-    global site_allocation_filter_dict
-    stallholder = ''
+    # Reset session filters on initial page load
+    if not request.htmx:  # Only clear filters on full page load
+        request.session.pop('site_allocation_filters', None)
+
     request.session['siteallocation'] = 'fair:siteallocation-list'
-    alert_message = 'There are no sites allocated yet.'
     template_name = 'siteallocations/siteallocation_list.html'
     filterform = SiteAllocationListFilterForm(request.POST or None)
-    form_purpose = filterform.data.get('form_purpose', '')
-    filtered_data = SiteAllocation.currentallocationsmgr.all().order_by("event_site__site")
     cards_per_page = 6
+
+    # Retrieve filters from session
+    filter_params = request.session.get('site_allocation_filters', {})
+
+    def build_query_filters(params):
+        """Rebuild query filters based on session parameters."""
+        filters = {}
+        if 'event' in params:
+            filters['event_site__event'] = Event.objects.get(pk=params['event'])
+        if 'zone' in params:
+            filters['event_site__site__zone'] = Zone.objects.get(pk=params['zone'])
+        if 'stallholder' in params:
+            filters['stallholder'] = params['stallholder']
+        if 'on_hold' in params:
+            filters['on_hold'] = params['on_hold']
+        return filters
+
+    query_filters = build_query_filters(filter_params)
+    filtered_data = SiteAllocation.currentallocationsmgr.filter(**query_filters).order_by("event_site__site")
+
+    # Generate an alert message if no results are found
+    alert_message = (
+        generate_alert_message(
+            Event.objects.get(pk=filter_params['event']) if 'event' in filter_params else None,
+            Zone.objects.get(pk=filter_params['zone']) if 'zone' in filter_params else None,
+            filter_params.get('stallholder'),
+            filter_params.get('on_hold'),
+        )
+        if not filtered_data.exists()
+        else ""
+    )
+
     if request.htmx:
+        template_name = 'siteallocations/siteallocation_list_partial.html'
+
+        # Handle stallholder or filter form submission
         stallholder_id = request.POST.get('selected_stallholder')
-        attr_stallholder = 'stallholder'
         if stallholder_id:
-            stallholder = stallholder_id
-            site_allocation_filter_dict = {
-                attr_stallholder: stallholder_id
-            }
-            filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
-            template_name = 'siteallocations/siteallocation_list_partial.html'
+            filter_params['stallholder'] = stallholder_id
+            request.session['site_allocation_filters'] = filter_params  # Save to session
+            query_filters = build_query_filters(filter_params)  # Rebuild query filters
+            filtered_data = SiteAllocation.currentallocationsmgr.filter(**query_filters).order_by("event_site__site")
             page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-            allocation_list = page_list
             return TemplateResponse(request, template_name, {
-                'allocation_list': allocation_list,
+                'allocation_list': page_list,
                 'page_range': page_range,
                 'alert_mgr': alert_message,
             })
-        if form_purpose == 'filter':
+
+        if request.POST.get('form_purpose') == 'filter':
             if filterform.is_valid():
-                event = filterform.cleaned_data['event']
-                zone = filterform.cleaned_data['zone']
-                on_hold = filterform.cleaned_data['on_hold']
-                attr_zonesite = 'event_site__site__zone'
-                attr_eventsite = 'event_site__event'
-                attr_onhold = 'on_hold'
-                if event and zone and stallholder and on_hold:
-                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
-                        zone) + ' stallholder ID is ' + str(stallholder) + ' that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_eventsite: event,
-                        attr_stallholder: stallholder,
-                        attr_onhold: on_hold
-                    }
-                elif event and zone and stallholder:
-                    alert_message = 'There are no sites allocated where the event is ' + str(
-                        event) + ' and zone is ' + str(
-                        zone) + ' stallholder ID is ' + str(stallholder)
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_eventsite: event,
-                        attr_stallholder: stallholder
-                    }
-                elif event and zone and on_hold:
-                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
-                        zone)  + ' that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_eventsite: event,
-                        attr_onhold: on_hold
-                    }
-                elif event and stallholder and on_hold:
-                    alert_message = 'There are no sites allocated where the event is ' + str(
-                        event) + ' stallholder ID is ' + str(stallholder)  + ' that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_eventsite: event,
-                        attr_stallholder: stallholder,
-                        attr_onhold: on_hold
-                    }
-                elif event and zone:
-                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' and zone is ' + str(
-                        zone)
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_eventsite: event
-                    }
-                elif event and on_hold:
-                    alert_message = 'There are no sites allocated where the event is ' + str(event)  + ' that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_eventsite: event,
-                        attr_onhold: on_hold
-                    }
-                elif event and stallholder:
-                    alert_message = 'There are no sites allocated where the event is ' + str(event) + ' stallholder ID is ' + str(stallholder)
-                    site_allocation_filter_dict = {
-                        attr_eventsite: event,
-                        attr_stallholder: stallholder
-                    }
-                elif zone and stallholder:
-                    alert_message = 'There are no sites allocated where the zone is ' + str(zone) + ' stallholder ID is ' + str(stallholder)
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_stallholder: stallholder
-                    }
-                elif zone and on_hold:
-                    alert_message = 'There are no sites allocated where the zone is ' + str(
-                        zone) + ' that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone,
-                        attr_onhold: on_hold
-                    }
-                elif stallholder and on_hold:
-                    alert_message = 'There are no sites allocated where the stallholder ID is ' + str(stallholder)  + ' that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_stallholder: stallholder,
-                        attr_onhold: on_hold
-                    }
-                elif event:
-                    alert_message = 'There are no sites allocated where the event is ' + str(event)
-                    site_allocation_filter_dict = {
-                        attr_eventsite: event
-                    }
-                elif zone:
-                    alert_message = 'There are no sites allocated where the zone is ' + str(zone)
-                    site_allocation_filter_dict = {
-                        attr_zonesite: zone
-                    }
-                elif on_hold:
-                    alert_message = 'There are no sites allocated that are on hold'
-                    site_allocation_filter_dict = {
-                        attr_onhold: on_hold
-                    }
-                else:
-                    alert_message = 'There are no sites allocated yet.'
-                    site_allocation_filter_dict = {}
-        else:
-            # Handle pagination
-            # The event_site_filter _dict is retained from the filter selection which ensures that the correct
-            # data is applied
-            # to subsequent pages
-            pass
-        template_name = 'siteallocations/siteallocation_list_partial.html'
-        filtered_data = SiteAllocation.currentallocationsmgr.filter(**site_allocation_filter_dict).order_by( "event_site__site")
+                event = filterform.cleaned_data.get('event')
+                zone = filterform.cleaned_data.get('zone')
+                on_hold = filterform.cleaned_data.get('on_hold')
+
+                # Build and save filters
+                filter_params = build_filter_dict(event, zone, filter_params.get('stallholder'), on_hold)
+                request.session['site_allocation_filters'] = filter_params
+
+                query_filters = build_query_filters(filter_params)  # Rebuild query filters
+                filtered_data = SiteAllocation.currentallocationsmgr.filter(**query_filters).order_by("event_site__site")
+
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        allocation_list = page_list
         return TemplateResponse(request, template_name, {
-            'allocation_list': allocation_list,
+            'allocation_list': page_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
         })
-    else:
-        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-        allocation_list = page_list
-        stallholder = ''
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'allocation_list': allocation_list,
-            'page_range': page_range,
-            'alert_mgr': alert_message,
-        })
+
+    # Handle initial page load
+    page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'allocation_list': page_list,
+        'page_range': page_range,
+        'alert_mgr': alert_message,
+    })
 
 
 class SiteAllocationUpdateView(PermissionRequiredMixin, UpdateView):
     """
-    Update a Site Allocation including recording who created it
-    """
+Update a Site Allocation including recording who created it
+"""
     permission_required = 'fairs.change_siteallocation'
     model = SiteAllocation
     form_class = SiteAllocationUpdateForm
@@ -1379,6 +1338,7 @@ def stall_registration_dashboard_view(request):
     stall_registrations = StallRegistration.objects.all()
     template_name = 'dashboards/dashboard_registrations.html'
     filter_message = 'Showing unfiltered data - from all current and future fairs and site sizes'
+    createemailform = CreateEmailForm(request.POST or None)
 
     if request.POST:
         form = DashboardRegistrationFilterForm(request.POST)
@@ -1416,6 +1376,11 @@ def stall_registration_dashboard_view(request):
             booked_counts = StallRegistration.registrationbookedmgr.filter(**filter_dict).count()
             cancelled_counts = StallRegistration. registrationcancelledmgr.filter(**filter_dict).count()
 
+        if 'bulkemail' in request.POST and createemailform.is_valid():
+                status = 'Invoiced'
+                subject_type = 'Invoicing'
+                body = createemailform.cleaned_data['body']
+                bulk_registration_emails(status, subject_type, body)
     else:
         form = DashboardRegistrationFilterForm()
         total_counts = stall_registrations.count()
@@ -1437,7 +1402,8 @@ def stall_registration_dashboard_view(request):
         'invoiced_counts': invoiced_counts,
         'paid_counts': paid_counts,
         'booked_counts': booked_counts,
-        'cancelled_counts': cancelled_counts
+        'cancelled_counts': cancelled_counts,
+        'createemailform': createemailform
     })
 
 @login_required
@@ -1578,345 +1544,170 @@ def setup_process_dashboard_view(request):
 @permission_required('fairs.view_fair', raise_exception=True)
 def messages_dashboard_view(request):
     """
-    A dashboard that allows the convener to monitor and respond to stallholder messages
+    A dashboard that allows the convener to monitor and respond to stallholder messages.
     """
-    message_filter_dict = {}
-    global stallholder
-    request.session['message'] = 'fair:messages-dashboard'
     template = "dashboards/dashboard_messages_filter.html"
-    filter_message= 'Showing current comments of the current fair'
-    messagefilterform = MessageFilterForm(request.POST or None)
-    replyform = MessageReplyForm(request.POST or None)
-    # list of active parent comments
+    template_partial = "dashboards/dashboard_messages_partial.html"
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter( is_archived=False, comment_parent__isnull=True, fair=current_fair.id)
+    cards_per_page = 6
+
+    message_filter_form = MessageFilterForm(request.POST or None)
+    reply_form = MessageReplyForm(request.POST or None)
+
+    comments = RegistrationComment.objects.filter(
+        comment_parent__isnull=True,
+        fair=current_fair.id
+    ).order_by('-date_created')
+
     if request.htmx:
-        comments = RegistrationComment.objects.filter( comment_parent__isnull=True)
-        stallholder_id = request.POST.get('selected_stallholder')
-        attr_stallholder = 'stallholder'
-        attr_archive = 'is_archived'
-        if stallholder_id:
-            stallholder = stallholder_id
-            filter_message = 'Showing all the unarchived messages for stallholder Id ' + str(stallholder)
-            message_filter_dict = {
-                attr_stallholder: stallholder_id,
-                attr_archive: False,
-            }
-            filter_comments = comments.all().filter(**message_filter_dict)
-            template = 'dashboards/dashboard_messages.html'
-            return TemplateResponse(request, template, {
-                'messagefilterform': messagefilterform,
-                'replyform': replyform,
-                'comments': filter_comments,
-                'filter': filter_message,
-            })
-        if messagefilterform.is_valid():
-            fair = messagefilterform.cleaned_data['fair']
-            comment_type = messagefilterform.cleaned_data['comment_type']
-            active_flag = messagefilterform.cleaned_data['is_active']
-            resolved_flag = messagefilterform.cleaned_data['is_done']
-            archive_flag = messagefilterform.cleaned_data['is_archived']
-            attr_fair = 'fair'
-            attr_comment_type = 'comment_type'
-            attr_active = 'is_active'
-            attr_resolved = 'is_done'
-            if comment_type and fair and archive_flag and stallholder:
-                filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and fair and active_flag and stallholder:
-                filter_message = 'Showing all the messages that are under action of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and resolved_flag and stallholder:
-                filter_message = 'Showing all the messages that are resolved of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and archive_flag:
-                filter_message = 'Showing all the archived messages of comment type ' + str(comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and fair and active_flag:
-                filter_message = 'Showing all the messages that are under action of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and resolved_flag:
-                filter_message = 'Showing all the messages that are resolved of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif comment_type and fair and stallholder:
-                filter_message = 'Showing all the current messages of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif comment_type and archive_flag and stallholder:
-                filter_message = 'Showing all the archived messages of the current fair of comment type ' + str(
-                    comment_type) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and active_flag and stallholder:
-                filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(
-                    comment_type) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                }
-            elif comment_type and resolved_flag and stallholder:
-                filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(
-                    comment_type) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif active_flag and fair and stallholder:
-                filter_message = 'Showing all  messages under action for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag and fair and stallholder:
-                filter_message = 'Showing all resolved messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag and fair and stallholder:
-                filter_message = 'Showing all archived  messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: fair,
-                    attr_archive: True,
-                }
-            elif comment_type and fair:
-                filter_message = 'Showing all the current messages of comment type ' + str(
-                    comment_type) + ' for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif comment_type and archive_flag:
-                filter_message = 'Showing all the archived messages of the current fair of comment type ' + str( comment_type)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_archive: True,
-                }
-            elif comment_type and active_flag:
-                filter_message = 'Showing all the messages of the current fair that are under action for comment type ' + str(comment_type)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif comment_type and resolved_flag:
-                filter_message = 'Showing all the messages of the the current fair that have been resolved for comment type ' + str(comment_type)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_comment_type: comment_type,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif active_flag and fair:
-                filter_message = 'Showing all  messages under action for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag and fair:
-                filter_message = 'Showing all resolved for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag and fair:
-                filter_message = 'Showing all archived  messages for the ' + str(fair)
-                message_filter_dict = {
-                    attr_fair: fair,
-                    attr_archive: True,
-                }
-            elif fair and stallholder:
-                filter_message = 'Showing current messages for the ' + str(fair) + ' and stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_archive: False,
-                    attr_fair: fair
-                }
-            elif comment_type and stallholder:
-                filter_message = 'Showing all the messages of comment types of ' + str(
-                    comment_type) + ' for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif active_flag and stallholder:
-                filter_message = 'Showing all the messages that are under action for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag and stallholder:
-                filter_message = 'Showing all the messages that are resolved for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag and stallholder:
-                filter_message = 'Showing all archived messages for the current fair for stallholder Id ' + str(stallholder)
-                message_filter_dict = {
-                    attr_stallholder: stallholder,
-                    attr_fair: current_fair.id,
-                    attr_archive: True,
-                }
-            elif fair:
-                filter_message = 'Showing current messages for the ' + str(fair)
-                message_filter_dict = {
-                    attr_archive: False,
-                    attr_fair: fair
-                }
-            elif comment_type:
-                filter_message = 'Showing all the messages of comment types of ' + str(comment_type) + ' for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_comment_type: comment_type,
-                    attr_archive: False,
-                }
-            elif active_flag:
-                filter_message = 'Showing all the messages that are under action for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_active: True,
-                    attr_archive: False,
-                }
-            elif resolved_flag:
-                filter_message = 'Showing all the messages that are resolved for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_resolved: True,
-                    attr_archive: False,
-                }
-            elif archive_flag:
-                filter_message = 'Showing all archived messages for the current fair'
-                message_filter_dict = {
-                    attr_fair: current_fair.id,
-                    attr_archive: True,
-                }
-            else:
-                message_filter_dict = {
-                    attr_archive: False,
-                    attr_fair: current_fair.id
-                }
-                filter_message = 'Showing current messages of the current fair'
-            template = 'dashboards/dashboard_messages.html'
-            filter_comments = comments.all().filter(**message_filter_dict)
-        return TemplateResponse(request, template, {
-            'messagefilterform': messagefilterform,
-            'replyform': replyform,
-            'comments': filter_comments,
-            'filter': filter_message,
-        })
+        return handle_htmx_request(request, message_filter_form, current_fair, comments, template_partial,
+                                   cards_per_page)
     elif request.method == 'POST':
-        # comment has been added
-        replyform = MessageReplyForm(request.POST)
-        if replyform.is_valid():
-            parent_obj = None
-            # get parent comment id from hidden input
-            try:
-                # id integer e.g. 15
-                parent_id = int(request.POST.get('parent_id'))
-            except Exception:
-                parent_id = None
-            # if parent_id has been submitted get parent_obj id
-            if parent_id:
-                parent_obj = RegistrationComment.objects.get(id=parent_id)
-                # if parent object exist
-                if parent_obj:
-                    # create reply comment object
-                    reply_comment = replyform.save(commit=False)
-                    # assign parent_obj to reply comment
-                    reply_comment.comment_parent = parent_obj
-                    # assign comment_type to replycomment
-                    reply_comment.comment_type = parent_obj.comment_type
-                    # assign user to created.by
-                    reply_comment.created_by = request.user
-                    # assign current fair to fair
-                    reply_comment.fair_id = current_fair.id
-                    # save
-                    reply_comment.save()
-                    return TemplateResponse(request, template, {
-                        'messagefilterform': messagefilterform,
-                        'comments': comments,
-                        'replyform': replyform,
-                        'filter': filter_message,
-                    })
-        return TemplateResponse(request, template, {
-            'messagefilterform': messagefilterform,
-            'comments': comments,
-            'replyform': replyform,
-            'filter': filter_message,
-        })
+        return handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair)
+
+    return render_dashboard(
+        request,
+        template,
+        comments,
+        message_filter_form,
+        reply_form,
+        "Showing current messages of the current fair",
+        cards_per_page
+    )
+
+def handle_htmx_request(request, message_filter_form, current_fair, comments, template_partial, cards_per_page):
+    """
+    Handles HTMX requests for filtering or updating comments, including pagination.
+    """
+    filter_message = "Showing current messages of the current fair"
+    filters = {'comment_parent__isnull': True, 'fair': current_fair.id}
+
+    # Retrieve filter parameters from GET or POST
+    stallholder_id = request.GET.get('selected_stallholder') or request.POST.get('selected_stallholder')
+    is_archived = request.GET.get('is_archived') == 'on' or request.POST.get('is_archived') == 'on'
+    comment_type_id = request.GET.get('comment_type')
+
+    # Apply stallholder filter if provided
+    if stallholder_id:
+        filters['stallholder'] = stallholder_id
+        filter_message = f"Showing messages for Stallholder ID {stallholder_id}"
+
+    # Apply archived filter if provided
+    if is_archived:
+        filters['is_archived'] = True
+        filter_message = "Showing archived messages for the current fair"
     else:
-        stallholder = ''
-        return TemplateResponse(request, template, {
-            'messagefilterform': messagefilterform,
-            'comments': comments,
-            'replyform': replyform,
-            'filter': filter_message,
+        filters['is_archived'] = False
+
+    # Apply comment_type filter
+    if comment_type_id:
+        try:
+            comment_type = CommentType.objects.get(pk=comment_type_id)
+            filters['comment_type'] = comment_type
+            filter_message += f", comment type {comment_type}"
+        except CommentType.DoesNotExist:
+            filters['comment_type'] = None
+
+    if message_filter_form.data.get('form_purpose') == 'filter' and message_filter_form.is_valid():
+        filters, filter_message = build_filters(message_filter_form, current_fair)
+
+    # Apply filters and paginate the results
+    filtered_comments = comments.filter(**filters).order_by('-date_created')
+    paginator = Paginator(filtered_comments, cards_per_page)
+    page_number = request.GET.get('page', 1)
+    page_list = paginator.get_page(page_number)
+
+    # Include the current filters in the pagination query parameters
+    query_params = urlencode({key: value.id if key == 'comment_type' and value else value
+                              for key, value in filters.items()})
+
+    return TemplateResponse(request, template_partial, {
+        'messagefilterform': message_filter_form,
+        'replyform': MessageReplyForm(),
+        'page_obj': page_list,
+        'page_range': paginator.get_elided_page_range(page_list.number),
+        'filter': filter_message,
+        'filters_query': query_params,  # Pass to template for appending in pagination links
+    })
+
+
+def build_filters(form, current_fair):
+    """
+    Builds the filter dictionary based on form data.
+    """
+    filters = {'fair': current_fair.id}
+    filter_message = "Showing current messages of the current fair"
+
+    fair = form.cleaned_data.get('fair')
+    comment_type = form.cleaned_data.get('comment_type')
+    is_active = form.cleaned_data.get('is_active')
+    is_resolved = form.cleaned_data.get('is_done')
+    is_archived = form.cleaned_data.get('is_archived')
+
+    if fair:
+        filters['fair'] = fair
+        filters['is_archived'] = False
+        filter_message = f"Showing active messages for fair {fair}"
+    if comment_type:
+        filters['comment_type'] = comment_type
+        filter_message += f", comment type {comment_type}"
+    if is_active:
+        filters['is_active'] = True
+        filters['is_archived'] = False
+        filter_message += ", under action"
+    if is_resolved:
+        filters['is_done'] = True
+        filters['is_archived'] = False
+        filter_message += ", resolved"
+    if is_archived:
+        filters['is_archived'] = True
+        filter_message += ", archived"
+    else:
+        filters['is_archived'] = False
+        filter_message += ", not archived"
+
+    return filters, filter_message
+
+def handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair):
+    """
+    Handles the submission of reply comments.
+    """
+    if reply_form.is_valid():
+        parent_id = request.POST.get('parent_id')
+        parent_obj = RegistrationComment.objects.filter(id=parent_id).first()
+
+        if parent_obj:
+            reply_comment = reply_form.save(commit=False)
+            reply_comment.comment_parent = parent_obj
+            reply_comment.comment_type = parent_obj.comment_type
+            reply_comment.created_by = request.user
+            reply_comment.fair = current_fair
+            reply_comment.save()
+
+    # Apply pagination
+    cards_per_page = 6
+    page_list, page_range = pagination_data(cards_per_page, comments, request)
+
+    return TemplateResponse(request, template, {
+        'messagefilterform': message_filter_form,
+        'comments': comments,
+        'replyform': MessageReplyForm(),  # Reset the form after submission
+        'filter': "Reply submitted successfully",
+        'page_obj': page_list,
+        'page_range': page_range,
+    })
+
+
+def render_dashboard(request, template, comments, filter_form, reply_form, filter_message, cards_per_page):
+    """
+    Renders the dashboard with pagination and necessary context.
+    """
+    page_list, page_range = pagination_data(cards_per_page, comments, request)
+    return TemplateResponse(request, template, {
+        'messagefilterform': filter_form,
+        'replyform': reply_form,
+        'page_obj': page_list,
+        'filter': filter_message,
     })
 
 
@@ -2030,23 +1821,102 @@ def stallregistration_siteallocation_view(request, id):
     siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     if request.htmx:
         if sitefilterform.is_valid():
+            zone_filter_dict = {} # Initialize with an empty dictionary
             zone = sitefilterform.cleaned_data['zone']
             event = sitefilterform.cleaned_data['event']
+            site_size = sitefilterform.cleaned_data['site_size']
+            has_power = sitefilterform.cleaned_data['has_power']
+            attr_has_power = 'site__has_power'
             attr_site_size = 'site__site_size'
             attr_zone = 'site__zone'
             attr_event ='event'
-            if event and zone:
+            if event and zone and site_size and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + 'and site size' + str(site_size) + ' and has power'
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif event and zone and site_size:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + 'and site size' + str(site_size)
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id
+                }
+            elif event and site_size and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
+                    site_size) + ' and fair event ' + str(event) + ' and has power'
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif site_size and zone and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and site size ' + str(site_size) + ' and has power'
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif event and zone and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and fair event ' + str(event) + ' and has power'
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_has_power: True
+                }
+            elif event and site_size:
+                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
+                    site_size) + ' and fair event ' + str(event)
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_site_size: site_size.id
+                }
+            elif site_size and zone:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and site size ' + str(site_size)
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id
+                }
+            elif event and zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
                 zone_filter_dict = {
                     attr_event: event.id,
                     attr_zone: zone.id,
-                    attr_site_size: stallregistration.site_size
+                }
+            elif site_size and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(
+                    site_size) + ' and has power'
+                zone_filter_dict = {
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif zone and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and has power'
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_has_power: True
+                }
+            elif site_size:
+                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(site_size)
+                zone_filter_dict = {
+                    attr_site_size: site_size.id
                 }
             elif zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
                 zone_filter_dict = {
                     attr_zone: zone.id,
-                    attr_site_size: stallregistration.site_size
+                }
+            elif has_power:
+                site_filter_message = 'Showing available sites that can be allocated with power'
+                zone_filter_dict = {
+                    attr_has_power: True
                 }
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
             template = 'stallregistrations/available_sites_partial.html'
@@ -2110,21 +1980,97 @@ def stallregistration_move_cancel_view(request, id):
         if sitefilterform.is_valid():
             zone = sitefilterform.cleaned_data['zone']
             event = sitefilterform.cleaned_data['event']
+            site_size = sitefilterform.cleaned_data['site_size']
+            has_power = sitefilterform.cleaned_data['has_power']
+            attr_has_power = 'site__has_power'
             attr_site_size = 'site__site_size'
             attr_zone = 'site__zone'
             attr_event ='event'
-            if event and zone:
+            if event and zone and site_size and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + 'and site size' + str(site_size) + ' and has power'
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif event and zone and site_size:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + ' and site size' + str(site_size)
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id
+                }
+            elif event and site_size and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
+                    site_size) + ' and fair event ' + str(event) + ' and has power'
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif event and site_size:
+                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
+                    site_size) + ' and fair event ' + str(event)
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_site_size: site_size.id
+                }
+            elif site_size and zone and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and site size ' + str(site_size) + ' and has power'
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif site_size and zone:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and site size ' + str(site_size)
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_site_size: site_size.id
+                }
+            elif event and zone and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
+                    zone) + ' and fair event ' + str(event) + ' and has power'
+                zone_filter_dict = {
+                    attr_event: event.id,
+                    attr_zone: zone.id,
+                    attr_has_power: True
+                }
+            elif event and zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
                 zone_filter_dict = {
                     attr_event: event.id,
                     attr_zone: zone.id,
-                    attr_site_size: stallregistration.site_size
+                }
+            elif site_size and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(site_size) + ' and has power'
+                zone_filter_dict = {
+                    attr_site_size: site_size.id,
+                    attr_has_power: True
+                }
+            elif zone and has_power:
+                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and has power'
+                zone_filter_dict = {
+                    attr_zone: zone.id,
+                    attr_has_power: True
+                }
+            elif site_size:
+                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(site_size)
+                zone_filter_dict = {
+                    attr_site_size: site_size.id
                 }
             elif zone:
                 site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
                 zone_filter_dict = {
                     attr_zone: zone.id,
-                    attr_site_size: stallregistration.site_size
+                }
+            elif has_power:
+                site_filter_message = 'Showing available sites that can be allocated with power'
+                zone_filter_dict = {
+                    attr_has_power: True
                 }
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
             template = 'stallregistrations/available_move_sites_partial.html'
@@ -2165,14 +2111,242 @@ def stallregistration_move_cancel_view(request, id):
                     event_site=eventsite,
                     created_by=request.user,
                 )
-                # Update status to allocated on the affected Eventsites
+                # Update status to allocated on the affected Eventsites return to list view
                 eventsite.site_status = 2
                 eventsite.save()
-        return redirect('fair:stallregistration-detail', stallregistration_id=id)
+        return redirect('registration:stallregistration-list')
 
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,
         'sitefilterform': sitefilterform,
         'stallregistration': stallregistration,
         'siteallocations': siteallocations
+    })
+
+def stallregistration_search_dashboard_view(request):
+    """
+    Search used to locate stall at a fair hased on vehicle registration, manager name, product description or stall description
+    """
+    template = 'dashboards/dashboard_stallregistration_search.html'
+    stallregistration_filter_message = 'Search for and select a stallregistration to view'
+    if request.htmx:
+        stallregistration_id = request.POST.get('selected_stallregistration')
+        attr_stallregistration = 'stallregistration'
+        if stallregistration_id:
+            stallregistration_filter_message = f'Showing stallregistration for Stallregistration ID {stallregistration_id}'
+            stallregistration_filter_dict = {
+                attr_stallregistration: stallregistration_id
+            }
+            stallregistration = StallRegistration.objects.get(id=stallregistration_id)
+            template = 'dashboards/stallregistration_result_partial.html'
+            return TemplateResponse(request, template, {
+                'stallregistration_filter': stallregistration_filter_message,
+                'stallregistration': stallregistration
+            })
+    else:
+        stallregistration_filter_dict = {}
+
+
+    return TemplateResponse(request, template, {
+        'stallregistration_filter': stallregistration_filter_message
+    })
+
+
+def stallregistrations_without_power_view(request):
+    # Query the data with required annotations
+    stallregistrations = StallRegistration.objects.filter(
+        power_required=True,
+        site_allocation__event_site__site__has_power=False
+    ).annotate(
+        site_name=F('site_allocation__event_site__site__site_name'),
+        zone_name=F('site_allocation__event_site__site__zone__zone_name'),
+        has_power=F('site_allocation__event_site__site__has_power')
+    ).values(
+        'id', 'stallholder__id', 'power_required', 'site_name', 'zone_name', 'has_power'
+    )
+    # Pass data to the template
+    context = {
+        'stallregistrations': stallregistrations,
+        'alert_mgr': "No stall registrations with missing power requirements were found." if not stallregistrations else ""
+    }
+
+    return render(request, 'dashboards/dashboard_sites_without_power.html', context)
+
+
+def powerbox_connections_view(request):
+    powerbox_connections = StallRegistration.objects.filter(
+        power_required=True,  # Only include stall registrations that require power
+        site_allocation__event_site__site__powerbox__isnull=False
+    ).values(
+        'site_allocation__event_site__event__event_name',
+        'site_allocation__event_site__site__powerbox__power_box_name',
+        'site_allocation__event_site__site__powerbox__socket_count'
+    ).annotate(
+        connected_sites=Count('id'),
+        free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+    ).order_by(
+        'site_allocation__event_site__event__event_name',
+        'site_allocation__event_site__site__powerbox__power_box_name'
+    )
+
+    return render(request, 'dashboards/dashboard_powerbox_connection.html', {'powerbox_connections': powerbox_connections})
+
+
+def generate_alert_message(event, powerbox, stallholder):
+    """
+    Generate the alert message based on the filters
+    """
+    parts = []
+    if event:
+        parts.append(f'event is {{event}}')
+    if powerbox:
+        parts.append(f'powerbox is {{powerbox}}')
+    if stallholder:
+        parts.append(f'stallholder is {{stallholder}}')
+    return f"There are no powerbox stallregistrations where {' and '.join(parts)}" if parts else "There are no powerbox stallregistrations yet"
+
+
+def stallregistrations_by_powerbox_view(request):
+    """
+    Creates a list stallregistrations of powerboxes that can be filered by Stallholder, Event and Powerbox
+    """
+    # Reset session filters on full page load
+    if not request.htmx:
+        request.session.pop('powerbox_stallregistration_filters', None)
+    cards_per_page = 10
+    request.session['powerbox_stallregistration'] = 'fair:powerbox-stallregistration-list'
+    template_name = 'powerboxes/powerbox_siteallocations_list.html'
+    filterform = PowerboxFilterForm(request.POST or None)
+
+    # Retrieve filters from session
+    filter_params = request.session.get('powerbox_stallregistration_filters', {})
+
+    def apply_filters(data, filters):
+        """
+        Apply filters to the list of dictionaries
+        """
+        if filters.get('eventid'):
+            data = [item for item in data if item.get('site_allocation__event_site__event__id') == filters['eventid']]
+        if filters.get('powerboxid'):
+            data = [item for item in data if item.get('site_allocation__event_site__site__powerbox__id') == filters['powerboxid']]
+        if filters.get('stallholderid'):
+            data = [item for item in data if item.get('stallholderid') == int(filters['stallholderid'])]
+        return data
+
+    query_filters = {k: v for k, v in filter_params.items() if v}
+
+    # Pre-aggregate connected sites per powerbox and event
+    aggregated = (
+        StallRegistration.objects.filter(
+            power_required=True,
+            site_allocation__event_site__site__powerbox__isnull=False
+        )
+        .values(
+            'site_allocation__event_site__site__powerbox__id',
+            'site_allocation__event_site__event__event_name',
+            'site_allocation__event_site__event__id',
+            'site_allocation__event_site__site__powerbox__power_box_name',
+            'site_allocation__event_site__site__powerbox__socket_count',
+        )
+        .annotate(
+            connected_sites=Count('id'),  # Total connected registrations for each powerbox
+            free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+        )
+        .order_by('site_allocation__event_site__site__powerbox__power_box_name')
+    )
+
+    # Add stall registration-specific details for display
+    detailed_stallregistrations = StallRegistration.objects.filter(
+        power_required=True,
+        site_allocation__event_site__site__powerbox__isnull=False
+    ).annotate(
+        power_box_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
+        event_name=F('site_allocation__event_site__event__event_name'),
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        stallholderid=F('stallholder__id')
+    ).values(
+        'id',  # StallRegistration ID
+        'stallholderid',
+        'allocated_site_name',
+        'power_box_name',
+        'event_name',
+        'site_allocation__event_site__event__id',
+        'site_allocation__event_site__site__powerbox__id',
+    )
+
+    # Combine aggregated counts with detailed registrations for final data
+    stallregistrations_by_powerbox = [
+        {
+            **sr,
+            'connected_sites': next(
+                (agg['connected_sites'] for agg in aggregated if
+                 agg['site_allocation__event_site__site__powerbox__id'] == sr[
+                     'site_allocation__event_site__site__powerbox__id']),
+                0
+            ),
+            'free_sockets': next(
+                (agg['free_sockets'] for agg in aggregated if
+                 agg['site_allocation__event_site__site__powerbox__id'] == sr[
+                     'site_allocation__event_site__site__powerbox__id']),
+                0
+            ),
+        }
+        for sr in detailed_stallregistrations
+    ]
+
+     # Apply filters
+    filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+
+    if request.htmx:
+        template_name = 'powerboxes/powerbox_siteallocations_list_partial.html'
+
+        # Handle stallholder or filter form submission
+        stallholder_id = request.POST.get('selected_stallholder')
+        if stallholder_id:
+            filter_params['stallholderid'] =stallholder_id
+            request.session['powerbox_stallregistration_filters'] = filter_params # Save to session
+            query_filters = {k: v for k, v in filter_params.items() if v}
+            # Apply filters
+            filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+
+        if request.POST.get('form_purpose') == 'filter':
+            if filterform.is_valid():
+                event = filterform.cleaned_data.get('event')
+                powerbox = filterform.cleaned_data.get('powerbox')
+                # Update and save filtere
+                filter_params['eventid'] = event.pk if event else None
+                filter_params['powerboxid'] = powerbox.pk if powerbox else None
+                request.session['powerbox_stallregistration_filters'] = {k: v for k,v in filter_params.items() if v} # Remove mepty values
+
+                query_filters = {k: v for k, v in filter_params.items() if v}
+                # Apply filters
+                filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+
+        page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
+
+        # Generate an alert message if no results are found
+        alert_message = (
+            generate_alert_message(
+                filter_params.get('eventid'),
+                filter_params.get('powerboxid'),
+                filter_params.get('stallholderid')
+            )
+            if not filtered_data
+            else ""
+        )
+
+        return render(request, template_name, {
+            'stallregistrations_by_powerbox': page_list,  # Paginated data
+            'page_range': page_range,  # Custom page range
+            'alert_mgr': alert_message
+        })
+
+    # Pagination
+    page_list, page_range = pagination_data(cards_per_page, stallregistrations_by_powerbox, request)
+
+    return render(request, template_name, {
+        'filterform': filterform,
+        'stallregistrations_by_powerbox': page_list,  # Paginated data
+        'page_range': page_range,  # Custom page range
+        'alert_mgr': "No stall registrations found for any powerbox." if not page_list.object_list else ""
     })

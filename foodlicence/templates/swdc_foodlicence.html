@@ -85,13 +85,16 @@
         </div>
         <div class="row mb-3">
             <div class="col-6 fw-bold">Registration certificate link</div>
-            <div class="col-6">
-                <a href="{{ full_certificate_url }}" target="_blank">
-                    Uploaded registration certificate
-                </a>
-            </div>
+                <div class="col-6">
+                    {% if full_certificate_url %}
+                        <a href="{{ full_certificate_url }}" target="_blank">
+                        Uploaded registration certificate
+                        </a>
+                    {% else %}
+                        <span class="text-muted">No certificate available</span>
+                    {% endif %}
+                </div>
         </div>
-        <!-- Other sections unchanged -->
         <div class="row mb-3">
             <div class="col-3 fw-bold">Certificate Expiry</div>
             <div class="col-3">{{ object.food_registration.certificate_expiry_date|date:'d-m-Y' }}</div>

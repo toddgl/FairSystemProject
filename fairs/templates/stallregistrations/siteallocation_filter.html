@@ -6,7 +6,7 @@
 {% block body %}
 <main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
     <div class="container">
-        <h4>Application Site Allocation </h4>
+        <h4>Application Site Allocations</h4>
         <hr>
         <div class="row">
             <!-- Passed om Stallregistration for siteallocation -->
@@ -50,10 +50,12 @@
                                 <td>{{ additionalsite.site_size.item_name }}</td>
                                 <td>{{ additionalsite.get_location_choice_display }}</td>
                             </tr>
-                            {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
+                            {% if forloop.last %}
+                                    </tbody>
+                                </table>
+                            </div>
+                            {% endif %}
+                        {% endfor %}
                     {% get_number_unallocated_sites stallregistration.id as number_unallocated_sites %}
                     {% get_has_unallocated_sites stallregistration.id as has_unallocated_sites %}
                     {% if has_unallocated_sites %}

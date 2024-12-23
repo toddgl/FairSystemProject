@@ -4,6 +4,7 @@
 {% load static %}
 {% load adddaystodate_tag %}
 {% load hasdiscount_tag %}
+{% load haspaidcredit_tag %}
 {% load custom_filters %}
 
 {% block body %}
@@ -18,11 +19,11 @@
       <div id="logo">
         <img src="{% static 'img/swrotary-mf-logo-lockup.png' %}">
       </div>
-      <h1>INVOICE {{ invoice.invoice_number }} - {{ invoice.invoice_sequence }}</h1>
+      <h1>TAX INVOICE {{ invoice.invoice_number }} - {{ invoice.invoice_sequence }}</h1>
       <div id="company" class="clearfix">
         <div>Rotary Martinborough Fair</div>
         <div>PO Box 45,<br />Greytown, 5742</div>
-        <div>(60</div>
+        <div>GST Number - 65-896-389 </div>
         <div><a href="mailto:convener@martinboroughfair.org.nz">convener@martinboroughfair.org.nz</a></div>
       </div>
       <div id="project">
@@ -67,8 +68,7 @@
         </tbody>
       </table>
       {% endif %}
-      <table>
-        <tbody>
+        <tbody>PaymentHistory.paymenthistorycurrentmgr.get_credit_amount(184)
           <tr>
             <td colspan="4" class="grand total">Total Cost (INCL)</td>
             <td class="grand total">${{ invoice.total_cost }}</td>
@@ -88,6 +88,18 @@
         </tr>
         </tbody>
       </table>
+      {% endif %}
+      {% get_has_credit invoice.id as credit_item_result %}
+      {% if credit_item_result %}
+      <table>
+        <tbody>
+        <tr>
+          <td class="unit">Credit Amount Refunded</td>
+          <td class="unit">${{ total_credits }}</td>
+        </tr>
+        </tbody>
+      </table>
+      <table>
       {% endif %}
       {% if amount_to_pay < 0 %}
         <table>

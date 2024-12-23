@@ -1,0 +1,48 @@
+<!-- fairs/templates/dashboards/dashboard_sites_without_power.html -->
+
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+  <!-- Top Nav -->
+  <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+    <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+  </nav>
+  <!--End Top Nav -->
+  <h3>Site Allocations without Power</h3>
+  <div id="sites_without_power_data">
+    <div>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th scope="col">Stallholder ID</th>
+          <th scope="col">Registration ID</th>
+          <th scope="col">Power Required</th>
+          <th scope="col">Site</th>
+          <th scope="col">Zone</th>
+          <th scope="col-sm"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for stallregistration in stallregistrations %}
+        <tr>
+          <td>{{ stallregistration.stallholder__id }}</td>
+          <td>{{ stallregistration.id }}</td>
+          <td>{{ stallregistration.power_required |yesno:"YesNo"}}</td>
+          <td>{{ stallregistration.site_name }}</td>
+          <td>{{ stallregistration.zone_name }}</td>
+          <td><a class = "btn btn-info btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                 title="View Stall registration" href= "{% url 'registration:convener-stall-food-registration-detail' stallregistration.id %}"><i class="bi bi-binoculars-fill"></i></a></td>
+        </tr>
+        {% empty %}
+        <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+        {% endfor %}
+        </tbody>
+      </table>
+      <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+    </div>
+  </div>
+</main>
+{% endblock %}

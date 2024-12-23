@@ -62,7 +62,7 @@
                     <input id="hidden" type="hidden" name="hidden" >
                     {% csrf_token %}
                     <button  id='movebtn' class='btn btn-primary' type='submit' >Move Site(s)</button>
-                    <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+                    <a type="button" href="javascript:history.go(-1)" class="btn btn-secondary">Cancel</a>
                     <hr>
                     <div class="container mt-5 mb-5">
                         <!-- Results of Site Filter -->

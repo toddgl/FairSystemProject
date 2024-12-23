@@ -303,7 +303,9 @@ class StallRegistrationCreateForm(ModelForm):
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
-            'multi-site': 'Do you want more than a single site with this application?',
+            'trestle_required': 'Do you wish to hire trestle tables?',
+            'vehicle_on_site': 'Do you intend to have a Food truck / Caravan or trailer set up on your site?',
+            'multi_site': 'Do you want more than a single site with this application?',
             'selling_food': 'Are you selling food?',
             'vehicle_length': 'Vehicle length (metres)',
             'vehicle_width': 'Vehicle width (metres)',
@@ -617,8 +619,12 @@ class StallRegistrationUpdateForm(ModelForm):
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
-            'multi-site': 'Do you want more than a single site with this application?',
+            'trestle_required': 'Do you wish to hire trestle tables?',
+            'vehicle_on_site': 'Do you intend to have a Food truck / Caravan or trailer set up on your site?',
+            'multi_site': 'Do you want more than a single site with this application?',
             'selling_food': 'Are you selling food?',
+            'vehicle_length': 'Vehicle length (metres)',
+            'vehicle_width': 'Vehicle width (metres)',
         }
         widgets = {
             'stall_manager_name': TextInput(attrs={
@@ -759,9 +765,9 @@ class FoodRegistrationForm(ModelForm):
             'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
             'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
             'hygiene_methods': 'What arrangements do you have for hand washing',
-            'has_food_certificate': 'Do you have a food application certificate',
+            'has_food_certificate': 'Do you have a MPI Food Plan, or a Food Certificate of Registration?',
             'certificate_expiry_date': 'What is the expiry date of the certificate',
-            'food_registration_certificate': 'Please upload your food certificate',
+            'food_registration_certificate': 'Please upload your MPI Plan or certificate',
         }
         widgets = {
             'registration': HiddenInput(),
@@ -937,9 +943,16 @@ class FoodRegistrationConvenerEditForm(ModelForm):
         model = FoodRegistration
         fields = [
             'food_stall_type',
+            'food_fair_consumed',
         ]
         labels = {
             'food_stall_type': 'Food Stall Type',
+            'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
+        }
+        widgets = {
+            'food_fair_consumed': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            })
         }
 
 

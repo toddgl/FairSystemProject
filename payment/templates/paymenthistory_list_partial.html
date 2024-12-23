@@ -4,6 +4,14 @@
 {% load paginator_tags %}
 {% load haspaymenthistories_tag %}
 
+
+<!-- payment/message_snippet.html -->
+<div class="alert alert-{{ status }}">
+    {{ message }}
+</div>
+
+
+<!-- Payment history table and other elements... -->
 <div id="payment_history_data">
     <div>
         {% get_has_paymenthistories payment_status as has_paymenthistories %}
@@ -17,6 +25,7 @@
                     <th scope="col">Amount to Pay</th>
                     <th scope="col">Stripe Amount</th>
                     <th scope="col">Amount Reconciled</th>
+                    <th scope="col">Amount Credited</th>
                     <th scope="col">Created Date</th>
                     <th scope="col">Updated Date</th>
                     <th scope="col-sm"></th>
@@ -25,7 +34,7 @@
                 </tr>
                 </thead>
                 <tbody>
-                {% for paymenthistory in payment_history_list %}
+                {% for paymenthistory in page_obj %}
                 <tr>
                     <td>{{ paymenthistory.payment_status }}</td>
                     <td>{{ paymenthistory.invoice.stall_registration.id }}</td>
@@ -33,6 +42,7 @@
                     <td>{{ paymenthistory.amount_to_pay }}</td>
                     <td>{{ paymenthistory.webhook_amount }}</td>
                     <td>{{ paymenthistory.amount_reconciled }}</td>
+                    <td>{{ paymenthistory.amount_credited }}</td>
                     <td>{{ paymenthistory.date_created }}</td>
                     <td>{{ paymenthistory.date_updated | default_if_none:"" }}</td>
                     <td><a class = "btn btn-success btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
@@ -41,6 +51,15 @@
                     <td><a class = "btn btn-danger btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
                            title="Change status to Reconciled" hx-post= "{% url 'payment:mark-as-reconciled' paymenthistory.id %}" hx-trigger="click"
                            hx-target="#payment_history_data" hx-swap="outerHTML"><i class="bi bi-check-square"></i></a></td>
+                    <!-- Update Payment History Button -->
+                    <td>
+                        <a class="btn btn-warning btn-small" data-bs-toggle="modal"
+                           data-bs-target="#updatePaymentHistoryModal"
+                           hx-get="{% url 'payment:load-update-form' paymenthistory.id %}"
+                           hx-target="#updatePaymentFormContainer">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </td>
                     <td><a class = "btn btn-info btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
                            title="View Stall registration" href=
                                    "{% url 'registration:convener-stall-food-registration-detail' paymenthistory.invoice.stall_registration.id %}"><i class="bi bi-binoculars-fill"></i></a></td>
@@ -50,8 +69,55 @@
                 {% endfor %}
                 </tbody>
             </table>
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'payment:payment-list' %}?page={{ page_obj.previous_page_number }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}"
+                       hx-trigger="click" hx-target="#payment_history_data">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+                {% for i in page_range %}
+                {% if page_obj.number == i %}
+                <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'payment:payment-list' %}?page={{ i }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}"
+                       hx-trigger="click" hx-target="#payment_history_data">{{ i }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'payment:payment-list' %}?page={{ page_obj.next_page_number }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}"
+                       hx-trigger="click" hx-target="#payment_history_data">&raquo;</a>
+                </li>
+                {% else %}
+                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
         {% else %}
             <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
         {% endif %}
+    </div>
+    <!-- Update Payment History modal-->
+    <div class="modal fade" tabindex="-1" id="updatePaymentHistoryModal" aria-labelledby="updatePaymentHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-dark">
+                    <h4 class="modal-title">Payment History Update Form</h4>
+                    <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="updatePaymentFormContainer">
+                    <!-- Form will be loaded here by HTMX -->
+                </div>
+            </div>
+        </div>
     </div>
 </div>

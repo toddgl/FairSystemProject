@@ -24,6 +24,8 @@
                             {% endif %}
                             <li class="list-group-item">Site Size: {{ site.site_size }}</li>
                             <li class="list-group-item">Note: {{ site.site_note }}</li>
+                            <li class="list-group-item">Has Power : {{site.has_power|yesno|title }}</li>
+                            <li class="list-group-item">Powerbox: {{ site.powerbox }}</li>
                             <li class="list-group-item">Active Site : {{site.is_active|yesno|title }}</li>
                           </ul>
                     </p>

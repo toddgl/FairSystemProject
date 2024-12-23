@@ -446,7 +446,7 @@ class HasUnactionedCommentsManager(models.Manager):
 
     def get_queryset(self):
         current_fair = Fair.currentfairmgr.all().last()
-        return super().get_queryset().filter(fair=current_fair.id, is_done=False)
+        return super().get_queryset().filter(fair=current_fair.id, is_done=False, is_archived=False)
 
     def filter_by_stallholder(self, stallholder_id):
         return self.get_queryset().filter(stallholder=stallholder_id)

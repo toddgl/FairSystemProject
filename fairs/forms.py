@@ -2,6 +2,7 @@
 
 from django.contrib.admin.widgets import AdminSplitDateTime, AdminDateWidget
 from django import forms
+from django.db.models.functions import Power
 from django.forms import (
     BooleanField,
     Form,
@@ -329,6 +330,13 @@ class SiteCreateForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
+    powerbox = ModelChoiceField(
+        queryset=PowerBox.objects.all(),
+        empty_label='Please Select',
+        label='Powerbox',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
     site_note = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class':'form-control', 'style': 'max-width: 400px;','placeholder':'Please enter a note if required'})
@@ -342,6 +350,8 @@ class SiteCreateForm(ModelForm):
             'site_size',
             'site_note',
             'is_active',
+            'has_power',
+            'powerbox'
         ]
         widgets = {
             'site_name': TextInput(attrs={
@@ -382,6 +392,13 @@ class SiteDetailForm(ModelForm):
         required=False,
         widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
     )
+    powerbox = ModelChoiceField(
+        queryset=PowerBox.objects.all(),
+        empty_label='Please Select',
+        label='Powerbox',
+        required=False,
+        widget=Select(attrs={'class': 'form-select', 'style': 'max-width: 300px;'})
+    )
     site_note = forms.CharField(
         required=False,
         widget=forms.Textarea(attrs={'class':'form-control', 'style': 'max-width: 400px;','placeholder':'Please enter a note if required'})
@@ -393,15 +410,18 @@ class SiteDetailForm(ModelForm):
             'site_name',
             'zone',
             'site_size',
+            'has_power',
             'site_note',
             'is_active',
-        ]
+            'has_power',
+            'powerbox'
+       ]
         widgets = {
             'site_name': TextInput(attrs={
                 'placeholder': 'Site Name',
                 'class': "form-control",
                 'style': 'max-width: 300px;',
-            })
+            }),
         }
 
 
@@ -1060,7 +1080,6 @@ class SiteAllocationUpdateForm(ModelForm):
             'stallholder': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',
-                'readonly': 'readonly'
             }),
             'event_site': Select(attrs={
                 'class': "form-select",
@@ -1159,12 +1178,27 @@ class SiteAllocationFilterForm(Form):
             'hx-target': '#list_data',
         }),
     )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#list_data',
+        })
+    )
+
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
     class Meta:
         fields = [
             'event',
             'zone',
+            'site_size',
         ]
 
 
@@ -1266,6 +1300,8 @@ class MessageFilterForm(Form):
         })
     )
 
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
+
     class Meta:
         fields = [
             'fair',
@@ -1354,9 +1390,70 @@ class SiteAllocationFilerForm(Form):
             'hx-target': '#site_allocation_data',
         }),
     )
+    site_size = ModelChoiceField(
+        queryset=InventoryItem.objects.filter(item_type=1),
+        empty_label='Show All',
+        label='Site Size',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_allocation_data',
+        })
+    )
+    has_power = BooleanField(
+        required=False,
+        widget=CheckboxInput(attrs={
+            'class': 'form-check-input',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_allocation_data',
+            'checked': False
+        })
+    )
+
     class Meta:
         fields = [
             'zone',
             'event',
+            'site_size',
+            'has_power'
         ]
 
+class PowerboxFilterForm(Form):
+
+    event = ModelChoiceField(
+        queryset=Event.currenteventfiltermgr.all(),
+        empty_label='Show All',
+        label='Event',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#powerbox-siteallocation_data',
+        })
+    )
+    powerbox = ModelChoiceField(
+        queryset=PowerBox.objects.all(),
+        empty_label='Show All',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#powerbox-siteallocation_data',
+        })
+    )
+
+    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
+
+    class Meta:
+        fields = [
+            'event',
+            'powerbox',
+        ]

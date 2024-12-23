@@ -9,6 +9,7 @@
 {% load isinvoiced_tag %}
 {% load isfoodstall_tag %}
 {% load hasdiscount_tag %}
+{% load haspaidcredit_tag %}
 {% load hasopenapplications_tag %}
 {% load hassomethingtopay_tag %}
 
@@ -30,6 +31,7 @@
     <div class="col-md-6">
         {% get_has_payment_history user.id as payment_history_result %}
           {% if payment_history_result %}
+          {% for payment_history in payment_histories %}
             <div class="container mt-3" style="width: 600px;">
               <div class="card border-primary mb-3">
                 <div class="card-body">
@@ -46,6 +48,10 @@
                     {% endif %}
                     <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
                     <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
+                    {% get_has_credit payment_history.invoice_id as credit_item_result %}
+                    {% if credit_item_result %}
+                    <li class="list-group-item"><strong>Credit Refund Paid:</strong> {{ payment_history.amount_credited }}</li>
+                    {% endif %}
                     <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
                   </ul>
                 </div>
@@ -64,7 +70,9 @@
             </form>
               {% endif %}
             </div>
+          {% endfor %}
           {% endif %}
+      <hr>
       {% for registration in registrations %}
       <div class="container mt-3" style="width: 600px;">
         <div class="card border-primary mb-3">
@@ -122,10 +130,10 @@
             </div>
           </div>
         </div>
+      </div>
         {% empty %}
          <div class="alert alert-info" role="alert">You have no current fair applications.</div>
         {% endfor %}
-      </div>
     </div>
     <div class="col-md-6">
             <h4>Comments</h4>

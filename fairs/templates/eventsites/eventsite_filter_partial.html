@@ -8,9 +8,14 @@
         <span><strong>Event, Zone and Status Filters</strong></span>
         <span class="hr"></span>
       </div>
-      <form action="." method="post"  hx-post="." hx-target="#replacearea">
+      <form action="." method="post"  hx-post="." hx-target="#event_site_data">
         {% csrf_token %}
         {{ filterform.as_p }}
+      </form>
+      <form method="POST" action="{% url 'fair:eventsite-list' %}">
+        {% csrf_token %}
+        <input type="hidden" name="form_purpose" value="clear_filters">
+        <button type="submit" class="btn btn-secondary">Clear Filters</button>
       </form>
     <hr>
     </div>

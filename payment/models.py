@@ -165,6 +165,9 @@ class PaymentHistoryCurrentManager(models.Manager):
     def get_credit(self):
         return self.get_queryset().filter(payment_status="Credit")
 
+    def has_credit_amount(self, invoice_id):
+        return self.get_queryset().filter(invoice_id=invoice_id, amount_credited__gt=0).exists()
+
     def get_failed(self):
         return super().get_queryset().filter(payment_status="Failed")
 
@@ -203,6 +206,7 @@ class PaymentHistory(models.Model):
     amount_paid = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     webhook_amount= models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     amount_reconciled = models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
+    amount_credited= models.DecimalField(null=True, blank=True, max_digits=8, decimal_places=2)
     payment_status = FSMField(
         default=PENDING,
         verbose_name='Payment State',

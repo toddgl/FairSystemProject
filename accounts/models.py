@@ -64,12 +64,12 @@ class Profile(models.Model):
     Model linked to Customuser which is called and created when a new user is created
     """
     user = models.OneToOneField(CustomUser, on_delete=models.CASCADE)
-    address1 = models.CharField(max_length=50, blank=True)
+    address1 = models.CharField(max_length=70, blank=True)
     address2 = models.CharField(max_length=50, blank=True)
     town = models.CharField(max_length=50, blank=True)
     postcode = models.CharField(max_length=10, blank=True)
     phone2 = models.CharField(max_length=13, blank=True, unique=False)
-    org_name = models.CharField(max_length=50, blank=True)
+    org_name = models.CharField(max_length=100, blank=True)
     objects = models.Manager()
 
     def __str__(self):

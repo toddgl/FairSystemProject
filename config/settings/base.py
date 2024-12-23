@@ -57,6 +57,8 @@ INSTALLED_APPS = [
     'CustomDBLogger',
     'foodlicence',
     'payment',
+    'emails',
+    'reports',
 
     # 3rd Party
     'allauth',
@@ -201,7 +203,7 @@ ACCOUNT_SIGNUP_PASSWORD_ENTER_TWICE = True
 ACCOUNT_SESSION_REMEMBER = True
 ACCOUNT_AUTHENTICATION_METHOD = 'email'
 ACCOUNT_UNIQUE_EMAIL = True
-ACCOUNT_EMAIL_VERIFICATION = 'mandatory'
+ACCOUNT_EMAIL_VERIFICATION = 'none'
 ACCOUNT_EMAIL_CONFIRMATION_AUTHENTICATED_REDIRECT_URL = 'stallregistration-dashboard'
 
 # Stop the are you sure you want to logout page being shown

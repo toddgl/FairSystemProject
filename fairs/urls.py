@@ -54,7 +54,10 @@ from fairs.views import (
     set_message_to_done,
     set_message_to_active,
     stallregistration_siteallocation_view,
-    stallregistration_move_cancel_view
+    stallregistration_move_cancel_view,
+    stallregistration_search_dashboard_view,
+    stallregistrations_without_power_view, powerbox_connections_view,
+    stallregistrations_by_powerbox_view,
 )
 
 app_name = 'fair'  # This is the namespace, so you can reverse urls with fair:*
@@ -90,6 +93,7 @@ urlpatterns = [
     path('dashboard/registrations/', stall_registration_dashboard_view, name='registration-dashboard'),
     path('dashboard/messages/', messages_dashboard_view, name='messages-dashboard'),
     path('dashboard/history/', stallholder_history_dashboard_view, name='history-dashboard'),
+    path('dashboard/search-registrations/', stallregistration_search_dashboard_view, name='stallregistration-search'),
     path('registration/management/', site_dashboard_view, name='stallregistration-list'),
     path('registration/<int:id>/siteallocation/', stallregistration_siteallocation_view, name='stallregistration-siteallocation'),
     path('registration/<int:id>/move/', stallregistration_move_cancel_view, name='stallregistration-move-siteallocation'),
@@ -111,5 +115,7 @@ urlpatterns = [
     path('eventpower/actionUrl/', EventPowerCreateView.as_view(), name='actionUrl'),
     path('fair/comment/done/<int:pk>/', set_message_to_done, name='is-done'),
     path('fair/comment/active/<int:pk>/', set_message_to_active, name='is-active'),
-
+    path('fair/unpoweredsites/', stallregistrations_without_power_view, name='sites-without-power'),
+    path('fair/powerboxconnections/', powerbox_connections_view, name='powerbox-connections'),
+    path('fair/powerboxsiteallocations/', stallregistrations_by_powerbox_view, name='powerbox-stallregistration-list'),
 ]

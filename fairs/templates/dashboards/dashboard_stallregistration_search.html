@@ -1,0 +1,36 @@
+<!-- fairs/templates/dashboards/dashboard_messages_filer.html -->
+
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <div class="container">
+        <h4%}
+            <hr>
+        </div>
+        <div class="row">
+            <h3>Find Stalls</h3>
+        <hr>
+        <!-- Stallregistration Filter -->
+        <div class="row">
+            {% include 'search/partials/stall_search.html' %}
+            <hr>
+        </div>
+        <div class="row">
+            <div class="col-md-8">
+                <div class="container mt-5 mb-5">
+                    <!--  Stallregistration Results -->
+                    {% include 'dashboards/stallregistration_result_partial.html' %}
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

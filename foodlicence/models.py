@@ -49,18 +49,22 @@ class FoodLicenceCurrentManager(models.Manager):
                                              food_registration__registration__fair__is_activated=True)
 
     def get_created(self):
-        return super().get_queryset().filter(licence_status="Created")
+        return self.get_queryset().filter(licence_status="Created")
+
+    def get_staged(self):
+        return self.get_queryset().filter(licence_status="Staged")
 
     def get_batched(self):
-        return super().get_queryset().filter(licence_status="Batched")
+        return self.get_queryset().filter(licence_status="Batched")
 
     def get_submitted(self):
-        return super().get_queryset().filter(licence_status="Submitted")
+        return self.get_queryset().filter(licence_status="Submitted")
+
     def get_rejected(self):
-        return super().get_queryset().filter(licence_status="Rejected")
+        return self.get_queryset().filter(licence_status="Rejected")
 
     def get_approved(self):
-        return super().get_queryset().filter(licence_status="Approved")
+        return self.get_queryset().filter(licence_status="Approved")
 
 class FoodLicence(models.Model):
     """

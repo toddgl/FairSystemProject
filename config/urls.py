@@ -31,11 +31,13 @@ urlpatterns = [
     path('', include('pages.urls')),  # pages at the root URL
     path('', include('accounts.urls')),
     path('accounts/', include('allauth.urls')),
+    path('emails/', include('emails.urls')),
     path('', include('faq.urls')),
     path('', include('notices.urls')),
     path('foodlicence/', include('foodlicence.urls')),
     path('', include('payment.urls')),
     path('registration/', include('registration.urls')),
+    path('', include('reports.urls')),
     path('', include('fairs.urls')),
     path('',include('search.urls')),
     path('favicon.ico', RedirectView.as_view(url=staticfiles_storage.url('img/favicon.ico'))),

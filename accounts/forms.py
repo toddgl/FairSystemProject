@@ -39,7 +39,7 @@ class CustomSignupForm(SignupForm):
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
         }),
         )
     # Add additional profile fields
@@ -90,7 +90,7 @@ class CustomSignupForm(SignupForm):
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
         }),
     )
 
@@ -139,7 +139,7 @@ class CustomUserCreationForm(UserCreationForm):
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
         }),
         )
 
@@ -180,7 +180,7 @@ class CustomUserChangeForm(ModelForm):
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
         }),
         )
 
@@ -222,7 +222,7 @@ class ProfileForm(ModelForm):
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800 123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
         }),
     )
     class Meta:

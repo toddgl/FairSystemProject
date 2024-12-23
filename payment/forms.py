@@ -2,11 +2,18 @@
 
 from django import forms
 from django.forms import (
-    Form,
     ChoiceField,
-    Select,
+    DecimalField,
+    Form,
+    ModelForm,
+    NumberInput,
+    Select
 )
 
+from payment.models import (
+    PaymentHistory,
+    PaymentType
+)
 
 class PaymentHistoryStatusFilterForm(Form):
     """
@@ -19,6 +26,7 @@ class PaymentHistoryStatusFilterForm(Form):
         ("Superceded", "Superceded"),
         ("Cancelled", "Cancelled"),
         ("Completed", "Completed"),
+        ("Credit", "Credit"),
         ("Failed", "Failed"),
         ("Reconciled", "Reconciled")
     )
@@ -30,6 +38,9 @@ class PaymentHistoryStatusFilterForm(Form):
         widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': 'payment_history_data'
         }),
     )
 
@@ -42,3 +53,42 @@ class PaymentHistoryStatusFilterForm(Form):
         }
 
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
+
+class UpdatePaymentHistoryForm(ModelForm):
+    '''
+    Used to update Payment history in the Payment History List View
+    '''
+    class Meta:
+        model = PaymentHistory
+        fields = [ 'amount_to_pay', 'amount_paid', 'webhook_amount', 'amount_reconciled', 'amount_credited', 'payment_status', 'payment_type' ]
+        widgets = {
+            'amount_to_pay': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 100px;',
+            }),
+            'amount_paid': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'webhook_amount': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'amount_reconciled': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'amount_credited': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+            }),
+            'payment_status': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
+            'payment_type': Select(attrs={
+                'class': 'form-select',
+                'style': 'max-width: 300px;',
+            }),
+        }
+

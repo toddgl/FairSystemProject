@@ -32,8 +32,11 @@
                     <td>{{ foodlicence.food_licence_batch.id }}</td>
                     <td><a class = "btn btn-primary btn-small"  data-bs-toggle="tooltip" data-bs-placement="top"
                            title="Change status to Staged"
-                           hx-post="{% url 'foodlicence:mark-as-staged' foodlicence.id %}" hx-trigger="click"
-                           hx-target="#food_licence_data" hx-swap="outerHTML"><i class="bi bi-arrow-up-right-square"></i></a></td>
+                           hx-post="{% url 'foodlicence:mark-as-staged' foodlicence.id %}"
+                           hx-trigger="click"
+                           hx-target="#food_licence_data"
+                           hx-swap="outerHTML">
+                           <i class="bi bi-arrow-up-right-square"></i></a></td>
                     <td><a class = "btn btn-success btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
                            title="Change status to Approved" hx-post=
                                    "{% url 'foodlicence:mark-as-approved' foodlicence.id %}" hx-trigger="click"
@@ -50,8 +53,41 @@
                 {% endfor %}
                 </tbody>
             </table>
-        {% else %}
-            <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
-        {% endif %}
     </div>
+    <!-- Pagination -->
+    {% if food_licence_list.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if food_licence_list.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ food_licence_list.previous_page_number }}"
+                       hx-trigger="click" hx-target="#food_licence_data">&laquo;</a>
+                </li>
+            {% else %}
+                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for i in page_range %}
+                {% if food_licence_list.number == i %}
+                    <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                    <li class="page-item">
+                        <a class="page-link" hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ i }}"
+                           hx-trigger="click" hx-target="#food_licence_data">{{ i }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            {% if food_licence_list.has_next %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ food_licence_list.next_page_number }}"
+                       hx-trigger="click" hx-target="#food_licence_data">&raquo;</a>
+                </li>
+            {% else %}
+                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+    {% else %}
+    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+    {% endif %}
 </div>

@@ -24,8 +24,9 @@ SESSION_COOKIE_AGE = 8640  # 1 day, adjust as needed
 # CSRF_COOKIE_SAMESITE = 'None'
 SESSION_COOKIE_SAMESITE = 'Lax'
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
+EMAIL_BACKEND = 'django.core.mail.backends.filebased.EmailBackend'
+EMAIL_FILE_PATH = '/home/glenn/Documents/Bin/Django/app-messages'
+DEFAULT_FROM_EMAIL = 'g.todd@intenet.co.nz'
 EMAIL_HOST_USER = 'convener@martinboroughfair.org.nz'
 
 SWDC_FOOD_LICENCE_EMAIL_ADDRESS = 'g.todd@internet.co.nz'

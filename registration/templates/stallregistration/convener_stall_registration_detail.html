@@ -5,6 +5,7 @@
 {% load haspayment_history_tag %}
 {% load isinvoiced_tag %}
 {% load hasdiscount_tag %}
+{% load haspaidcredit_tag %}
 {% load stall_booking_status_transition_tag %}
 {% load hasfoodlicences_tag %}
 
@@ -17,6 +18,7 @@
       {% else %}
       <h1>{{ stall_data.fair }} Application Detail for {{ stall_data.stallholder }}</h1>
       {% endif %}
+      <a type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#emailStallholderModal"><i class="bi bi-send"></i>  Email</a>
       <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#stallholderdetail"> Click to view stallholder profile</button>
       {% get_has_payment_history stall_data.stallholder.id as payment_history_result %}
       {% if payment_history_result %}
@@ -105,7 +107,7 @@
           </div>
           <ul class="list-group list-group-flush">
             <li class="list-group-item"><strong>Food Stall Type:</strong> {{ food_data.food_stall_type }}</li>
-            <li class="list-group-item"><strong>Is Food Consumed at the Fair:</strong> {{ food_data.food_fair_consummed|yesno:"Yes,No" }}</li>
+            <li class="list-group-item"><strong>Is Food Consumed at the Fair:</strong> {{ food_data.food_fair_consumed|yesno:"Yes,No" }}</li>
             <li class="list-group-item"><strong>Food Display:</strong> {{ food_data.food_display_method }}</li>
             <li class="list-group-item"><strong>Food Source:</strong> {{ food_data.food_source }}</li>
             <li class="list-group-item"><strong>Food Storage:</strong> {{ food_data.food_storage_prep_method }}</li>
@@ -221,7 +223,7 @@
     <div class="modal-content">
       <!-- Modal heading -->
       <div class="modal-header bg-info text-dark">
-        <h4 class="modal-title" id="stallholderdetailLabel">Stallholder Profile</h4>
+        <h4 class="modal-title" id="stallholderdetailLabel">Stallholder Profile</h4><i class="bi bi-send-arrow-up-fill"></i>
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close"> <span aria-hidden="true"> × </span>
         </button>
       </div>
@@ -257,7 +259,8 @@
         {% for payment_history in payment_histories %}
           <div class="container mt-3" style="width: 600px;">
             <div class="card border-primary mb-3">
-              <div class="card-body">
+              <div class="card-body"stration/convener/details/,170 HTTP/1.1" 500 262242
+>
                 <h4 class="card-title text-primary">Invoice ID - {{ payment_history.invoice.invoice_number }}-{{ payment_history.invoice.invoice_sequence }}</h4>
                 <ul class="list-group list-group-flush">
                   <li class="list-group-item"><strong>Stall Application ID:</strong> {{ payment_history.invoice.stall_registration.id }}</li>
@@ -268,6 +271,10 @@
                   <li class="list-group-item"><strong>Amount to Pay:</strong> {{ payment_history.amount_to_pay }}</li>
                   <li class="list-group-item"><strong>Amount Paid:</strong> {{ payment_history.amount_paid }}</li>
                   <li class="list-group-item"><strong>Payment Status:</strong> {{ payment_history.payment_status }}</li>
+                  {% get_has_credit payment_history.invoice_id as credit_item_result %}
+                  {% if credit_item_result %}
+                  <li class="list-group-item"><strong>Credit Refund Paid:</strong> {{ payment_history.amount_credited }}</li>
+                  {% endif %}
                 </ul>
               </div>
             </div>
@@ -337,6 +344,26 @@
           {% csrf_token %}
           {{ applydiscountform.as_p }}
           <button type="submit" name="discount" class="btn btn-primary" data-bs-dismiss="modal">Save Discount</button>
+          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Send Stallholder an email modal-->
+<div class="modal fade" tabindex="-1" id="emailStallholderModal" aria-labelledby="emailStallholderModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-dark">
+        <h4 class="modal-title">Complete Email to Stallholder</h4>
+        <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form method="post">
+          {% csrf_token %}
+          {{ createstallholderemailform.as_p }}
+          <button type="submit" name="stallholderemail" class="btn btn-primary" data-bs-dismiss="modal">Send Email</button>
           <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </form>
       </div>

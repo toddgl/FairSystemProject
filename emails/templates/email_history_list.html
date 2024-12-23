@@ -1,0 +1,25 @@
+<!-- emails/templates/email_history_list.html -->
+
+{% extends 'base.html' %}
+{% load paginator_tags %}
+{% load hasemailhistories_tag %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <h1>Email Histories</h1>
+  <div class="row g-3">
+      <div class="col-md-6">
+          {% include 'email_history_filter_partial.html' %}
+      </div>
+      <div class="col-md-6">
+          {% include 'search/partials/search_stallholders_emailhistory.html' %}
+      </div>
+      <hr>
+  </div>
+  <div class="row g-3">
+      <div class="col-md-12">
+          {% include 'email_history_list_partial.html' %}
+      </div>
+  </div>
+</div>
+{% endblock %}

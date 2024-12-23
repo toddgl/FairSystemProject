@@ -3,6 +3,7 @@
 import stripe
 import time
 import logging
+import uuid  # For generating unique idempotency keys
 from django.views.decorators.csrf import csrf_exempt
 import decimal
 from weasyprint import HTML, CSS
@@ -10,13 +11,15 @@ from django.urls import reverse_lazy, reverse
 from django.conf import settings
 from django.contrib.auth.decorators import login_required,permission_required
 from django.template.loader import get_template
-from django.http import HttpResponseRedirect, HttpResponse, Http404
+from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.response import TemplateResponse
 from django.core.exceptions import PermissionDenied
 from django_fsm import can_proceed
 from django.http import HttpResponse
 from accounts.models import Profile
+from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+
 from .models import (
     Invoice,
     InvoiceItem,
@@ -25,10 +28,12 @@ from .models import (
     PaymentType
 )
 from .forms import (
-    PaymentHistoryStatusFilterForm
+    PaymentHistoryStatusFilterForm,
+    UpdatePaymentHistoryForm
 )
 
 db_logger = logging.getLogger('db')
+
 
 @login_required()
 def stripe_payment(request, id):
@@ -36,6 +41,9 @@ def stripe_payment(request, id):
     if request.method == 'POST':
         payment_history = PaymentHistory.objects.get(id=id)
         try:
+            # Generate a unique idempotency key for this request
+            idempotency_key = f"stripe_payment_{id}_{uuid.uuid4()}"
+
             checkout_session = stripe.checkout.Session.create(
                 payment_method_types=['card'],
                 line_items=[{
@@ -53,13 +61,14 @@ def stripe_payment(request, id):
                 customer_creation='always',
                 success_url=settings.REDIRECT_DOMAIN + '/payment/payment_successful/?session_id={CHECKOUT_SESSION_ID}',
                 cancel_url=settings.REDIRECT_DOMAIN + '/payment/payment_cancelled',
+                idempotency_key=idempotency_key,  # Pass the idempotency key to Stripe
             )
-        except Exception as e:  # It will catch other errors related to the cancel call.
-            db_logger.error('There was an error making the stripe payment.' + str(e),
+        except stripe.error.StripeError as e:
+            db_logger.error('Error creating Stripe checkout session: ' + str(e),
                             extra={'custom_category': 'Stripe Payment'})
-            print(str(e))
+            return render(request, 'error_page.html', {'error': 'An error occurred while processing your payment.'})
         return redirect(checkout_session.url, code=303)
-    return render(request, 'myfair_dashboard.html')
+    return render(request, 'myfair/myfair_dashboard.html')
 
 
 @csrf_exempt
@@ -67,6 +76,13 @@ def payment_successful(request):
     stripe.api_key = settings.STRIPE_SECRET_KEY
     checkout_session_id = request.GET.get('session_id')
     session = stripe.checkout.Session.retrieve(checkout_session_id)
+
+    # Check if this session has already been processed
+    payment_history = PaymentHistory.objects.get(id=session.metadata['product_history_id'])
+    if payment_history.stripe_checkout_id == checkout_session_id:
+        # If already processed, just render success
+        return render(request, 'user_payment/payment_successful.html',
+                      {'customer': stripe.Customer.retrieve(session.customer), 'session': session})
 
     customer = stripe.Customer.retrieve(session.customer)
     payment_type = PaymentType.objects.get(payment_type_name='Stripe')
@@ -137,7 +153,12 @@ def invoice_pdf_generation(request, id, seq):
     # Determine if there are any payments, if so sum them and add it to the context
     if payments:
         total_payments = payments.amount_paid
-        amount_to_pay = invoice.total_cost - total_payments
+        total_credits = payments.amount_credited
+        if total_credits:
+            amount_to_pay = invoice.total_cost - total_payments + total_credits
+        else:
+            amount_to_pay = invoice.total_cost - total_payments
+            total_credits = decimal.Decimal(0.00)
     else:
         total_payments = decimal.Decimal(0.00)
     # Determine if there are any discounts, if so sum them and add it to the context
@@ -152,6 +173,7 @@ def invoice_pdf_generation(request, id, seq):
         'invoice_items': invoice_items,
         'total_payments': total_payments,
         'total_discount': total_discount,
+        'total_credits' : total_credits,
         'amount_to_pay': amount_to_pay,
         'profile': profile
     }
@@ -190,53 +212,73 @@ def mark_payment_as_reconciled(request, id):
 
 def paymenthistory_listview(request):
     """
-    Description: view for displaying payments in a table with filter based on payment_status and providing
-    functionality to change the status from Pending  to Cancelled, Completed to Reconciled and Pending to Failed.
-    Plus the ability to drill ddown to see the respective StallRegistration / Food Registration
+    View for displaying payments in a table with filtering based on payment_status.
+    Filters are remembered within a session but reset when the page is refreshed.
     """
-    payment_history_status_filter_dict = {}
     template_name = 'paymenthistory_list.html'
+    cards_per_page = 10
+
+    # Session management for filters
+    if "clear_filters" in request.GET:
+        # Clear session filters on page refresh or when explicitly cleared
+        request.session.pop("paymenthistory_filters", None)
+        return redirect("payment:payment-list")
+
+    # Initialize or retrieve session filter dict
+    paymenthistory_filter_dict = request.session.get("paymenthistory_filters", {})
+
+    # Initialize forms
     filterform = PaymentHistoryStatusFilterForm(request.POST or None)
+    updateform = UpdatePaymentHistoryForm(request.POST or None)
+    alert_message = "There are no Payment Histories created yet."
+
+    # Filter based on licence_status from GET (initial load)
     payment_status = request.GET.get('payment_status', '')
     if payment_status:
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(payment_status=payment_status).all()
-        alert_message = 'There are no Payment Histories of status ' + str(payment_status) + ' created yet'
-    else:
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.all()
-        alert_message = 'There are no Payment Histories created yet.'
+        paymenthistory_filter_dict['payment_status'] = payment_status
+        # Save filters to session
+        request.session["paymenthistory_filters"] = paymenthistory_filter_dict
+        alert_message = f'There are no payments of status {payment_status} created yet.'
 
+    # HTMX-specific logic
     if request.htmx:
-        form_purpose = filterform.data.get('form_purpose', '')
-        if form_purpose == 'filter':
-            if filterform.is_valid():
-                payment_status = filterform.cleaned_data['payment_status']
-                attr_payment_history_status = 'payment_status'
-                if payment_status:
-                    alert_message = 'There are no Payment Histories for status ' + str(payment_status)
-                    payment_history_status_filter_dict = {attr_payment_history_status: payment_status}
-                else:
-                    alert_message = 'There are no Payment Histories created yet'
-                    payment_history_status_filter_dict = {}
-        else:
-            # Handle pagination
-            # The payment_history_status_filter _dict is retained from the filter selection which ensures that the
-            # correct data is applied to subsequent pages
-            pass
-        payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
-            **payment_history_status_filter_dict).all()
         template_name = 'paymenthistory_list_partial.html'
-        return TemplateResponse(request, template_name, {
-            'payment_history_list': payment_history_list,
-            'payment_status': payment_status,
-            'alert_mgr': alert_message,
-        })
-    else:
-        return TemplateResponse(request, template_name, {
-            'filterform': filterform,
-            'payment_history_list': payment_history_list,
-            'payment_status': payment_status,
-            'alert_mgr': alert_message,
-        })
+
+        # Get stallholder from POST request
+        stallholder_id = request.POST.get('selected_stallholder')
+        if stallholder_id:
+            paymenthistory_filter_dict['invoice__stallholder'] = stallholder_id
+            alert_message = f"There are no payment histories for stallholder {stallholder_id}."
+
+        # Process filter form
+        form_purpose = filterform.data.get('form_purpose', '') if filterform.is_bound else None
+        if form_purpose == 'filter' and filterform.is_valid():
+            payment_status = filterform.cleaned_data.get('payment_status')
+            if payment_status:
+                paymenthistory_filter_dict['payment_status'] = payment_status
+                alert_message = f"There are no payment histories with status {payment_status}."
+            if stallholder_id and payment_status:
+                alert_message = f"There are no payment histories for stallholder {stallholder_id} with status {payment_status}."
+
+        # Update session filters
+        request.session["paymenthistory_filters"] = paymenthistory_filter_dict
+
+    # Query filtered data
+    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
+        **paymenthistory_filter_dict
+    ).order_by('-date_created')
+
+    # Apply pagination
+    page_list, page_range = pagination_data(cards_per_page, payment_history_list, request)
+
+    # Prepare context and return response
+    return TemplateResponse(request, template_name, {
+        'filterform': filterform,
+        'updateform': updateform,
+        'page_obj': page_list,
+        'alert_mgr': alert_message,
+        'page_range': page_range,
+    })
 
 
 def payment_dashboard_view(request):
@@ -247,6 +289,7 @@ def payment_dashboard_view(request):
     pending_counts = PaymentHistory.paymenthistorycurrentmgr.get_pending().count()
     cancelled_counts = PaymentHistory.paymenthistorycurrentmgr.get_cancelled().count()
     completed_counts = PaymentHistory.paymenthistorycurrentmgr.get_completed().count()
+    credit_counts = PaymentHistory.paymenthistorycurrentmgr.get_credit().count()
     failed_counts = PaymentHistory.paymenthistorycurrentmgr.get_failed().count()
     reconciled_counts = PaymentHistory.paymenthistorycurrentmgr.get_reconciled().count()
 
@@ -255,6 +298,77 @@ def payment_dashboard_view(request):
         'pending_counts': pending_counts,
         'cancelled_counts': cancelled_counts,
         'completed_counts': completed_counts,
+        'credit_counts': credit_counts,
         'failed_counts': failed_counts,
         'reconciled_counts': reconciled_counts
     })
+
+
+def load_update_form(request, id):
+    '''
+    Load the UpdatePaymentHistoryForm prepopulated with the instance of payment history
+    '''
+    payment_history = get_object_or_404(PaymentHistory, id=id)
+    updateform = UpdatePaymentHistoryForm(instance=payment_history)
+    return render(request, 'update_payment_form.html', {'updateform': updateform, 'payment_id': id})
+
+
+def update_payment_history(request, id):
+    """
+    Conveners function to update an existing payment history.
+    """
+    # Retrieve the payment history instance or return 404 if not found
+    obj = get_object_or_404(PaymentHistory, id=id)
+    updateform = UpdatePaymentHistoryForm(request.POST or None, instance=obj)
+    context = {
+        'updateform': updateform,
+        'payment_id': id
+    }
+
+    # Check if form is submitted and valid
+    if request.method == 'POST':
+        if updateform.is_valid():
+            # Save the updated instance
+            obj = updateform.save(commit=False)
+            obj.is_valid = True  # Set additional attributes if necessary
+            obj.save()
+            # Render the success message HTML snippet
+            context = {
+                'alert_mgr': 'Payment history updated successfully'
+            }
+            return render(request, "paymenthistory_list_partial.html", context)
+
+        else:
+            # Render the error message
+            context = {
+                'alert_mgr': 'Payment history updated failed'
+            }
+            return render(request, "paymenthistory_list_partial.html", context)
+
+    # If the request is GET, render the update form
+    return render(request, "payment/update_payment_form.html", context)
+
+def pagination_data(cards_per_page, queryset, request):
+    """
+    Handles pagination of a queryset
+    """
+    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
+    page_number = request.GET.get('page', 1)  # Get the current page number
+    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
+
+    try:
+        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
+    except PageNotAnInteger:
+        # If page is not an integer, deliver the first page
+        page_obj = paginator.get_page(1)
+    except EmptyPage:
+        # If the page is out of range, deliver the last page
+        page_obj = paginator.get_page(paginator.num_pages)
+
+    page_range = list(paginator.get_elided_page_range(
+        page_number,
+        on_each_side=1,
+        on_ends=2
+    ))  # Custom range for pagination links
+
+    return page_list, page_range
