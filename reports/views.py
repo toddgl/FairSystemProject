@@ -65,6 +65,18 @@ def reports_listview(request):
                     alert_message = 'The selected zone could not be found.'
             else:
                 alert_message = 'You must select a zone prior to generating the marshall list.'
+        if 'trestlereport' in request.POST:
+            event_id = request.session.get('selected_event_id')
+
+            if event_id:
+                try:
+                    event = Event.objects.get(id=event_id)
+                    # Call the marshall_zone_report function and return its response
+                    return trestle_distribution_report(request, event.id)
+                except Event.DoesNotExist:
+                    alert_message = 'The selected event could not be found.'
+            else:
+                alert_message = 'You must select a event prior to generating the trestle distribution report.'
 
     # Default template response for GET and invalid cases
     context = {
@@ -77,7 +89,7 @@ def reports_listview(request):
 
 def marshall_zone_report(request, zone, event):
     """
-    Function to generate a marshall report for a specific Zone
+    Function to generate a marshall report for a specific Zone and Event
     """
     current_fair = Fair.currentfairmgr.all().last()
     zone_data = Zone.objects.get(id=zone)
@@ -152,6 +164,44 @@ def marshall_zone_report(request, zone, event):
     filename= f'marshalls_{event_data.event_name}_report.pdf'
 
     html_template = get_template('marshallingsitelist.html').render(context)
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="{filename}"'
+    return response
+
+def trestle_distribution_report(request, event):
+    """
+    Function to generate a trestle distribution report for a specific Event
+    """
+    current_fair = Fair.currentfairmgr.all().last()
+    event_data = Event.objects.get(id=event)
+    # Queryset for StallRegistration
+    site_information = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event__fair=current_fair,
+        site_allocation__event_site__event=event,
+        trestle_required=True,
+        booking_status='Booked'
+    ).select_related('stallholder').annotate(
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        allocated_site_trestle_source=F('site_allocation__event_site__site__zone__trestle_source')
+    ).values(
+        'allocated_site_trestle_source',
+        'stallholder__first_name',
+        'stallholder__last_name',
+        'allocated_site_name',
+        'trestle_quantity',
+    ).order_by(
+        'allocated_site_trestle_source'
+    )
+
+    context ={
+        'site_information': site_information,
+        'event_data': event_data
+    }
+
+    filename= f'trestle_distribution_{event_data.event_name}_report.pdf'
+
+    html_template = get_template('trestlelist.html').render(context)
     pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'filename="{filename}"'

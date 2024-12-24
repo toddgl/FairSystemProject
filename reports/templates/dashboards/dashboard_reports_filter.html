@@ -34,10 +34,26 @@
                         {{ filterform.as_p }}
                     </form>
                     <hr>
+                    <div>
+                        <h4> Marshaller Lists </h4>
+                        <p>Generates a marshalls list in pdf form for a zone. Requires the event and zone filters to be set</p>
+                    </div>
                     <form method="POST">
                         {% csrf_token %}
                         <button name="marshalllist" class="btn btn-primary" data-toggle="button" type="submit">
                             View or Download Marshall Report
+                        </button>
+                        <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+                    </form>
+                    <hr>
+                    <div>
+                        <h4> Trestle Distribution Report </h4>
+                        <p>Generates a trestle distribution list which is passed to Lions prior to each fair. Requires the event filter to be set</p>
+                    </div>
+                    <form method="POST">
+                        {% csrf_token %}
+                        <button name="trestlereport" class="btn btn-primary" data-toggle="button" type="submit">
+                            View or Download Trestle Distribution Report
                         </button>
                         <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
                     </form>
