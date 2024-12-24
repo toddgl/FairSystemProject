@@ -40,18 +40,30 @@ def reports_listview(request):
     # Handle HTMX request for filtering
     if request.htmx:
         if form_purpose == 'filter' and filterform.is_valid():
-            zone = filterform.cleaned_data['zone']
-            event = filterform.cleaned_data['event']
-            # Store the zone ID or another serializable attribute in the session
-            request.session['selected_zone_id'] = zone.id
-            request.session['selected_event_id'] = event.id
+            zone = filterform.cleaned_data.get('zone')  # Use .get() to avoid KeyError
+            event = filterform.cleaned_data.get('event')  # Use .get() to avoid KeyError
 
-            # Return an HTMX partial response (you can add a fragment template for HTMX updates)
-            return TemplateResponse(request, 'partials/zone_selected.html', {'zone': zone})
+            # Handle storing session data based on the presence of zone and event
+            if event:  # Event is always required
+                request.session['selected_event_id'] = event.id
+            else:
+                alert_message = 'An event must be selected.'
+
+            if zone:  # Zone is optional for certain situations
+                request.session['selected_zone_id'] = zone.id
+
+            # Check if we need a response
+            if zone and event:
+                return TemplateResponse(request, 'partials/zone_selected.html', {'zone': zone, 'event': event})
+            elif event:
+                return TemplateResponse(request, 'partials/event_selected.html', {'event': event})
+            else:
+                alert_message = 'Invalid filter selection.'
 
     # Handle POST request for generating reports
     elif request.method == 'POST':
         if 'marshalllist' in request.POST:
+            # Marshalllist requires both zone and event
             zone_id = request.session.get('selected_zone_id')
             event_id = request.session.get('selected_event_id')
 
@@ -59,24 +71,26 @@ def reports_listview(request):
                 try:
                     zone = Zone.objects.get(id=zone_id)
                     event = Event.objects.get(id=event_id)
-                    # Call the marshall_zone_report function and return its response
                     return marshall_zone_report(request, zone.id, event.id)
                 except Zone.DoesNotExist:
                     alert_message = 'The selected zone could not be found.'
+                except Event.DoesNotExist:
+                    alert_message = 'The selected event could not be found.'
             else:
-                alert_message = 'You must select a zone prior to generating the marshall list.'
+                alert_message = 'Both a zone and an event must be selected to generate the marshall list.'
+
         if 'trestlereport' in request.POST:
+            # Trestlereport only requires event
             event_id = request.session.get('selected_event_id')
 
             if event_id:
                 try:
                     event = Event.objects.get(id=event_id)
-                    # Call the marshall_zone_report function and return its response
                     return trestle_distribution_report(request, event.id)
                 except Event.DoesNotExist:
                     alert_message = 'The selected event could not be found.'
             else:
-                alert_message = 'You must select a event prior to generating the trestle distribution report.'
+                alert_message = 'An event must be selected to generate the trestle distribution report.'
 
     # Default template response for GET and invalid cases
     context = {
