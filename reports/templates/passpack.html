@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+{% load static %}
+{% load getpower_trestle_tag %}
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Martinborough Fair Pass</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.0/font/bootstrap-icons.css">
+  <!-- CSS Custom File -->
+  <link rel="stylesheet" href="{% static 'css/reports.css' %}" media="all" />
+</head>
+<body class="container mb-4">
+
+  <h1 class="mb-4">Martinborough Fair Pass for Feb/Mar {{ current_fair.fair_year }}</h1>
+
+  <p>{{ report_date|date:"d %B, Y" }}</p>
+  <p>StallHolderID: {{ stall_registration.id }}</p>
+
+  <div class="mb-4">
+    <p>{{ stall_registration.stallholder.first_name }} {{ stall_registration.stallholder.last_name }}, {{ profile.org_name }}</p>
+    <p>{{ profile.address1 }}</p>
+    <p>{{ profile.address2 }}, {{ profile.town }}, {{ profile.postcode }}</p>
+  </div>
+
+  <p>Hi {{ stall_registration.stallholder.first_name }},</p>
+  <p>Your application has been accepted and your site allocated.</p>
+  <p>Please read this document and the terms and conditions carefully as there may be important changes to the layout or conditions.</p>
+  <p>Please keep this pass ready to present when asked.</p>
+
+  <p>Note: Stall sites are numbered from 0 to 90 in each of the 16 sectors. Your site number consists of a two-letter prefix (e.g., OX for Oxford Street) and the stall number within that sector. Make sure you locate your stall correctly.</p>
+
+  <h5>Products expected on site:</h5>
+    <p>{{ stall_registration.products_on_site }}</p>
+
+  <!-- Site Information Table -->
+  <table class="table table-striped table-bordered">
+    <thead class="table-dark">
+      <tr>
+        <th>Site Details</th>
+        <th>Fair Event</th>
+        <th>Map Link</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% get_has_trestles stall_registration.id as has_trestles_result %}
+    {% get_has_power stall_registration.id as has_power_result %}
+    {% for site in site_list %}
+      <tr>
+        <td>Site {{ site.allocated_site_name }}, {{ site.allocated_site_location }} ({{ site.allocated_site_size }})</td>
+        <td>{{ site.allocated_event_name }}</td>
+        <td>
+          {% if site.zone_map_url %}
+            <a href="{{ site.zone_map_url }}" target="_blank">View {{ site.allocated_site_name }} Map</a>
+          {% else %}
+            No Map Available
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  {% if has_trestles_result %}
+    <h5>Trestles</h5>
+    <div class="row">
+        <p>You have ordered <strong>{{ stall_registration.trestle_quantity }}</strong> trestles</p>
+        {% if trestle_source == 1 %}
+      <div class="col-9">
+          <p>
+            Please present this document to The Trestle store in the Church carpark on the corner of Kansas Street South and Memorial Drive, so they can deliver your trestle/s to your site.
+          </p>
+      </div>
+      <div class="col-3">
+        <div class="p-3 text-center align-middle text-white fw-bold blue">
+          <h2>BLUE</h2>
+          <h2>{{ current_fair.fair_year }}</h2>
+        </div>
+      </div>
+        {% elif trestle_source == 2 %}
+      <div class="col-9">
+          <p>
+            Please present this document to The Trestle store in the Martinborough Winemaker Services carpark on the corner of Kansas Street North and Memorial Drive, so they can deliver your trestle/s to your site.
+          </p>
+      </div>
+      <div class="col-3">
+        <div class="p-3 text-center align-middle text-white fw-bold red">
+          <h2>RED</h2>
+          <h2>{{ current_fair.fair_year }}</h2>
+        </div>
+      </div>
+    {% endif %}
+    </div>
+  {% endif %}
+  {%if has_power_result %}
+    <h5>Power</h5>
+    <p>
+      Note: Please ensure you have read the terms and conditions relating to use of power points, the protection of cables and site safety.
+    </p>
+    <p>
+      Your power will be supplied from the {{ powerbox_description }}
+    </p>
+  {% endif %}
+
+  <p class="mb-4">
+    <a href="https://martinboroughfair.org.nz/files/16/Information-sheets/22/Stallholder-information.pdf?preview=1" target="_blank">Teams and Conditions</a>
+  </p>
+  <p class="mb-4">
+    <a href="https://martinboroughfair.org.nz/files/24/Marking-out-maps/115/MB-Overview-2025.pdf" target="_blank">View the Fair Layout here</a>
+  </p>
+
+  <p>See you at the Fair!</p>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-kenU1KFdBIe4zVF0s0G1M5b4hcpxyD9F7jL+jjXkk+Q2h455rYXK/7HAuoJl+0I4" crossorigin="anonymous"></script>
+</body>
+</html>
+

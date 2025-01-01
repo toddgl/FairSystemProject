@@ -148,6 +148,12 @@ class RegistrationCurrentManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True).exclude(is_cancelled=True)
 
+    def has_trestles(self, registration_id):
+        return self.get_queryset().filter(id=registration_id, trestle_required=True).exists()
+
+    def has_power(self, registration_id):
+        return self.get_queryset().filter(id=registration_id, power_required=True).exists()
+
 
 class RegistrationSellingFoodManager(models.Manager):
     """

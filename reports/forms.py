@@ -4,7 +4,10 @@ from django import forms
 from django.forms import (
     Select,
     ModelChoiceField,
-    Form
+    Form,
+    IntegerField,
+    NumberInput,
+
 )
 
 from fairs.models import (
@@ -49,3 +52,16 @@ class ReportListFilterForm(Form):
         fields = [
             'zone',
         ]
+
+class StallRegistrationIDFilterForm(Form):
+    """
+    A filter form to select a stallregistrtion Id
+    """
+    stallregistration_id = forms.IntegerField(
+        label="Select Stall Registration ID",
+        widget=NumberInput(attrs={
+            'class': "form-control",
+            'style': 'max-width: 300px;',
+            'placeholder': 'No Stall Registration ID Entered',
+        }),
+    )

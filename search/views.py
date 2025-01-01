@@ -45,6 +45,28 @@ def stallholder_registration_search_view(request):
         }
     return render(request, 'search/partials/stallholder_registration_results.html', context)
 
+def stallholder_reports_search_view(request):
+    """
+    Search for Stallholders customised for the report listing
+    """
+    search_text = request.POST.get('search')
+
+    results = CustomUser.stallholdermgr.filter(
+        Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
+        Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
+
+    if 'reports' not in request.session:
+        context = {
+            'results': results
+        }
+    else:
+        reports = request.session['reports']
+        context = {
+            'results': results,
+            'reports': reports
+        }
+    return render(request, 'search/partials/stallholder_reports_results.html', context)
+
 def stallholder_siteallocation_search_view(request):
     """
     Search for Stallholders customised for the siteallocation listing

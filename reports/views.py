@@ -1,9 +1,12 @@
 from wsgiref.util import request_uri
 
 import pprint
-from django.shortcuts import render
+import datetime
+from django.db.models.functions import Concat
+from django.shortcuts import get_object_or_404, render
 from django.db.models import F, Subquery, OuterRef
 from weasyprint import HTML, CSS
+from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.http import HttpResponse
@@ -12,13 +15,20 @@ from django.contrib.postgres.aggregates import StringAgg  # PostgreSQL only
 
 from utils.site_allocation_tools import site_allocations
 from .forms import (
-    ReportListFilterForm
+    ReportListFilterForm,
+    StallRegistrationIDFilterForm
+)
+
+from accounts.models import (
+    Profile
 )
 
 from fairs.models import (
     Event,
     Fair,
-    Zone
+    PowerBox,
+    Zone,
+    ZoneMap
 )
 
 from registration.models import(
@@ -32,6 +42,7 @@ def reports_listview(request):
     """
     template_name = 'dashboards/dashboard_reports_filter.html'
     filterform = ReportListFilterForm(request.POST or None)
+    stallregistrationform = StallRegistrationIDFilterForm(request.POST or None)
     form_purpose = filterform.data.get('form_purpose', '')
     alert_message = ''
     zone = None  # Initialize zone to avoid UnboundLocalError
@@ -92,9 +103,28 @@ def reports_listview(request):
             else:
                 alert_message = 'An event must be selected to generate the trestle distribution report.'
 
+        if 'passpack' in request.POST:
+            # Pass Pack  only requires stallregistration id to be provided
+
+            if stallregistrationform.is_valid():
+            # Access the cleaned data from the form
+                stallregistration_id = stallregistrationform.cleaned_data['stallregistration_id']
+
+
+            if stallregistration_id:
+                try:
+                    stallregistration = StallRegistration.objects.get(id=stallregistration_id)
+
+                    return fair_passpack_generator(request, stallregistration.id)
+                except StallRegistration.DoesNotExist:
+                    alert_message = 'The selected stallregistration could not be found.'
+            else:
+                alert_message = 'A stallregistration must be selected to generate the pass pack.'
+
     # Default template response for GET and invalid cases
     context = {
         'filterform': filterform,
+        'stallregistrationfilterform': stallregistrationform,
         'zone': zone,
         'alert_message': alert_message
     }
@@ -219,4 +249,87 @@ def trestle_distribution_report(request, event):
     pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'filename="{filename}"'
+    return response
+
+def fair_passpack_generator(request, stallregistration):
+    """
+    Function to generate a fair passpack for a specific stallregistration
+    """
+    report_date = datetime.datetime.now()
+    current_fair = Fair.currentfairmgr.all().last()
+
+    # Queryset for StallRegistration
+    stall_registration = StallRegistration.objects.filter( id=stallregistration).first()
+
+    zone_map_subquery = ZoneMap.objects.filter(
+        zone=OuterRef('site_allocation__event_site__site__zone'),
+        year=str(report_date.year)
+    ).values('map_pdf')[:1]
+
+    # Query to fetch PowerBox description
+    power_box_subquery = PowerBox.objects.filter(
+        site_powerbox__zone=OuterRef('site_allocation__event_site__site__zone')
+    ).values('power_box_description')[:1]
+
+    # Subquery to fetch a single trestle source value
+    trestle_source_subquery = StallRegistration.objects.filter(
+        id=OuterRef('id')
+    ).values('site_allocation__event_site__site__zone__trestle_source')[:1]
+
+    site_list = StallRegistration.registrationcurrentmgr.filter(
+        id=stallregistration
+    ).select_related('stallholder').annotate(
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        allocated_site_size=F('site_allocation__event_site__site__site_size__site_size'),
+        allocated_event_name=F('site_allocation__event_site__event__event_name'),
+        allocated_site_location=F('site_allocation__event_site__site__zone__zone_name'),
+        zone_map_path=Subquery(zone_map_subquery),
+        powerbox_description=Subquery(power_box_subquery),
+        trestle_source=Subquery(trestle_source_subquery),
+    ).values(
+        'allocated_site_size',
+        'allocated_site_name',
+        'allocated_event_name',
+        'allocated_site_location',
+        'zone_map_path',
+        'powerbox_description',
+        'trestle_source',
+    ).order_by(
+        'allocated_event_name'
+    )
+
+    profile = get_object_or_404(Profile, user=stall_registration.stallholder)
+
+    context ={
+        'report_date': report_date,
+        'stall_registration': stall_registration,
+        'site_list': site_list,
+        'profile': profile,
+        'current_fair': current_fair,
+        'powerbox_description': next(
+            (site['powerbox_description'] for site in site_list if site['powerbox_description']), None
+        ) if stall_registration.power_required else None,
+        'trestle_source': next(
+        (site['trestle_source'] for site in site_list if site['trestle_source']), None
+        ),
+    }
+
+    # Construct URLs for the zone maps
+    current_site = get_current_site(request)
+    domain = current_site.domain
+    print(domain)
+    protocol = 'https' if request.is_secure() else 'http'
+
+    for site in site_list:
+        if site['zone_map_path']:
+            site['zone_map_url'] = f'{protocol}://{domain}/media/{site["zone_map_path"]}'
+        else:
+            site['zone_map_url'] = None
+
+    filename= f'fair_passpack_for_stallregid{stallregistration}.pdf'
+
+    html_template = get_template('passpack.html').render(context)
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response

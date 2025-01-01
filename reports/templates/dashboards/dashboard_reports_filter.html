@@ -23,52 +23,73 @@
         <!-- Report Filter -->
         <div class="row">
             <div class="col-md-6">
-                <div class="container mt-5 mb-5">
-                    <div class="title-hr">
-                        <span class="hr fix"></span>
-                        <span><strong>Report Filters</strong></span>
-                        <span class="hr"></span>
-                    </div>
-                    <form>
-                        {% csrf_token %}
-                        {{ filterform.as_p }}
-                    </form>
-                    <hr>
-                    <div>
-                        <h4> Marshaller Lists </h4>
-                        <p>Generates a marshalls list in pdf form for a zone. Requires the event and zone filters to be set</p>
-                    </div>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <button name="marshalllist" class="btn btn-primary" data-toggle="button" type="submit">
-                            View or Download Marshall Report
-                        </button>
-                        <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
-                    </form>
-                    <hr>
-                    <div>
-                        <h4> Trestle Distribution Report </h4>
-                        <p>Generates a trestle distribution list which is passed to Lions prior to each fair. Requires the event filter to be set</p>
-                    </div>
-                    <form method="POST">
-                        {% csrf_token %}
-                        <button name="trestlereport" class="btn btn-primary" data-toggle="button" type="submit">
-                            View or Download Trestle Distribution Report
-                        </button>
-                        <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
-                    </form>
-                    <hr>
+                <div class="title-hr">
+                    <span class="hr fix"></span>
+                    <span><strong>Report Filters</strong></span>
+                    <span class="hr"></span>
                 </div>
+                <form>
+                    {% csrf_token %}
+                    {{ filterform.as_p }}
+                </form>
             </div>
-            <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
-              <div class="toast-header">
-                <strong class="me-auto">Selections</strong>
-                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
-              </div>
-              <div class="toast-body" id="zone_selected">
-                  <strong>{% include 'partials/zone_selected.html' %}</strong>
-              </div>
+            <div class="col-md-6">
+                    {% include 'search/partials/search_stallholders_reports.html' %}
             </div>
+        </div>
+        <hr>
+        <div>
+            <h4> Marshaller Lists </h4>
+            <p>Generates a marshalls list in pdf form for a zone. Requires the event and zone filters to be set</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="marshalllist" class="btn btn-primary" data-toggle="button" type="submit">
+                    View or Download Marshall Report
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
+            <h4> Trestle Distribution Report </h4>
+            <p>Generates a trestle distribution list which is passed to Lions prior to each fair. Requires the event filter to be set</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="trestlereport" class="btn btn-primary" data-toggle="button" type="submit">
+                    View or Download Trestle Distribution Report
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
+            <h4> Pass Pack Generator </h4>
+            <p>Generates a Pass Pack for a selected Stall Registration. Requires the Stallregistration ID to be set</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                {{ stallregistrationfilterform.as_p }}
+                <button name="passpack" class="btn btn-primary" data-toggle="button" type="submit">
+                    View or Download a Stallregistration Pass Pack
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div id="reports_data"></div>
+        <div class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+          <div class="toast-header">
+            <strong class="me-auto">Selections</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+          </div>
+          <div class="toast-body" id="zone_selected">
+              <strong>{% include 'partials/zone_selected.html' %}</strong>
+          </div>
         </div>
     </div>
 </main>

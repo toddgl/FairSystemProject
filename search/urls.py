@@ -12,6 +12,7 @@ from search.views import (
     stallholder_email_history_search_view,
     stall_search_view,
     stallholder_powerbox_search_view,
+    stallholder_reports_search_view,
 )
 
 app_name = 'search'
@@ -34,6 +35,7 @@ htmx_urlpatterns = [
          name='search-stallregistrations'),
     path('search-stallholders-powerbox/', stallholder_powerbox_search_view ,
          name='search-stallholders-powerbox'),
+    path('search-stallholders-reports/', stallholder_reports_search_view, name='search-stallholders-reports'),
 ]
 
 urlpatterns += htmx_urlpatterns
