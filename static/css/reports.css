@@ -19,11 +19,6 @@ h5.uppercase {
     text-transform: uppercase;
 }
 
-a {
-  color: #5D6975;
-  text-decoration: underline;
-}
-
 body {
   position: relative;
   width: 21cm;  

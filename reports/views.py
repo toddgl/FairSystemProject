@@ -317,7 +317,6 @@ def fair_passpack_generator(request, stallregistration):
     # Construct URLs for the zone maps
     current_site = get_current_site(request)
     domain = current_site.domain
-    print(domain)
     protocol = 'https' if request.is_secure() else 'http'
 
     for site in site_list:

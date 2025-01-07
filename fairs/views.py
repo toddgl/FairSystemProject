@@ -1942,7 +1942,7 @@ def stallregistration_siteallocation_view(request, id):
             # Update status to allocated on the affected Eventsites
             eventsite.site_status = 2
             eventsite.save()
-        return redirect('fair:stallregistration-detail', stallregistration_id=id)
+        return redirect('registration:stallregistration-list')
 
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,

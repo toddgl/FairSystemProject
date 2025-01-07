@@ -5,6 +5,7 @@ from django.urls import path
 from reports.views import (
     marshall_zone_report,
     reports_listview,
+    fair_passpack_generator,
 )
 
 
@@ -12,5 +13,6 @@ app_name = 'reports'  # This is the namespace, so you can reverse urls with paym
 
 urlpatterns = [
     path('reports/zonelist/', marshall_zone_report, name='marshal-zone-list'),
-    path('reports/dashboard/',reports_listview, name='report-dashboard' )
+    path('reports/dashboard/',reports_listview, name='report-dashboard' ),
+    path('reports/passpack/<int:stallregistration>', fair_passpack_generator, name='stallholder-passpack'),
 ]
