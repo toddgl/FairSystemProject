@@ -20,7 +20,8 @@ class FoodLicenceBatchCurrentManager(models.Manager):
     def get_queryset(self):
         current_year = datetime.datetime.now().year
         next_year = current_year + 1
-        return super().get_queryset().filter(date_created__year__in=[current_year, next_year])
+        last_year = current_year - 1
+        return super().get_queryset().filter(date_created__year__in=[last_year, current_year, next_year])
 
 class FoodLicenceBatch(models.Model):
     """
