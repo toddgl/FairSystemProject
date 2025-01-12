@@ -55,6 +55,7 @@ from utils.site_allocation_tools import (
     site_allocation_emails,
     delete_unregistered_allocations
 )
+from utils.site_history_tools import populate_site_history
 
 from utils.stallholder_history_tools import(
     update_site_history_site_size
@@ -1496,6 +1497,50 @@ def setup_process_dashboard_view(request):
     else:
         bgcolor8 = 'bg-success'
 
+    # Check current fair stallregoistrations with matching sitehistory to
+    # Get the current fair
+    current_fair = Fair.currentfairmgr.first()
+    current_fair_year = current_fair.fair_year
+
+    # Count unique stallholder-site combinations for booked registrations in the current fair
+    unique_site_registrations = SiteAllocation.objects.filter(
+        stall_registration__booking_status='Booked',
+        stall_registration__fair=current_fair
+    ).values(
+        'stall_registration__stallholder',  # Group by stallholder
+        'event_site__site'                  # Group by site
+    ).distinct().count()
+
+    print(f"Total unique site registrations: {unique_site_registrations}")
+
+    # count the number a site histories for the current year
+    count_current_site_histories = SiteHistory.objects.filter(
+        year=current_fair_year
+    ).count()
+
+    # Retrieve booked StallRegistrations for the current Fair
+    booked_set = set(
+        StallRegistration.objects.filter(
+            booking_status='Booked',
+            fair=current_fair
+        ).values_list('stallholder_id', 'site_size_id')
+    )
+
+    # Retrieve SiteHistory entries for the current Fair
+    site_history_set = set(
+        SiteHistory.objects.filter(
+            year=current_fair_year
+        ).values_list('stallholder_id', 'site_id')
+    )
+
+    # Compare the sets
+    match = count_current_site_histories == unique_site_registrations
+
+    if match:
+        bgcolor9 ='bg-success'
+    else:
+        bgcolor9 = 'bg-danger'
+
     if request.method == 'POST' and 'run_script' in request.POST:
         # call function
         site_allocations()
@@ -1513,6 +1558,11 @@ def setup_process_dashboard_view(request):
         delete_unregistered_allocations()
         # return user to required page
         return HttpResponseRedirect(reverse('fair:setup-dashboard'))
+    elif request.method == 'POST' and 'update_site_history' in request.POST:
+        # call function
+        populate_site_history()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:setup-dashboard'))
 
     context = {
         'last_history_year': latest_history.year,
@@ -1527,6 +1577,7 @@ def setup_process_dashboard_view(request):
         'bgcolor6': bgcolor6,
         'bgcolor7': bgcolor7,
         'bgcolor8': bgcolor8,
+        'bgcolor9': bgcolor9,
         'current_events': current_events,
         'has_current_siteallocations': has_current_siteallocations,
         'has_current_pricing': has_current_pricing,
@@ -1534,7 +1585,9 @@ def setup_process_dashboard_view(request):
         'unregistered_allocations': unregistered_allocations,
         'count_unregistered_allocations': count_unregistered_allocations,
         'count_registered_allocations': count_registered_allocations,
-        'reached_activation_date': has_reached_activation_date
+        'reached_activation_date': has_reached_activation_date,
+        'unique_site_registrations': unique_site_registrations,
+        'count_current_site_histories':count_current_site_histories
     }
 
     return TemplateResponse(request, template_name, context )

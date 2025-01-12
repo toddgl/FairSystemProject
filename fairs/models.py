@@ -653,9 +653,15 @@ class SiteHistory(models.Model):
     )
     is_half_size = models.BooleanField(default=False)
     is_skipped = models.BooleanField(default=False)
-    number_events = models.IntegerField()
+    had_late_cancel = models.BooleanField(default=False)
+    had_fair_site_move = models.BooleanField(default=False)
+    number_events = models.IntegerField(default=0)
+    history_note = models.TextField(null=True, blank=True, default=None)
     objects = models.Manager()
     fouryearhistorymgr = FourYearHistoryManager()
+
+    class Meta:
+        unique_together = ('stallholder', 'site', 'year')
 
 
 class CurrentSiteAllocationManager(models.Manager):
