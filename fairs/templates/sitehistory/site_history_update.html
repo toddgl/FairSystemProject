@@ -1,0 +1,26 @@
+<!-- fairs/templates/sitehistory/site_history_update.html -->
+
+{% extends 'base.html' %}
+
+{% block body %}
+<div class="container" xmlns="http://www.w3.org/1999/html">
+    <h1>Site History Update</h1>
+  <div class="row g-3">
+      <div class="col-md-6">
+          <form>
+              <a href="?clear_filters=true" class="btn btn-warning">Reset Filters</a>
+              <a href="javascript:history.go(-1)" class="btn btn-secondary">Cancel</a>
+          </form>
+      </div>
+      <div class="col-md-6">
+          {% include 'search/partials/search_stallholders_site_history_update.html' %}
+      </div>
+      <hr>
+  </div>
+  <div class="row g-3">
+      <div class="col-md-12">
+          {% include 'sitehistory/stallholder_site_history_list_partial.html' %}
+      </div>
+  </div>
+</div>
+{% endblock %}

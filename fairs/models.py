@@ -625,6 +625,14 @@ class FourYearHistoryManager(models.Manager):
         return super().get_queryset().filter(year__lte=current_year,
                                              year__gte=four_years_past).order_by('year')
 
+class CurrentFairSiteHistoryManager(models.Manager):
+    """
+    Manager that returns the site histy for the current Fair - SiteHistory.currentsitehistorymgr.all()
+    """
+    def get_queryset(self):
+        current_fair_year = Fair.currentfairmgr.first().fair_year
+        return super().get_queryset().filter(year=current_fair_year).order_by('site')
+
 
 class SiteHistory(models.Model):
     """
@@ -659,6 +667,7 @@ class SiteHistory(models.Model):
     history_note = models.TextField(null=True, blank=True, default=None)
     objects = models.Manager()
     fouryearhistorymgr = FourYearHistoryManager()
+    currentsitehistorymgr = CurrentFairSiteHistoryManager()
 
     class Meta:
         unique_together = ('stallholder', 'site', 'year')

@@ -13,6 +13,7 @@ from search.views import (
     stall_search_view,
     stallholder_powerbox_search_view,
     stallholder_reports_search_view,
+    stallholder_site_history_update_search_view
 )
 
 app_name = 'search'
@@ -36,6 +37,7 @@ htmx_urlpatterns = [
     path('search-stallholders-powerbox/', stallholder_powerbox_search_view ,
          name='search-stallholders-powerbox'),
     path('search-stallholders-reports/', stallholder_reports_search_view, name='search-stallholders-reports'),
+    path('search-stallholders-site-history/', stallholder_site_history_update_search_view, name='search-stallholders-site-history-update'),
 ]
 
 urlpatterns += htmx_urlpatterns

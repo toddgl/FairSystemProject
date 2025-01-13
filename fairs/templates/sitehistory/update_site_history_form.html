@@ -1,0 +1,9 @@
+<!-- fairs/templates/sitehistory/update_site_history_form.html -->
+
+<form hx-post="{% url 'fair:update-site-history' site_history_id %}" hx-target="#site_history_update_data">
+    {% csrf_token %}
+    {{ updateform.as_p }}
+    <button type="submit" class="btn btn-primary" data-bs-dismiss="modal">Update Site History</button>
+    <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+</form>
+

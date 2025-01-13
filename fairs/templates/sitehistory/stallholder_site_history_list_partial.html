@@ -1,0 +1,103 @@
+<!-- fairs/templates/sitehistory/stallholder_site_history_list_partial.html -->
+
+{% load static %}
+{% load paginator_tags %}
+
+
+
+
+<!-- Stallholder Site History table and other elements... -->
+<div id="site_history_update_data">
+    <table class="table table-striped">
+        <thead>
+        <tr>
+            <th scope="col">Site History ID</th>
+            <th scope="col">Stallholder ID</th>
+            <th scope="col">Year</th>
+            <th scope="col">Site</th>
+            <th scope="col">Site Size</th>
+            <th scope="col">Number of Events</th>
+            <th scope="col">Is Half Site</th>
+            <th scope="col">No Show</th>
+            <th scope="col">Late Cancel</th>
+            <th scope="col">Fair Site Move</th>
+            <th scope="col">Notes</th>
+            <th scope="col-sm"></th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for history in page_obj %}
+        <tr>
+            <td>{{ history.id }}</td>
+            <td>{{ history.stallholder.id }}</td>
+            <td>{{ history.year }}</td>
+            <td>{{ history.site }}</td>
+            <td>{{ history.site_size }}</td>
+            <td>{{ history.number_events }}</td>
+            <td>{{ history.is_half_site}}</td>
+            <td>{{ history.had_late_cancel }}</td>
+            <td>{{ history.had_fair_site_move }}</td>
+            <td>{{ history.history_note }}</td>
+            <td>
+                <a class="btn btn-warning btn-small" data-bs-toggle="modal"
+                   data-bs-target="#updateSiteHistoryModal"
+                   hx-get="{% url 'fair:load-site-history-update-form' history.id %}"
+                   hx-target="#updateHistoryFormContainer">
+                    <i class="bi bi-pencil-square"></i>
+                </a>
+            </td>
+        </tr>
+        {% empty %}
+            <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+        {% endfor %}
+        </tbody>
+    </table>
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav aria-label="Page navigation">
+        <ul class="pagination">
+            {% if page_obj.has_previous %}
+            <li class="page-item">
+                <a class="page-link" hx-get="{% url 'fair:site-history-update-list' %}?page={{ page_obj.previous_page_number }}"
+                   hx-trigger="click" hx-target="#site_history_update_data">&laquo;</a>
+            </li>
+            {% else %}
+            <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+            {% endif %}
+            {% for i in page_range %}
+            {% if page_obj.number == i %}
+            <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+            {% else %}
+            <li class="page-item">
+                <a class="page-link" hx-get="{% url 'fair:site-history-update-list' %}?page={{ i }}"
+                   hx-trigger="click" hx-target="#site_history_update_data">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if page_obj.has_next %}
+            <li class="page-item">
+                <a class="page-link" hx-get="{% url 'fair:site-history-update-list' %}?page={{ page_obj.next_page_number }}"
+                   hx-trigger="click" hx-target="#site_history_update_data">&raquo;</a>
+            </li>
+            {% else %}
+            <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+    <!-- Update Stallholder History modal-->
+    <div class="modal fade" tabindex="-1" id="updateSiteHistoryModal" aria-labelledby="updateSiteHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-dark">
+                    <h4 class="modal-title">Stallholder History Update Form</h4>
+                    <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="updateHistoryFormContainer">
+                    <!-- Form will be loaded here by HTMX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

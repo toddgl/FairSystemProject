@@ -98,6 +98,7 @@ from .forms import (
     SiteHistoryFilerForm,
     SiteAllocationFilerForm,
     PowerboxFilterForm,
+    UpdateSiteHistoryForm,
 )
 
 from registration.forms import (
@@ -2403,3 +2404,100 @@ def stallregistrations_by_powerbox_view(request):
         'page_range': page_range,  # Custom page range
         'alert_mgr': "No stall registrations found for any powerbox." if not page_list.object_list else ""
     })
+
+
+def load_site_history_update_form(request, id):
+    '''
+    Load the UpdateSiteHistoryForm prepopulated with the instance of the Stallholder site history
+    '''
+    site_history = get_object_or_404(SiteHistory, id=id)
+    updateform = UpdateSiteHistoryForm(instance=site_history)
+    return render(request, 'sitehistory/update_site_history_form.html', {'updateform': updateform, 'site_history_id': id})
+
+
+def current_site_history_update_view(request):
+    """
+    Provides the current site histories for a specific stallholder
+    """
+
+    template_name = 'sitehistory/site_history_update.html'
+    cards_per_page = 10
+
+    # Reset session filters on full page load
+    if not request.htmx:
+        request.session.pop('site_history_update_filter', None)
+    template_name = 'sitehistory/site_history_update.html'
+
+    # Session management for filters
+    if "clear_filters" in request.GET:
+        # Clear session filters when explicitly cleared
+        request.session.pop('site_history_update_filters', None)
+        return redirect('fair:site-history-update-list')
+
+    # Initialise or retrieve session filter dict
+    site_history_update_filter_dict = request.session.get('site_history_update_filter', {})
+
+    # Initialize forms
+    updateform = UpdateSiteHistoryForm(request.POST or None)
+    alert_message = "There are no Stallholder Site Histories selected yet."
+
+    # HTMX specific logic
+    if request.htmx:
+        template_name = 'sitehistory/stallholder_site_history_list_partial.html'
+
+        # Get stallholder from POST request
+        stallholder_id = request.POST.get('selected_stallholder')
+        if stallholder_id:
+            site_history_update_filter_dict['stallholder'] = stallholder_id
+            alert_message = f'There are no site histories for {stallholder_id}'
+
+
+    # Query filtered data
+    stallholder_site_histories = SiteHistory.currentsitehistorymgr.filter( **site_history_update_filter_dict ).order_by('site')
+
+    # Apply pagination
+    page_list, page_range = pagination_data(cards_per_page, stallholder_site_histories, request)
+
+    # Prepare context and return response
+    return TemplateResponse(request, template_name, {
+        'updateform': updateform,
+        'page_obj': page_list,
+        'page_range': page_range,
+        'alert_mgr': alert_message,
+    })
+
+def update_site_history(request, id):
+    """
+    Conveners function to update an stallholder site history.
+    """
+    # Retrieve the payment history instance or return 404 if not found
+    obj = get_object_or_404(SiteHistory, id=id)
+    updateform = UpdateSiteHistoryForm(request.POST or None, instance=obj)
+    context = {
+        'updateform': updateform,
+        'site_history_id': id
+    }
+
+    # Check if form is submitted and valid
+    if request.method == 'POST':
+        if updateform.is_valid():
+            # Save the updated instance
+            obj = updateform.save(commit=False)
+            obj.is_valid = True  # Set additional attributes if necessary
+            obj.save()
+            # Render the success message HTML snippet
+            context = {
+                'alert_mgr': 'Stallholder site history updated successfully'
+            }
+            return render(request, "stallholder_sitehistory_list_partial.html", context)
+
+        else:
+            # Render the error message
+            context = {
+                'alert_mgr': 'Stallholder site history updated failed'
+            }
+            return render(request, "stallholder_site_history_list_partial.html", context)
+
+    # If the request is GET, render the update form
+    return render(request, "sitehistory/update_site_history_form.html", context)
+

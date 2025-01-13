@@ -37,6 +37,7 @@ from fairs.models import (
     PowerBox,
     EventPower,
     SiteAllocation,
+    SiteHistory
 )
 from accounts.models import CustomUser
 from registration.models import (
@@ -1457,3 +1458,38 @@ class PowerboxFilterForm(Form):
             'event',
             'powerbox',
         ]
+
+
+class UpdateSiteHistoryForm(ModelForm):
+    """
+    Used to update Stallholder history in the Stallholder Site History Update View
+    """
+    class Meta:
+        model = SiteHistory
+        fields = [ 'number_events', 'is_skipped', 'had_late_cancel', 'had_fair_site_move', 'history_note' ]
+        labels = {
+            'number_events': 'Number of Events',
+            'is_skipped': 'No show on Fair day',
+            'had_late-cancel': 'Cancelled just before fair Day',
+            'had_fair_site_move': 'Moved from allocated site on the day'
+        }
+        widgets = {
+            'number_events': NumberInput(attrs={
+                'class': "form-select",
+                'style': 'max-width: 300px;',
+            }),
+            'is_skipped': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'had_late_cancel': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'had_fair_site_move': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'history_note': TextInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 400px;',
+                'placeholder': 'History Note'
+            }),
+        }

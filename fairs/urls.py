@@ -58,6 +58,9 @@ from fairs.views import (
     stallregistration_search_dashboard_view,
     stallregistrations_without_power_view, powerbox_connections_view,
     stallregistrations_by_powerbox_view,
+    load_site_history_update_form,
+    current_site_history_update_view,
+    update_site_history,
 )
 
 app_name = 'fair'  # This is the namespace, so you can reverse urls with fair:*
@@ -118,4 +121,7 @@ urlpatterns = [
     path('fair/unpoweredsites/', stallregistrations_without_power_view, name='sites-without-power'),
     path('fair/powerboxconnections/', powerbox_connections_view, name='powerbox-connections'),
     path('fair/powerboxsiteallocations/', stallregistrations_by_powerbox_view, name='powerbox-stallregistration-list'),
+    path('sitehistory/site_history_list/', current_site_history_update_view, name='site-history-update-list'),
+    path('sitehistory/load_update_form/<int:id>/', load_site_history_update_form, name='load-site-history-update-form'),
+    path('sitehistory/update-history/<int:id>/', update_site_history, name='update-site-history')
 ]
