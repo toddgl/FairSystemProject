@@ -9,6 +9,8 @@
   <div class="row g-3">
       <div class="col-md-6">
           {% include 'powerboxes/powerbox_filter_partial.html' %}
+          <hr>
+          <a href="{% url 'fair:generate-powerbox-pdf' %}" target="_blank"  class="btn btn-primary">Generate PDF</a>
       </div>
       <div class="col-md-6">
           {% include 'search/partials/search_stallholders_powerbox.html' %}

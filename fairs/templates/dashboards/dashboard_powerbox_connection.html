@@ -11,6 +11,8 @@
     <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
   </nav>
   <!--End Top Nav -->
+  <a href="{% url 'fair:dashboard_powerbox_connections_pdf' %}" target="_blank" class="btn btn-primary">Generate PDF</a>
+  <hr>
   <h3>PowerBox Connections by Event</h3>
   <table class="table table-striped">
     <thead>
@@ -20,6 +22,8 @@
         <th scope="col">Total Sockets</th>
         <th scope="col">Connected Sites</th>
         <th scope="col">Free Sockets</th>
+        <th scope="col">Max Allowable Load Amps</th>
+        <th scope="col">Total Power Load Amps</th>
       </tr>
     </thead>
     <tbody>
@@ -30,6 +34,8 @@
         <td>{{ connection.site_allocation__event_site__site__powerbox__socket_count }}</td>
         <td>{{ connection.connected_sites }}</td>
         <td>{{ connection.free_sockets }}</td>
+        <td>{{ connection.max_load|floatformat:2 }}</td>
+        <td>{{ connection.total_power_load_amps }}</td>
       </tr>
       {% endfor %}
     </tbody>

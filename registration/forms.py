@@ -88,6 +88,16 @@ class FoodPrepEquipmentUpdateForm(ModelForm):
     Form for updating Food Preparation Equipment Details
     """
 
+    power_load_amps = forms.CharField(
+        label="Calculated Power Load (Amps)",
+        required=False,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'readonly': 'readonly',
+            'style': 'max-width: 200px;',
+        })
+    )
+
     class Meta:
         model = FoodPrepEquipment
         fields = ['equipment_name', 'power_load_minimum', 'power_load_maximum', 'power_load_factor', ]
@@ -113,6 +123,13 @@ class FoodPrepEquipmentUpdateForm(ModelForm):
                 'placeholder': 'Percent'
             }),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance:
+            # Calculate the power_load_amps and set it in the form field
+            power_load_amps = self.instance.power_load_amps
+            self.fields['power_load_amps'].initial = f"{power_load_amps:.2f}" if power_load_amps is not None else "N/A"
 
 
 class FoodSaleTypeCreationForm(ModelForm):

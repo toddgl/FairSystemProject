@@ -35,6 +35,7 @@ class FoodPrepEquipment(models.Model):
     power_load_maximum = models.DecimalField(max_digits=10, decimal_places=2)
     power_load_minimum = models.DecimalField(max_digits=10, decimal_places=2)
     power_load_factor = models.DecimalField(max_digits=3, decimal_places=0, default=70, validators=PERCENTAGE_VALIDATOR)
+    power_load_amps = models.DecimalField(max_digits=5, decimal_places=2, blank=True, null=True)
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(
@@ -51,6 +52,14 @@ class FoodPrepEquipment(models.Model):
         blank=True,
         null=True
     )
+
+    def save(self, *args, **kwargs):
+        # Calculate average watts
+        if self.power_load_maximum and self.power_load_minimum and self.power_load_factor:
+            average_watts = (self.power_load_maximum + self.power_load_minimum) / 2
+            adjusted_watts = average_watts * (self.power_load_factor / 100)
+            self.power_load_amps = adjusted_watts / 240  # Voltage is 240V
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return self.equipment_name
@@ -403,7 +412,7 @@ class StallRegistration(models.Model):
     def to_booking_status_booked(self):
         pass
 
-    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced", "Payment Completed"],
+    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced", "Payment Completed", "Booked"],
                 target="Cancelled")
     def to_booking_status_cancelled(self):
         pass

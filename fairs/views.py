@@ -2,6 +2,7 @@
 import datetime
 import os
 import logging
+import math
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -11,13 +12,16 @@ from django.db.models.aggregates import Count
 from django.views.decorators.http import require_http_methods
 from urllib.parse import urlencode
 from django.template.response import TemplateResponse
+from django.template.loader import get_template
 from django.http import HttpResponseRedirect, HttpResponse, FileResponse, Http404, HttpResponseNotFound
 from django.conf import settings
 from django.contrib import messages
+from django.template.loader import render_to_string
+from weasyprint import HTML
 from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
-from django.db.models import F
+from django.db.models import F, Sum
 from django.db import transaction
 from django.views.generic import (
     CreateView,
@@ -47,7 +51,8 @@ from registration.models import (
     CommentType,
     StallRegistration,
     RegistrationComment,
-    AdditionalSiteRequirement
+    AdditionalSiteRequirement,
+    FoodPrepEquipReq
 )
 
 from utils.site_allocation_tools import (
@@ -2227,23 +2232,45 @@ def stallregistrations_without_power_view(request):
     return render(request, 'dashboards/dashboard_sites_without_power.html', context)
 
 
+from django.db.models import Sum
+
 def powerbox_connections_view(request):
+    # Base query to fetch powerbox data
     powerbox_connections = StallRegistration.objects.filter(
-        power_required=True,  # Only include stall registrations that require power
+        power_required=True,
         site_allocation__event_site__site__powerbox__isnull=False
     ).values(
         'site_allocation__event_site__event__event_name',
         'site_allocation__event_site__site__powerbox__power_box_name',
-        'site_allocation__event_site__site__powerbox__socket_count'
+        'site_allocation__event_site__site__powerbox__socket_count',
+        'site_allocation__event_site__site__powerbox__id',
     ).annotate(
+        max_load=F('site_allocation__event_site__site__powerbox__max_load'),  # Alias the field
         connected_sites=Count('id'),
         free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
-    ).order_by(
-        'site_allocation__event_site__event__event_name',
-        'site_allocation__event_site__site__powerbox__power_box_name'
     )
 
-    return render(request, 'dashboards/dashboard_powerbox_connection.html', {'powerbox_connections': powerbox_connections})
+    # Calculate total_power_load_amps for each powerbox
+    powerbox_connections_with_amps = []
+    for powerbox in powerbox_connections:
+        total_power_load_amps = FoodPrepEquipReq.objects.filter(
+            food_registration__registration__site_allocation__event_site__site__powerbox__id=powerbox['site_allocation__event_site__site__powerbox__id'],
+            food_registration__registration__site_allocation__event_site__event__event_name=powerbox['site_allocation__event_site__event__event_name'],
+        ).aggregate(total_amps=Sum('food_prep_equipment__power_load_amps'))['total_amps'] or 0
+
+        # Apply math.ceil to total_power_load_amps
+        total_power_load_amps = math.ceil(total_power_load_amps)
+
+        powerbox_connections_with_amps.append({
+            **powerbox,
+            'total_power_load_amps': total_power_load_amps
+        })
+
+    return render(
+        request,
+        'dashboards/dashboard_powerbox_connection.html',
+        {'powerbox_connections': powerbox_connections_with_amps}
+    )
 
 
 def generate_alert_message(event, powerbox, stallholder):
@@ -2344,9 +2371,21 @@ def stallregistrations_by_powerbox_view(request):
                      'site_allocation__event_site__site__powerbox__id']),
                 0
             ),
+            # Calculate total power load amps
+            'total_power_load_amps': math.ceil(
+                FoodPrepEquipReq.objects.filter(
+                    food_registration__registration__site_allocation__event_site__event_id=sr['site_allocation__event_site__event__id'],
+                    food_registration__registration__site_allocation__event_site__site__powerbox__id=sr['site_allocation__event_site__site__powerbox__id'],
+                    food_registration__registration__stallholder_id=sr['stallholderid']
+                )
+                .aggregate(
+                    total_amps=Sum(F('equipment_quantity') * F('food_prep_equipment__power_load_amps'))
+                )['total_amps'] or 0
+            ) # use math.ceil to round up
         }
         for sr in detailed_stallregistrations
     ]
+
 
      # Apply filters
     filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
@@ -2501,3 +2540,122 @@ def update_site_history(request, id):
     # If the request is GET, render the update form
     return render(request, "sitehistory/update_site_history_form.html", context)
 
+
+def generate_powerbox_pdf(request):
+    """
+    Generates a PDF of the powerbox site allocations without pagination.
+    """
+    filter_params = request.session.get('powerbox_stallregistration_filters', {})
+    query_filters = {k: v for k, v in filter_params.items() if v}
+
+    # Fetch all stall registrations without pagination
+    aggregated = (
+        StallRegistration.objects.filter(
+            power_required=True,
+            site_allocation__event_site__site__powerbox__isnull=False
+        )
+        .values(
+            'site_allocation__event_site__site__powerbox__id',
+            'site_allocation__event_site__event__event_name',
+            'site_allocation__event_site__event__id',
+            'site_allocation__event_site__site__powerbox__power_box_name',
+            'site_allocation__event_site__site__powerbox__socket_count',
+        )
+        .annotate(
+            connected_sites=Count('id'),
+            free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+        )
+        .order_by('site_allocation__event_site__site__powerbox__power_box_name')
+    )
+
+    detailed_stallregistrations = StallRegistration.objects.filter(
+        power_required=True,
+        site_allocation__event_site__site__powerbox__isnull=False
+    ).annotate(
+        power_box_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
+        event_name=F('site_allocation__event_site__event__event_name'),
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        stallholderid=F('stallholder__id')
+    ).values(
+        'id', 'stallholderid', 'allocated_site_name', 'power_box_name',
+        'event_name', 'site_allocation__event_site__event__id',
+        'site_allocation__event_site__site__powerbox__id',
+    )
+
+    stallregistrations_by_powerbox = [
+        {
+            **sr,
+            'connected_sites': next(
+                (agg['connected_sites'] for agg in aggregated if
+                 agg['site_allocation__event_site__site__powerbox__id'] == sr['site_allocation__event_site__site__powerbox__id']),
+                0
+            ),
+            'free_sockets': next(
+                (agg['free_sockets'] for agg in aggregated if
+                 agg['site_allocation__event_site__site__powerbox__id'] == sr['site_allocation__event_site__site__powerbox__id']),
+                0
+            ),
+            'total_power_load_amps': math.ceil(
+            FoodPrepEquipReq.objects.filter(
+                food_registration__registration__id=sr['id'],  # Ensure this relationship exists
+                food_registration__registration__site_allocation__event_site__event__id=sr['site_allocation__event_site__event__id'],  # Correct link to Event
+            ).aggregate(total_amps=Sum('food_prep_equipment__power_load_amps'))['total_amps'] or 0
+            )  # Use math.ceil to round up
+        }
+        for sr in detailed_stallregistrations
+    ]
+    context = {
+        'stallregistrations_by_powerbox': stallregistrations_by_powerbox
+
+    }
+    # Render the template with all data
+    html_template = get_template('powerboxes/powerbox_siteallocations_pdf.html').render(context)
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'inline; filename="poowerbox_allocation.pdf"'
+    return response
+
+
+def powerbox_connections_pdf_view(request):
+    # Fetch the same data as the dashboard view
+    powerbox_connections = StallRegistration.objects.filter(
+        power_required=True,
+        site_allocation__event_site__site__powerbox__isnull=False
+    ).values(
+        'site_allocation__event_site__event__event_name',
+        'site_allocation__event_site__site__powerbox__power_box_name',
+        'site_allocation__event_site__site__powerbox__socket_count',
+        'site_allocation__event_site__site__powerbox__id'
+    ).annotate(
+        max_load=F('site_allocation__event_site__site__powerbox__max_load'),
+        connected_sites=Count('id'),
+        free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+    )
+
+    powerbox_connections_with_amps = []
+    for powerbox in powerbox_connections:
+        total_power_load_amps = FoodPrepEquipReq.objects.filter(
+            food_registration__registration__site_allocation__event_site__site__powerbox__id=powerbox['site_allocation__event_site__site__powerbox__id'],
+            food_registration__registration__site_allocation__event_site__event__event_name=powerbox['site_allocation__event_site__event__event_name'],
+        ).aggregate(total_amps=Sum('food_prep_equipment__power_load_amps'))['total_amps'] or 0
+
+        total_power_load_amps = math.ceil(total_power_load_amps)
+
+        powerbox_connections_with_amps.append({
+            **powerbox,
+            'total_power_load_amps': total_power_load_amps
+        })
+
+    # Prepare the context for the PDF
+    context = {'powerbox_connections': powerbox_connections_with_amps}
+
+    # Render the template to HTML
+    html_template = get_template('dashboards/powerbox_connections_pdf.html').render(context)
+
+    # Generate PDF
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+
+    # Create response
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = 'inline; filename="powerbox_connections.pdf"'
+    return response
