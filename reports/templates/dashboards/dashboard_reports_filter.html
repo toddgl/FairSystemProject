@@ -67,6 +67,48 @@
             <hr>
         </div>
         <div>
+            <h4> Food Stall Site List Report </h4>
+            <p>Generates a list of Food stall and their location which is passed to rubbish team prior to the fair. Requires the event filter to be set</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="foodstallreport" class="btn btn-primary" data-toggle="button" type="submit">
+                    View or Download Food Stall List Report
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
+            <h4> Search Stall Site List </h4>
+            <p>Generates a list of all the booked stall and their location used to find stalls for Fair goers. Requires the event filter to be set</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="searchstalllist" class="btn btn-primary" data-toggle="button" type="submit">
+                    View or Download Search Stall Listing
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
+            <h4> Search Stall Site CSV Generator </h4>
+            <p>Generates a list of all the booked stall and their location as a csv file used to find stalls for Fair goers. Requires the event filter to be set</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="stallcsv" class="btn btn-primary" data-toggle="button" type="submit">
+                    Generator Search Stall CSV
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
             <h4> Pass Pack Generator </h4>
             <p>Generates a Pass Pack for a selected Stall Registration. Requires the Stallregistration ID to be set</p>
         </div>

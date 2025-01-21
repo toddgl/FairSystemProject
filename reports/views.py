@@ -1,8 +1,7 @@
 from wsgiref.util import request_uri
 
-import pprint
 import datetime
-from django.db.models.functions import Concat
+import csv
 from django.shortcuts import get_object_or_404, render
 from django.db.models import F, Subquery, OuterRef
 from weasyprint import HTML, CSS
@@ -13,7 +12,6 @@ from django.http import HttpResponse
 from django.db.models import Max, Case, When, Value, IntegerField, BooleanField
 from django.contrib.postgres.aggregates import StringAgg  # PostgreSQL only
 
-from utils.site_allocation_tools import site_allocations
 from .forms import (
     ReportListFilterForm,
     StallRegistrationIDFilterForm
@@ -102,6 +100,45 @@ def reports_listview(request):
                     alert_message = 'The selected event could not be found.'
             else:
                 alert_message = 'An event must be selected to generate the trestle distribution report.'
+
+        if 'foodstallreport' in request.POST:
+            # Food stall report only requires event
+            event_id = request.session.get('selected_event_id')
+
+            if event_id:
+                try:
+                    event = Event.objects.get(id=event_id)
+                    return food_stall_site_report(request, event.id)
+                except Event.DoesNotExist:
+                    alert_message = 'The selected event could not be found.'
+            else:
+                alert_message = 'An event must be selected to generate the food stall sites report.'
+
+        if 'searchstalllist' in request.POST:
+            # Food stall report only requires event
+            event_id = request.session.get('selected_event_id')
+
+            if event_id:
+                try:
+                    event = Event.objects.get(id=event_id)
+                    return stall_search_report(request, event.id)
+                except Event.DoesNotExist:
+                    alert_message = 'The selected event could not be found.'
+            else:
+                alert_message = 'An event must be selected to generate the stall stall sites report.'
+
+        if 'stallcsv' in request.POST:
+            # Search stall csv generation report only requires event
+            event_id = request.session.get('selected_event_id')
+
+            if event_id:
+                try:
+                    event = Event.objects.get(id=event_id)
+                    return stall_search_csv_report(request, event.id)
+                except Event.DoesNotExist:
+                    alert_message = 'The selected event could not be found.'
+            else:
+                alert_message = 'An event must be selected to generate the food stall sites csv report.'
 
         if 'passpack' in request.POST:
             # Pass Pack  only requires stallregistration id to be provided
@@ -261,7 +298,7 @@ def fair_passpack_generator(request, stallregistration):
     # Queryset for StallRegistration
     stall_registration = StallRegistration.objects.filter( id=stallregistration).first()
 
-    zone_map_subquery = ZoneMap.objects.filter(
+    zone_map_subquery = ZoneMap.objects.filterfoodstalllist(
         zone=OuterRef('site_allocation__event_site__site__zone'),
         year=str(report_date.year)
     ).values('map_pdf')[:1]
@@ -332,3 +369,150 @@ def fair_passpack_generator(request, stallregistration):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = f'inline; filename="{filename}"'
     return response
+
+def food_stall_site_report(request, event):
+    """
+    Report to produce a listing of the food stallholders and their site for a specific fair event.
+    Required the event to be selected
+    """
+    current_fair = Fair.currentfairmgr.all().last()
+    event_data = Event.objects.get(id=event)
+    # Queryset for StallRegistration
+    site_information = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event__fair=current_fair,
+        site_allocation__event_site__event=event,
+        selling_food=True,
+        booking_status='Booked'
+    ).select_related('stallholder').annotate(
+        allocated_zone_name=F('site_allocation__event_site__site__zone__zone_name'),
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+    ).values(
+        'stallholder__first_name',
+        'stallholder__last_name',
+        'allocated_zone_name',
+        'allocated_site_name',
+        'stall_description',
+        'products_on_site',
+    ).order_by(
+        'allocated_site_name'
+    )
+
+    context ={
+        'site_information': site_information,
+        'event_data': event_data
+    }
+
+    filename= f'food_stall_{event_data.event_name}_report.pdf'
+
+    html_template = get_template('foodstalllist.html').render(context)
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="{filename}"'
+    return response
+
+def stall_search_report(request, event):
+    """
+    Report to produce a listing of the stallholders and their site for a specific fair event.
+    The purpose of the report is for finding sites at the Fair Information Kiosk
+    Required the event to be selected
+    """
+    current_fair = Fair.currentfairmgr.all().last()
+    event_data = Event.objects.get(id=event)
+    # Queryset for StallRegistration
+    site_information = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event__fair=current_fair,
+        site_allocation__event_site__event=event,
+        booking_status='Booked'
+    ).select_related('stallholder__profile', 'stall_category').annotate(
+        allocated_zone_name=F('site_allocation__event_site__site__zone__zone_name'),
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        stallholder_org_name=F('stallholder__profile__org_name'),
+        stall_category_name=F('stall_category__category_name')
+    ).values(
+        'stallholder__first_name',
+        'stallholder__last_name',
+        'stallholder__phone',
+        'stallholder_org_name',
+        'allocated_zone_name',
+        'allocated_site_name',
+        'stall_category_name',
+        'stall_description',
+        'products_on_site',
+    ).order_by(
+        'stall_category_name'
+    )
+
+    context ={
+        'site_information': site_information,
+        'event_data': event_data
+    }
+
+    filename= f'stall_search_{event_data.event_name}_report.pdf'
+
+    html_template = get_template('searchstalllist.html').render(context)
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="{filename}"'
+    return response
+
+
+
+
+def stall_search_csv_report(request, event):
+    """
+    Export the stall search data as a CSV report.
+    """
+    current_fair = Fair.currentfairmgr.all().last()
+    event_data = Event.objects.get(id=event)
+
+    # Queryset for StallRegistration
+    site_information = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event__fair=current_fair,
+        site_allocation__event_site__event=event,
+        booking_status='Booked'
+    ).select_related(
+        'stallholder__profile', 'stall_category'
+    ).annotate(
+        stall_category_name=F('stall_category__category_name'),
+        stallholder_name=F('stallholder__first_name'),
+        stallholder_last_name=F('stallholder__last_name'),
+        organisation_name=F('stallholder__profile__org_name'),
+        phone=F('stallholder__profile__phone2'),
+        site_name=F('site_allocation__event_site__site__site_name'),
+    ).values(
+        'stall_category_name',
+        'stallholder_name',
+        'stallholder_last_name',
+        'organisation_name',
+        'phone',
+        'site_name',
+        'stall_description',
+        'products_on_site',
+    )
+
+    # Create the HTTP response with a CSV file
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="stall_search_{event_data.event_name}_report.csv"'
+
+    writer = csv.writer(response)
+    # Write the header
+    writer.writerow([
+        'Stall Category', 'Stallholder', 'Organisation',
+        'Phone', 'Site', 'Product Description', 'Products on Site'
+    ])
+
+    # Write data rows
+    for entry in site_information:
+        writer.writerow([
+            entry['stall_category_name'],
+            f"{entry['stallholder_name']} {entry['stallholder_last_name']}",
+            entry['organisation_name'],
+            entry['phone'],
+            entry['site_name'],
+            entry['stall_description'],
+            entry['products_on_site'],
+        ])
+
+    return response
+
+
