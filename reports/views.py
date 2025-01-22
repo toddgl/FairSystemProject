@@ -298,7 +298,7 @@ def fair_passpack_generator(request, stallregistration):
     # Queryset for StallRegistration
     stall_registration = StallRegistration.objects.filter( id=stallregistration).first()
 
-    zone_map_subquery = ZoneMap.objects.filterfoodstalllist(
+    zone_map_subquery = ZoneMap.objects.filter(
         zone=OuterRef('site_allocation__event_site__site__zone'),
         year=str(report_date.year)
     ).values('map_pdf')[:1]
