@@ -106,6 +106,7 @@
             <h4 class="card-title text-primary">Food Application Detail</h4>
           </div>
           <ul class="list-group list-group-flush">
+            <li class="list-group-item"><strong>Food Registration ID:</strong> {{ food_data.id }}</li>
             <li class="list-group-item"><strong>Food Stall Type:</strong> {{ food_data.food_stall_type }}</li>
             <li class="list-group-item"><strong>Is Food Consumed at the Fair:</strong> {{ food_data.food_fair_consumed|yesno:"Yes,No" }}</li>
             <li class="list-group-item"><strong>Food Display:</strong> {{ food_data.food_display_method }}</li>

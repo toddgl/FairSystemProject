@@ -236,7 +236,7 @@ def mark_licence_as_approved(request, id):
     """
     success_url = reverse_lazy('foodlicence:foodlicence-list')
     foodlicence = get_object_or_404(FoodLicence, pk=id)
-    if not can_proceed(foodlicence.to_booking_status_approved):
+    if not can_proceed(foodlicence.to_licence_status_approved):
         raise PermissionDenied
     foodlicence.to_licence_status_approved()
     foodlicence.date_completed = now()
