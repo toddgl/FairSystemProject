@@ -1383,11 +1383,16 @@ def stall_registration_dashboard_view(request):
             booked_counts = StallRegistration.registrationbookedmgr.filter(**filter_dict).count()
             cancelled_counts = StallRegistration. registrationcancelledmgr.filter(**filter_dict).count()
 
-        if 'bulkemail' in request.POST and createemailform.is_valid():
+        if 'invoicedbulkemail' in request.POST and createemailform.is_valid():
                 status = 'Invoiced'
                 subject_type = 'Invoicing'
                 body = createemailform.cleaned_data['body']
                 bulk_registration_emails(status, subject_type, body)
+        if 'bookedbulkemail' in request.POST and createemailform.is_valid():
+            status = 'Booked'
+            subject_type = 'Booking Status'
+            body = createemailform.cleaned_data['body']
+            bulk_registration_emails(status, subject_type, body)
     else:
         form = DashboardRegistrationFilterForm()
         total_counts = stall_registrations.count()

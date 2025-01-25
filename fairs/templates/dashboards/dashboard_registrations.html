@@ -133,7 +133,7 @@
                 </svg>
               </div>
               <a class = "btn btn-primary" href="{% url 'registration:stallregistration-list' %}?booking_status=Invoiced" role="button">View</a>
-              <a type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#emailBulkModal"><i class="bi bi-send"></i>  Email</a>
+              <a type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#invoicedEmailBulkModal"><i class="bi bi-send"></i>  Email</a>
             </div>
           </div>
         </div>
@@ -188,6 +188,7 @@
                 </svg>
               </div>
               <a class = "btn btn-primary" href="{% url 'registration:stallregistration-list' %}?booking_status=Booked" role="button">View</a>
+              <a type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#bookedEmailBulkModal"><i class="bi bi-send"></i>  Email</a>
             </div>
           </div>
         </div>
@@ -220,8 +221,8 @@
         </div>
       </div>
     </div>
-  <!-- Send bulk email modal-->
-  <div class="modal fade" tabindex="-1" id="emailBulkModal" aria-labelledby="emailBulkModalLabel"
+  <!-- Send Invoiced Registration stallholders bulk email modal-->
+  <div class="modal fade" tabindex="-1" id="invoicedEmailBulkModal" aria-labelledby="invoicedEmailBulkModalLabel"
        aria-hidden="true">
     <div class="modal-dialog" role="document">
       <div class="modal-content">
@@ -233,12 +234,33 @@
           <form method="post">
             {% csrf_token %}
             {{ createemailform.as_p }}
-            <button type="submit" name="bulkemail" class="btn btn-primary" data-bs-dismiss="modal">Send Email</button>
+            <button type="submit" name="invoicedbulkemail" class="btn btn-primary" data-bs-dismiss="modal">Send Email</button>
             <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </form>
         </div>
       </div>
     </div>
   </div>
+  <!-- Send Invoiced Registration stallholders bulk email modal-->
+  <div class="modal fade" tabindex="-1" id="bookedEmailBulkModal" aria-labelledby="bookedEmailBulkModalLabel"
+       aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header bg-info text-dark">
+          <h4 class="modal-title">Complete Bulk Email to Booked Stallholders</h4>
+          <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method="post">
+            {% csrf_token %}
+            {{ createemailform.as_p }}
+            <button type="submit" name="bookedbulkemail" class="btn btn-primary" data-bs-dismiss="modal">Send Email</button>
+            <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
 </main>
 {% endblock %}

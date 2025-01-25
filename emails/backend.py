@@ -41,12 +41,10 @@ def bulk_registration_emails(status, subject_type, body):
         stallholder_dict = defaultdict(list)
 
         for stall_registration in stall_registrations_qs:
-            print('Got to the dict append loop')
             stallholder_dict[stall_registration.stallholder].append(stall_registration)
 
         # Send a single email per stallholder
         for stallholder, registrations in stallholder_dict.items():
-            print("Got here for Stallholder", stallholder.id)
             try:
                 # Retrieve the CommentType instance for the given subject_type
                 subject_type_instance = CommentType.objects.get(type_name=subject_type)
@@ -99,7 +97,8 @@ def bulk_registration_emails(status, subject_type, body):
                 db_logger.error(f'There was an error sending an email: {e}',
                                 extra={'custom_category': 'Email'})
     else:
-        print("No stall registrations found for the given status.")
+        db_logger.error(f'No stall registrations found for the given status: {subject_type}',
+                        extra={'custom_category': 'Email'})
 
 
 def single_registration_email(stallholder_id, subject_type, recipient, subject, body):
