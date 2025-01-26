@@ -232,6 +232,15 @@ class RegistrationCancelledManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Cancelled')
 
+class RegistrationAmendedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is amended
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Amended')
+
 
 class VehiclesOnSiteManager(models.Manager):
     """
@@ -362,6 +371,7 @@ class StallRegistration(models.Model):
     registrationpaymentcomplemgr = RegistrationPaymentCompleteManager()
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
+    registrationamendedmgr = RegistrationAmendedManager()
     vehicleonsitemgr = VehiclesOnSiteManager()
     ismultisiteregistrationmgr = IsMultiSiteRegistrationManager()
 
@@ -404,7 +414,7 @@ class StallRegistration(models.Model):
     def to_booking_status_amended(self):
         pass
 
-    @transition(field=booking_status, source=["Invoiced"], target="Payment Completed")
+    @transition(field=booking_status, source=["Invoiced", "Amended"], target="Payment Completed")
     def to_booking_status_payment_completed(self):
         pass
 
