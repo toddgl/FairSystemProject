@@ -15,6 +15,7 @@ from foodlicence.views import (
     create_food_licence_from_stallregistration,
     create_food_licence_if_eligible,
     staged_licences_count_view,
+    bulk_approve_foodlicences,
 )
 
 app_name = 'foodlicence'  # This is the namespace, so you can reverse urls with payment:*
@@ -34,4 +35,5 @@ urlpatterns = [
     path('foodlicence/create/', create_food_licence_if_eligible,
          name='foodlicence-mass-create'),
     path('staged-count-update/', staged_licences_count_view, name='staged-count-update'),
+    path('bulk-approve/', bulk_approve_foodlicences, name='foodlicence-bulk-approve'),
 ]

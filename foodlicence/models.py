@@ -128,5 +128,4 @@ class FoodLicence(models.Model):
 
     @transition(field=licence_status, source="Submitted", target="Approved")
     def to_licence_status_approved(self):
-        print("Got to foodlicence transition to approved")
         pass

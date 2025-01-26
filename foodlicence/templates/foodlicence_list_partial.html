@@ -4,27 +4,48 @@
 {% load paginator_tags %}
 {% load hasfoodlicences_tag %}
 
+{% if message %}
+<div id="food_licence_message" class="alert alert-success" role="alert">
+    {{ message }}
+</div>
+{% endif %}
+
 <div id="food_licence_data">
+    <div class="d-flex gap-2">
+        <form hx-post="{% url 'foodlicence:foodlicence-bulk-approve' %}"
+              hx-trigger="click"
+              hx-target="#food_licence_data"
+              hx-swap="outerHTML"
+              id="bulk-approve-form">
+            {% csrf_token %}
+            <input type="hidden" id="selected-ids" name="selected_ids" value="">
+            <button type="submit" class="btn btn-success">Approve Selected</button>
+        </form>
+    </div>
+    <hr>
     <div>
         {% get_has_foodlicences as has_foodlicences %}
         {% if has_foodlicences %}
             <table class="table table-striped">
                 <thead>
                 <tr>
+                    <th><input type="checkbox" id="select-all"></th>
                     <th scope="col">Status</th>
                     <th scope="col">Registration ID</th>
                     <th scope="col">Submitted Date</th>
                     <th scope="col">Completed Date</th>
                     <th>Batch ID</th>
-                    <th scope="col-sm"></th>
-                    <th scope="col-sm"></th>
-                    <th scope="col-sm"></th>
-                    <th scope="col-sm"></th>
+                    <th colspan="4">Actions</th>
                 </tr>
                 </thead>
                 <tbody>
                 {% for foodlicence in food_licence_list %}
                 <tr>
+                    <td>
+                        <input type="checkbox" class="licence-checkbox"
+                               value="{{ foodlicence.id }}"
+                               {% if foodlicence.id|stringformat:"s" in request.session.selected_ids|default:"" %}checked{% endif %}>
+                    </td>
                     <td>{{ foodlicence.licence_status }}</td>
                     <td>{{ foodlicence.food_registration.registration.id }}</td>
                     <td>{{ foodlicence.date_requested |date:"jS F Y"}}</td>
@@ -59,31 +80,44 @@
     <nav aria-label="Page navigation">
         <ul class="pagination">
             {% if food_licence_list.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ food_licence_list.previous_page_number }}"
-                       hx-trigger="click" hx-target="#food_licence_data">&laquo;</a>
-                </li>
+    <li class="page-item">
+        <a class="page-link"
+           hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ food_licence_list.previous_page_number }}&selected_ids={{ selected_ids|join:',' }}"
+           hx-trigger="click"
+           hx-target="#food_licence_data">
+            &laquo;
+        </a>
+    </li>
+        {% else %}
+            <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+        {% endif %}
+        {% for i in page_range %}
+            {% if food_licence_list.number == i %}
+                <li class="active page-item"><span class="page-link">{{ i }}</span></li>
             {% else %}
-                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
-            {% endif %}
-            {% for i in page_range %}
-                {% if food_licence_list.number == i %}
-                    <li class="active page-item"><span class="page-link">{{ i }}</span></li>
-                {% else %}
-                    <li class="page-item">
-                        <a class="page-link" hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ i }}"
-                           hx-trigger="click" hx-target="#food_licence_data">{{ i }}</a>
-                    </li>
-                {% endif %}
-            {% endfor %}
-            {% if food_licence_list.has_next %}
                 <li class="page-item">
-                    <a class="page-link" hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ food_licence_list.next_page_number }}"
-                       hx-trigger="click" hx-target="#food_licence_data">&raquo;</a>
+                    <a class="page-link"
+                       hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ i }}&selected_ids={{ selected_ids|join:',' }}"
+                       hx-trigger="click"
+                       hx-target="#food_licence_data">
+                        {{ i }}
+                    </a>
                 </li>
-            {% else %}
-                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
             {% endif %}
+        {% endfor %}
+        {% if food_licence_list.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   hx-get="{% url 'foodlicence:foodlicence-list' %}?page={{ food_licence_list.next_page_number }}&selected_ids={{ selected_ids|join:',' }}"
+                   hx-trigger="click"
+                   hx-target="#food_licence_data">
+                    &raquo;
+                </a>
+            </li>
+        {% else %}
+            <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+        {% endif %}
+
         </ul>
     </nav>
     {% endif %}
@@ -91,3 +125,99 @@
     <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
     {% endif %}
 </div>
+<script>
+// Check if selectedIds is already defined
+if (typeof selectedIds === 'undefined') {
+    var selectedIds = new Set();
+
+    function updateSelectedIds() {
+        document.getElementById('selected-ids').value = Array.from(selectedIds).join(',');
+    }
+
+    function updateSelectAllState() {
+        const checkboxes = document.querySelectorAll('.licence-checkbox');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        const selectAllBox = document.getElementById('select-all');
+        selectAllBox.checked = allChecked;
+        selectAllBox.indeterminate = !allChecked && Array.from(checkboxes).some(cb => cb.checked);
+    }
+
+    function initializeCheckboxLogic() {
+        // Pre-check checkboxes for already selected IDs
+        document.querySelectorAll('.licence-checkbox').forEach(cb => {
+            if (selectedIds.has(cb.value)) {
+                cb.checked = true;
+            }
+        });
+
+        // Update the "Select All" box state
+        updateSelectAllState();
+
+        // Handle "Select All" functionality
+        const selectAllBox = document.getElementById('select-all');
+        selectAllBox.addEventListener('change', function () {
+            const checkboxes = document.querySelectorAll('.licence-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = this.checked;
+                if (cb.checked) {
+                    selectedIds.add(cb.value);
+                } else {
+                    selectedIds.delete(cb.value);
+                }
+            });
+            updateSelectedIds();
+        });
+
+        // Handle individual checkbox changes
+        document.querySelectorAll('.licence-checkbox').forEach(cb => {
+            cb.addEventListener('change', function () {
+                if (this.checked) {
+                    selectedIds.add(cb.value);
+                } else {
+                    selectedIds.delete(cb.value);
+                }
+                updateSelectedIds();
+                updateSelectAllState();
+            });
+        });
+    }
+
+    function updatePaginationLinks() {
+        const selectedIdsString = Array.from(selectedIds).join(',');
+
+        document.querySelectorAll('.page-link').forEach(link => {
+            let url;
+
+            // Ensure the URL is absolute
+            if (link.href.startsWith('http')) {
+                url = new URL(link.href);
+            } else {
+                url = new URL(link.getAttribute('href'), window.location.origin);
+            }
+
+            // Append selected_ids to the query parameters
+            url.searchParams.set('selected_ids', selectedIdsString);
+            link.href = url.toString();
+        });
+    }
+
+    // Initialize on page load
+    window.addEventListener('load', () => {
+        const initialSelected = document.getElementById('selected-ids').value.split(',');
+        initialSelected.forEach(id => {
+            if (id) selectedIds.add(id);
+        });
+        initializeCheckboxLogic();
+        updatePaginationLinks();
+        updateSelectedIds();
+    });
+
+    // Reinitialize logic after HTMX content replacement
+    document.body.addEventListener('htmx:afterSwap', (e) => {
+        if (e.detail.target.id === 'food_licence_data') {
+            initializeCheckboxLogic();
+            updatePaginationLinks();
+        }
+    });
+}
+</script>

@@ -18,6 +18,9 @@ from weasyprint import HTML, CSS
 from pypdf import PdfWriter, PdfReader
 from django.core.files.base import ContentFile
 from django.db.models import Q
+from django.http import JsonResponse
+from django.views.decorators.http import require_POST
+
 from accounts.models import (
     Profile
 )
@@ -358,10 +361,14 @@ def foodlicence_listview(request):
         template_name = 'foodlicence_list_partial.html'
 
     else:
+
         # Query with session filters on initial or non-HTMX request
         foodlicence_list = FoodLicence.foodlicencecurrentmgr.filter(
             **foodlicence_filters
         ).select_related('food_licence_batch').order_by('date_requested')
+
+    selected_ids = request.GET.get('selected_ids', '').split(',')
+    selected_ids = [id for id in selected_ids if id.isdigit()]
 
     # Apply pagination
     page_list, page_range = pagination_data(cards_per_page, foodlicence_list, request)
@@ -372,6 +379,7 @@ def foodlicence_listview(request):
         'food_licence_list': page_list,
         'page_range': page_range,
         'alert_mgr': alert_message,
+        'selected_ids': selected_ids,  # Pass selected IDs to the template
     })
 
 
@@ -468,3 +476,41 @@ def create_food_licence_if_eligible(request):
     else:
         # Redirect to the Foodlicence list view page
         return HttpResponseRedirect(success_url)
+
+
+@require_POST
+def bulk_approve_foodlicences(request):
+    """
+    Approve multiple food licences and update respective stall registrations.
+    """
+    selected_ids = request.POST.get('selected_ids', '')
+    licence_ids = [int(id) for id in selected_ids.split(',') if id.isdigit()]
+    food_licences = FoodLicence.objects.filter(id__in=licence_ids)
+
+    approved_count = 0
+    for food_licence in food_licences:
+        if can_proceed(food_licence.to_licence_status_approved):
+            # Transition to "Approved"
+            food_licence.to_licence_status_approved()
+            food_licence.date_completed = now()
+            food_licence.save()
+
+            # Update related StallRegistration
+            if food_licence.food_registration:
+                stall_registration = food_licence.food_registration.registration
+                if stall_registration:
+                    stall_registration.booking_status = StallRegistration.BOOKED
+                    stall_registration.save()
+            approved_count += 1
+
+    # Render the updated partial template
+    foodlicence_filters = request.session.get("foodlicence_filters", {})
+    food_licence_list = FoodLicence.foodlicencecurrentmgr.filter(
+        **foodlicence_filters
+    ).select_related('food_licence_batch').order_by('date_requested')
+
+    return render(request, 'foodlicence_list_partial.html', {
+        'food_licence_list': food_licence_list,
+        'message': f'{approved_count} licences approved successfully!',
+    })
+
