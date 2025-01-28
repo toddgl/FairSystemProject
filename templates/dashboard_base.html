@@ -51,16 +51,24 @@
 
   <!-- custom js -->
   <script>
-    var menu_btn = document.querySelector("#menu-btn");
-    var sidebar = document.querySelector("#sidebar");
-    var container = document.querySelector(".my-container");
-    container.classList.toggle("active-cont");
-    sidebar.classList.toggle("active-nav");
-    menu_btn.addEventListener("click", () => {
-      container.classList.toggle("active-cont");
-      sidebar.classList.toggle("active-nav");
+    document.addEventListener("DOMContentLoaded", function() {
+        var menu_btn = document.querySelector("#menu-btn");
+        var sidebar = document.querySelector("#sidebar");
+        var container = document.querySelector(".my-container");
+
+        if (container && sidebar && menu_btn) {
+            container.classList.toggle("active-cont");
+            sidebar.classList.toggle("active-nav");
+
+            menu_btn.addEventListener("click", () => {
+                container.classList.toggle("active-cont");
+                sidebar.classList.toggle("active-nav");
+            });
+        } else {
+            console.warn("One or more elements (#menu-btn, #sidebar, .my-container) were not found.");
+        }
     });
-</script>
+  </script>
   </body>
   <!-- JavaScript Bundle with Popper -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>

@@ -19,6 +19,7 @@ from django_fsm import can_proceed
 from django.http import HttpResponse
 from accounts.models import Profile
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
+from django.db.models import Sum, Count, Q
 
 from .models import (
     Invoice,
@@ -30,6 +31,9 @@ from .models import (
 from .forms import (
     PaymentHistoryStatusFilterForm,
     UpdatePaymentHistoryForm
+)
+from fairs.models import (
+    InventoryItem
 )
 
 db_logger = logging.getLogger('db')
@@ -372,3 +376,43 @@ def pagination_data(cards_per_page, queryset, request):
     ))  # Custom range for pagination links
 
     return page_list, page_range
+
+
+def financial_performance_view(request):
+    # Income Summary
+    inventory_summary = (
+        InvoiceItem.objects
+        .filter(
+            invoice__stall_registration__booking_status='Booked'
+        )
+        .values("inventory_item__item_name")
+        .annotate(
+            total_count=Sum("item_quantity"),
+            total_paid=Sum(
+                "invoice__payment_history__amount_paid",
+                filter=Q(invoice__payment_history__payment_status__in=["Completed", "Reconciled"])
+            )
+        )
+    )
+
+    # Calculate grand total for income
+    total_income = sum(item["total_paid"] or 0 for item in inventory_summary)
+
+    # Expenses Summary
+    total_discounts = DiscountItem.objects.aggregate(total_discount=Sum("discount_amount"))["total_discount"] or 0
+    total_credits = PaymentHistory.objects.filter(payment_status="Credit").aggregate(
+        total_credit=Sum("amount_credited")
+    )["total_credit"] or 0
+
+    # Calculate grand total for expenses
+    total_expenses = total_discounts + total_credits
+
+    # Context
+    context = {
+        "inventory_summary": inventory_summary,
+        "total_discounts": total_discounts,
+        "total_credits": total_credits,
+        "total_income": total_income,
+        "total_expenses": total_expenses,
+    }
+    return render(request, "dashboards/financial_performance.html", context)

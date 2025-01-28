@@ -1,0 +1,75 @@
+<!-- fairs/templates/dashboards/dashboard_sitehistory_filter.html -->
+
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <div class="container">
+        <h2 class="mb-4">Financial Performance Report</h2>
+        <hr>
+        <h3>Income Summary</h3>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Item</th>
+                <th>Total Count</th>
+                <th>Total Paid</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for item in inventory_summary %}
+            <tr>
+                <td>{{ item.inventory_item__item_name }}</td>
+                <td>{{ item.total_count }}</td>
+                <td>${{ item.total_paid|floatformat:2|intcomma }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3">No data available</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+            <tfoot>
+            <tr class="table-primary">
+                <th>Grand Total</th>
+                <th></th>
+                <th>${{ total_income|floatformat:2|intcomma }}</th>
+            </tr>
+            </tfoot>
+        </table>
+        <h3> Summary</h3>
+        <table class="table table-striped">
+            <thead>
+            <tr>
+                <th>Expense Type</th>
+                <th>Amount</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>Total Discount Amount Paid</td>
+                <td>${{ total_discounts|floatformat:2|intcomma }}</td>
+            </tr>
+            <tr>
+                <td>Total Credit Amount Paid</td>
+                <td>${{ total_credits|floatformat:2|intcomma }}</td>
+            </tr>
+            </tbody>
+            <tfoot>
+            <tr class="table-primary">
+                <th>Grand Total</th>
+                <th>${{ total_expenses|floatformat:2|intcomma }}</th>
+            </tr>
+            </tfoot>
+        </table>
+    </div>
+</main>
+{% endblock %}

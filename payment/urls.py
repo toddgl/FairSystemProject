@@ -14,7 +14,8 @@ from payment.views import (
     mark_payment_as_cancelled,
     mark_payment_as_reconciled,
     load_update_form,
-    update_payment_history
+    update_payment_history,
+    financial_performance_view
 )
 
 app_name = 'payment'  # This is the namespace, so you can reverse urls with payment:*
@@ -30,5 +31,6 @@ urlpatterns = [
     path('payment/stripe_webhook/', csrf_exempt(stripe_webhook), name='stripe-webhook'),
     path('dashboard/payments/', payment_dashboard_view, name='payment-dashboard'),
     path('payment/payment_update/<int:id>/', update_payment_history, name='payment-update'),
-    path('payment/load_update_form/<int:id>/', load_update_form, name='load-update-form')
+    path('payment/load_update_form/<int:id>/', load_update_form, name='load-update-form'),
+    path('payment/financial_performance/', financial_performance_view, name='financial-performance-report')
 ]
