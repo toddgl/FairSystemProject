@@ -223,6 +223,7 @@ def marshall_zone_report(request, zone, event):
         'allocated_site_name',
         'allocated_site_size',
         'site_has_power',
+        'stall_description',
         'stallholder__phone',
         'stallholder__first_name',
         'stallholder__last_name',

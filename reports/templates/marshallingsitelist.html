@@ -65,10 +65,10 @@
             </div>
             <!-- Status Icons -->
             <div class="col d-flex justify-content-around flex-wrap">
-                <div
+                <div>
                     {% if site.power_required %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Power Paid
                 </div>
-                <div
+                <div>
                     {% if site.attending_event_1 %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Feb
                 </div>
                 <div>
@@ -97,13 +97,22 @@
             </div>
           <!-- Status Icons -->
           <div class="col d-flex justify-content-around flex-wrap">
-            <div
+            <div>
               {% if site.attending_event_2 %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Mar
             </div>
-            <div
+            <div>
               <i class="bi bi-fullscreen"></i> No Show
             </div>
           </div>
+        </div>
+        <div class="row">
+            <!-- Site Notes -->
+            <div class="col-2">
+                <h6>Stall Description:</h6>
+            </div>
+            <div class="col-10">
+                {{ site.stall_description }}
+            </div>
         </div>
         <div class="row">
             <!-- Site Notes -->
