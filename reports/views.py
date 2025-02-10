@@ -182,6 +182,9 @@ def marshall_zone_report(request, zone, event):
     # Get the first and second events
     first_event = event_query.first()
     second_event = event_query[1] if event_query.count() > 1 else None
+    if event_query.count() <= 1:
+        second_event = None
+
 
     # Base queryset for StallRegistration
     site_information = StallRegistration.registrationcurrentallmgr.filter(
@@ -189,6 +192,8 @@ def marshall_zone_report(request, zone, event):
         site_allocation__event_site__site__zone=zone,
     ).select_related('stallholder').annotate(
         allocated_site_name=F('site_allocation__event_site__site__site_name'),
+        allocated_powerbox_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
+        allocated_powerbox_description=F('site_allocation__event_site__site__powerbox__power_box_description'),
         allocated_site_size=F('site_allocation__event_site__site__site_size__item_name'),
         site_has_power=F('site_allocation__event_site__site__has_power'),
         allocated_site_note=F('site_allocation__event_site__site__site_note'),
@@ -213,6 +218,11 @@ def marshall_zone_report(request, zone, event):
                 output_field=IntegerField(),
             )
         )
+    else:
+        # If there's no second event, avoid referencing it in aggregation
+        site_information = site_information.annotate(
+            attending_event_2=Value(0, output_field=IntegerField())
+            )
 
     # Aggregate by site to ensure each site is listed only once
     site_information = site_information.values(
@@ -220,8 +230,11 @@ def marshall_zone_report(request, zone, event):
         'manager_vehicle_registration',
         'vehicle_on_site',
         'power_required',
+        'stall_manager_name',
         'allocated_site_name',
         'allocated_site_size',
+        'allocated_powerbox_name',
+        'allocated_powerbox_description',
         'site_has_power',
         'stall_description',
         'stallholder__phone',

@@ -393,8 +393,8 @@ class Site(models.Model):
 
 class CurrentEventFilterManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().filter(Q(original_event_date__gt=datetime.now()) |
-                                             Q(postponement_event_date__gt=datetime.now()))
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True)
 
     def annotate_event_sequence(self):
         """

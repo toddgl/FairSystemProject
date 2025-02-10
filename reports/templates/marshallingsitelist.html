@@ -114,6 +114,26 @@
                 {{ site.stall_description }}
             </div>
         </div>
+         <div class="row">
+             <!-- Site Notes -->
+             <div class="col-2">
+                 <h6>Stall Manager:</h6>
+             </div>
+             <div class="col-10">
+                 {{ site.stall_manager_name }}
+             </div>
+         </div>
+         {% if site.power_required %}
+         <div class="row">
+             <!-- Site Notes -->
+             <div class="col-2">
+                 <h6>PowerBox Name:</h6>
+             </div>
+             <div class="col-10">
+                 {{ site.allocated_powerbox_name}} - {{ site.allocated_powerbox_description }}
+             </div>
+         </div>
+         {% endif %}
         <div class="row">
             <!-- Site Notes -->
             <div class="col-2">
