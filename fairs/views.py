@@ -2536,7 +2536,7 @@ def update_site_history(request, id):
             context = {
                 'alert_mgr': 'Stallholder site history updated successfully'
             }
-            return render(request, "stallholder_sitehistory_list_partial.html", context)
+            return render(request, "stallholder_site_history_list_partial.html", context)
 
         else:
             # Render the error message
