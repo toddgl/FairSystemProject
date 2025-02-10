@@ -4,6 +4,7 @@ import datetime
 import csv
 from django.shortcuts import get_object_or_404, render
 from django.db.models import F, Subquery, OuterRef
+from django.db.models.functions import Coalesce
 from weasyprint import HTML, CSS
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
@@ -25,6 +26,7 @@ from fairs.models import (
     Event,
     Fair,
     PowerBox,
+    SiteHistory,
     Zone,
     ZoneMap
 )
@@ -185,6 +187,13 @@ def marshall_zone_report(request, zone, event):
     if event_query.count() <= 1:
         second_event = None
 
+    # Subquery to fetch the `is_skipped` value from SiteHistory
+    site_history_subquery = SiteHistory.objects.filter(
+        stallholder=OuterRef('stallholder'),
+        site=OuterRef('site_allocation__event_site__site'),
+        year=str(current_fair.fair_year)
+    ).values('is_skipped')[:1]
+
 
     # Base queryset for StallRegistration
     site_information = StallRegistration.registrationcurrentallmgr.filter(
@@ -198,6 +207,7 @@ def marshall_zone_report(request, zone, event):
         site_has_power=F('site_allocation__event_site__site__has_power'),
         allocated_site_note=F('site_allocation__event_site__site__site_note'),
         allocated_eventsite_note=F('site_allocation__event_site__notes'),
+        is_skipped=Coalesce(Subquery(site_history_subquery, output_field=BooleanField()), Value(False))
     )
 
     # Add event attendance flags, casting BooleanField to IntegerField
@@ -240,6 +250,7 @@ def marshall_zone_report(request, zone, event):
         'stallholder__phone',
         'stallholder__first_name',
         'stallholder__last_name',
+        'is_skipped'
     ).annotate(
         # Consolidate notes into a single string
         allocated_site_note=StringAgg('site_allocation__event_site__site__site_note', delimiter=', ', distinct=True),
