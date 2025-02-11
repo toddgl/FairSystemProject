@@ -2536,14 +2536,14 @@ def update_site_history(request, id):
             context = {
                 'alert_mgr': 'Stallholder site history updated successfully'
             }
-            return render(request, "stallholder_site_history_list_partial.html", context)
+            return redirect('fair:site-history-update-list')
 
         else:
             # Render the error message
             context = {
                 'alert_mgr': 'Stallholder site history updated failed'
             }
-            return render(request, "stallholder_site_history_list_partial.html", context)
+            return render(request, "sitehistory/tallholder_site_history_list_partial.html", context)
 
     # If the request is GET, render the update form
     return render(request, "sitehistory/update_site_history_form.html", context)

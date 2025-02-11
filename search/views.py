@@ -8,6 +8,7 @@ from accounts.models import (
 from registration.models import(
     StallRegistration
 )
+from utils.site_allocation_tools import site_allocations
 
 
 def search_view(request):
@@ -194,7 +195,8 @@ def stall_search_view(request):
         Q(stall_manager_name__icontains=search_text) |
         Q(manager_vehicle_registration__icontains=search_text) |
         Q(stall_description__icontains=search_text) |
-        Q(products_on_site__icontains=search_text)
+        Q(products_on_site__icontains=search_text) |
+        Q(site_allocation__event_site__site__site_name__icontains=search_text)
     )
     context = {
         'results': results
