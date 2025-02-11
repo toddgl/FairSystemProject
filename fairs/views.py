@@ -63,7 +63,7 @@ from utils.site_allocation_tools import (
 from utils.site_history_tools import populate_site_history
 
 from utils.stallholder_history_tools import(
-    update_site_history_site_size
+    update_site_history_is_half_size
 )
 
 from .forms import (

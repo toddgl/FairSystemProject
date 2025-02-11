@@ -48,3 +48,46 @@ def update_site_history_site_size():
             db_logger.error('Site history ID {} has been updated to set site_size.id to {}'.format(site_history.id,
                                                                                                 inventory_item.id),
                             extra={'custom_category': 'Site_history_Update'})
+
+
+def update_site_history_is_half_size():
+    """
+    A function to update the is_half_size flag based on the site_size field.
+    If site_size is 'Half Size Fair Site', is_half_size will be set to True.
+    Otherwise, it will be set to False.
+
+     Added to dashboard_site_history.html to initiate this function
+    <div class="card-body">
+        <p class="card-text">Update Site History is_half_size</p>
+        <form method="post">
+            {% csrf_token %}
+            <button class= "bth btn-primary mb-1" type="submit" name="run_script">Run Update</button>
+        </form>
+    </div>
+    Added to Fairs view stallholder_history_dashboard_view
+    if request.method == 'POST' and 'run_script' in request.POST:
+        # call function
+        update_site_history_is_half_size()
+        # return user to required page
+        return HttpResponseRedirect(reverse('fair:history-dashboard'))
+    """
+    # Get the SiteHistory records
+    site_histories = SiteHistory.objects.all()
+    half_inventory_item = InventoryItem.objects.get(item_name='Half Size Fair Site')
+
+    for site_history in site_histories:
+        # Determine the correct value for is_half_size
+        is_half_size = site_history.site_size == half_inventory_item
+        try:
+            site_history.is_half_size = is_half_size
+            site_history.save()
+        except Exception as e:
+            db_logger.error(
+                'Error updating SiteHistory ID {}: {}'.format(site_history.id, str(e)),
+                extra={'custom_category': 'SiteHistory_Update'}
+            )
+        else:
+            db_logger.info(
+                'SiteHistory ID {} updated: is_half_size set to {}'.format(site_history.id, is_half_size),
+                extra={'custom_category': 'SiteHistory_Update'}
+            )
