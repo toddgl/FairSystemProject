@@ -1,12 +1,24 @@
 <!-- fairs/templates/sitehistory/site_history_update.html -->
 
 {% extends 'base.html' %}
+{% load static %}
 
 {% block body %}
 <div class="container" xmlns="http://www.w3.org/1999/html">
     <h1>Site History Update</h1>
   <div class="row g-3">
       <div class="col-md-6">
+          <!-- History Filter -->
+              <div class="title-hr">
+                  <span class="hr fix"></span>
+                  <span><strong>Site History Filters</strong></span>
+                  <span class="hr"></span>
+              </div>
+              <form>
+                  {% csrf_token %}
+                  {{ historyfilterform.as_p }}
+              </form>
+              <hr>
           <form>
               <a href="?clear_filters=true" class="btn btn-warning">Reset Filters</a>
               <a href="javascript:history.go(-1)" class="btn btn-secondary">Cancel</a>

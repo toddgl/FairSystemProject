@@ -101,6 +101,7 @@ from .forms import (
     MessageFilterForm,
     MessageReplyForm,
     SiteHistoryFilerForm,
+    SiteHistoryUpdateFilterForm,
     SiteAllocationFilerForm,
     PowerboxFilterForm,
     UpdateSiteHistoryForm,
@@ -2461,7 +2462,6 @@ def load_site_history_update_form(request, id):
     updateform = UpdateSiteHistoryForm(instance=site_history)
     return render(request, 'sitehistory/update_site_history_form.html', {'updateform': updateform, 'site_history_id': id})
 
-
 def current_site_history_update_view(request):
     """
     Provides the current site histories for a specific stallholder
@@ -2473,7 +2473,11 @@ def current_site_history_update_view(request):
     # Reset session filters on full page load
     if not request.htmx:
         request.session.pop('site_history_update_filter', None)
-    template_name = 'sitehistory/site_history_update.html'
+
+    request.session['siteallocation'] = 'fair:siteallocation-list'
+
+    # Retrieve filters from session
+    filter_params = request.session.get('site_allocation_filters', {})
 
     # Session management for filters
     if "clear_filters" in request.GET:
@@ -2485,6 +2489,7 @@ def current_site_history_update_view(request):
     site_history_update_filter_dict = request.session.get('site_history_update_filter', {})
 
     # Initialize forms
+    historyfilterform = SiteHistoryUpdateFilterForm(request.POST or None)
     updateform = UpdateSiteHistoryForm(request.POST or None)
     alert_message = "There are no Stallholder Site Histories selected yet."
 
@@ -2494,24 +2499,37 @@ def current_site_history_update_view(request):
 
         # Get stallholder from POST request
         stallholder_id = request.POST.get('selected_stallholder')
+
+        # Always update the filter dictionary with stallholder_id if it exists
         if stallholder_id:
             site_history_update_filter_dict['stallholder'] = stallholder_id
             alert_message = f'There are no site histories for {stallholder_id}'
 
+        # Apply additional filtering if the form is valid
+        if historyfilterform.is_valid():
+            zone = historyfilterform.cleaned_data['zone']
+            if zone: # Ensure zone is not None before accessing its id
+                site_history_update_filter_dict['site__zone'] = zone.id
+                alert_message = f'Showing stallholder ID allocation histories for zone {zone}'
+
+    # Save updated filters to session
+    request.session['site_history_update_filter'] = site_history_update_filter_dict
 
     # Query filtered data
-    stallholder_site_histories = SiteHistory.currentsitehistorymgr.filter( **site_history_update_filter_dict ).order_by('site')
+    stallholder_site_histories = SiteHistory.currentsitehistorymgr.filter(**site_history_update_filter_dict).order_by('site')
 
     # Apply pagination
     page_list, page_range = pagination_data(cards_per_page, stallholder_site_histories, request)
 
     # Prepare context and return response
     return TemplateResponse(request, template_name, {
+        'historyfilterform': historyfilterform,
         'updateform': updateform,
         'page_obj': page_list,
         'page_range': page_range,
         'alert_mgr': alert_message,
     })
+
 
 def update_site_history(request, id):
     """

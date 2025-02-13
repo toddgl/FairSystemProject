@@ -1363,6 +1363,26 @@ class SiteHistoryFilerForm(Form):
             'zone',
         ]
 
+class SiteHistoryUpdateFilterForm(Form):
+
+    zone = ModelChoiceField(
+        queryset=Zone.objects.all(),
+        empty_label='Show All',
+        label='Site Zones',
+        required=False,
+        widget=Select(attrs={
+            'class': 'form-select',
+            'style': 'max-width: 300px;',
+            'hx-trigger': 'change',
+            'hx-post': '.',
+            'hx-target': '#site_history_update_data',
+        }),
+    )
+    class Meta:
+        fields = [
+            'zone',
+        ]
+
 class SiteAllocationFilerForm(Form):
 
     event = ModelChoiceField(
