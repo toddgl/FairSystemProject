@@ -500,10 +500,9 @@ class InvoiceItem(models.Model):
     invoiceitemmgr = InvoiceItemManager()
 
 
-class Meta:
-    verbose_name = "invoiceitem"
-    verbose_name_plural = "invoiceitems"
-    unique_together = ('invoice', 'inventory_item')
+    class Meta:
+        verbose_name = "invoiceitem"
+        verbose_name_plural = "invoiceitems"
 
 
 class DiscountItemManager(models.Manager):
@@ -534,6 +533,6 @@ class DiscountItem(models.Model):
     discountitemmgr = DiscountItemManager()
 
 
-class Meta:
-    verbose_name = "discountitem"
-    verbose_name_plural = "discountitems"
+    class Meta:
+        verbose_name = "discountitem"
+        verbose_name_plural = "discountitems"

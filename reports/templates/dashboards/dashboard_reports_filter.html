@@ -109,6 +109,20 @@
             <hr>
         </div>
         <div>
+            <h4> Mitre10 Pain & Kershaw Payment Report </h4>
+            <p>Generates a summary of money raised with the Mitre 10 sites sales and determines the amount owed to Pain & Kershaw based on the MOU.</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="mitre10report" class="btn btn-primary" data-toggle="button" type="submit">
+                    View the Mitre 10 payment Report
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
             <h4> Pass Pack Generator </h4>
             <p>Generates a Pass Pack for a selected Stall Registration. Requires the Stallregistration ID to be set</p>
         </div>

@@ -1,4 +1,5 @@
 # payment/views.py
+from decimal import Decimal
 
 import stripe
 import time
@@ -19,7 +20,8 @@ from django_fsm import can_proceed
 from django.http import HttpResponse
 from accounts.models import Profile
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, F, Q, DecimalField, ExpressionWrapper
+from django.db.models.functions import Coalesce
 
 from .models import (
     Invoice,
@@ -33,7 +35,9 @@ from .forms import (
     UpdatePaymentHistoryForm
 )
 from fairs.models import (
-    InventoryItem
+    InventoryItemFair,
+    Site,
+    Zone
 )
 
 db_logger = logging.getLogger('db')
@@ -379,40 +383,165 @@ def pagination_data(cards_per_page, queryset, request):
 
 
 def financial_performance_view(request):
-    # Income Summary
-    inventory_summary = (
-        InvoiceItem.objects
-        .filter(
-            invoice__stall_registration__booking_status='Booked'
-        )
-        .values("inventory_item__item_name")
-        .annotate(
-            total_count=Sum("item_quantity"),
-            total_paid=Sum(
-                "invoice__payment_history__amount_paid",
-                filter=Q(invoice__payment_history__payment_status__in=["Completed", "Reconciled"])
-            )
+    # Step 1: Compute total invoice cost for each invoice with explicit DecimalField
+    invoice_totals = InvoiceItem.objects.values("invoice_id").annotate(
+        total_invoice_cost=Coalesce(
+            Sum(ExpressionWrapper(F("item_quantity") * F("item_cost"), output_field=DecimalField())),
+            0,
+            output_field=DecimalField()
         )
     )
 
-    # Calculate grand total for income
-    total_income = sum(item["total_paid"] or 0 for item in inventory_summary)
+    # Fix: Ensure values are cast to Decimal properly
+    invoice_total_map = {
+        item["invoice_id"]: item["total_invoice_cost"] for item in invoice_totals
+    }
+
+    # Step 2: Get inventory summary
+    inventory_items = InvoiceItem.objects.filter(
+        invoice__stall_registration__booking_status="Booked"
+    ).annotate(
+        total_cost=ExpressionWrapper(F("item_quantity") * F("item_cost"), output_field=DecimalField()),
+    ).values("inventory_item__item_name", "invoice_id", "total_cost", "item_quantity", "item_cost")
+
+    # Step 3: Compute payments proportionally
+    payment_data = PaymentHistory.objects.filter(
+        invoice__stall_registration__booking_status="Booked",
+        payment_status__in=["Completed", "Reconciled"]
+    ).values("invoice_id").annotate(
+        total_paid=Coalesce(Sum("amount_paid"), 0, output_field=DecimalField())
+    )
+    payment_map = {p["invoice_id"]: p["total_paid"] for p in payment_data}
+
+    # Step 4: Aggregate results manually
+    inventory_summary = {}
+    for item in inventory_items:
+        item_name = item["inventory_item__item_name"]
+        invoice_id = item["invoice_id"]
+        total_cost = item["total_cost"]
+
+        total_invoice_cost = invoice_total_map.get(invoice_id, Decimal("0"))
+        total_invoice_paid = payment_map.get(invoice_id, Decimal("0"))
+
+        # Compute proportionate paid amount
+        proportion_paid = (total_cost / total_invoice_cost * total_invoice_paid) if total_invoice_cost else Decimal("0")
+
+        if item_name not in inventory_summary:
+            inventory_summary[item_name] = {"total_count": 0, "total_cost": Decimal("0"), "total_paid": Decimal("0")}
+
+        inventory_summary[item_name]["total_count"] += item["item_quantity"]
+        inventory_summary[item_name]["total_cost"] += total_cost
+        inventory_summary[item_name]["total_paid"] += proportion_paid
+
+    # Step 5: Convert results for context
+    inventory_summary_list = [
+        {
+            "inventory_item__item_name": key,
+            "total_count": value["total_count"],
+            "total_cost": value["total_cost"],
+            "total_paid": value["total_paid"],
+        }
+        for key, value in inventory_summary.items()
+    ]
+
+    # Step 6: Compute total income
+    total_income = sum(item["total_cost"] for item in inventory_summary_list)
 
     # Expenses Summary
-    total_discounts = DiscountItem.objects.aggregate(total_discount=Sum("discount_amount"))["total_discount"] or 0
+    total_discounts = DiscountItem.objects.aggregate(total_discount=Coalesce(Sum("discount_amount"), 0, output_field=DecimalField()))["total_discount"]
     total_credits = PaymentHistory.objects.filter(payment_status="Credit").aggregate(
-        total_credit=Sum("amount_credited")
-    )["total_credit"] or 0
+        total_credit=Coalesce(Sum("amount_credited"), 0, output_field=DecimalField())
+    )["total_credit"]
 
-    # Calculate grand total for expenses
+    # Total expenses
     total_expenses = total_discounts + total_credits
 
     # Context
     context = {
-        "inventory_summary": inventory_summary,
+        "inventory_summary": inventory_summary_list,
         "total_discounts": total_discounts,
         "total_credits": total_credits,
         "total_income": total_income,
         "total_expenses": total_expenses,
     }
     return render(request, "dashboards/financial_performance.html", context)
+
+
+def mitre10_financial_report_view(request):
+    # Get the Mitre 10 zone
+    mitre10_zone = Zone.objects.filter(zone_name="Mitre 10").first()
+
+    if not mitre10_zone:
+        return render(request, "dashboards/mitre10_financial_report.html", {"error": "Mitre 10 zone not found."})
+
+    # Get all sites within the Mitre 10 zone
+    mitre10_sites = Site.objects.filter(zone=mitre10_zone)
+
+    # Store breakdown per site
+    site_breakdown = []
+
+    # Calculate totals
+    total_gross_income = Decimal("0.00")
+    total_payable_to_pain_kershaw = Decimal("0.00")
+
+    # Track processed (stallholder, site) pairs
+    processed_pairs = set()
+
+    # Track stallholders and their assigned site
+    invoice_mapping = {}
+
+    for site in mitre10_sites:
+        # Get all invoices linked to this site
+        invoices = Invoice.objects.filter(stall_registration__site_allocation__event_site__site=site)
+
+        # Ensure only invoices related to `FAIRPRICE` are counted
+        fair_invoices = invoices.filter(
+            stall_registration__site_size__inventory_itemr__price_rate=InventoryItemFair.FAIRPRICE
+        ).distinct()
+
+        # Process each stallholder separately
+        for invoice in fair_invoices:
+            stallholder_id = invoice.stall_registration.stallholder_id
+            site_id = site.id
+            invoice_id = invoice.id
+
+            # only if invoice has not been previously applied
+            if invoice_id not in invoice_mapping:
+                # Calculate gross income for this site excluding superceded payments
+                site_gross_income = fair_invoices.filter(
+                    payment_history__payment_status__in=["Completed", "Reconciled"],
+                    id=invoice_id
+                ).aggregate(
+                    total_income=Sum("total_cost", default=0)
+                )["total_income"] or Decimal("0.00")
+
+                # assign the cost to the first site found
+                invoice_mapping[invoice_id] = invoice.id
+            else:
+                site_gross_income = 0
+
+            # **Exclude sites where gross income is 0**
+            if site_gross_income > 0:
+                # Calculate 30% payable for this site
+                site_payable = site_gross_income * Decimal("0.30")
+
+                # Append site data to breakdown list
+                site_breakdown.append({
+                    "site_name": site.site_name,
+                    "gross_income": site_gross_income,
+                    "payable_to_pain_kershaw": site_payable,
+                })
+
+                # Update overall totals
+                total_gross_income += site_gross_income
+                total_payable_to_pain_kershaw += site_payable
+
+    # Context data
+    context = {
+        "mitre10_zone": mitre10_zone.zone_name,
+        "total_gross_income": total_gross_income,
+        "total_payable_to_pain_kershaw": total_payable_to_pain_kershaw,
+        "site_breakdown": site_breakdown,
+    }
+
+    return render(request, "dashboards/mitre10_financial_report.html", context)

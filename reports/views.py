@@ -13,6 +13,7 @@ from django.http import HttpResponse
 from django.db.models import Max, Case, When, Value, IntegerField, BooleanField
 from django.contrib.postgres.aggregates import StringAgg  # PostgreSQL only
 
+from payment.views import mitre10_financial_report_view
 from .forms import (
     ReportListFilterForm,
     StallRegistrationIDFilterForm
@@ -141,6 +142,10 @@ def reports_listview(request):
                     alert_message = 'The selected event could not be found.'
             else:
                 alert_message = 'An event must be selected to generate the food stall sites csv report.'
+
+        if 'mitre10report' in request.POST:
+            # Mitre 10 payment generation report doesn't require zone or event
+            return mitre10_financial_report_view(request)
 
         if 'passpack' in request.POST:
             # Pass Pack  only requires stallregistration id to be provided

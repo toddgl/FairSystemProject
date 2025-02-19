@@ -1,0 +1,66 @@
+<!-- fairs/templates/dashboards/mitre10_financial_report.html -->
+
+{% extends 'dashboard_base.html' %}
+{% load static %}
+{% load humanize %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <div class="container my-4">
+        <h1 class="mb-4">Financial Report - {{ mitre10_zone }}</h1>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% else %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Description</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Total Gross Income</td>
+                        <td>${{ total_gross_income|floatformat:2|intcomma }}</td>
+                    </tr>
+                    <tr>
+                        <td>Payable to Pain & Kershaw (30%)</td>
+                        <td>${{ total_payable_to_pain_kershaw|floatformat:2|intcomma }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <h2 class="mt-4">Breakdown by Site</h2>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>Site Name</th>
+                        <th>Gross Income</th>
+                        <th>Payable to Pain & Kershaw (30%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for site in site_breakdown %}
+                    <tr>
+                        <td>{{ site.site_name }}</td>
+                        <td>${{ site.gross_income|floatformat:2|intcomma }}</td>
+                        <td>${{ site.payable_to_pain_kershaw|floatformat:2|intcomma }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="3">No data available</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}
