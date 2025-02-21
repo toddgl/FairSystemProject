@@ -1,17 +1,17 @@
-from wsgiref.util import request_uri
 
 import datetime
 import csv
 from django.shortcuts import get_object_or_404, render
-from django.db.models import F, Subquery, OuterRef
+from django.db.models import F, Q, Subquery, OuterRef
 from django.db.models.functions import Coalesce
-from weasyprint import HTML, CSS
+from weasyprint import HTML
 from django.contrib.sites.shortcuts import get_current_site
 from django.template.loader import get_template
 from django.template.response import TemplateResponse
 from django.http import HttpResponse
 from django.db.models import Max, Case, When, Value, IntegerField, BooleanField
 from django.contrib.postgres.aggregates import StringAgg  # PostgreSQL only
+from django.urls import reverse
 
 from payment.views import mitre10_financial_report_view
 from .forms import (
@@ -147,6 +147,10 @@ def reports_listview(request):
             # Mitre 10 payment generation report doesn't require zone or event
             return mitre10_financial_report_view(request)
 
+        if 'validationreport' in request.POST:
+            # Mitre 10 payment generation report doesn't require zone or event
+            return stall_validation_report(request)
+
         if 'passpack' in request.POST:
             # Pass Pack  only requires stallregistration id to be provided
 
@@ -203,7 +207,7 @@ def marshall_zone_report(request, zone, event):
     # Base queryset for StallRegistration
     site_information = StallRegistration.registrationcurrentallmgr.filter(
         site_allocation__event_site__event__fair=current_fair,
-        site_allocation__event_site__site__zone=zone,
+        site_allocation__event__site__site__zone=zone,
     ).select_related('stallholder').annotate(
         allocated_site_name=F('site_allocation__event_site__site__site_name'),
         allocated_powerbox_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
@@ -546,3 +550,57 @@ def stall_search_csv_report(request, event):
     return response
 
 
+def stall_validation_report(request):
+    # Get the current fair
+    current_fair = Fair.currentfairmgr.all().last()
+
+    # Validation 1: Find Booked Stall registrations with no sites allocated
+    unallocated_stalls = StallRegistration.registrationcurrentallmgr.filter(
+        booking_status='Booked',
+        site_allocation__isnull=True  # This ensures only unallocated stalls are selected
+    ).values(
+        'id',
+        'stallholder__first_name',
+        'stallholder__last_name',
+        'stallholder__phone',
+        'stallholder__profile__org_name'
+    )
+
+    # Generate validation report with edit links
+    validation_report = []
+    for stall in unallocated_stalls:
+        stall_id = stall['id']
+        stallholder_name = f"{stall['stallholder__first_name']} {stall['stallholder__last_name']}"
+        stallholder_org = stall['stallholder__profile__org_name'] or "N/A"
+        stallholder_phone = stall['stallholder__phone'] or "N/A"
+
+        # Generate edit link
+        edit_link = reverse('registration:convener-stall-food-registration-detail', args=[stall_id])
+
+        validation_report.append({
+            'id': stall_id,
+            'stallholder_name': stallholder_name,
+            'stallholder_org': stallholder_org,
+            'stallholder_phone': stallholder_phone,
+            'edit_link': edit_link,
+            'issue': "Unallocated Stall",
+        })
+
+    # Validation 2: Find Invoiced stalls with incorrect payment statuses
+    incorrectly_processed_invoices = StallRegistration.registrationcurrentallmgr.filter(
+        booking_status="Invoiced",
+        invoice__payment_history__payment_status__in=["Completed", "Reconciled"]
+    ).distinct()
+
+    for stall in incorrectly_processed_invoices:
+        validation_report.append({
+            'id': stall.id,
+            'stallholder_name': f"{stall.stallholder.first_name} {stall.stallholder.last_name}",
+            'stallholder_org': stall.stallholder.profile.org_name if stall.stallholder.profile else "N/A",
+            'stallholder_phone': stall.stallholder.phone if stall.stallholder.phone else "N/A",
+            'edit_link': reverse('registration:convener-stall-food-registration-detail', args=[stall.id]),
+            'issue': "Invoiced with incorrect payment status",
+        })
+
+    # Pass data to template
+    return render(request, 'unallocated_stalls.html', {'validation_report': validation_report})

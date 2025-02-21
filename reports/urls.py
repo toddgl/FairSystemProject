@@ -6,6 +6,7 @@ from reports.views import (
     marshall_zone_report,
     reports_listview,
     fair_passpack_generator,
+    stall_validation_report
 )
 
 
@@ -15,4 +16,5 @@ urlpatterns = [
     path('reports/zonelist/', marshall_zone_report, name='marshal-zone-list'),
     path('reports/dashboard/',reports_listview, name='report-dashboard' ),
     path('reports/passpack/<int:stallregistration>', fair_passpack_generator, name='stallholder-passpack'),
+    path('reports/unallocated-stalls/', stall_validation_report, name='unallocated_stalls_report'),
 ]

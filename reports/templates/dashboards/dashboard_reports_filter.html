@@ -39,6 +39,20 @@
         </div>
         <hr>
         <div>
+            <h4> Booked Registrations Validation Report </h4>
+            <p>Generates a report identifying any Booked stall registrations that have no allocated sites.</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="validationreport" class="btn btn-primary" data-toggle="button" type="submit">
+                    Stall Registration Validation Report
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
             <h4> Marshaller Lists </h4>
             <p>Generates a marshalls list in pdf form for a zone. Requires the event and zone filters to be set</p>
         </div>

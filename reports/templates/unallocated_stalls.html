@@ -1,0 +1,50 @@
+<!--templates/unallocated_stalls.html -->
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End Top Nav -->
+    <hr>
+    <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+    <hr>
+    <div class="container">
+        <h3>Items that have failed validation</h3>
+        {% if validation_report %}
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Stallholder Name</th>
+                        <th>Organization</th>
+                        <th>Phone</th>
+                        <th>Actions</th>
+                </thead>
+                <tbody>
+                    {% for stall in validation_report %}
+                        <tr>
+                            <td>{{ stall.id }}</td>
+                            <td>{{ stall.stallholder_name }}</td>
+                            <td>{{ stall.stallholder_org }}</td>
+                            <td>{{ stall.stallholder_phone }}</td>
+                            <td>{{ stall.issue }}</td>
+                            <td>
+                                <a href="{{ stall.edit_link }}" class="btn btn-info">
+                                    View Application Details
+                                </a>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>✅ No stall registration with issues found.</p>
+        {% endif %}
+    </div>
+{% endblock %}
+</main>
