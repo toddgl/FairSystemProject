@@ -10,6 +10,7 @@ import decimal
 from weasyprint import HTML, CSS
 from django.urls import reverse_lazy, reverse
 from django.conf import settings
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required,permission_required
 from django.template.loader import get_template
 from django.http import HttpResponseRedirect, HttpResponse, Http404, JsonResponse
@@ -32,7 +33,8 @@ from .models import (
 )
 from .forms import (
     PaymentHistoryStatusFilterForm,
-    UpdatePaymentHistoryForm
+    UpdatePaymentHistoryForm,
+    UpdateDiscountItemForm
 )
 from fairs.models import (
     InventoryItemFair,
@@ -484,9 +486,6 @@ def mitre10_financial_report_view(request):
     total_gross_income = Decimal("0.00")
     total_payable_to_pain_kershaw = Decimal("0.00")
 
-    # Track processed (stallholder, site) pairs
-    processed_pairs = set()
-
     # Track stallholders and their assigned site
     invoice_mapping = {}
 
@@ -545,3 +544,122 @@ def mitre10_financial_report_view(request):
     }
 
     return render(request, "dashboards/mitre10_financial_report.html", context)
+
+
+def load_discount_update_form(request, id):
+    """
+    Load the UpdatePaymentHistoryForm prepopulated with the instance of payment history
+    """
+    discount_item = get_object_or_404(DiscountItem, id=id)
+    updateform = UpdateDiscountItemForm(instance=discount_item)
+    return render(request, 'update_discount_form.html', {'updateform': updateform, 'discount_id': id})
+
+
+def update_discount_item(request, id):
+    """
+    Conveners function to update an existing discount item.
+    """
+    # Retrieve the payment history instance or return 404 if not found
+    obj = get_object_or_404(DiscountItem, id=id)
+    updateform = UpdateDiscountItemForm(request.POST or None, instance=obj)
+    context = {
+        'updateform': updateform,
+        'discount_id': id
+    }
+
+    # Check if form is submitted and valid
+    if request.method == 'POST':
+        if updateform.is_valid():
+            # Save the updated instance
+            obj = updateform.save(commit=False)
+            obj.is_valid = True  # Set additional attributes if necessary
+            obj.save()
+            # Render the success message HTML snippet
+            context = {
+                'alert_mgr': 'Discount item updated successfully'
+            }
+            return render(request, "discount_list_partial.html", context)
+
+        else:
+            # Render the error message
+            context = {
+                'alert_mgr': 'Discount Item update failed'
+            }
+            return render(request, "discount_list_partial.html", context)
+
+    # If the request is GET, render the update form
+    return render(request, "payment/update_discount_form.html", context)
+
+def discount_listview(request):
+    """
+    View for displaying discounts in a table with the ability to edit the discount
+    """
+    template_name = 'discount_list.html'
+    cards_per_page = 10
+
+    # Session management for filters
+    if "clear_filters" in request.GET:
+        # Clear session filters on page refresh or when explicitly cleared
+        request.session.pop("discount_filters", None)
+        return redirect("payment:discount-list")
+
+    # Initialize or retrieve session filter dict
+    discount_filter_dict = request.session.get("discount_filters", {})
+
+    # Initialize forms
+    updateform = UpdateDiscountItemForm(request.POST or None)
+    alert_message = "There are no Discount Items created yet."
+
+    # HTMX-specific logic
+    if request.htmx:
+        template_name = 'discount_list_partial.html'
+
+        # Get stallholder from POST request
+        stallholder_id = request.POST.get('selected_stallholder')
+        if stallholder_id:
+            discount_filter_dict['stall_registration__stallholder'] = stallholder_id
+            alert_message = f"There are no discounts for stallholder {stallholder_id}."
+
+        # Update session filters
+        request.session["discount_filters"] = discount_filter_dict
+
+    # Query filtered data
+    discount_item_list = DiscountItem.discountitemmgr.filter(
+        **discount_filter_dict
+    ).order_by('-date_created')
+
+    # Apply pagination
+    page_list, page_range = pagination_data(cards_per_page, discount_item_list, request)
+
+    # Prepare context and return response
+    return TemplateResponse(request, template_name, {
+        'updateform': updateform,
+        'page_obj': page_list,
+        'alert_mgr': alert_message,
+        'page_range': page_range,
+    })
+
+
+def delete_discount_item(request, id):
+    """
+    Deletes a discount item, but prevents deletion if related PaymentHistory is completed or reconciled.
+    """
+    discount_item = get_object_or_404(DiscountItem, id=id)
+
+    # Find related invoices through stall_registration
+    related_invoices = Invoice.objects.filter(stall_registration=discount_item.stall_registration)
+
+    # Find related payments from those invoices
+    related_payments = PaymentHistory.objects.filter(invoice__in=related_invoices)
+
+    # Prevent deletion if any related PaymentHistory is "Completed" or "Reconciled"
+    if related_payments.filter(payment_status__in=["Completed", "Reconciled"]).exists():
+        messages.error(request, "Cannot delete discount. Related payment is completed or reconciled.")
+
+        return redirect("payment:discount-list")  # Adjust this to your correct URL name
+
+    # Proceed with deletion
+    discount_item.delete()
+    messages.success(request, "Discount item deleted successfully.")
+
+    return redirect("payment:discount-list")  # Adjust this to your correct URL name

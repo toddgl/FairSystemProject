@@ -4,6 +4,7 @@ from django.urls import path
 from django.views.decorators.csrf import csrf_exempt
 
 from payment.views import (
+    discount_listview,
     invoice_pdf_generation,
     payment_cancelled,
     payment_successful,
@@ -16,7 +17,10 @@ from payment.views import (
     load_update_form,
     update_payment_history,
     financial_performance_view,
-    mitre10_financial_report_view
+    mitre10_financial_report_view,
+    delete_discount_item,
+    load_discount_update_form,
+    update_discount_item
 )
 
 app_name = 'payment'  # This is the namespace, so you can reverse urls with payment:*
@@ -34,5 +38,9 @@ urlpatterns = [
     path('payment/payment_update/<int:id>/', update_payment_history, name='payment-update'),
     path('payment/load_update_form/<int:id>/', load_update_form, name='load-update-form'),
     path('payment/financial_performance/', financial_performance_view, name='financial-performance-report'),
-    path('payment/mitre10_payment/', mitre10_financial_report_view, name='mitre10-payment-report')
+    path('payment/mitre10_payment/', mitre10_financial_report_view, name='mitre10-payment-report'),
+    path('payment/discount/list/', discount_listview, name='discount-list'),
+    path('payment/discount/delete/<int:id>/', delete_discount_item, name='delete-discount-item'),
+    path('payment/load_discount_update_form/<int:id>/', load_discount_update_form, name='load-discount-update-form'),
+    path('payment/discount_update/<int:id>/', update_discount_item, name='update-discount-item'),
 ]

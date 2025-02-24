@@ -1,0 +1,119 @@
+<!-- payment/templates/discount_list_partial.html -->
+
+{% load static %}
+{% load paginator_tags %}
+{% load payment_tags %}
+
+<!-- payment/message_snippet.html -->
+<div class="alert alert-{{ status }}">
+    {{ message }}
+</div>
+
+
+<!-- Payment history table and other elements... -->
+<div id="discount_data">
+    <div>
+            <table class="table table-striped">
+                <thead>
+                <tr>
+                    <th scope="col">Registration ID</th>
+                    <th scope="col">Discount Amount</th>
+                    <th scope="col">Created Date</th>
+                    <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
+                    <th scope="col-sm"></th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for discountitem in page_obj %}
+                <tr>
+                    <td>{{ discountitem.stall_registration.id }}</td>
+                    <td>{{ discountitem.discount_amount }}</td>
+                    <td>{{ discountitem.date_created }}</td>
+                    <!-- Delete Discount Item Button -->
+                    <td>
+                        {% if discountitem|can_delete_discount %}
+                            <a class="btn btn-danger btn-small"
+                               data-bs-toggle="tooltip"
+                               data-bs-placement="top"
+                               title="Delete Discount item"
+                               hx-post="{% url 'payment:delete-discount-item' discountitem.id %}"
+                               hx-trigger="click"
+                               hx-target="#discount_data"
+                               hx-swap="outerHTML">
+                                <i class="bi bi-trash-fill"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                    <!-- Update DiscountItem Button -->
+                    <td>
+                        <a class="btn btn-warning btn-small" data-bs-toggle="modal"
+                           data-bs-target="#updateDiscountModal"
+                           hx-get="{% url 'payment:load-discount-update-form' discountitem.id %}"
+                           hx-target="#updateDiscountFormContainer">
+                            <i class="bi bi-pencil-square"></i>
+                        </a>
+                    </td>
+                    {% if discountitem.stall_registration %}
+                    <td><a class = "btn btn-info btn-small" data-bs-toggle="tooltip" data-bs-placement="top"
+                        title="View Stall registration" href=
+                        "{% url 'registration:convener-stall-food-registration-detail' discountitem.stall_registration.id %}">
+                        <i class="bi bi-binoculars-fill"></i></a></td>
+                    {% else %}
+                        <td><span class="text-danger">No Stall Registration</span></td>
+                    {% endif %}
+                </tr>
+                {% empty %}
+                    <div class="alert alert-info" role="alert">{{ alert_mgr }}</div>
+                {% endfor %}
+                </tbody>
+            </table>
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination">
+                {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'payment:discount-list' %}?page={{ page_obj.previous_page_number }}"
+                       hx-trigger="click" hx-target="#discount_data">&laquo;</a>
+                </li>
+                {% else %}
+                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+                {% endif %}
+                {% for i in page_range %}
+                {% if page_obj.number == i %}
+                <li class="active page-item"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'payment:discount-list' %}?page={{ i }}"
+                       hx-trigger="click" hx-target="#discount_data">{{ i }}</a>
+                </li>
+                {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" hx-get="{% url 'payment:discount-list' %}?page={{ page_obj.next_page_number }}"
+                       hx-trigger="click" hx-target="#discount_data">&raquo;</a>
+                </li>
+                {% else %}
+                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+    <!-- Update Payment History modal-->
+    <div class="modal fade" tabindex="-1" id="updateDiscountModal" aria-labelledby="updateDiscountModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-dark">
+                    <h4 class="modal-title">Discount Update Form</h4>
+                    <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="updateDiscountFormContainer">
+                    <!-- Form will be loaded here by HTMX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

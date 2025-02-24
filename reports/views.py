@@ -560,6 +560,7 @@ def stall_validation_report(request):
         site_allocation__isnull=True  # This ensures only unallocated stalls are selected
     ).values(
         'id',
+        'stallholder__id',
         'stallholder__first_name',
         'stallholder__last_name',
         'stallholder__phone',
@@ -570,12 +571,14 @@ def stall_validation_report(request):
     validation_report = []
     for stall in unallocated_stalls:
         stall_id = stall['id']
+        stallholder_id = stall['stallholder__id']
         stallholder_name = f"{stall['stallholder__first_name']} {stall['stallholder__last_name']}"
         stallholder_org = stall['stallholder__profile__org_name'] or "N/A"
         stallholder_phone = stall['stallholder__phone'] or "N/A"
 
         # Generate edit link
-        edit_link = reverse('registration:convener-stall-food-registration-detail', args=[stall_id])
+        # edit_link = reverse('registration:convener-stall-food-registration-detail', args=[stall_id])
+        edit_link = reverse('registration:stallregistration-list') + f'?stallholder={stallholder_id}'
 
         validation_report.append({
             'id': stall_id,

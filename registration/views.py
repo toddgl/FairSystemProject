@@ -153,6 +153,7 @@ def stall_registration_listview(request):
     # Collect GET parameters for `booking_status` and `selling_food`
     booking_status = request.GET.get('booking_status', '')
     selling_food = request.GET.get('selling_food', False)
+    stallholder_id = request.GET.get('stallholder', None)  # Get stallholder from query params
 
     # Retrieve filters from session
     filter_params = request.session.get('stall_registration_filters', {})
@@ -162,6 +163,8 @@ def stall_registration_listview(request):
         filter_params['booking_status'] = booking_status
     if selling_food:
         filter_params['selling_food'] = selling_food
+    if stallholder_id:
+        filter_params['stallholder'] = stallholder_id  # Save stallholder filter
 
     def build_query_filters(params):
         """Build query filters based on session parameters."""

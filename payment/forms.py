@@ -12,7 +12,7 @@ from django.forms import (
 
 from payment.models import (
     PaymentHistory,
-    PaymentType
+    DiscountItem
 )
 
 class PaymentHistoryStatusFilterForm(Form):
@@ -55,9 +55,9 @@ class PaymentHistoryStatusFilterForm(Form):
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
 class UpdatePaymentHistoryForm(ModelForm):
-    '''
+    """
     Used to update Payment history in the Payment History List View
-    '''
+    """
     class Meta:
         model = PaymentHistory
         fields = [ 'amount_to_pay', 'amount_paid', 'webhook_amount', 'amount_reconciled', 'amount_credited', 'payment_status', 'payment_type' ]
@@ -91,4 +91,20 @@ class UpdatePaymentHistoryForm(ModelForm):
                 'style': 'max-width: 300px;',
             }),
         }
+
+
+class UpdateDiscountItemForm(ModelForm):
+    """
+    Used to update Discount  in the Discount List View
+    """
+    class Meta:
+        model = DiscountItem
+        fields = ['discount_amount']
+        widgets = {
+            'discount_amount': NumberInput(attrs={
+                'class': 'form-control',
+                'style': 'max-width: 100px;',
+            }),
+        }
+
 

@@ -1877,148 +1877,75 @@ def stallholder_history_dashboard_view(request):
         'site_histories_transposed': dict(site_histories_transposed),
     })
 
+
 def stallregistration_siteallocation_view(request, id):
     """
-    Function to set siteallocation for a stall Application.  Called from the conveners stallregistraion list display
+    Function to set site allocation for a stall application.
+    Called from the convener's stall registration list display.
     """
-    template = 'stallregistrations/siteallocation_filter.html'
+    stallregistration = get_object_or_404(StallRegistration, id=id)
     sitefilterform = SiteAllocationFilerForm(request.POST or None)
-    site_filter_message = 'Select a Zone to see available sites for allocation'
-    stallregistration = StallRegistration.objects.get(id=id)
     additional_sites_required = AdditionalSiteRequirement.objects.filter(stall_registration=id)
     siteallocations = SiteAllocation.objects.filter(stall_registration=id)
-    if request.htmx:
-        if sitefilterform.is_valid():
-            zone_filter_dict = {} # Initialize with an empty dictionary
-            zone = sitefilterform.cleaned_data['zone']
-            event = sitefilterform.cleaned_data['event']
-            site_size = sitefilterform.cleaned_data['site_size']
-            has_power = sitefilterform.cleaned_data['has_power']
-            attr_has_power = 'site__has_power'
-            attr_site_size = 'site__site_size'
-            attr_zone = 'site__zone'
-            attr_event ='event'
-            if event and zone and site_size and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + 'and site size' + str(site_size) + ' and has power'
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif event and zone and site_size:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + 'and site size' + str(site_size)
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id
-                }
-            elif event and site_size and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
-                    site_size) + ' and fair event ' + str(event) + ' and has power'
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif site_size and zone and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and site size ' + str(site_size) + ' and has power'
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif event and zone and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and fair event ' + str(event) + ' and has power'
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                    attr_has_power: True
-                }
-            elif event and site_size:
-                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
-                    site_size) + ' and fair event ' + str(event)
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_site_size: site_size.id
-                }
-            elif site_size and zone:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and site size ' + str(site_size)
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id
-                }
-            elif event and zone:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                }
-            elif site_size and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(
-                    site_size) + ' and has power'
-                zone_filter_dict = {
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif zone and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and has power'
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                    attr_has_power: True
-                }
-            elif site_size:
-                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(site_size)
-                zone_filter_dict = {
-                    attr_site_size: site_size.id
-                }
-            elif zone:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                }
-            elif has_power:
-                site_filter_message = 'Showing available sites that can be allocated with power'
-                zone_filter_dict = {
-                    attr_has_power: True
-                }
-            available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
-            template = 'stallregistrations/available_sites_partial.html'
-            return TemplateResponse(request, template, {
-                'site_filter': site_filter_message,
-                'sitefilterform': sitefilterform,
-                'stallregistration': stallregistration,
-                'siteallocations': siteallocations,
-                'site_list': available_sites,
-                'additional_sites_required': additional_sites_required
-            })
-    elif request.method == 'POST':
-        # Allocation request created
-        for site in request.POST.getlist('eventsites'):
-            # Create Allocation
-            eventsite = EventSite.objects.get(id=site)
+    site_filter_message = 'Select a Zone to see available sites for allocation'
+
+    if request.htmx and sitefilterform.is_valid():
+        zone_filter_dict = {}
+        event = sitefilterform.cleaned_data.get('event')
+        zone = sitefilterform.cleaned_data.get('zone')
+        site_size = sitefilterform.cleaned_data.get('site_size')
+        has_power = sitefilterform.cleaned_data.get('has_power')
+
+        filter_params = {
+            'event': ('event', event.id if event else None),
+            'zone': ('site__zone', zone.id if zone else None),
+            'site_size': ('site__site_size', site_size.id if site_size else None),
+            'has_power': ('site__has_power', True if has_power else None)
+        }
+
+        zone_filter_dict = {key: value for _, (key, value) in filter_params.items() if value is not None}
+
+        filter_conditions = " and ".join(
+            f"{key.replace('site__', '').replace('_', ' ').capitalize()} {value}" for _, (key, value) in
+            filter_params.items() if value is not None
+        )
+        site_filter_message = f"Showing available sites that can be allocated for {filter_conditions}" if filter_conditions else site_filter_message
+
+        available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
+
+        return TemplateResponse(request, 'stallregistrations/available_sites_partial.html', {
+            'site_filter': site_filter_message,
+            'sitefilterform': sitefilterform,
+            'stallregistration': stallregistration,
+            'siteallocations': siteallocations,
+            'site_list': available_sites,
+            'additional_sites_required': additional_sites_required
+        })
+
+    if request.method == 'POST':
+        selected_sites = request.POST.getlist('eventsites')
+        for site_id in selected_sites:
+            eventsite = get_object_or_404(EventSite, id=site_id)
             SiteAllocation.objects.create(
                 stallholder_id=stallregistration.stallholder.id,
-                stall_registration= stallregistration,
+                stall_registration=stallregistration,
                 event_site=eventsite,
                 created_by=request.user,
             )
-            # Update status to allocated on the affected Eventsites
             eventsite.site_status = 2
             eventsite.save()
-        return redirect('registration:stallregistration-list')
 
-    return TemplateResponse(request, template, {
+        return redirect(
+            reverse('registration:stallregistration-list') + f'?stallholder={stallregistration.stallholder.id}')
+
+    return TemplateResponse(request, 'stallregistrations/siteallocation_filter.html', {
         'site_filter': site_filter_message,
         'sitefilterform': sitefilterform,
         'stallregistration': stallregistration,
         'siteallocations': siteallocations,
         'additional_sites_required': additional_sites_required
     })
+
 
 def stallregistration_detail_view(request, stallregistration_id):
     """
@@ -2037,152 +1964,67 @@ def stallregistration_detail_view(request, stallregistration_id):
 
 def stallregistration_move_cancel_view(request, id):
     """
-    Function to cancel or move siteallocation for a stall Application.  Called from the conveners stallregistraion list display
+    Function to cancel or move site allocation for a stall application.
     """
     template = 'stallregistrations/siteallocation_move_filter.html'
+    stallregistration = get_object_or_404(StallRegistration, id=id)
+    siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     sitefilterform = SiteAllocationFilerForm(request.POST or None)
     site_filter_message = 'Select a Zone to see available sites for allocation'
-    stallregistration = StallRegistration.objects.get(id=id)
-    siteallocations = SiteAllocation.objects.filter(stall_registration=id)
+
     if request.htmx:
         if sitefilterform.is_valid():
-            zone = sitefilterform.cleaned_data['zone']
-            event = sitefilterform.cleaned_data['event']
-            site_size = sitefilterform.cleaned_data['site_size']
-            has_power = sitefilterform.cleaned_data['has_power']
-            attr_has_power = 'site__has_power'
-            attr_site_size = 'site__site_size'
-            attr_zone = 'site__zone'
-            attr_event ='event'
-            if event and zone and site_size and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + 'and site size' + str(site_size) + ' and has power'
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif event and zone and site_size:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event) + ' and site size' + str(site_size)
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id
-                }
-            elif event and site_size and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
-                    site_size) + ' and fair event ' + str(event) + ' and has power'
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif event and site_size:
-                site_filter_message = 'Showing available sites that can be allocated for  site size ' + str(
-                    site_size) + ' and fair event ' + str(event)
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_site_size: site_size.id
-                }
-            elif site_size and zone and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and site size ' + str(site_size) + ' and has power'
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif site_size and zone:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and site size ' + str(site_size)
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                    attr_site_size: site_size.id
-                }
-            elif event and zone and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(
-                    zone) + ' and fair event ' + str(event) + ' and has power'
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                    attr_has_power: True
-                }
-            elif event and zone:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and fair event ' + str(event)
-                zone_filter_dict = {
-                    attr_event: event.id,
-                    attr_zone: zone.id,
-                }
-            elif site_size and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(site_size) + ' and has power'
-                zone_filter_dict = {
-                    attr_site_size: site_size.id,
-                    attr_has_power: True
-                }
-            elif zone and has_power:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone) + ' and has power'
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                    attr_has_power: True
-                }
-            elif site_size:
-                site_filter_message = 'Showing available sites that can be allocated for site size ' + str(site_size)
-                zone_filter_dict = {
-                    attr_site_size: site_size.id
-                }
-            elif zone:
-                site_filter_message = 'Showing available sites that can be allocated for zone ' + str(zone)
-                zone_filter_dict = {
-                    attr_zone: zone.id,
-                }
-            elif has_power:
-                site_filter_message = 'Showing available sites that can be allocated with power'
-                zone_filter_dict = {
-                    attr_has_power: True
-                }
+            zone = sitefilterform.cleaned_data.get('zone')
+            event = sitefilterform.cleaned_data.get('event')
+            site_size = sitefilterform.cleaned_data.get('site_size')
+            has_power = sitefilterform.cleaned_data.get('has_power')
+
+            # Constructing dynamic filter dictionary
+            zone_filter_dict = {
+                "site__zone": zone.id if zone else None,
+                "event": event.id if event else None,
+                "site__site_size": site_size.id if site_size else None,
+                "site__has_power": True if has_power else None,
+            }
+            # Remove None values to avoid invalid queries
+            zone_filter_dict = {k: v for k, v in zone_filter_dict.items() if v is not None}
+
+            # Generate site filter message dynamically
+            site_filter_message = f"Showing available sites that match your selection: {', '.join(filter(None, [str(zone), str(event), str(site_size), 'with power' if has_power else '']))}"
+
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
-            template = 'stallregistrations/available_move_sites_partial.html'
-            return TemplateResponse(request, template, {
+
+            return TemplateResponse(request, 'stallregistrations/available_move_sites_partial.html', {
                 'site_filter': site_filter_message,
                 'sitefilterform': sitefilterform,
                 'stallregistration': stallregistration,
                 'siteallocations': siteallocations,
                 'site_list': available_sites
             })
+
     elif request.method == 'POST':
-        # Cancel request created
-        if request.POST.getlist('currentsites'):
-            cancelledallocations =request.POST.getlist('currentsites')
-            for cancelledallocation in cancelledallocations:
-                siteallocation = SiteAllocation.objects.get(id=cancelledallocation)
-                eventsite = EventSite.objects.get(id=siteallocation.event_site.id)
-                siteallocation.delete()
-                # Update status to available on the affected Eventsites
-                eventsite.site_status = 1
-                eventsite.save()
-        elif request.POST.get('hidden'):
-            currentallocationlist = request.POST.get('hidden').split(',')
-            for siteallocation in currentallocationlist:
-                siteallocation = SiteAllocation.objects.get(id=siteallocation)
-                eventsite = EventSite.objects.get(id=siteallocation.event_site.id)
-                siteallocation.delete()
-                # Update status to available on the affected Eventsites
-                eventsite.site_status = 1
-                eventsite.save()
-            # Move request created
-            for site in request.POST.getlist('eventsites'):
-                # Create Allocation
-                eventsite = EventSite.objects.get(id=site)
+        cancelled_allocations = request.POST.getlist('currentsites') or request.POST.get('hidden', '').split(',')
+        for allocation_id in filter(None, cancelled_allocations):
+            siteallocation = get_object_or_404(SiteAllocation, id=allocation_id)
+            eventsite = siteallocation.event_site
+            siteallocation.delete()
+            eventsite.site_status = 1  # Mark as available
+            eventsite.save()
+
+        if request.POST.getlist('eventsites'):
+            for site_id in request.POST.getlist('eventsites'):
+                eventsite = get_object_or_404(EventSite, id=site_id)
                 SiteAllocation.objects.create(
-                    stallholder_id=stallregistration.stallholder.id,
-                    stall_registration= stallregistration,
+                    stallholder=stallregistration.stallholder,
+                    stall_registration=stallregistration,
                     event_site=eventsite,
                     created_by=request.user,
                 )
-                # Update status to allocated on the affected Eventsites return to list view
-                eventsite.site_status = 2
+                eventsite.site_status = 2  # Mark as allocated
                 eventsite.save()
-        return redirect('registration:stallregistration-list')
+
+        return redirect(
+            reverse('registration:stallregistration-list') + f'?stallholder={stallregistration.stallholder.id}')
 
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,
@@ -2190,6 +2032,7 @@ def stallregistration_move_cancel_view(request, id):
         'stallregistration': stallregistration,
         'siteallocations': siteallocations
     })
+
 
 def stallregistration_search_dashboard_view(request):
     """
