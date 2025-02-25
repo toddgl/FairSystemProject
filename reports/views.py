@@ -207,7 +207,7 @@ def marshall_zone_report(request, zone, event):
     # Base queryset for StallRegistration
     site_information = StallRegistration.registrationcurrentallmgr.filter(
         site_allocation__event_site__event__fair=current_fair,
-        site_allocation__event__site__site__zone=zone,
+        site_allocation__event_site__site__zone=zone,
     ).select_related('stallholder').annotate(
         allocated_site_name=F('site_allocation__event_site__site__site_name'),
         allocated_powerbox_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
