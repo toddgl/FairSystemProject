@@ -2,7 +2,7 @@
 import datetime
 import csv
 from django.shortcuts import get_object_or_404, render
-from django.db.models import F, Q, Subquery, OuterRef
+from django.db.models import F, Q, Subquery, OuterRef, Value
 from django.db.models.functions import Coalesce
 from weasyprint import HTML
 from django.contrib.sites.shortcuts import get_current_site
@@ -332,10 +332,11 @@ def fair_passpack_generator(request, stallregistration):
     # Queryset for StallRegistration
     stall_registration = StallRegistration.objects.filter( id=stallregistration).first()
 
+    # Subquery to fetch the latest zone map for the current fair year
     zone_map_subquery = ZoneMap.objects.filter(
         zone=OuterRef('site_allocation__event_site__site__zone'),
-        year=str(report_date.year)
-    ).values('map_pdf')[:1]
+        year=str(current_fair.fair_year)
+    ).order_by('-id').values('map_pdf')[:1]  # Get the latest entry
 
     # Query to fetch PowerBox description
     power_box_subquery = PowerBox.objects.filter(
@@ -354,7 +355,7 @@ def fair_passpack_generator(request, stallregistration):
         allocated_site_size=F('site_allocation__event_site__site__site_size__site_size'),
         allocated_event_name=F('site_allocation__event_site__event__event_name'),
         allocated_site_location=F('site_allocation__event_site__site__zone__zone_name'),
-        zone_map_path=Subquery(zone_map_subquery),
+        zone_map_path=Subquery(zone_map_subquery),  # ✅ Correct annotation
         powerbox_description=Subquery(power_box_subquery),
         trestle_source=Subquery(trestle_source_subquery),
     ).values(
@@ -362,7 +363,7 @@ def fair_passpack_generator(request, stallregistration):
         'allocated_site_name',
         'allocated_event_name',
         'allocated_site_location',
-        'zone_map_path',
+        'zone_map_path',  # ✅ Ensure this is included
         'powerbox_description',
         'trestle_source',
     ).order_by(
@@ -394,7 +395,7 @@ def fair_passpack_generator(request, stallregistration):
         if site['zone_map_path']:
             site['zone_map_url'] = f'{protocol}://{domain}/media/{site["zone_map_path"]}'
         else:
-            site['zone_map_url'] = None
+            site['zone_map_url'] = None  # Explicitly set to None if no map
 
     filename= f'fair_passpack_for_stallregid{stallregistration}.pdf'
 
