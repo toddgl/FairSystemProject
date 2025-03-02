@@ -55,7 +55,8 @@
         </div>
         <hr>
         {% for site in site_information %}
-        <div class="row align-items-center mb-3">
+         <div style="break-inside: avoid;">
+        <div class="row align-items-center mb-3" >
             <!-- Site Information -->
             <div class="col-2 text-center">
                 <h5><strong>{{ site.allocated_site_name }}:</strong></h5>
@@ -111,13 +112,14 @@
             </div>
           </div>
         </div>
+         </div>
         <div class="row">
             <!-- Site Notes -->
             <div class="col-2">
-                <h6>Stall Description:</h6>
+                <h6>Stall Products:</h6>
             </div>
             <div class="col-10">
-                {{ site.stall_description }}
+                {{ site.products_on_site }}
             </div>
         </div>
          <div class="row">

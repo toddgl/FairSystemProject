@@ -256,6 +256,7 @@ def marshall_zone_report(request, zone, event):
         'allocated_powerbox_description',
         'site_has_power',
         'stall_description',
+        'products_on_site',
         'stallholder__phone',
         'stallholder__first_name',
         'stallholder__last_name',
