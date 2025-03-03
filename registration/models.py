@@ -360,6 +360,7 @@ class StallRegistration(models.Model):
     multi_site = models.BooleanField(default=False)
     is_cancelled = models.BooleanField(default=False)
     is_invoiced = models.BooleanField(default=False)
+    date_created = models.DateTimeField(auto_now_add=True)
 
     objects = models.Manager()
     registrationcurrentallmgr = RegistrationCurrentAllManager()
