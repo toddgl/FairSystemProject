@@ -5,10 +5,54 @@
 {% block body %}
 <div class="container">
   <h2>Sign Up</h2>
-  <form method="post">
+  <form method="post" novalidate>
     {% csrf_token %}
     {{ form.as_p }}
-    <button type="submit" class="btn btn-primary" >Sign Up</button>
+    <span id="phone-error" class="text-danger small"></span>
+    <span id="phone2-error" class="text-danger small"></span>
+    <button type="submit" class="btn btn-primary">Sign Up</button>
   </form>
 </div>
+
+<!-- Bootstrap Tooltip & Validation Script -->
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var phoneFields = [
+        { field: document.getElementById("id_phone"), error: document.getElementById("phone-error") },
+        { field: document.getElementById("id_phone2"), error: document.getElementById("phone2-error") }
+    ];
+
+    var phoneRegex = /^\(0\d{1}\)\d{7}$|^\(02\d{1}\)\d{6,8}$|^0[589]0\d{5,8}$/;
+    var tooltipMessage = "Format: (02X)1234567 or (0XX)1234567. No spaces or dashes.";
+
+    phoneFields.forEach(function (item) {
+        if (item.field) {
+            // Add Bootstrap tooltip attributes dynamically
+            item.field.setAttribute("data-bs-toggle", "tooltip");
+            item.field.setAttribute("data-bs-placement", "right");
+            item.field.setAttribute("title", tooltipMessage);
+
+            // Initialize Bootstrap tooltip
+            new bootstrap.Tooltip(item.field);
+
+            // Live validation on input
+            item.field.addEventListener("input", function () {
+                if (item.field.value && !phoneRegex.test(item.field.value)) {
+                    item.error.textContent = "Invalid phone format! Use (02X)1234567 or (0XX)1234567.";
+                    item.field.classList.add("is-invalid");
+                } else {
+                    item.error.textContent = "";
+                    item.field.classList.remove("is-invalid");
+                    if (item.field.value) {
+                        item.field.classList.add("is-valid");
+                    } else {
+                        item.field.classList.remove("is-valid");
+                    }
+                }
+            });
+        }
+    });
+});
+</script>
+
 {% endblock %}

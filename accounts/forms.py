@@ -34,14 +34,22 @@ class CustomSignupForm(SignupForm):
 
     phone = forms.CharField(
         max_length=13,
-        validators=[RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$', message="Enter a valid NewZealand Phone number")],
+        validators=[
+            RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$',
+                message="Enter a valid New Zealand phone number"
+            )
+        ],
         label="Phone Number",
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456',
+            'data-bs-toggle': 'tooltip',
+            'data-bs-placement': 'right',  # Tooltip position (top, right, bottom, left)
+            'title': 'Format: (02X)1234567 or (0XX)1234567. No spaces or dashes.'
         }),
-        )
+    )
+
     # Add additional profile fields
     address1 = forms.CharField(
         label="Address Line 1",
@@ -85,12 +93,19 @@ class CustomSignupForm(SignupForm):
     phone2 = forms.CharField(
         max_length=13,
         required=False,
-        validators=[RegexValidator(r'^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$', message="Enter a valid New Zealand Phone number")],
+        validators=[
+            RegexValidator('^\([0]\d{1}\)(\d{7}$)|(^\([0][2]\d{1}\))(\d{6,8}$)|([0][5,8,9][0][0,8])([\s-]?)(\d{5,8})$',
+               message="Enter a valid New Zealand Phone number"
+           )
+        ],
         label="Alternative Phone Number",
         widget=forms.TextInput(attrs={
             'class': "form-control",
             'style': 'max-width: 300px;',
-            'placeholder': '(xx) or (xxx)1234567 or 0800123456'
+            'placeholder': '(xx) or (xxx)1234567 or 0800123456',
+            'data-bs-toggle': 'tooltip',
+            'data-bs-placement': 'right',  # Tooltip position (top, right, bottom, left)
+            'title': 'Format: (02X)1234567 or (0XX)1234567. No spaces or dashes.'
         }),
     )
 
