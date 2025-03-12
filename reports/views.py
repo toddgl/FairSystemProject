@@ -2,7 +2,7 @@
 import datetime
 import csv
 from django.shortcuts import get_object_or_404, render
-from django.db.models import F, Q, Subquery, OuterRef, Value
+from django.db.models import F, Q, Subquery, OuterRef, Value, Count
 from django.db.models.functions import Coalesce
 from weasyprint import HTML
 from django.contrib.sites.shortcuts import get_current_site
@@ -74,6 +74,19 @@ def reports_listview(request):
 
     # Handle POST request for generating reports
     elif request.method == 'POST':
+        if 'allocationnumbers' in request.POST:
+            # Allocationnumbers  requires an event selected
+            event_id = request.session.get('selected_event_id')
+
+            if event_id:
+                try:
+                    event = Event.objects.get(id=event_id)
+                    return site_allocation_numbers_report(request, event.id)
+                except Event.DoesNotExist:
+                    alert_message = 'The selected event could not be found.'
+            else:
+                alert_message = 'An event must be selected to generate the allocated site numbers report.'
+
         if 'marshalllist' in request.POST:
             # Marshalllist requires both zone and event
             zone_id = request.session.get('selected_zone_id')
@@ -177,6 +190,54 @@ def reports_listview(request):
         'alert_message': alert_message
     }
     return TemplateResponse(request, template_name, context)
+
+
+def site_allocation_numbers_report(request, event):
+    """
+    Function to generate a site allocation numbers report for an Event plus a breakdown of allocations by Zone.
+    """
+    current_fair = Fair.currentfairmgr.all().last()
+    event_data = Event.objects.get(id=event)
+
+    # Precompute the first and second events for the current fair
+    event_query = Event.currenteventfiltermgr.annotate_event_sequence()
+    first_event = event_query.first()
+    second_event = event_query[1] if event_query.count() > 1 else None
+
+    # Base queryset for StallRegistration
+    site_information = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event=event_data
+    ).values(
+        'site_allocation__event_site__site__zone__zone_name'
+    ).annotate(
+        total_allocations=Count('id')
+    )
+
+    # Count total site allocations for the event
+    total_allocations = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event=event_data
+    ).count()
+
+    # Count site allocations per zone
+    zone_counts = (
+        StallRegistration.registrationcurrentallmgr.filter(
+            site_allocation__event_site__event=event_data
+        )
+        .values('site_allocation__event_site__site__zone__zone_name')
+        .annotate(count=Count('id'))
+        .order_by('site_allocation__event_site__site__zone__zone_name')
+    )
+
+    # Pass data to template
+    return render(
+        request,
+        'allocated_site_numbers.html',
+        {
+            'total_allocations': total_allocations,
+            'zone_counts': zone_counts,
+            'event_name': event_data.event_name,  # Pass event name to template
+        }
+    )
 
 
 def marshall_zone_report(request, zone, event):

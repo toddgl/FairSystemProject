@@ -6,6 +6,8 @@
   var fcertificate = $("#id_food_registration_certificate");
   var conscheck = $('#id_food_fair_consumed')
   var conssource = $('#id_food_source')
+  var conscontainers = $('#id_uses_compostable_containers')
+  var conscups = $('#id_uses_compostable_cups')
   var prepcheck = $('#id_has_food_prep')
   var prepmethod = $('#id_food_storage_prep_method')
 
@@ -42,9 +44,17 @@
       if (conscheck.is(':checked')) {
         conssource.show();
         $('label[for=id_food_source], input#id_food_source').show();
+        conscontainers.show();
+        $('label[for=id_uses_compostable_containers], input#id_uses_compostable_containers').show();
+        conscups.show();
+        $('label[for=id_uses_compostable_cups], input#id_uses_compostable_cups').show();
       } else {
         conssource.hide();
         $('label[for=id_food_source], input#id_food_source').hide();
+        conscontainers.hide();
+        $('label[for=id_uses_compostable_containers], input#id_uses_compostable_containers').hide();
+        conscups.hide();
+        $('label[for=id_uses_compostable_cups], input#id_uses_compostable_cups').hide();
       }
 
   // conscheck event listener
@@ -53,9 +63,17 @@
     if (conscheck.is(':checked')) {
         conssource.show();
         $('label[for=id_food_source], input#id_food_source').show();
+        conscontainers.show();
+        $('label[for=id_uses_compostable_containers], input#id_uses_compostable_containers').show();
+        conscups.show();
+        $('label[for=id_uses_compostable_cups], input#id_uses_compostable_cups').show();
     } else {
         conssource.hide();
         $('label[for=id_food_source], input#id_food_source').hide();
+        conscontainers.hide();
+        $('label[for=id_uses_compostable_containers], input#id_uses_compostable_containers').hide();
+        conscups.hide();
+        $('label[for=id_uses_compostable_cups], input#id_uses_compostable_cups').hide();
     }
   });
 

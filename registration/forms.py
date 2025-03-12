@@ -320,10 +320,10 @@ class StallRegistrationCreateForm(ModelForm):
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
-            'trestle_required': 'Do you wish to hire trestle tables?',
-            'vehicle_on_site': 'Do you intend to have a Food truck / Caravan or trailer set up on your site?',
-            'multi_site': 'Do you want more than a single site with this application?',
-            'selling_food': 'Are you selling food?',
+            'trestle_required': 'Tick checkbox if you wish to hire trestle tables?',
+            'vehicle_on_site': 'Tick checkbox if you intend to have a Food truck / Caravan or trailer set up on your site?',
+            'multi_site': 'Tick checkbox if you want more than a single site with this application?',
+            'selling_food': 'Tick checkbox if you are selling any food?',
             'vehicle_length': 'Vehicle length (metres)',
             'vehicle_width': 'Vehicle width (metres)',
         }
@@ -529,8 +529,9 @@ class StallRegistrtionConvenerEditForm(ModelForm):
             'selling_food'
         ]
         labels = {
-            'multi-site': 'Do you want more than a single site with this application?',
-            'selling_food': 'Are you selling food?',
+            'multi-site': 'Tick checkbox if you want more than a single site with this application?',
+            'selling_food': 'Tick checkbox if you are selling any food?',
+            'power_required': 'Tick checkbox if you require power for your site',
         }
         widgets = {
             'trestle_required': CheckboxInput(attrs={
@@ -636,12 +637,13 @@ class StallRegistrationUpdateForm(ModelForm):
         labels = {
             'stall_manager_name': 'Stall manager\'s name',
             'manager_vehicle_registration': 'Manager\'s vehicle registration',
-            'trestle_required': 'Do you wish to hire trestle tables?',
-            'vehicle_on_site': 'Do you intend to have a Food truck / Caravan or trailer set up on your site?',
-            'multi_site': 'Do you want more than a single site with this application?',
-            'selling_food': 'Are you selling food?',
+            'trestle_required': 'Tick checkbox if you wish to hire trestle tables?',
+            'vehicle_on_site': 'Tick checkbox if you intend to have a Food truck / Caravan or trailer set up on your site?',
+            'multi_site': 'Tick checkbox if you want more than a single site with this application?',
+            'selling_food': 'Tick checkbox if you are selling any food?',
             'vehicle_length': 'Vehicle length (metres)',
             'vehicle_width': 'Vehicle width (metres)',
+            'power_required': 'Tick checkbox if you require power for your site',
         }
         widgets = {
             'stall_manager_name': TextInput(attrs={
@@ -743,6 +745,7 @@ class StallRegistrationUpdateForm(ModelForm):
                 )
         return self.cleaned_data  # never forget this!
 
+
 class FoodRegistrationForm(ModelForm):
     """
     Form for capturing details need for a food stall application
@@ -767,6 +770,8 @@ class FoodRegistrationForm(ModelForm):
             "has_food_prep",
             'food_storage_prep_method',
             'food_storage_prep',
+            'uses_compostable_containers',
+            'uses_compostable_cups',
             'hygiene_methods',
             'has_food_certificate',
             'certificate_expiry_date',
@@ -775,14 +780,16 @@ class FoodRegistrationForm(ModelForm):
         labels = {
             'food_stall_type': 'Food Stall Type',
             'food_display_method': 'How will the food be displayed',
-            'food_fair_consumed': 'Is the food being sold intended for consumption at the fair',
+            'food_fair_consumed': 'Tick checkbox if the food being sold intended for consumption at the fair',
             'food_source': 'Where will you obtain the food from',
-            'has_food_prep': 'Is any storage or preparation of the food to be undertaken after it is obtained by the '
+            'has_food_prep': 'Tick checkbox if any storage or preparation of the food to be undertaken after it is obtained by the '
                              'operator of the food stall?',
             'food_storage_prep_method': 'Please describe food storage and/or preparation prior to the fair day',
             'food_storage_prep': 'How will food utensils, appliances and equipment be stored during the day',
             'hygiene_methods': 'What arrangements do you have for hand washing',
-            'has_food_certificate': 'Do you have a MPI Food Plan, or a Food Certificate of Registration?',
+            'uses_compostable_containers': 'Tick checkbox if you are serving food in compostable containers and providing compostable utensils and napkins',
+            'uses_compostable_cups': 'Tick checkbox if your coffee cups and lids compostable',
+            'has_food_certificate': 'Tick checkbox if you have a MPI Food Plan, or a Food Certificate of Registration?',
             'certificate_expiry_date': 'What is the expiry date of the certificate',
             'food_registration_certificate': 'Please upload your MPI Plan or certificate',
         }
@@ -823,6 +830,12 @@ class FoodRegistrationForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 400px;',
                 'placeholder': 'Describe What arrangements have been made for toilet use and washing hands.'
+            }),
+            'uses_compostable_containers': CheckboxInput(attrs={
+                'class': 'form-check-input'
+            }),
+            'uses_compostable_cups': CheckboxInput(attrs={
+                'class': 'form-check-input'
             }),
             'has_food_certificate': CheckboxInput(attrs={
                 'class': 'form-check-input'

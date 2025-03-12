@@ -9,8 +9,21 @@
     <div class="px-5 my-5 text-center">
       <h1>Create / Update Food Stall Application</h1>
     </div>
-    <hr>
   </div>
+  <div class="row">
+    <div class="toast show align-items-center text-white bg-primary border-0" role="alert" aria-live="assertive" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body">
+          <p>We are trying to reduce our waste going to landfill by recycling and composting as much of the waste as possible.</p>
+          <p>If you are selling food or hot drinks for consumption at the fair.</p>
+          <p>Please help us by using compostable containers and cups.</p>
+        </div>
+        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <br>
   <div class="row">
     <div class="col-md-6">
       <form method="post" enctype="multipart/form-data">
@@ -57,4 +70,3 @@
 </div>
 <script src="{% static 'js/food_certificate_hide.js' %}"></script>
 {% endblock %}
-

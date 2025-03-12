@@ -593,6 +593,8 @@ class FoodRegistration(models.Model):
     food_storage_prep = models.TextField(blank=True, null=True)
     has_food_prep = models.BooleanField(blank=True, null=True)
     food_storage_prep_method = models.TextField(blank=True, null=True)
+    uses_compostable_containers = models.BooleanField(blank=True, null=True)
+    uses_compostable_cups = models.BooleanField(blank=True, null=True)
     hygiene_methods = models.TextField(blank=True, null=True)
     is_valid = models.BooleanField(blank=True, null=True)
     cert_filetype = models.CharField(default="image", blank=True, null=True, max_length=50)

@@ -3,6 +3,7 @@
 from django.urls import path
 
 from reports.views import (
+    site_allocation_numbers_report,
     marshall_zone_report,
     reports_listview,
     fair_passpack_generator,
@@ -17,4 +18,5 @@ urlpatterns = [
     path('reports/dashboard/',reports_listview, name='report-dashboard' ),
     path('reports/passpack/<int:stallregistration>', fair_passpack_generator, name='stallholder-passpack'),
     path('reports/unallocated-stalls/', stall_validation_report, name='unallocated_stalls_report'),
+    path('reports/allocated-site-numbers/', site_allocation_numbers_report, name='allocated-site-numbers-report'),
 ]

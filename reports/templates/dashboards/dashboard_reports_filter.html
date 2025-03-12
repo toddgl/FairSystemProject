@@ -11,6 +11,9 @@
         <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
     </nav>
     <!--End Top Nav -->
+    <hr>
+    <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+    <hr>
     <div class="container">
         <h3>Reports</h3>
         <hr>
@@ -47,6 +50,20 @@
                 {% csrf_token %}
                 <button name="validationreport" class="btn btn-primary" data-toggle="button" type="submit">
                     Stall Registration Validation Report
+                </button>
+                <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+            </form>
+            <hr>
+        </div>
+        <div>
+            <h4> Allocated Site Numbers Report </h4>
+            <p>Generates a report listing site allocations totals by event and zone allocation numbers.</p>
+        </div>
+        <div>
+            <form method="POST">
+                {% csrf_token %}
+                <button name="allocationnumbers" class="btn btn-primary" data-toggle="button" type="submit">
+                    Site Allocation Numbers Report
                 </button>
                 <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
             </form>
