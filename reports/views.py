@@ -228,6 +228,17 @@ def site_allocation_numbers_report(request, event):
         .order_by('site_allocation__event_site__site__zone__zone_name')
     )
 
+    # Count food-related stall registrations
+    food_consumption_count = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event=event_data,
+        stall_category__category_name="Food/drink (consumption on site)"
+    ).count()
+
+    food_other_count = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event=event_data,
+        stall_category__category_name="Food/Drink (other)"
+    ).count()
+
     # Pass data to template
     return render(
         request,
@@ -236,6 +247,8 @@ def site_allocation_numbers_report(request, event):
             'total_allocations': total_allocations,
             'zone_counts': zone_counts,
             'event_name': event_data.event_name,  # Pass event name to template
+            'food_consumption_count': food_consumption_count,
+            'food_other_count': food_other_count,
         }
     )
 

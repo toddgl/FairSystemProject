@@ -9,7 +9,7 @@
     <nav class="navbar top-navbar navbar-light justify-content-start px-5">
         <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
     </nav>
-    <!--End Top Nav -->
+    <!--End     Top Nav -->
     <hr>
     <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
     <hr>
@@ -18,7 +18,10 @@
 
         <div class="card mt-3">
             <div class="card-body">
-                <h5 class="card-title">Total Site Allocations: {{ total_allocations }}</h5>
+                <h5 class="card-title">Summary</h5>
+                <p><strong>Total Site Allocations:</strong> {{ total_allocations }}</p>
+                <p><strong>Food/Drink (Consumption on site):</strong> {{ food_consumption_count }}</p>
+                <p><strong>Food/Drink (Other):</strong> {{ food_other_count }}</p>
             </div>
         </div>
 
