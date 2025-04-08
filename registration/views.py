@@ -184,7 +184,7 @@ def stall_registration_listview(request):
     query_filters = build_query_filters(filter_params)
     # Update session filters
     request.session["stall_registration_filters"] = query_filters
-    filtered_data = StallRegistration.objects.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
+    filtered_data = StallRegistration.registrationcurrentmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
     # Generate an alert message if no results are found
     alert_message = (
