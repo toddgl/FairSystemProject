@@ -1064,13 +1064,15 @@ class EventPowerCreateView(PermissionRequiredMixin, CreateView):
         return kwargs
 
 
-def generate_alert_message(event, zone, on_hold):
+def generate_alert_message(event, zone, stallholder, on_hold):
     """Generate the alert message based on filters."""
     parts = []
     if event:
         parts.append(f"event is {event}")
     if zone:
         parts.append(f"zone is {zone}")
+    if stallholder:
+        parts.append(f"stallholder is {stallholder}")
     if on_hold:
         parts.append("sites are on hold")
     return f"There are no sites allocated where {' and '.join(parts)}" if parts else "There are no sites allocated yet."
@@ -2088,7 +2090,7 @@ from django.db.models import Sum
 
 def powerbox_connections_view(request):
     # Base query to fetch powerbox data
-    powerbox_connections = StallRegistration.objects.filter(
+    powerbox_connections = StallRegistration.registrationcurrentmgr.filter(
         power_required=True,
         site_allocation__event_site__site__powerbox__isnull=False
     ).values(
@@ -2124,19 +2126,18 @@ def powerbox_connections_view(request):
         {'powerbox_connections': powerbox_connections_with_amps}
     )
 
-
-def generate_alert_message(event, powerbox, stallholder):
+def generate_powerbox_alert_message(event, powerbox, stallholder):
     """
     Generate the alert message based on the filters
     """
     parts = []
     if event:
-        parts.append(f'event is {{event}}')
+        parts.append(f'event is {event}')  # correct
     if powerbox:
-        parts.append(f'powerbox is {{powerbox}}')
+        parts.append(f'powerbox is {powerbox}')
     if stallholder:
-        parts.append(f'stallholder is {{stallholder}}')
-    return f"There are no powerbox stallregistrations where {' and '.join(parts)}" if parts else "There are no powerbox stallregistrations yet"
+        parts.append(f'stallholder is {stallholder}')
+    return f"There are no powerbox stallregistrations where {' and '.join(parts)}" if parts else "There are no powerbox stallregistrations yet."
 
 
 def stallregistrations_by_powerbox_view(request):
@@ -2170,7 +2171,7 @@ def stallregistrations_by_powerbox_view(request):
 
     # Pre-aggregate connected sites per powerbox and event
     aggregated = (
-        StallRegistration.objects.filter(
+        StallRegistration.registrationcurrentmgr.filter(
             power_required=True,
             site_allocation__event_site__site__powerbox__isnull=False
         )
@@ -2189,7 +2190,7 @@ def stallregistrations_by_powerbox_view(request):
     )
 
     # Add stall registration-specific details for display
-    detailed_stallregistrations = StallRegistration.objects.filter(
+    detailed_stallregistrations = StallRegistration.registrationcurrentmgr.filter(
         power_required=True,
         site_allocation__event_site__site__powerbox__isnull=False
     ).annotate(
@@ -2271,7 +2272,7 @@ def stallregistrations_by_powerbox_view(request):
 
         # Generate an alert message if no results are found
         alert_message = (
-            generate_alert_message(
+            generate_powerbox_alert_message(
                 filter_params.get('eventid'),
                 filter_params.get('powerboxid'),
                 filter_params.get('stallholderid')

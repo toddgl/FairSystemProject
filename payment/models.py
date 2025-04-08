@@ -511,7 +511,7 @@ class DiscountItemManager(models.Manager):
     """
 
     def get_queryset(self):
-        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[current_year, next_year])
+        return super().get_queryset().filter(stall_registration__fair__fair_year__in=[current_year, next_year], stall_registration__fair__is_activated=True)
 
     def get_registration_discount(self, registration):
         return super().get_queryset().filter(stall_registration=registration)

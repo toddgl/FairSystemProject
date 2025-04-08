@@ -184,7 +184,7 @@ def stall_registration_listview(request):
     query_filters = build_query_filters(filter_params)
     # Update session filters
     request.session["stall_registration_filters"] = query_filters
-    filtered_data = StallRegistration.registrationcurrentallmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
+    filtered_data = StallRegistration.objects.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
     # Generate an alert message if no results are found
     alert_message = (
@@ -207,7 +207,7 @@ def stall_registration_listview(request):
             filter_params['stallholder'] = stallholder_id
             request.session['stall_registration_filters'] = filter_params  # Save to session
             query_filters = build_query_filters(filter_params)  # Rebuild query filters
-            filtered_data = StallRegistration.registrationcurrentallmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
+            filtered_data = StallRegistration.objects.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
         if request.POST.get('form_purpose') == 'filter':
             if filterform.is_valid():
@@ -221,7 +221,7 @@ def stall_registration_listview(request):
 
                 query_filters = build_query_filters(filter_params)  # Rebuild query filters
                 request.session["stall_registration_filters"] = query_filters
-                filtered_data = StallRegistration.registrationcurrentallmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
+                filtered_data = StallRegistration.objects.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         return TemplateResponse(request, template_name, {
