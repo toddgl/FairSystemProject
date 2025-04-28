@@ -503,7 +503,7 @@ class ZoneMapCreateForm(ModelForm):
 
     class Meta:
         model = ZoneMap
-        fields = ['zone', 'map_pdf']
+        fields = ['zone', 'year', 'map_pdf']
         widgets = {
             'map_pdf': FileInput(),
         }

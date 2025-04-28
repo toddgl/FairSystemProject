@@ -296,11 +296,19 @@ class ZoneMap(models.Model):
         verbose_name='zone',
         related_name='zone_map',
     )
-    year = models.CharField(max_length=4, default=str(current_year))
-    map_pdf = models.FileField(upload_to='maps/' + str(current_year))
+    year = models.CharField(max_length=4)
+    map_pdf = models.FileField(upload_to='maps/' + str(year))
 
     class Meta:
         unique_together = ('year', 'map_pdf')
+
+    def __str__(self):
+        return f"{self.zone} ({self.year})"
+
+    def save(self, *args, **kwargs):
+        if not self.year:
+            raise ValueError("ZoneMap must have a year before saving.")
+        super().save(*args, **kwargs)
 
 
 class PowerBox(models.Model):
