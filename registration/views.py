@@ -1308,7 +1308,7 @@ def submit_stall_registration(request, id):
         obj = RegistrationComment.createregistrationcommentmgr.create_comment(stallregistration.stallholder,
                                                                               stallregistration.fair, comment_type,
                                                                               error_comment)
-        return HttpResponseRedirect(success_url)
+        # return HttpResponseRedirect(success_url) - Removed so that all applications are set to submitted to prevent confusion to the applicants.
 
     stallregistration.to_booking_status_submitted()
     stallregistration.save()
