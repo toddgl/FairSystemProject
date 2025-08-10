@@ -113,6 +113,8 @@
             <li class="list-group-item"><strong>Food Source:</strong> {{ food_data.food_source }}</li>
             <li class="list-group-item"><strong>Food Storage:</strong> {{ food_data.food_storage_prep_method }}</li>
             <li class="list-group-item"><strong>Equipment Storage:</strong> {{ food_data.food_storage_prep }}</li>
+            <li class="list-group-item"><strong>Compostable Containers:</strong> {{ food_data.uses_compostable_containers|yesno:"Yes,No"}}</li>
+            <li class="list-group-item"><strong>Compostable Cups:</strong> {{ food_data.uses_compostable_cups|yesno:"Yes,No"}}</li>
             <li class="list-group-item"><strong>Hygene:</strong> {{ food_data.hygiene_methods }}</li>
           </ul>
           <hr>
