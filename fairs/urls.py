@@ -25,6 +25,7 @@ from fairs.views import (
     ZoneMapDetailUpdateView,
     pdf_view,
     site_allocation_create,
+    stallholder_search,
     SiteAllocationUpdateView,
     site_allocation_listview,
     siteallocation_delete_view,
@@ -128,5 +129,5 @@ urlpatterns = [
     path('sitehistory/update-history/<int:id>/', update_site_history, name='update-site-history'),
     path('powerboxsiteallocations/pdf/', generate_powerbox_pdf, name='generate-powerbox-pdf'),
     path('powerbox-connections/pdf/', powerbox_connections_pdf_view, name='dashboard_powerbox_connections_pdf'),
-
+    path('stallholder-search/', stallholder_search, name='stallholder-search'),
 ]

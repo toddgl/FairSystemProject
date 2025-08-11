@@ -1078,10 +1078,6 @@ class SiteAllocationUpdateForm(ModelForm):
         model = SiteAllocation
         fields = ('stallholder', 'event_site', 'stall_registration', 'event_power', 'on_hold')
         widgets = {
-            'stallholder': Select(attrs={
-                'class': "form-select",
-                'style': 'max-width: 300px;',
-            }),
             'event_site': Select(attrs={
                 'class': "form-select",
                 'style': 'max-width: 300px;',

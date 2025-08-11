@@ -1,0 +1,6 @@
+<!-- fairs/templates/siteallocations/partials/stallholder_options.html -->
+{% for user in stallholders %}
+<option value="{{ user.id }}" {% if user.id == selected_stallholder_id %}selected{% endif %}>
+    {{ user.first_name }} {{ user.last_name }}
+</option>
+{% endfor %}

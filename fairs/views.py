@@ -21,8 +21,9 @@ from weasyprint import HTML
 from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
-from django.db.models import F, Sum
+from django.db.models import F, Q, Sum
 from django.db import transaction
+from django.contrib.auth import get_user_model
 from django.views.generic import (
     CreateView,
     FormView,
@@ -1184,6 +1185,24 @@ def site_allocation_listview(request):
         'alert_mgr': alert_message,
     })
 
+def stallholder_search(request):
+    query = request.GET.get("q", "")
+    selected_id = request.GET.get("selected", None)
+
+    User = get_user_model()
+    stallholders = User.objects.all()
+
+    if query:
+        stallholders = stallholders.filter(
+            Q(first_name__icontains=query) | Q(last_name__icontains=query)
+        )
+
+    html = render_to_string("siteallocations/partials/stallholder_options.html", {
+        "stallholders": stallholders,
+        "selected_stallholder_id": int(selected_id) if selected_id else None
+    })
+    return HttpResponse(html)
+
 
 class SiteAllocationUpdateView(PermissionRequiredMixin, UpdateView):
     """
@@ -1196,10 +1215,18 @@ Update a Site Allocation including recording who created it
     success_url = reverse_lazy('fair:siteallocation-list')
 
     def get_context_data(self, **kwargs):
-        context = super(SiteAllocationUpdateView, self).get_context_data(**kwargs)
+        #bcontext = super(SiteAllocationUpdateView, self).get_context_data(**kwargs)
+        context = super().get_context_data(**kwargs)
         # Refresh the obj from the database in case the form validation changed it
         obj = self.get_object()
         context['obj'] = context['siteallocation'] = obj
+        User = get_user_model()
+        # Always include the selected user in the initial list so it's visible
+        initial_stallholders = list(User.objects.filter(id=obj.stallholder_id))
+        initial_stallholders += list(User.objects.exclude(id=obj.stallholder_id)[:19])
+
+        context['initial_stallholders'] = initial_stallholders
+        context['selected_stallholder_id'] = obj.stallholder_id
         return context
 
     def form_valid(self, form):

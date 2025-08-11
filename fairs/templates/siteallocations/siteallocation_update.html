@@ -20,8 +20,46 @@
   {% endif %}
   <form method="post">
     {% csrf_token %}
-    {{ form.as_p }}
-    <input type="submit" class="btn btn-primary" value="Update" >
+     <!-- Stallholder Search + Dropdown -->
+    <div class="mb-3">
+        <label for="stallholder-search" class="form-label">Stallholder</label>
+        <input
+            id="stallholder-search"
+            name="q"
+            type="text"
+            class="form-control"
+            placeholder="Search stallholders..."
+            hx-get="{% url 'fair:stallholder-search' %}"
+            hx-trigger="keyup changed delay:300ms"
+            hx-target="#stallholder-select"
+            hx-include="[name=csrfmiddlewaretoken]"
+            hx-vals='{"selected": "{{ selected_stallholder_id }}"}'
+        >
+
+        <select name="stallholder" id="stallholder-select" class="form-select mt-2" style="max-width:300px;">
+            {% include "siteallocations/partials/stallholder_options.html" with stallholders=initial_stallholders selected_stallholder_id=selected_stallholder_id %}
+        </select>
+    </div>
+
+    <!-- All other fields -->
+    <div class="mb-3">
+        {{ form.event_site.label_tag }}
+        {{ form.event_site }}
+    </div>
+    <div class="mb-3">
+        {{ form.stall_registration.label_tag }}
+        {{ form.stall_registration }}
+    </div>
+    <div class="mb-3">
+        {{ form.event_power.label_tag }}
+        {{ form.event_power }}
+    </div>
+    <div class="mb-3">
+        {{ form.on_hold.label_tag }}
+        {{ form.on_hold }}
+    </div>
+
+    <input type="submit" class="btn btn-primary" value="Update">
     <a href="{{ view.get_success_url }}" class="btn btn-secondary">Cancel</a>
   </form>
 </div>
