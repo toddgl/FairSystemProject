@@ -1555,8 +1555,6 @@ def setup_process_dashboard_view(request):
         'event_site__site'                  # Group by site
     ).distinct().count()
 
-    print(f"Total unique site registrations: {unique_site_registrations}")
-
     # count the number a site histories for the current year
     count_current_site_histories = SiteHistory.objects.filter(
         year=current_fair_year
