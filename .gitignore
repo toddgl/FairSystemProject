@@ -9,6 +9,7 @@
 /utils/migrate_history.py
 .kdev4
 .env
+requirements_orig.txt
 clean_yaml.py
 config/env.dist
 FairSystemProject.kdev4
