@@ -1,5 +1,5 @@
 # search/views.py
-
+from django.http import HttpResponseBadRequest
 from django.shortcuts import render
 from django.db.models import Q
 from accounts.models import (
@@ -72,8 +72,10 @@ def stallholder_siteallocation_search_view(request):
     """
     Search for Stallholders customised for the siteallocation listing
     """
-    search_text = request.POST.get('search')
-    siteallocation = request.session['siteallocation']
+    b reearch_text = request.POST.get('search')
+    siteallocation = request.session.get('siteallocation')
+    if not siteallocation:
+        return HttpResponseBadRequest("No site allocation found in session")
     results = CustomUser.stallholdermgr.filter(
         Q(id__icontains=search_text) | Q(first_name__icontains=search_text) | Q(last_name__icontains=search_text) |
         Q(profile__org_name__icontains=search_text) | Q(phone__icontains=search_text) | Q(email__icontains=search_text))
