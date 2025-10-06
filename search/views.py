@@ -72,7 +72,7 @@ def stallholder_siteallocation_search_view(request):
     """
     Search for Stallholders customised for the siteallocation listing
     """
-    b reearch_text = request.POST.get('search')
+    search_text = request.POST.get('search')
     siteallocation = request.session.get('siteallocation')
     if not siteallocation:
         return HttpResponseBadRequest("No site allocation found in session")

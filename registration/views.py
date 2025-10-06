@@ -313,6 +313,9 @@ def stall_registration_create(request):
             stall_registration = registrationform.save(commit=False)
             stall_registration.stallholder = stallholder
             stall_registration.total_charge = total_cost
+            # Auto flag food stalls
+            if stall_registration.stall_category and stall_registration.stall_category.for_selling_food:
+                stall_registration.selling_food =True
             stall_registration.save()
             stall_registration.refresh_from_db()
             if siteallocation:

@@ -112,6 +112,10 @@ class StallCategory(models.Model):
         blank=True,
         null=True
     )
+    for_selling_food = models.BooleanField(
+        default=False,
+        help_text="Check if this category represents food-related stalls"
+    )
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(

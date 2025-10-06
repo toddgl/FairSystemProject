@@ -197,7 +197,7 @@ class StallCategoryCreationForm(ModelForm):
 
     class Meta:
         model = StallCategory
-        fields = ['category_name', 'has_inventory_item', 'inventory_item', 'is_active', ]
+        fields = ['category_name', 'has_inventory_item', 'inventory_item', 'is_active', 'for_selling_food' ]
         widgets = {
             'category_name': TextInput(attrs={
                 'class': "form-control",
@@ -208,6 +208,9 @@ class StallCategoryCreationForm(ModelForm):
                 'class': 'form-check-input',
             }),
             'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'for_selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input',
             }),
         }
@@ -238,7 +241,7 @@ class StallCategoryUpdateForm(ModelForm):
 
     class Meta:
         model = StallCategory
-        fields = ['category_name', 'has_inventory_item', 'inventory_item', 'is_active', ]
+        fields = ['category_name', 'has_inventory_item', 'inventory_item', 'is_active', 'for_selling_food']
         widgets = {
             'category_name': TextInput(attrs={
                 'class': "form-control",
@@ -249,6 +252,9 @@ class StallCategoryUpdateForm(ModelForm):
                 'class': 'form-check-input',
             }),
             'is_active': CheckboxInput(attrs={
+                'class': 'form-check-input',
+            }),
+            'for_selling_food': CheckboxInput(attrs={
                 'class': 'form-check-input',
             }),
         }
