@@ -256,7 +256,6 @@ def stall_registration_listview(request):
         })
 
     # --- 8. Standard page load ---
-    print("Got to standard page load")
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
     return TemplateResponse(request, template_name, {
         'filterform': filterform,
