@@ -221,6 +221,32 @@
       </div>
     </div>
       <div class="col-sm-4">
+          <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
+              <div class="card-body">
+                  <h5 class="card-title">Recently Updated Registrations</h5>
+                  <p class="card-text">{{ recently_updated_counts }}</p>
+                  <!-- <p class="card-text">{% widthratio recently_updated_counts total_counts 100 %} %</p> -->
+                  <div class="single-chart ">
+                      <svg viewBox="0 0 36 36" class="circular-chart red">
+                          <path class="circle-bg"
+                                d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <path class="circle"
+                                stroke-dasharray="{% widthratio recently_updated_counts total_counts 100 %}, 100"
+                                d="M18 2.0845
+                      a 15.9155 15.9155 0 0 1 0 31.831
+                      a 15.9155 15.9155 0 0 1 0 -31.831"
+                          />
+                          <text x="18" y="20.35" class="percentage">{% widthratio recently_updated_counts total_counts 100 %}%</text>
+                      </svg>
+                  </div>
+                  <a class="btn btn-primary" href="{% url 'registration:stallregistration-list' %}?recently_updated=true" role="button">View</a>
+              </div>
+          </div>
+      </div>
+      <div class="col-sm-4">
         <div class="card text-center text-white bg-dark mb-3 w-50 mx-auto">
           <div class="card-body">
             <h5 class="card-title">Cancelled Registrations</h5>

@@ -134,59 +134,95 @@ def generate_alert_message(fair, site_size, stallholder, booking_status):
     return f"There are no stall registrations where {' and '.join(parts)}" if parts else "There are no stall registrations yet."
 
 
+def collect_filter_params(request):
+    """Gather filter parameters from GET, POST, or session."""
+    params = request.session.get('stall_registration_filters', {}).copy()
+
+    # Common GET params
+    params['booking_status'] = request.GET.get('booking_status') or params.get('booking_status')
+    params['selling_food'] = request.GET.get('selling_food') or params.get('selling_food')
+    params['stallholder'] = request.GET.get('stallholder') or params.get('stallholder')
+
+    # Our new flag for recently updated
+    if request.GET.get('recently_updated'):
+        params['recently_updated'] = True
+
+    # Handle POST filter form if applicable
+    if request.method == "POST" and 'form_purpose' in request.POST:
+        form = StallRegistrationFilterForm(request.POST)
+        if form.is_valid():
+            fair = form.cleaned_data.get('fair')
+            site_size = form.cleaned_data.get('site_size')
+            if fair:
+                params['fair'] = fair.pk
+            if site_size:
+                params['site_size'] = site_size.pk
+
+    return {k: v for k, v in params.items() if v not in [None, '', False]}
+
+def build_query_filters(params):
+    """Build queryset filters for direct model fields."""
+    filters = {}
+    mapping = {
+        'fair': 'fair',
+        'site_size': 'site_size',
+        'stallholder': 'stallholder',
+        'booking_status': 'booking_status',
+        'selling_food': 'selling_food',
+    }
+    for key, field in mapping.items():
+        if key in params:
+            filters[field] = params[key]
+    return filters
+
+def apply_special_filters(queryset, params):
+    """Apply non-trivial filters that need logic beyond field lookups."""
+    from registration.models import StallRegistration
+
+    if params.get('recently_updated'):
+        # Start with the specialized manager instead of re-filtering manually
+        queryset = StallRegistration.registrationrecentupdatemgr.all()
+    return queryset
+
+
 @login_required
 @permission_required('registration.change_stallregistration', raise_exception=True)
 def stall_registration_listview(request):
     """
     List stall applications used by the Fair Conveners to view and manage stall registrations.
     """
-    # Reset session filters on full page load
+
+    # --- Reset filters on full page load ---
     if not request.htmx:
         request.session.pop('stall_registration_filters', None)
-    # Default to the last active fair if no fair is selected
+
     current_fair = Fair.currentfairmgr.last()
     cards_per_page = 6
     request.session['registration'] = 'registration:stallregistration-list'
     template_name = 'stallregistration/stallregistration_list.html'
     filterform = StallRegistrationFilterForm(request.POST or None)
 
-    # Collect GET parameters for `booking_status` and `selling_food`
-    booking_status = request.GET.get('booking_status', '')
-    selling_food = request.GET.get('selling_food', False)
-    stallholder_id = request.GET.get('stallholder', None)  # Get stallholder from query params
+    # --- 1. Collect all filter parameters ---
+    filter_params = collect_filter_params(request)
 
-    # Retrieve filters from session
-    filter_params = request.session.get('stall_registration_filters', {})
-
-    # Include `booking_status` and `selling_food` in filters
-    if booking_status:
-        filter_params['booking_status'] = booking_status
-    if selling_food:
-        filter_params['selling_food'] = selling_food
-    if stallholder_id:
-        filter_params['stallholder'] = stallholder_id  # Save stallholder filter
-
-    def build_query_filters(params):
-        """Build query filters based on session parameters."""
-        filters = {}
-        if 'fair' in params:
-            filters['fair'] = params['fair']
-        if 'site_size' in params:
-            filters['site_size'] = params['site_size']  # Ensure proper lookup for related field
-        if 'stallholder' in params:
-            filters['stallholder'] = params['stallholder']
-        if 'booking_status' in params:
-            filters['booking_status'] = params['booking_status']
-        if 'selling_food' in params:
-            filters['selling_food'] = params['selling_food']
-        return filters
-
+    # --- 2. Build query filters for standard DB fields ---
     query_filters = build_query_filters(filter_params)
-    # Update session filters
-    request.session["stall_registration_filters"] = query_filters
-    filtered_data = StallRegistration.registrationcurrentmgr.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
 
-    # Generate an alert message if no results are found
+    # --- 3. Fetch base queryset ---
+    filtered_data = (
+        StallRegistration.registrationcurrentmgr
+        .filter(**query_filters)
+        .order_by("stall_category")
+        .prefetch_related('site_allocation', 'additional_sites_required')
+    )
+
+    # --- 4. Apply special logic filters (like recently_updated) ---
+    filtered_data = apply_special_filters(filtered_data, filter_params)
+
+    # --- 5. Save back to session ---
+    request.session["stall_registration_filters"] = query_filters
+
+    # --- 6. Generate alert message ---
     alert_message = (
         generate_alert_message(
             filter_params.get('fair'),
@@ -198,31 +234,9 @@ def stall_registration_listview(request):
         else ""
     )
 
+    # --- 7. Handle HTMX partial updates ---
     if request.htmx:
         template_name = 'stallregistration/stallregistration_list_partial.html'
-
-        # Handle stallholder or filter form submission
-        stallholder_id = request.POST.get('selected_stallholder')
-        if stallholder_id:
-            filter_params['stallholder'] = stallholder_id
-            request.session['stall_registration_filters'] = filter_params  # Save to session
-            query_filters = build_query_filters(filter_params)  # Rebuild query filters
-            filtered_data = StallRegistration.objects.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
-
-        if request.POST.get('form_purpose') == 'filter':
-            if filterform.is_valid():
-                fair = filterform.cleaned_data.get('fair') or current_fair
-                site_size = filterform.cleaned_data.get('site_size')
-
-                # Update and save filters
-                filter_params['fair'] = fair.pk if fair else None
-                filter_params['site_size'] = site_size.pk if site_size else None
-                request.session['stall_registration_filters'] = {k: v for k, v in filter_params.items() if v}  # Remove empty values
-
-                query_filters = build_query_filters(filter_params)  # Rebuild query filters
-                request.session["stall_registration_filters"] = query_filters
-                filtered_data = StallRegistration.objects.filter(**query_filters).order_by("stall_category").prefetch_related('site_allocation', 'additional_sites_required')
-
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         return TemplateResponse(request, template_name, {
             'stallregistration_list': page_list,
@@ -230,17 +244,15 @@ def stall_registration_listview(request):
             'alert_mgr': alert_message,
         })
 
-    # Handle initial page load or non-HTMX request
+    # --- 8. Standard page load ---
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
     return TemplateResponse(request, template_name, {
         'filterform': filterform,
         'stallregistration_list': page_list,
         'page_range': page_range,
         'alert_mgr': alert_message,
-        'booking_status': booking_status,
-        'selling_food': selling_food,
+        **filter_params,  # Pass filters to template if needed
     })
-
 
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)

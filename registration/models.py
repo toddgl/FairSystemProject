@@ -1,6 +1,7 @@
 # registration/models.py
 
-import datetime
+from datetime import datetime, timedelta
+from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings  # new
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -22,7 +23,7 @@ import magic
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 
 # Global Variables
-current_year = datetime.datetime.now().year
+current_year = datetime.now().year
 next_year = current_year + 1
 
 
@@ -236,6 +237,20 @@ class RegistrationCancelledManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Cancelled')
 
+
+class RegistrationRecentUpdatedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that have been updated in the last 24 hours
+    """
+    def get_queryset(self):
+        now = timezone.now()  # timezone-aware datetime
+        since = now - timedelta(days=1)
+        return super().get_queryset().filter(
+            fair__fair_year__in=[current_year, next_year],
+            fair__is_activated=True,
+            date_updated__gte=since
+        )
+
 class RegistrationAmendedManager(models.Manager):
     """
     Queryset of Stall Registrations for current fairs that the booking status is amended
@@ -365,6 +380,7 @@ class StallRegistration(models.Model):
     is_cancelled = models.BooleanField(default=False)
     is_invoiced = models.BooleanField(default=False)
     date_created = models.DateTimeField(auto_now_add=True)
+    date_updated = models.DateTimeField(auto_now=True)
 
     objects = models.Manager()
     registrationcurrentallmgr = RegistrationCurrentAllManager()
@@ -376,6 +392,7 @@ class StallRegistration(models.Model):
     registrationpaymentcomplemgr = RegistrationPaymentCompleteManager()
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
+    registrationrecentupdatemgr = RegistrationRecentUpdatedManager()
     registrationamendedmgr = RegistrationAmendedManager()
     vehicleonsitemgr = VehiclesOnSiteManager()
     ismultisiteregistrationmgr = IsMultiSiteRegistrationManager()
