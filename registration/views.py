@@ -163,16 +163,16 @@ def collect_filter_params(request):
 def build_query_filters(params):
     """Build queryset filters for direct model fields."""
     filters = {}
-    mapping = {
-        'fair': 'fair',
-        'site_size': 'site_size',
-        'stallholder': 'stallholder',
-        'booking_status': 'booking_status',
-        'selling_food': 'selling_food',
-    }
-    for key, field in mapping.items():
-        if key in params:
-            filters[field] = params[key]
+
+    if params.get("booking_status"):
+        filters["booking_status"] = params["booking_status"]
+
+    if params.get("selling_food"):
+        filters["selling_food"] = True
+
+    if params.get("stallholder"):
+        filters["stallholder_id"] = params["stallholder"]
+
     return filters
 
 def apply_special_filters(queryset, params):
@@ -237,6 +237,17 @@ def stall_registration_listview(request):
     # --- 7. Handle HTMX partial updates ---
     if request.htmx:
         template_name = 'stallregistration/stallregistration_list_partial.html'
+        stallholder_id = request.POST.get("selected_stallholder")
+        if stallholder_id:
+            filter_params["stallholder"] = stallholder_id
+            query_filters = build_query_filters(filter_params)
+            request.session["stall_registration_filters"] = filter_params
+            filtered_data = (
+                StallRegistration.registrationcurrentmgr
+                .filter(**query_filters)
+                .order_by("stall_category")
+                .prefetch_related('site_allocation', 'additional_sites_required')
+            )
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         return TemplateResponse(request, template_name, {
             'stallregistration_list': page_list,
@@ -245,6 +256,7 @@ def stall_registration_listview(request):
         })
 
     # --- 8. Standard page load ---
+    print("Got to standard page load")
     page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
     return TemplateResponse(request, template_name, {
         'filterform': filterform,
