@@ -173,6 +173,12 @@ def build_query_filters(params):
     if params.get("stallholder"):
         filters["stallholder_id"] = params["stallholder"]
 
+    if params.get("fair"):
+        filters["fair"] = params["fair"]
+
+    if params.get("site_size"):
+        filters["site_size"] = params["site_size"]
+
     return filters
 
 def apply_special_filters(queryset, params):
@@ -210,7 +216,7 @@ def stall_registration_listview(request):
 
     # --- 3. Fetch base queryset ---
     filtered_data = (
-        StallRegistration.registrationcurrentmgr
+        StallRegistration.objects
         .filter(**query_filters)
         .order_by("stall_category")
         .prefetch_related('site_allocation', 'additional_sites_required')
@@ -243,7 +249,7 @@ def stall_registration_listview(request):
             query_filters = build_query_filters(filter_params)
             request.session["stall_registration_filters"] = filter_params
             filtered_data = (
-                StallRegistration.registrationcurrentmgr
+                StallRegistration.objects
                 .filter(**query_filters)
                 .order_by("stall_category")
                 .prefetch_related('site_allocation', 'additional_sites_required')
@@ -262,7 +268,6 @@ def stall_registration_listview(request):
         'stallregistration_list': page_list,
         'page_range': page_range,
         'alert_mgr': alert_message,
-        **filter_params,  # Pass filters to template if needed
     })
 
 @login_required
