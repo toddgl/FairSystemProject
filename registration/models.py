@@ -251,6 +251,43 @@ class RegistrationRecentUpdatedManager(models.Manager):
             date_updated__gte=since
         )
 
+class RegistrationUpdatedWithinManager(models.Manager):
+    """
+    Custom manager to filter StallRegistrations updated within a given time range.
+    """
+
+    def updated_within(self, period: str):
+        """
+        Return StallRegistrations updated within a given time window:
+        - "today"     → since midnight
+        - "24h"       → last 24 hours
+        - "week"      → last 7 days
+        - "month"     → last 30 days
+        """
+        now = timezone.now()
+        current_year = now.year
+        next_year = current_year + 1
+
+        if period == "today":
+            start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        elif period == "week":
+            start = now - timedelta(days=7)
+        elif period == "month":
+            start = now - timedelta(days=30)
+        else:  # default to 24 hours
+            start = now - timedelta(days=1)
+
+        return (
+            super()
+            .get_queryset()
+            .filter(
+                fair__fair_year__in=[current_year, next_year],
+                fair__is_activated=True,
+                date_updated__gte=start,
+            )
+        )
+
+
 class RegistrationAmendedManager(models.Manager):
     """
     Queryset of Stall Registrations for current fairs that the booking status is amended
@@ -393,6 +430,7 @@ class StallRegistration(models.Model):
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
     registrationrecentupdatemgr = RegistrationRecentUpdatedManager()
+    registrationupdatedwithinmgr = RegistrationUpdatedWithinManager()
     registrationamendedmgr = RegistrationAmendedManager()
     vehicleonsitemgr = VehiclesOnSiteManager()
     ismultisiteregistrationmgr = IsMultiSiteRegistrationManager()
@@ -406,6 +444,10 @@ class StallRegistration(models.Model):
 
     def get_absolute_url(self):
         return reverse('stallregistration-detail', args=[str(self.id)])
+
+    @classmethod
+    def count_updated_within(cls, period):
+        return cls.registrationupdatedwithinmgr.updated_within(period).count()
 
     @property
     def booking_id(self):

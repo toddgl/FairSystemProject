@@ -1451,7 +1451,10 @@ def stall_registration_dashboard_view(request):
         'cancelled_counts': cancelled_counts,
         'recently_updated_counts': recently_updated_counts,
         'amended_counts': amended_counts,
-        'createemailform': createemailform
+        'createemailform': createemailform,
+        'updated_today_counts': StallRegistration.count_updated_within('today'),
+        'updated_week_counts' : StallRegistration.count_updated_within('week'),
+        'updated_month_counts' : StallRegistration.count_updated_within('month'),
     })
 
 @login_required

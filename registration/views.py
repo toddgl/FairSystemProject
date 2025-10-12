@@ -1,7 +1,8 @@
 # registration/views.py
-import datetime
 import decimal
 import logging
+from django.utils import timezone
+from datetime import datetime, timedelta
 
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
@@ -82,7 +83,7 @@ from .forms import (
 )
 
 # Global Variables
-current_year = datetime.datetime.now().year
+current_year = datetime.now().year
 next_year = current_year + 1
 db_logger = logging.getLogger('db')
 
@@ -143,6 +144,8 @@ def collect_filter_params(request):
     params['selling_food'] = request.GET.get('selling_food') or params.get('selling_food')
     params['stallholder'] = request.GET.get('stallholder') or params.get('stallholder')
 
+    params['time_filter'] = request.GET.get('time_filter') or params.get('time_filter')
+
     # Our new flag for recently updated
     if request.GET.get('recently_updated'):
         params['recently_updated'] = True
@@ -181,13 +184,59 @@ def build_query_filters(params):
 
     return filters
 
-def apply_special_filters(queryset, params):
-    """Apply non-trivial filters that need logic beyond field lookups."""
-    from registration.models import StallRegistration
+def apply_special_filters(queryset, filters):
+    """
+    Applies special filtering logic like booking_status, selling_food,
+    and time-based filters (updated_today, updated_this_week, updated_this_month).
+    Works for both naive and aware datetimes.
+    """
+    # Booking status
+    booking_status = filters.get("booking_status")
+    if booking_status:
+        queryset = queryset.filter(booking_status=booking_status)
 
-    if params.get('recently_updated'):
-        # Start with the specialized manager instead of re-filtering manually
-        queryset = StallRegistration.registrationrecentupdatemgr.all()
+    # Selling food
+    selling_food = filters.get("selling_food")
+    if selling_food:
+        queryset = queryset.filter(selling_food=True)
+
+    # --- Time-based filters ---
+    time_filter = filters.get("time_filter")
+    if not time_filter:
+        return queryset
+
+    # Handle timezone awareness safely
+    now = timezone.now()
+    if timezone.is_naive(now):
+        # Your system uses naive datetimes (USE_TZ=False)
+        now = datetime.now()
+    else:
+        # Django USE_TZ=True, use localtime() for consistency
+        now = timezone.localtime(now)
+
+    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    if time_filter == "updated_today":
+        queryset = queryset.filter(date_updated__gte=today_start)
+
+    elif time_filter == "updated_this_week":
+        week_start = today_start - timedelta(days=today_start.weekday())
+        queryset = queryset.filter(
+            date_updated__gte=week_start,
+            date_updated__year=today_start.year  # restrict to current year
+        )
+
+    elif time_filter == "updated_this_month":
+        month_start = today_start.replace(day=1)
+        queryset = queryset.filter(
+            date_updated__gte=month_start,
+            date_updated__year=today_start.year  # restrict to current year
+        )
+
+    elif time_filter == "updated_recently":
+        recent_cutoff = now - timedelta(days=1)
+        queryset = queryset.filter(date_updated__gte=recent_cutoff)
+
     return queryset
 
 
@@ -198,11 +247,10 @@ def stall_registration_listview(request):
     List stall applications used by the Fair Conveners to view and manage stall registrations.
     """
 
-    # --- Reset filters on full page load ---
+    # --- Reset filters on full page load (non-HTMX) ---
     if not request.htmx:
         request.session.pop('stall_registration_filters', None)
 
-    current_fair = Fair.currentfairmgr.last()
     cards_per_page = 6
     request.session['registration'] = 'registration:stallregistration-list'
     template_name = 'stallregistration/stallregistration_list.html'
@@ -215,20 +263,26 @@ def stall_registration_listview(request):
     query_filters = build_query_filters(filter_params)
 
     # --- 3. Fetch base queryset ---
+    if filter_params.get("time_filter"):
+        # Only consider the 'current' registrations if a time filter is applied
+        base_qs = StallRegistration.registrationcurrentmgr.filter(**query_filters)
+    else:
+        base_qs = StallRegistration.objects.filter(**query_filters)
+
     filtered_data = (
-        StallRegistration.objects
+        base_qs
         .filter(**query_filters)
         .order_by("stall_category")
         .prefetch_related('site_allocation', 'additional_sites_required')
     )
 
-    # --- 4. Apply special logic filters (like recently_updated) ---
+    # --- 4. Apply special logic filters (time-based, etc.) ---
     filtered_data = apply_special_filters(filtered_data, filter_params)
 
     # --- 5. Save back to session ---
-    request.session["stall_registration_filters"] = query_filters
+    request.session["stall_registration_filters"] = filter_params
 
-    # --- 6. Generate alert message ---
+    # --- 6. Generate alert message if no results ---
     alert_message = (
         generate_alert_message(
             filter_params.get('fair'),
@@ -247,18 +301,22 @@ def stall_registration_listview(request):
         if stallholder_id:
             filter_params["stallholder"] = stallholder_id
             query_filters = build_query_filters(filter_params)
-            request.session["stall_registration_filters"] = filter_params
             filtered_data = (
                 StallRegistration.objects
                 .filter(**query_filters)
                 .order_by("stall_category")
                 .prefetch_related('site_allocation', 'additional_sites_required')
             )
+            filtered_data = apply_special_filters(filtered_data, filter_params)
+
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
         return TemplateResponse(request, template_name, {
             'stallregistration_list': page_list,
             'page_range': page_range,
             'alert_mgr': alert_message,
+            'time_filter': filter_params.get('time_filter'),  # pass time_filter for pagination links
+            'booking_status': filter_params.get('booking_status'),
+            'selling_food': filter_params.get('selling_food'),
         })
 
     # --- 8. Standard page load ---
@@ -268,7 +326,11 @@ def stall_registration_listview(request):
         'stallregistration_list': page_list,
         'page_range': page_range,
         'alert_mgr': alert_message,
+        'time_filter': filter_params.get('time_filter'),
+        'booking_status': filter_params.get('booking_status'),
+        'selling_food': filter_params.get('selling_food'),
     })
+
 
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)

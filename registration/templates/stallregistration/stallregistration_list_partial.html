@@ -108,7 +108,7 @@
     <ul class="pagination">
         {% if stallregistration_list.has_previous %}
             <li class="page-item">
-                <a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ stallregistration_list.previous_page_number }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}"
+                <a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ stallregistration_list.previous_page_number }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}{% if time_filter %}&time_filter={{ time_filter }}{% endif %}"
                    hx-trigger="click" hx-target="#stallregistration_data">&laquo;</a>
             </li>
         {% else %}
@@ -119,14 +119,15 @@
                 <li class="active page-item"><span class="page-link">{{ i }}</span></li>
             {% else %}
                 <li class="page-item">
-                    <a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ i }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}"
-                       hx-trigger="click" hx-target="#stallregistration_data">{{ i }}</a>
+                    <a class="page-link"
+                        hx-get="{% url 'registration:stallregistration-list' %}?page={{ i }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}{% if time_filter %}&time_filter={{ time_filter }}{% endif %}"
+                        hx-trigger="click" hx-target="#stallregistration_data">{{ i }}</a>
                 </li>
             {% endif %}
         {% endfor %}
         {% if stallregistration_list.has_next %}
             <li class="page-item">
-                <a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ stallregistration_list.next_page_number }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}"
+                <a class="page-link" hx-get="{% url 'registration:stallregistration-list' %}?page={{ stallregistration_list.next_page_number }}{% if booking_status %}&booking_status={{ booking_status }}{% endif %}{% if selling_food %}&selling_food={{ selling_food }}{% endif %}{% if time_filter %}&time_filter={{ time_filter }}{% endif %}"
                    hx-trigger="click" hx-target="#stallregistration_data">&raquo;</a>
             </li>
         {% else %}
