@@ -238,17 +238,17 @@ class RegistrationCancelledManager(models.Manager):
                                              fair__is_activated=True, booking_status='Cancelled')
 
 
-class RegistrationRecentUpdatedManager(models.Manager):
+class RegistrationRecentlyCreatedManager(models.Manager):
     """
-    Queryset of Stall Registrations for current fairs that have been updated in the last 24 hours
+    Queryset of Stall Registrations for current fairs that have been created in the last 48 hours
     """
     def get_queryset(self):
         now = timezone.now()  # timezone-aware datetime
-        since = now - timedelta(days=1)
+        since = now - timedelta(days=2)
         return super().get_queryset().filter(
             fair__fair_year__in=[current_year, next_year],
             fair__is_activated=True,
-            date_updated__gte=since
+            date_created__gte=since
         )
 
 class RegistrationUpdatedWithinManager(models.Manager):
@@ -429,7 +429,7 @@ class StallRegistration(models.Model):
     registrationpaymentcomplemgr = RegistrationPaymentCompleteManager()
     registrationbookedmgr = RegistrationBookedManager()
     registrationcancelledmgr = RegistrationCancelledManager()
-    registrationrecentupdatemgr = RegistrationRecentUpdatedManager()
+    registrationrecentcreatmgr = RegistrationRecentlyCreatedManager()
     registrationupdatedwithinmgr = RegistrationUpdatedWithinManager()
     registrationamendedmgr = RegistrationAmendedManager()
     vehicleonsitemgr = VehiclesOnSiteManager()

@@ -146,9 +146,9 @@ def collect_filter_params(request):
 
     params['time_filter'] = request.GET.get('time_filter') or params.get('time_filter')
 
-    # Our new flag for recently updated
-    if request.GET.get('recently_updated'):
-        params['recently_updated'] = True
+    # Our new flag for recently created
+    if request.GET.get('recently_created'):
+        params['recently_created'] = True
 
     # Handle POST filter form if applicable
     if request.method == "POST" and 'form_purpose' in request.POST:
@@ -220,22 +220,22 @@ def apply_special_filters(queryset, filters):
         queryset = queryset.filter(date_updated__gte=today_start)
 
     elif time_filter == "updated_this_week":
-        week_start = today_start - timedelta(days=today_start.weekday())
+        week_start = today_start - timedelta(days=7)
         queryset = queryset.filter(
             date_updated__gte=week_start,
             date_updated__year=today_start.year  # restrict to current year
         )
 
     elif time_filter == "updated_this_month":
-        month_start = today_start.replace(day=1)
+        month_start = today_start - timedelta(days=30)
         queryset = queryset.filter(
             date_updated__gte=month_start,
             date_updated__year=today_start.year  # restrict to current year
         )
 
-    elif time_filter == "updated_recently":
-        recent_cutoff = now - timedelta(days=1)
-        queryset = queryset.filter(date_updated__gte=recent_cutoff)
+    elif time_filter == "created_recently":
+        recent_cutoff = now - timedelta(days=2)
+        queryset = queryset.filter(date_created__gte=recent_cutoff)
 
     return queryset
 
