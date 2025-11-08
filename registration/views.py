@@ -98,28 +98,40 @@ class HTTPResponseHXRedirect(HttpResponseRedirect):
 
 def pagination_data(cards_per_page, queryset, request):
     """
-    Handles pagination of a queryset
+    Handles pagination of a queryset safely.
     """
-    paginator = Paginator(queryset, cards_per_page)  # Paginate with the specified number of items per page
-    page_number = request.GET.get('page', 1)  # Get the current page number
-    page_list = paginator.get_page(page_number)  # Get the paginated data for the current page
+    paginator = Paginator(queryset, cards_per_page)
+    page_number = request.GET.get('page', 1)
 
     try:
-        page_obj = paginator.get_page(page_number)  # Get the paginated data for the current page
+        page_obj = paginator.get_page(page_number)
     except PageNotAnInteger:
-        # If page is not an integer, deliver the first page
         page_obj = paginator.get_page(1)
     except EmptyPage:
-        # If the page is out of range, deliver the last page
         page_obj = paginator.get_page(paginator.num_pages)
 
-    page_range = list(paginator.get_elided_page_range(
-        page_number,
-        on_each_side=1,
-        on_ends=2
-    ))  # Custom range for pagination links
+    # Try to get elided range, but handle invalid page numbers gracefully
+    try:
+        page_range = list(
+            paginator.get_elided_page_range(
+                page_obj.number,
+                on_each_side=1,
+                on_ends=2
+            )
+        )
+    except EmptyPage:
+        # fallback: return last page range if requested page doesn't exist
+        page_obj = paginator.get_page(paginator.num_pages)
+        page_range = list(
+            paginator.get_elided_page_range(
+                paginator.num_pages,
+                on_each_side=1,
+                on_ends=2
+            )
+        )
 
-    return page_list, page_range
+    return page_obj, page_range
+
 
 def generate_alert_message(fair, site_size, stallholder, booking_status):
     """Generate the alert message based on filters."""
