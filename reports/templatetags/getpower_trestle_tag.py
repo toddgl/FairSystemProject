@@ -18,7 +18,7 @@ def get_has_trestles(siteregistration):
 @register.simple_tag
 def get_has_power(siteregistration):
     """
-    Returns boolean response to whether the site registration includes Testles
+    Returns boolean response to whether the site registration includes power
 
     """
     return StallRegistration.registrationcurrentmgr.has_power(siteregistration)

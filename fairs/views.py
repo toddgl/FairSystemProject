@@ -1922,29 +1922,27 @@ def stallregistration_siteallocation_view(request, id):
     siteallocations = SiteAllocation.objects.filter(stall_registration=id)
     site_filter_message = 'Select a Zone to see available sites for allocation'
 
-    if request.htmx and sitefilterform.is_valid():
-        zone_filter_dict = {}
-        event = sitefilterform.cleaned_data.get('event')
-        zone = sitefilterform.cleaned_data.get('zone')
-        site_size = sitefilterform.cleaned_data.get('site_size')
-        has_power = sitefilterform.cleaned_data.get('has_power')
+    if request.htmx:
+        if sitefilterform.is_valid():
+            zone = sitefilterform.cleaned_data.get('zone')
+            event = sitefilterform.cleaned_data.get('event')
+            site_size = sitefilterform.cleaned_data.get('site_size')
+            has_power = sitefilterform.cleaned_data.get('has_power')
 
-        filter_params = {
-            'event': ('event', event.id if event else None),
-            'zone': ('site__zone', zone.id if zone else None),
-            'site_size': ('site__site_size', site_size.id if site_size else None),
-            'has_power': ('site__has_power', True if has_power else None)
-        }
+            # Constructing dynamic filter dictionary
+            zone_filter_dict = {
+                "site__zone": zone.id if zone else None,
+                "event": event.id if event else None,
+                "site__site_size": site_size.id if site_size else None,
+                "site__has_power": True if has_power else False
+            }
+            # Remove None values to avoid invalid queries
+            zone_filter_dict = {k: v for k, v in zone_filter_dict.items() if v is not None}
 
-        zone_filter_dict = {key: value for _, (key, value) in filter_params.items() if value is not None}
+            # Generate site filter message dynamically
+            site_filter_message = f"Showing available sites that match your selection: {', '.join(filter(None, [str(zone), str(event), str(site_size), 'with power' if has_power else 'without power']))}"
 
-        filter_conditions = " and ".join(
-            f"{key.replace('site__', '').replace('_', ' ').capitalize()} {value}" for _, (key, value) in
-            filter_params.items() if value is not None
-        )
-        site_filter_message = f"Showing available sites that can be allocated for {filter_conditions}" if filter_conditions else site_filter_message
-
-        available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
+            available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
 
         return TemplateResponse(request, 'stallregistrations/available_sites_partial.html', {
             'site_filter': site_filter_message,
@@ -2017,13 +2015,13 @@ def stallregistration_move_cancel_view(request, id):
                 "site__zone": zone.id if zone else None,
                 "event": event.id if event else None,
                 "site__site_size": site_size.id if site_size else None,
-                "site__has_power": True if has_power else None,
+                "site__has_power": True if has_power else False
             }
             # Remove None values to avoid invalid queries
             zone_filter_dict = {k: v for k, v in zone_filter_dict.items() if v is not None}
 
             # Generate site filter message dynamically
-            site_filter_message = f"Showing available sites that match your selection: {', '.join(filter(None, [str(zone), str(event), str(site_size), 'with power' if has_power else '']))}"
+            site_filter_message = f"Showing available sites that match your selection: {', '.join(filter(None, [str(zone), str(event), str(site_size), 'with power' if has_power else 'without power']))}"
 
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
 

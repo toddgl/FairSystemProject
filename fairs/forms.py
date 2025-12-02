@@ -1436,7 +1436,7 @@ class SiteAllocationFilerForm(Form):
             'zone',
             'event',
             'site_size',
-            'has_power'
+            'has_power',
         ]
 
 class PowerboxFilterForm(Form):

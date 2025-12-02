@@ -2,7 +2,7 @@ asgiref==3.8.1
 attrs==24.2.0
 Brotli==1.1.0
 certifi==2024.8.30
-cffi==1.17.1
+# cffi==1.17.1
 charset-normalizer==3.4.0
 cssselect2==0.7.0
 Django==4.2.14
@@ -31,7 +31,7 @@ pandas==2.2.3
 pandocfilters==1.5.1
 parso==0.8.4
 phonenumbers==8.13.28
-pillow==10.4.0
+# pillow==10.4.0
 psycopg2-binary==2.9.10
 pyaml==24.7.0
 pycparser==2.22
