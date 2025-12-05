@@ -1944,6 +1944,16 @@ def stallregistration_siteallocation_view(request, id):
 
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
 
+            powerbox_lookup = get_powerbox_free_sockets_by_event()
+
+            # Annotate each site
+            for es in available_sites:
+                if es.site.has_power and es.site.powerbox:
+                    key = (es.site.powerbox_id, es.event_id)
+                    es.powerbox_info = powerbox_lookup.get(key)
+                else:
+                    es.powerbox_info = None
+
         return TemplateResponse(request, 'stallregistrations/available_sites_partial.html', {
             'site_filter': site_filter_message,
             'sitefilterform': sitefilterform,
@@ -2024,6 +2034,16 @@ def stallregistration_move_cancel_view(request, id):
             site_filter_message = f"Showing available sites that match your selection: {', '.join(filter(None, [str(zone), str(event), str(site_size), 'with power' if has_power else 'without power']))}"
 
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
+
+            powerbox_lookup = get_powerbox_free_sockets_by_event()
+
+            # Annotate each site
+            for es in available_sites:
+                if es.site.has_power and es.site.powerbox:
+                    key = (es.site.powerbox_id, es.event_id)
+                    es.powerbox_info = powerbox_lookup.get(key)
+                else:
+                    es.powerbox_info = None
 
             return TemplateResponse(request, 'stallregistrations/available_move_sites_partial.html', {
                 'site_filter': site_filter_message,
@@ -2517,7 +2537,7 @@ def generate_powerbox_pdf(request):
 
 def powerbox_connections_pdf_view(request):
     # Fetch the same data as the dashboard view
-    powerbox_connections = StallRegistration.objects.filter(
+    powerbox_connections = StallRegistration.registrationcurrentmgr.filter(
         power_required=True,
         site_allocation__event_site__site__powerbox__isnull=False
     ).values(
@@ -2558,3 +2578,33 @@ def powerbox_connections_pdf_view(request):
     response = HttpResponse(pdf_file, content_type='application/pdf')
     response['Content-Disposition'] = 'inline; filename="powerbox_connections.pdf"'
     return response
+
+def get_powerbox_free_sockets_by_event():
+    qs = (
+        StallRegistration.registrationcurrentmgr.filter(
+            power_required=True,
+            site_allocation__event_site__site__powerbox__isnull=False
+        )
+        .values(
+            "site_allocation__event_site__event_id",
+            "site_allocation__event_site__site__powerbox_id",
+            "site_allocation__event_site__site__powerbox__socket_count",
+            "site_allocation__event_site__site__powerbox__power_box_name",
+        )
+        .annotate(
+            connected_sites=Count("id"),
+            free_sockets=F("site_allocation__event_site__site__powerbox__socket_count") - Count("id")
+        )
+    )
+
+    lookup = {}
+    for row in qs:
+        key = (row["site_allocation__event_site__site__powerbox_id"], row["site_allocation__event_site__event_id"])
+        lookup[key] = {
+            "powerbox": row["site_allocation__event_site__site__powerbox__power_box_name"],
+            "free": row["free_sockets"],
+            "total": row["site_allocation__event_site__site__powerbox__socket_count"],
+        }
+
+    return lookup
+

@@ -21,6 +21,7 @@
                             <th scope="col">Site</th>
                             <th scope="col">Event</th>
                             <th scope="col">Site Size</th>
+                            <th scope="col">Power</th>
                             <th scope="col">Notes</th>
                         </tr>
                     </thead>
@@ -30,6 +31,22 @@
                             <td><input type="checkbox" class="me-2" name="eventsites" value={{ site.id }}>{{ site.site }}</td>
                             <td>{{ site.event }}</td>
                             <td>{{ site.site.site_size }}</td>
+                            <td>
+                                {% if site.site.has_power and site.powerbox_info %}
+                                    {% if site.powerbox_info.free > 0 %}
+                                        <span class="badge bg-success">
+                                            ⚡ {{ site.powerbox_info.free }} / {{ site.powerbox_info.total }}
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger">
+                                            ⚡ 0 / {{ site.powerbox_info.total }}
+                                        </span>
+                                    {% endif %}
+                                    <small class="text-muted d-block">{{ site.powerbox_info.powerbox }}</small>
+                                {% else %}
+                                    <span class="badge bg-secondary">No Power</span>
+                                {% endif %}
+                            </td>
                             <td>{{ site.notes }}</td>
                         </tr>
                         {% endfor %}
