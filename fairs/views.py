@@ -1946,6 +1946,20 @@ def stallregistration_siteallocation_view(request, id):
 
             powerbox_lookup = get_powerbox_free_sockets_by_event()
 
+            # Ensure powerboxes with zero connections still appear in lookup
+            for es in available_sites:
+                if es.site.has_power and es.site.powerbox:
+                    pb = es.site.powerbox
+                    key = (pb.id, es.event_id)
+
+                    # Insert default if missing (meaning 0 connected sites)
+                    if key not in powerbox_lookup:
+                        powerbox_lookup[key] = {
+                            "powerbox": pb.power_box_name,
+                            "free": pb.socket_count,  # all sockets available
+                            "total": pb.socket_count,
+                        }
+
             # Annotate each site
             for es in available_sites:
                 if es.site.has_power and es.site.powerbox:
@@ -2036,6 +2050,20 @@ def stallregistration_move_cancel_view(request, id):
             available_sites = EventSite.site_available.all().filter(**zone_filter_dict).order_by('site')
 
             powerbox_lookup = get_powerbox_free_sockets_by_event()
+
+            # Ensure powerboxes with zero connections still appear in lookup
+            for es in available_sites:
+                if es.site.has_power and es.site.powerbox:
+                    pb = es.site.powerbox
+                    key = (pb.id, es.event_id)
+
+                    # Insert default if missing (meaning 0 connected sites)
+                    if key not in powerbox_lookup:
+                        powerbox_lookup[key] = {
+                            "powerbox": pb.power_box_name,
+                            "free": pb.socket_count,   # all sockets available
+                            "total": pb.socket_count,
+                        }
 
             # Annotate each site
             for es in available_sites:
