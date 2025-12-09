@@ -2144,7 +2144,7 @@ def stallregistration_search_dashboard_view(request):
 
 def stallregistrations_without_power_view(request):
     # Query the data with required annotations
-    stallregistrations = StallRegistration.objects.filter(
+    stallregistrations = StallRegistration.registrationcurrentmgr.filter(
         power_required=True,
         site_allocation__event_site__site__has_power=False
     ).annotate(
