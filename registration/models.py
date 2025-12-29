@@ -297,6 +297,15 @@ class RegistrationAmendedManager(models.Manager):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True, booking_status='Amended')
 
+class RegistrationWaitlistedManager(models.Manager):
+    """
+    Queryset of Stall Registrations for current fairs that the booking status is Waitlisted.
+    """
+
+    def get_queryset(self):
+        return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
+                                             fair__is_activated=True, booking_status='Waitlisted')
+
 
 class VehiclesOnSiteManager(models.Manager):
     """
@@ -344,6 +353,7 @@ class StallRegistration(models.Model):
     """
     CREATED = 'Created'
     SUBMITTED = 'Submitted'
+    WAITLISTED = 'Waitlisted'
     INVOICED = 'Invoiced'
     AMENDED = 'Amended'
     PAYMENTCOMPLETED = 'Payment Completed'
@@ -361,6 +371,7 @@ class StallRegistration(models.Model):
     REGISTRATION_STATUS_CHOICES = [
         (CREATED, _('Created')),
         (SUBMITTED, _('Submitted')),
+        (WAITLISTED, _('Waitlisted')),
         (INVOICED, _('Invoiced')),
         (AMENDED, _('Amended')),
         (PAYMENTCOMPLETED, _('Payment Completed')),
@@ -432,6 +443,7 @@ class StallRegistration(models.Model):
     registrationrecentcreatmgr = RegistrationRecentlyCreatedManager()
     registrationupdatedwithinmgr = RegistrationUpdatedWithinManager()
     registrationamendedmgr = RegistrationAmendedManager()
+    registrationwaitlistedmgr = RegistrationWaitlistedManager()
     vehicleonsitemgr = VehiclesOnSiteManager()
     ismultisiteregistrationmgr = IsMultiSiteRegistrationManager()
 
@@ -465,8 +477,12 @@ class StallRegistration(models.Model):
                 pass
         super(StallRegistration, self).save(*args, **kwargs)
 
-    @transition(field=booking_status, source="Created", target="Submitted")
+    @transition(field=booking_status, source=["Created", "Waitlisted"], target="Submitted")
     def to_booking_status_submitted(self):
+        pass
+
+    @transition(field=booking_status, source=["Amended", "Created", "Submitted", "Cancelled"], target="Waitlisted")
+    def to_booking_status_waitlisted(self):
         pass
 
     @transition(field=booking_status, source=["Created", "Submitted", "Amended", "Payment Completed", "Booked"],
@@ -486,7 +502,7 @@ class StallRegistration(models.Model):
     def to_booking_status_booked(self):
         pass
 
-    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced", "Payment Completed", "Booked"],
+    @transition(field=booking_status, source=["Created", "Submitted", "Invoiced", "Payment Completed", "Booked", "Waitlisted"],
                 target="Cancelled")
     def to_booking_status_cancelled(self):
         pass

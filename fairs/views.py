@@ -1413,7 +1413,8 @@ def stall_registration_dashboard_view(request):
             booked_counts = StallRegistration.registrationbookedmgr.filter(**filter_dict).count()
             cancelled_counts = StallRegistration.registrationcancelledmgr.filter(**filter_dict).count()
             recently_created_counts = StallRegistration.registrationrecentcreatmgr.filter(**filter_dict).count()
-            amended_counts = StallRegistration. registrationamendedmgr.filter(**filter_dict).count()
+            amended_counts = StallRegistration.registrationamendedmgr.filter(**filter_dict).count()
+            waitlisted_counts = StallRegistration.registrationwaitlistedmgr.filter(**filter_dict).count()
 
         if 'invoicedbulkemail' in request.POST and createemailform.is_valid():
                 status = 'Invoiced'
@@ -1437,6 +1438,7 @@ def stall_registration_dashboard_view(request):
         cancelled_counts = StallRegistration.registrationcancelledmgr.count()
         recently_created_counts = StallRegistration.registrationrecentcreatmgr.count()
         amended_counts = StallRegistration.registrationamendedmgr.count()
+        waitlisted_counts = StallRegistration.registrationwaitlistedmgr.count()
 
     return TemplateResponse(request, template_name, {
         'form': form,
@@ -1451,6 +1453,7 @@ def stall_registration_dashboard_view(request):
         'cancelled_counts': cancelled_counts,
         'recently_created_counts': recently_created_counts,
         'amended_counts': amended_counts,
+        'waitlisted_counts': waitlisted_counts,
         'createemailform': createemailform,
         'updated_today_counts': StallRegistration.count_updated_within('today'),
         'updated_week_counts' : StallRegistration.count_updated_within('week'),
