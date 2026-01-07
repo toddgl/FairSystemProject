@@ -48,6 +48,9 @@ from payment.models import (
     InvoiceItem,
     DiscountItem
 )
+from foodlicence.models import (
+    FoodLicence
+)
 from registration.models import (
     CommentType,
     FoodPrepEquipment,
@@ -1278,6 +1281,8 @@ def convener_stall_registration_detail_view(request, id):
         food_registration = FoodRegistration.objects.get(registration=stall_registration.id)
         context["food_data"] = food_registration
         context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
+        if FoodLicence.objects.filter(food_registration=food_registration.id).exists():
+            context["foodlicence_data"] = FoodLicence.objects.get(food_registration=food_registration.id)
 
     if request.method == 'POST':
         registrationupdateform = StallRegistrtionConvenerEditForm(request.POST, request.FILES or None,

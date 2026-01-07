@@ -49,6 +49,9 @@
 
 <div>
     <h3>Booking Status: {{ stall_data.booking_status }}</h3>
+    {% if foodlicence_data %}
+      <h3>Food Licence Status: {{ foodlicence_data.licence_status }}</h3>
+    {% endif %}
     <div class="d-flex gap-2" >
       <h4 class="text-danger">Change Booking Status to -- </h4>
         {% get_transition_targets_with_urls stall_data.id as targets_with_urls %}
