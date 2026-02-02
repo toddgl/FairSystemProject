@@ -70,10 +70,10 @@
                     {% if site.power_required %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Power Paid
                 </div>
                 <div>
-                    {% if site.attending_event_1 %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Feb
+                    {% if site.vehicle_on_site %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Vehicle on Site
                 </div>
                 <div>
-                    {% if site.is_skipped %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} No Show
+                    {% if site.selling_food %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Selling Food
                 </div>
             </div>
         </div>
@@ -98,12 +98,16 @@
             </div>
         </div>
         <div class="row align-items-center mb-3">
-            <div class="col-4 text-center">
-            </div>
-            <div class="col-4 text-center">
+            <div class="col4 text-centre"><h6>Fair Attendance Information</h6></div>
             </div>
           <!-- Status Icons -->
           <div class="col d-flex justify-content-around flex-wrap">
+              <div>
+                  {% if site.attending_event_1 %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Feb
+              </div>
+              <div>
+                  {% if site.is_skipped %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} No Show
+              </div>
             <div>
               {% if site.attending_event_2 %}<i class="bi bi-check-square"></i>{% else %}<i class="bi bi-fullscreen"></i>{% endif %} Mar
             </div>

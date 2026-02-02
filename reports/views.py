@@ -321,6 +321,7 @@ def marshall_zone_report(request, zone, event):
     site_information = site_information.values(
         'id',  # StallRegistration ID
         'manager_vehicle_registration',
+        'selling_food',
         'vehicle_on_site',
         'power_required',
         'stall_manager_name',
