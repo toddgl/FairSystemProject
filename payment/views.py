@@ -386,7 +386,7 @@ def pagination_data(cards_per_page, queryset, request):
 
 def financial_performance_view(request):
     # Step 1: Compute total invoice cost for each invoice with explicit DecimalField
-    invoice_totals = InvoiceItem.objects.values("invoice_id").annotate(
+    invoice_totals = InvoiceItem.invoiceitemcurrentmgr.values("invoice_id").annotate(
         total_invoice_cost=Coalesce(
             Sum(ExpressionWrapper(F("item_quantity") * F("item_cost"), output_field=DecimalField())),
             0,
@@ -400,7 +400,7 @@ def financial_performance_view(request):
     }
 
     # Step 2: Get inventory summary
-    inventory_items = InvoiceItem.objects.filter(
+    inventory_items = InvoiceItem.invoiceitemcurrentmgr.filter(
         invoice__stall_registration__booking_status="Booked"
     ).annotate(
         total_cost=ExpressionWrapper(F("item_quantity") * F("item_cost"), output_field=DecimalField()),
@@ -450,8 +450,8 @@ def financial_performance_view(request):
     total_income = sum(item["total_cost"] for item in inventory_summary_list)
 
     # Expenses Summary
-    total_discounts = DiscountItem.objects.aggregate(total_discount=Coalesce(Sum("discount_amount"), 0, output_field=DecimalField()))["total_discount"]
-    total_credits = PaymentHistory.objects.filter(payment_status="Credit").aggregate(
+    total_discounts = DiscountItem.discountitemcurrentmgr.aggregate(total_discount=Coalesce(Sum("discount_amount"), 0, output_field=DecimalField()))["total_discount"]
+    total_credits = PaymentHistory.paymenthistorycurrentmgr.filter(payment_status="Credit").aggregate(
         total_credit=Coalesce(Sum("amount_credited"), 0, output_field=DecimalField())
     )["total_credit"]
 

@@ -274,6 +274,24 @@ class PaymentHistory(models.Model):
         self.save()
         if self.amount_to_pay <= 0:
             self.to_payment_status_completed()
+            
+class InvoiceItemCurrentManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            invoice__stall_registration__fair__fair_year__in=[current_year, next_year],
+            invoice__stall_registration__fair__is_activated=True,
+        )
+
+    def for_fair(self, fair):
+        return self.get_queryset().filter(
+            invoice__stall_registration__fair=fair
+        )
+
+    def for_registration(self, registration):
+        return self.get_queryset().filter(
+            invoice__stall_registration=registration
+        )
+
 
 class InvoiceItemManager(models.Manager):
 
@@ -498,6 +516,7 @@ class InvoiceItem(models.Model):
 
     objects = models.Manager()
     invoiceitemmgr = InvoiceItemManager()
+    invoiceitemcurrentmgr = InvoiceItemCurrentManager()
 
 
     class Meta:
@@ -520,6 +539,14 @@ class DiscountItemManager(models.Manager):
         return super().get_queryset().filter(stall_registration__stallholder_id=stallholder)
 
 
+class DiscountItemManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(
+            stall_registration__fair__fair_year__in=[current_year, next_year],
+            stall_registration__fair__is_activated=True
+        )
+
+
 class DiscountItem(models.Model):
     """
     Description: A model used to record a discount amount that the convener can apply to a registration cost
@@ -531,6 +558,7 @@ class DiscountItem(models.Model):
                                    blank=True, null=True)
     objects = models.Manager()
     discountitemmgr = DiscountItemManager()
+    discountitemcurrentmgr = DiscountItemManager()
 
 
     class Meta:
