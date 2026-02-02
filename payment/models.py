@@ -539,7 +539,7 @@ class DiscountItemManager(models.Manager):
         return super().get_queryset().filter(stall_registration__stallholder_id=stallholder)
 
 
-class DiscountItemManager(models.Manager):
+class DiscountCurrentItemManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(
             stall_registration__fair__fair_year__in=[current_year, next_year],
@@ -558,7 +558,7 @@ class DiscountItem(models.Model):
                                    blank=True, null=True)
     objects = models.Manager()
     discountitemmgr = DiscountItemManager()
-    discountitemcurrentmgr = DiscountItemManager()
+    discountitemcurrentmgr = DiscountCurrentItemManager()
 
 
     class Meta:
