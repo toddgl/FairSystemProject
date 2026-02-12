@@ -68,7 +68,7 @@ def populate_site_history():
         processed_entries.add((stallholder_id, site_id, year))
 
         # Check if a SiteHistory entry exists for this stallholder and site
-        site_history, created = SiteHistory.objects.update_or_create(
+        site_history, created = SiteHistory.objects.get_or_create(
             stallholder_id=stallholder_id,
             site_id=site_id,
             year=year,
