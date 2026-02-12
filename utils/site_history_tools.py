@@ -22,7 +22,7 @@ def populate_site_history():
     # Aggregate SiteAllocations to count events per site for each stallholder
     site_allocations = (
         SiteAllocation.objects
-        .filter(stall_registration__booking_status='Booked')  # Only include registrations with status 'Booked'
+        .filter(stall_registration__booking_status='Booked', event_site__event__fair__fair_year=current_fair_year)  # Only include registrations with status 'Booked'
         .values('stallholder', 'event_site__site', 'stall_registration__site_size')
         .annotate(number_events=Count('event_site__event', distinct=True))
     )
