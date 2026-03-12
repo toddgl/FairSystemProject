@@ -491,7 +491,7 @@ def mitre10_financial_report_view(request):
 
     for site in mitre10_sites:
         # Get all invoices linked to this site
-        invoices = Invoice.objects.filter(stall_registration__site_allocation__event_site__site=site)
+        invoices = Invoice.invoicecurrentmgr.filter(stall_registration__site_allocation__event_site__site=site)
 
         # Ensure only invoices related to `FAIRPRICE` are counted
         fair_invoices = invoices.filter(
