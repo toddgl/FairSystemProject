@@ -18,6 +18,9 @@ from fairs.models import (
     InventoryItem
 )
 
+from fairs.querysets.passpack import PasspackManager
+
+
 import magic
 
 PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
@@ -446,6 +449,9 @@ class StallRegistration(models.Model):
     registrationwaitlistedmgr = RegistrationWaitlistedManager()
     vehicleonsitemgr = VehiclesOnSiteManager()
     ismultisiteregistrationmgr = IsMultiSiteRegistrationManager()
+
+    passpack = PasspackManager()
+
 
     class Meta:
         verbose_name = "stallregistration"

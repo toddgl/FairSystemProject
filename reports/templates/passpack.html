@@ -16,8 +16,8 @@
 
   <h1 class="mb-4">Martinborough Fair Pass for Feb/Mar {{ current_fair.fair_year }}</h1>
 
-  <p>{{ report_date|date:"d %B, Y" }}</p>
-  <p>StallHolderID: {{ stall_registration.id }}</p>
+  <p>{{ report_date|date:"d F, Y" }}</p>
+  <p>StallHolderID: {{ stall_registration.stallholder.id }}</p>
 
   <div class="mb-4">
     <p>{{ stall_registration.stallholder.first_name }} {{ stall_registration.stallholder.last_name }}, {{ profile.org_name }}</p>
