@@ -421,12 +421,7 @@ def fair_passpack_generator(request, stallregistration):
         current_fair
     )
 
-    current_event = (
-        Event.currenteventfiltermgr
-        .annotate_event_sequence()
-        .filter(fair=current_fair)
-        .last()  # March after February
-    )
+    current_event = current_fair.current_event
 
     current_event_site = next(
         (

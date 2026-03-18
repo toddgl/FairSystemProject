@@ -7,6 +7,9 @@ from accounts.models import CustomUser
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
+from django.utils.functional import cached_property
+from fairs.querysets.event import EventQuerySet
+
 
 # Global Variables
 current_year = datetime.now().year
@@ -148,6 +151,16 @@ class Fair(models.Model):
         if datetime.now() >= self.activation_date:
             return True
         return False
+
+    @cached_property
+    def current_event(self):
+        return (
+            Event.events
+            .filter(fair=self)
+            .active()
+            .with_actual_date()
+            .last()
+        )
 
 
 class Zone(models.Model):
@@ -463,10 +476,10 @@ class Event(models.Model):
     event_description = models.TextField()
     is_cancelled = models.BooleanField(default=False)
     is_postponed = models.BooleanField(default=False)
-    fair = models.ForeignKey(Fair, on_delete=models.CASCADE)
+    fair = models.ForeignKey(Fair, on_delete=models.CASCADE, related_name='events')
     sites = models.ManyToManyField(
         Site,
-        related_name='events',
+        related_name='site_events',
         through='EventSite',
     )
     created_by = models.ForeignKey(CustomUser, related_name='event_created_by', on_delete=models.SET_NULL, blank=True,
@@ -476,6 +489,7 @@ class Event(models.Model):
 
     objects = models.Manager()
     currenteventfiltermgr = CurrentEventFilterManager()
+    events = EventQuerySet.as_manager()
 
     def __str__(self):
         return self.event_name
