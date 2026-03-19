@@ -529,6 +529,16 @@ class StallRegistration(models.Model):
     def to_booking_status_payment_refund_approved(self):
         pass
 
+    @property
+    def food_licence_status(self):
+        try:
+            food_reg = self.food_registration
+        except FoodRegistration.DoesNotExist:
+            return None
+
+        licence = food_reg.food_licence.first()
+        return licence.licence_status if licence else None
+
 
 class CommentType(models.Model):
     """

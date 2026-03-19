@@ -288,7 +288,11 @@ def stall_registration_listview(request):
         base_qs
         .filter(**query_filters)
         .order_by("stall_category")
-        .prefetch_related('site_allocation', 'additional_sites_required')
+        .prefetch_related(
+            'site_allocation',
+            'additional_sites_required',
+            'food_registration__food_licence',
+        )
     )
 
     # --- 4. Apply special logic filters (time-based, etc.) ---
