@@ -7,6 +7,7 @@ from django.forms import (
     ChoiceField,
     Form,
     HiddenInput,
+    IntegerField,
     ModelForm,
     ModelChoiceField,
     Textarea,
@@ -37,7 +38,12 @@ from registration.models import (
     RegistrationComment,
     CommentType,
     AdditionalSiteRequirement,
+    PowerSource,
 )
+
+from registration.services.pricing import get_registration_costs
+from registration.services.billing import RegistrationBillingService
+
 import magic
 
 
@@ -260,7 +266,7 @@ class StallCategoryUpdateForm(ModelForm):
         }
 
 
-class StallRegistrationCreateForm(ModelForm):
+class StallRegistrationForm(ModelForm):
     """
     Form for creating Stall Registrations
     """
@@ -302,6 +308,52 @@ class StallRegistrationCreateForm(ModelForm):
         })
     )
 
+    uses_electrical_equipment = BooleanField(
+        required=False,
+        label="Tick if you are using electrical equipment to Prepare, Cook, Warm or Chill products?",
+        widget=CheckboxInput(attrs={
+            "class": "form-check-input",
+            "hx-trigger": "change",
+            "hx-post": ".",
+            "hx-target": "#stallregistration_data",
+        }),
+    )
+
+    power_source = ChoiceField(
+        choices=PowerSource.choices,
+        required=False,
+        widget=Select(attrs={
+            "class": "form-select",
+            "style": "max-width: 300px;",
+            "hx-trigger": "change",
+            "hx-post": ".",
+            "hx-target": "#stallregistration_data",
+        })
+    )
+
+    caravan_socket_16a = IntegerField(
+        required=False,
+        min_value=0,
+        initial=1,
+        label="16A Caravan Socket supply",
+        widget=NumberInput(attrs={
+            "class": "form-control",
+            "max": 5,
+            "style": "max-width:120px;",
+        }),
+    )
+
+    three_pin_15a = IntegerField(
+        required=False,
+        min_value=0,
+        max_value=3,
+        label="15A Three pin socket connections",
+        widget=NumberInput(attrs={
+            "class": "form-control",
+            "style": "max-width:120px;",
+        }),
+    )
+
     class Meta:
         model = StallRegistration
         fields = [
@@ -319,7 +371,11 @@ class StallRegistrationCreateForm(ModelForm):
             'vehicle_length',
             'vehicle_width',
             'vehicle_image',
-            'power_required',
+            # NEW POWER SECTION
+            'uses_electrical_equipment',
+            'power_source',
+            'caravan_socket_16a',
+            'three_pin_15a',
             'multi_site',
             'selling_food'
         ]
@@ -419,9 +475,49 @@ class StallRegistrationCreateForm(ModelForm):
 
     def clean(self):
         cleaned_data = super().clean()
+
         stall_category = cleaned_data.get('stall_category')
         selling_food = cleaned_data.get('selling_food')
+        uses_power = cleaned_data.get("uses_electrical_equipment")
+        source = cleaned_data.get("power_source")
 
+        # -------------------------------
+        # Normalise empty values
+        # -------------------------------
+        cleaned_data["caravan_socket_16a"] = (
+            cleaned_data.get("caravan_socket_16a") or 0
+        )
+
+        cleaned_data["three_pin_15a"] = (
+            cleaned_data.get("three_pin_15a") or 0
+        )
+
+        caravan = cleaned_data["caravan_socket_16a"]
+        three_pin = cleaned_data["three_pin_15a"]
+
+        # -------------------------------
+        # No electrical equipment
+        # -------------------------------
+        if not uses_power:
+            cleaned_data["power_source"] = PowerSource.NONE
+            cleaned_data["caravan_socket_16a"] = 0
+            cleaned_data["three_pin_15a"] = 0
+            return cleaned_data
+
+        # -------------------------------
+        # Not Fair power
+        # -------------------------------
+        if source != PowerSource.FAIR:
+            cleaned_data["caravan_socket_16a"] = 0
+            cleaned_data["three_pin_15a"] = 0
+
+        # refresh values after forcing zeros
+        caravan = cleaned_data["caravan_socket_16a"]
+        three_pin = cleaned_data["three_pin_15a"]
+
+        # -------------------------------
+        # Food validation
+        # -------------------------------
         if stall_category and selling_food:
             # Only do something if both fields are valid so far.
             if 'Food' not in str(stall_category):
@@ -430,7 +526,48 @@ class StallRegistrationCreateForm(ModelForm):
                     "Food Drink (other) or Food Drink (consumption on site)"
                     "If you are selling any type of food item"
                 )
-        return self.cleaned_data  # never forget this!
+
+        # -------------------------------
+        # Fair power validation
+        # -------------------------------
+        if source == PowerSource.FAIR:
+            if caravan + three_pin == 0:
+                raise ValidationError(
+                    "You must request at least one power connection."
+                )
+
+        if three_pin > 3:
+            raise ValidationError(
+                "three_pin_15a",
+                "Maximum of 3 connections allowed."
+            )
+
+        return cleaned_data  # never forget this!
+
+    def calculate_cost(self):
+        """
+        Calculate pricing using unsaved instance state.
+        """
+
+        # ----------------------------
+        # Decide data source
+        # ----------------------------
+
+        if self.is_bound and self.is_valid():
+            registration = self.save(commit=False)
+        else:
+            registration = self.instance
+
+        if not registration:
+            return None
+
+        billing = RegistrationBillingService(registration.fair)
+        total, breakdown = billing.calculate_total(registration)
+
+        return {
+            "total": total,
+            "breakdown": breakdown,
+        }
 
 
 class StallRegistrationStallholderEditForm(ModelForm):

@@ -11,7 +11,7 @@
     <div id="registration_data">
       {% if allocations %}
       <div class="alert alert-primary" role="alert">
-        Based on your historirical use the following sites have been pre-allocated to you: <br>
+        Based on your historical use the following sites have been pre-allocated to you: <br>
         <ul>
         {% for allocation_item in allocations %}
           <li>{{ allocation_item.event_site.site.site_size }} - {{ allocation_item.event_site.site.site_name }} - for the {{ allocation_item.event_site.event.event_name }} </li>
@@ -32,23 +32,115 @@
     <div class="alert alert-info" role="alert">{{ registrationform.non_field_errors }}</div>
     {% endif %}
     <div class="col-md-6">
-      {% include 'stallregistration/stallregistration_partial.html' %}
-      <form method="post" enctype="multipart/form-data">
+      <form method="post"
+            enctype="multipart/form-data"
+            hx-post="."
+            hx-target="#stallregistration_data"
+            hx-swap="outerHTML">
+
         {% csrf_token %}
-        {{ registrationform.as_p }}
-        <input type="submit" class="btn btn-primary" value="Update" >
+
+        <!-- ========================= -->
+        <!-- BASIC DETAILS -->
+        <!-- ========================= -->
+
+        <h5 class="mt-3">Stall Details</h5>
+
+        {{ registrationform.fair.label_tag }}
+        {{ registrationform.fair }}
+
+        {{ registrationform.stall_manager_name.label_tag }}
+        {{ registrationform.stall_manager_name }}
+
+        {{ registrationform.manager_vehicle_registration.label_tag }}
+        {{ registrationform.manager_vehicle_registration }}
+
+        {{ registrationform.stall_category.label_tag }}
+        {{ registrationform.stall_category }}
+
+        {{ registrationform.stall_description.label_tag }}
+        {{ registrationform.stall_description }}
+
+        {{ registrationform.products_on_site.label_tag }}
+        {{ registrationform.products_on_site }}
+
+        {{ registrationform.site_size.label_tag }}
+        {{ registrationform.site_size }}
+
+        <hr>
+        <!-- ========================= -->
+        <!-- FOODSTALL DECLARATION -->
+        <!-- ========================= -->
+
+        <h5>Food Stalls</h5>
+        <div class="form-check mt-2">
+          {{ registrationform.selling_food }}
+          {{ registrationform.selling_food.label_tag }}
+        </div>
+
+        <hr>
+        <!-- ========================= -->
+        <!-- EQUIPMENT / VEHICLE -->
+        <!-- ========================= -->
+
+        <h5>Equipment & Vehicle</h5>
+
+        <div class="form-check">
+          {{ registrationform.vehicle_on_site }}
+          {{ registrationform.vehicle_on_site.label_tag }}
+        </div>
+
+        {{ registrationform.vehicle_length.label_tag }}
+        {{ registrationform.vehicle_length }}
+
+        {{ registrationform.vehicle_width.label_tag }}
+        {{ registrationform.vehicle_width }}
+
+        {{ registrationform.vehicle_image.label_tag }}
+        {{ registrationform.vehicle_image }}
+
+        <hr>
+
+        <!-- ========================= -->
+        <!-- OTHER OPTIONS -->
+        <!-- ========================= -->
+        <h5>Trestle Hire</h5>
+
+        <div class="form-check">
+          {{ registrationform.trestle_required }}
+          {{ registrationform.trestle_required.label_tag }}
+        </div>
+
+        {{ registrationform.trestle_quantity.label_tag }}
+        {{ registrationform.trestle_quantity }}
+
+        <hr>
+        <h5>Additional Sites</h5>
+        <div class="form-check">
+          {{ registrationform.multi_site }}
+          {{ registrationform.multi_site.label_tag }}
+        </div>
+
+        <hr>
+
+        <!-- ===================================== -->
+        <!-- HTMX DYNAMIC SECTION (IMPORTANT) -->
+        <!-- ===================================== -->
+
+        {% include "stallregistration/stallregistration_dynamic.html" %}
+
+        <input type="submit" name="update_application" class="btn btn-primary" value="Update" >
         <a href="{% url 'registration:stallregistration-dashboard' %}" class="btn btn-secondary" role="button">Cancel</a>
       </form>
       <hr>
       <div id='required_sites'>
         <h3>Additional Site Requirements</h3>
         <div class="alert alert-primary" role="alert">
-          If you want nore than one site with this Stall Application.  Please us the Add Additional Sites button below to list these requirements.
+          If you want nore than one site with this Stall Application.  Please use the Add Additional Sites button below to list these requirements.
         </div>
         {% include 'stallregistration/stallregistration_inline_partial.html' %}
-        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSiteModal">Add Additonal Sites</button>
+        <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#addSiteModal">Add Additional Sites</button>
       </div>
-    </div>
     <!-- Add Site Requirements modal-->
     <div class="modal fade" tabindex="-1" id="addSiteModal" aria-labelledby="addSiteModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -68,11 +160,11 @@
         </div>
       </div>
     </div>
+    </div>
     <div class="col-md-6">
       <h4>Comments</h4>
       {% include 'stallregistration/registration_comments_filter.html' %}
     </div>
-  </div>
 </div>
 
 <script src="{% static 'js/stall_registration_hide.js' %}"></script>

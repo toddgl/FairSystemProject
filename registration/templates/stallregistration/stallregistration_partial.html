@@ -2,15 +2,39 @@
 
 {% load static %}
 
-<div id="stallregistration_data">
-    {% if billing %}
+{% if billing %}
+    <hr>
+    <div class="card shadow-sm">
         <div class="card-body">
             <h4 class="card-title">Application Total Cost</h4>
-            <p class="card-text" name="total-cost" value={{ billing }}>
-                ${{ billing }}
-            </p>
+            <table class="table table-sm align_middle">
+                <thead>
+                    <tr>
+                        <th>Item</th>
+                        <th class="text-center">Qty</th>
+                        <th class="text-end">Cost</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for item in billing.breakdown %}
+                    <tr>
+                        <td>{{ item.inventory_item.item_name }}</td>
+                        <td class="text-center">{{ item.quantity }}</td>
+                        <td class="text-end">
+                            ${{ item.total|floatformat:2 }}
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <hr>
+
+            <div class="d-flex justify-content-between fw-bold fs-5">
+                <span>Total</span>
+                <span>${{ billing.total|floatformat:2 }}</span>
+            </div>
         </div>
-        <hr>
-    {% endif %}
-</div>
+    </div>
+{% endif %}
 

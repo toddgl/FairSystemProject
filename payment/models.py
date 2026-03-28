@@ -21,6 +21,8 @@ from registration.models import (
     AdditionalSiteRequirement
 )
 
+from registration.services.billing import RegistrationBillingService
+
 # Global Variables
 current_year = datetime.datetime.now().year
 next_year = current_year + 1
@@ -294,6 +296,86 @@ class InvoiceItemCurrentManager(models.Manager):
 
 
 class InvoiceItemManager(models.Manager):
+
+    def create_invoice_items(self, registration):
+
+        invoice = Invoice.objects.create(
+            invoice_number=Invoice.generate_invoice_number(registration.id),
+            invoice_sequence=Invoice.generate_sequence_number(registration.id),
+            stall_registration=registration,
+            stallholder=registration.stallholder,
+        )
+
+        fair = getattr(registration, "fair", None)
+        if not fair:
+            return 0, []
+
+        billing = RegistrationBillingService(fair)
+
+        total_cost, items = billing.calculate_total(registration)
+
+        # ---------------- CREATE LINE ITEMS ----------------
+
+        for item in items:
+            InvoiceItem.objects.create(
+                invoice=invoice,
+                inventory_item=item.inventory_item,
+                item_quantity=item.quantity,
+                item_cost=item.total,
+            )
+
+        # ---------------- DISCOUNTS ----------------
+
+        discounts = DiscountItem.objects.filter(
+            stall_registration=registration
+        )
+
+        if discounts.exists():
+            discount_total = sum(
+                discounts.values_list("discount_amount", flat=True)
+            )
+            total_cost -= discount_total
+
+        # ---------------- GST ----------------
+
+        gst_component = round((total_cost * 3) / 23, 2)
+
+        invoice.total_cost = total_cost
+        invoice.gst_component = gst_component
+        invoice.save()
+
+        # ---------------- REGISTRATION UPDATE ----------------
+
+        registration.is_invoiced = True
+        registration.save(update_fields=["is_invoiced"])
+
+        # ---------------- PAYMENT HISTORY ----------------
+
+        existing = PaymentHistory.paymenthistorycurrentmgr\
+            .get_registration_payment_history(registration)
+
+        if existing:
+            amount_to_pay = total_cost - existing.amount_paid
+
+            PaymentHistory.paymenthistorymgr.create_paymenthistory(
+                invoice,
+                amount_to_pay,
+                existing.amount_paid,
+                existing.amount_reconciled,
+            )
+
+            existing.to_payment_status_superceded()
+            existing.save()
+        else:
+            PaymentHistory.paymenthistorymgr.create_paymenthistory(
+                invoice,
+                total_cost,
+            )
+
+        return invoice
+
+
+class Old_InvoiceItemManager(models.Manager):
 
     def create_invoice_items(self, registration):
         """

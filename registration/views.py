@@ -70,7 +70,7 @@ from .forms import (
     StallCategoryCreationForm,
     StallCategoryUpdateForm,
     StallRegistrationUpdateForm,
-    StallRegistrationCreateForm,
+    StallRegistrationForm,
     FoodRegistrationForm,
     FoodPrepEquipReqForm,
     RegistrationCommentForm,
@@ -84,6 +84,10 @@ from .forms import (
     FoodRegistrationConvenerEditForm,
     RegistrationDiscountForm,
 )
+
+from registration.services.power import sync_legacy_power_flag
+from registration.services.pricing import get_registration_costs
+from registration.services.registration_update import build_update_context, handle_successful_update, ensure_food_registration
 
 # Global Variables
 current_year = datetime.now().year
@@ -351,9 +355,150 @@ def stall_registration_listview(request):
     })
 
 
+def get_initial_registration_data(stallholder):
+
+    siteallocation = (
+        SiteAllocation.currentallocationsmgr
+        .filter(stallholder_id=stallholder.id,
+                stall_registration__isnull=True)
+        .first()
+    )
+
+    if siteallocation:
+        return (
+            {
+                "fair": siteallocation.event_site.event.fair.id,
+                "site_size": siteallocation.event_site.site.site_size_id,
+            },
+            siteallocation,
+        )
+
+    current_fair = Fair.currentfairmgr.last()
+    return {"fair": current_fair.id}, None
+
+
 @login_required
 @permission_required('registration.add_stallregistration', raise_exception=True)
 def stall_registration_create(request):
+    """
+    Create a Stall Application includes determining the total charge for the stall site based on site size,
+    Trestles based on quantity requested place food licence fees if the food stall flag is set.
+    """
+
+    success_url = reverse_lazy('registration:stallregistration-dashboard')
+    template_name = "stallregistration/stallregistration_create.html"
+    dynamic_template = "stallregistration/stallregistration_dynamic.html"
+    success_url = reverse_lazy("registration:stallregistration-dashboard")
+
+    stallholder = request.user
+
+    # -------------------------
+    # Initial setup
+    # -------------------------
+    initial, allocation_item = get_initial_registration_data(stallholder)
+
+    form = StallRegistrationForm(
+        request.POST or None,
+        request.FILES or None,
+        initial=initial,
+    )
+
+    billing = None
+
+    # -------------------------
+    # Calculate pricing (HTMX + POST)
+    # -------------------------
+    if form.is_bound and form.is_valid():
+        billing = form.calculate_cost()
+
+
+    # -------------------------
+    # HTMX partial refresh
+    # -------------------------
+    #if request.headers.get("HX-Request"):
+    if request.htmx and "save_application" not in request.POST:
+        print("HTMX recalculation")
+        return TemplateResponse(
+            request,
+            dynamic_template,
+            {
+                "registrationform": form,
+                "billing": billing,
+            },
+        )
+
+    # -------------------------
+    # Full form submission
+    # -------------------------
+    if request.method == "POST":
+
+        if form.is_valid():
+            print("Got a valid form")
+
+            stall_registration = form.save(commit=False)
+            stall_registration.stallholder = stallholder
+            stall_registration.total_charge = billing["total"]
+
+            # auto food flag
+            if (
+                stall_registration.stall_category
+                and stall_registration.stall_category.for_selling_food
+            ):
+                stall_registration.selling_food = True
+
+            stall_registration.save()
+            sync_legacy_power_flag(stall_registration)
+            stall_registration.save(update_fields=["power_required"])
+
+            # attach preallocations
+            if allocation_item:
+                (
+                    SiteAllocation.currentallocationsmgr
+                    .filter(
+                        stallholder_id=stallholder.id,
+                        stall_registration__isnull=True,
+                    )
+                    .update(stall_registration=stall_registration)
+                )
+
+            if stall_registration.selling_food:
+                return redirect(
+                    "registration:food-registration",
+                    stall_registration.id,
+                )
+
+            return HttpResponseRedirect(success_url)
+        else:
+            print("Form Errors", form.errors.as_data())
+
+    # -------------------------
+    # Comments (display only)
+    # -------------------------
+    current_fair = Fair.currentfairmgr.last()
+
+    comments = RegistrationComment.objects.filter(
+        stallholder=stallholder.id,
+        is_archived=False,
+        convener_only_comment=False,
+        comment_parent__isnull=True,
+        fair=current_fair.id,
+    )
+
+    context = {
+        "registrationform": form,
+        "allocation_item": allocation_item,
+        "billing": billing,
+        "commentfilterform": CommentFilterForm(),
+        "commentform": RegistrationCommentForm(),
+        "replyform": CommentReplyForm(),
+        "comments": comments,
+        "comment_filter": "Showing current comments of the current fair",
+    }
+
+    return TemplateResponse(request, template_name, context)
+
+
+def old_stall_registration_create(request):
     """
     Create a Stall Application includes determining the total charge for the stall site based on site size,
     Trestles based on quantity requested place food licence fees if the food stall flag is set.
@@ -380,12 +525,12 @@ def stall_registration_create(request):
         site_rate = InventoryItemFair.currentinventoryitemfairmgr.get(
             inventory_item__item_name=siteallocation.event_site.site.site_size).price_rate
         total_cost = site_charge * site_rate
-        registrationform = StallRegistrationCreateForm(initial={'fair': fair_id, 'site_size': site_size})
+        registrationform = StallRegistrationForm(initial={'fair': fair_id, 'site_size': site_size})
         allocation_item = siteallocation
     else:
         current_fair = Fair.currentfairmgr.all().last()
         fair_id = current_fair.id
-        registrationform = StallRegistrationCreateForm(initial={'fair': fair_id})
+        registrationform = StallRegistrationForm(initial={'fair': fair_id})
         allocation_item = None
         total_cost = None
 
@@ -406,11 +551,11 @@ def stall_registration_create(request):
         })
     elif request.method == 'POST':
         if siteallocation:
-            registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
-                                                           initial={'fair': fair_id, 'site_size': site_size})
+            registrationform = StallRegistrationForm(request.POST, request.FILES or None,
+                                                     initial={'fair': fair_id, 'site_size': site_size})
         else:
-            registrationform = StallRegistrationCreateForm(request.POST, request.FILES or None,
-                                                           initial={'fair': fair_id})
+            registrationform = StallRegistrationForm(request.POST, request.FILES or None,
+                                                     initial={'fair': fair_id})
         site_size = request.POST.get('site_size')
         stall_category = request.POST.get('stall_category')
         trestle_num = request.POST.get('trestle_quantity')
@@ -495,7 +640,7 @@ def stall_registration_cancel_view(request, pk):
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
 
-def get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None, vehicle_length=None, power_req=None):
+def old_get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None, vehicle_length=None, power_req=None):
     total_additional_site_costs = decimal.Decimal(0.00)
     total_vehicle_cost = decimal.Decimal(0.00)
 
@@ -573,12 +718,98 @@ def get_registration_costs(request, fair_id, parent_id=None, site_size=None, sta
 
 
 @login_required
-@permission_required('registration.change_stallregistration', raise_exception=True)
+@permission_required(
+    "registration.change_stallregistration",
+    raise_exception=True,
+)
 def stall_registration_update_view(request, pk):
+
+    obj = get_object_or_404(StallRegistration, pk=pk)
+
+    template_name = "stallregistration/stallregistration_update.html"
+    dynamic_template = "stallregistration/stallregistration_dynamic.html"
+    success_url = reverse_lazy( "registration:stallregistration-dashboard" )
+
+    form = StallRegistrationForm(
+        request.POST or None,
+        request.FILES or None,
+        instance=obj,
+    )
+
+    context = build_update_context(request, obj)
+
+    billing = None
+
+    # -------------------------
+    # POPULATE BILLING ON INITIAL LOAD
+    # -------------------------
+    if request.method == "GET":
+        billing = form.calculate_cost()
+        print("GET billing", billing)
+
+    # -------------------------
+    # Calculate pricing (HTMX + POST)
+    # -------------------------
+    if form.is_bound and form.is_valid():
+        billing = form.calculate_cost()
+
+
+    # -------------------------
+    # HTMX partial refresh
+    # -------------------------
+    #if request.headers.get("HX-Request"):
+    if request.htmx and "update_application" not in request.POST:
+        print("HTMX recalculation")
+        return TemplateResponse(
+            request,
+            dynamic_template,
+            {
+                "registrationform": form,
+                "billing": billing,
+            },
+        )
+
+    # -----------------------------
+    # FORM SUBMISSION
+    # -----------------------------
+    if request.method == "POST":
+
+        form = StallRegistrationForm(
+            request.POST,
+            request.FILES or None,
+            instance=obj,
+        )
+
+        if form.is_valid():
+            return handle_successful_update(
+                request,
+                form,
+                obj,
+                success_url,
+            )
+
+        db_logger.error(
+            f"Error saving Stall Application: {form.errors.as_data()}",
+            extra={"custom_category": "Stall Application"},
+        )
+
+
+        return TemplateResponse(request, template_name, context)
+
+    context.update({
+        "registrationform": form,
+        **({"billing": billing} if billing else {}),
+    })
+
+    return TemplateResponse(request, template_name, context)
+
+@login_required
+@permission_required('registration.change_stallregistration', raise_exception=True)
+def old_stall_registration_update_view(request, pk):
     template_name = 'stallregistration/stallregistration_update.html'
     success_url = reverse_lazy('registration:stallregistration-dashboard')
     additionalsiteform = AdditionalSiteReqForm(request.POST or None)
-    commentfilterform = CommentFilterForm(request.POST or None)
+    commenpower_qtytfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
     comment_filter_message = 'Showing current comments of the current fair'

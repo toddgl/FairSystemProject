@@ -1,9 +1,12 @@
 # registration/models.py
 
 from datetime import datetime, timedelta
+
+from django.db.models.enums import TextChoices
 from django.utils import timezone
 from django.db.models import Q
 from django.conf import settings  # new
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_save, pre_save
@@ -28,6 +31,26 @@ PERCENTAGE_VALIDATOR = [MinValueValidator(0), MaxValueValidator(100)]
 # Global Variables
 current_year = datetime.now().year
 next_year = current_year + 1
+
+class PowerSource(models.TextChoices):
+    NONE = "none", "No electrical equipment"
+    FAIR = "fair", "Fair supplied power"
+    BATTERY = "battery", "Solid state power source"
+    GENERATOR = "generator", "Generator (approval required)"
+
+
+class GeneratorApprovalStatus(models.TextChoices):
+    NOT_REQUIRED = "not_required", "Not Required"
+    PENDING = "pending", "Pending Approval"
+    APPROVED = "approved", "Approved"
+    DECLINED = "declined", "Declined"
+
+
+class PowerConnectionType(models.TextChoices):
+    FAIR_16A = "fair_16a", "Fair Supplied 16A Caravan Socket"
+    FAIR_15A = "fair_15a", "Fair Supplied 15A Three Pin"
+    SOLID_STATE = "solid_state", "Solid State Power Source"
+    GENERATOR_REQUEST = "generator", "Generator (Approval Required)"
 
 
 class FoodPrepEquipment(models.Model):
@@ -433,6 +456,19 @@ class StallRegistration(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
+    uses_electrical_equipment = models.BooleanField(default=False)
+
+    power_source = models.CharField(
+        max_length=20,
+        choices=PowerSource.choices,
+        default=PowerSource.NONE,
+    )
+
+    caravan_socket_16a = models.PositiveSmallIntegerField(default=0)
+    three_pin_15a = models.PositiveSmallIntegerField(default=0)
+
+    generator_approval_requested = models.BooleanField(default=False)
+
     objects = models.Manager()
     registrationcurrentallmgr = RegistrationCurrentAllManager()
     registrationcurrentmgr = RegistrationCurrentManager()
@@ -459,6 +495,27 @@ class StallRegistration(models.Model):
 
     def __str__(self):
         return str(self.booking_id)
+
+    def clean(self):
+
+        if not self.uses_electrical_equipment:
+            self.power_source = PowerSource.NONE
+            self.caravan_socket_16a = 0
+            self.three_pin_15a = 0
+            self.generator_approval_requested = False
+            return
+
+        if self.power_source != PowerSource.FAIR:
+            self.caravan_socket_16a = 0
+            self.three_pin_15a = 0
+
+        if self.three_pin_15a > 3:
+            raise ValidationError(
+                {"three_pin_15a": "Maximum of 3 connections allowed."}
+            )
+
+        if self.power_source == PowerSource.GENERATOR:
+            self.generator_approval_requested = True
 
     def get_absolute_url(self):
         return reverse('stallregistration-detail', args=[str(self.id)])
@@ -538,6 +595,60 @@ class StallRegistration(models.Model):
 
         licence = food_reg.food_licence.first()
         return licence.licence_status if licence else None
+
+
+
+class PowerConnection(models.Model):
+    registration = models.ForeignKey(
+        "StallRegistration",
+        related_name="power_connections",
+        on_delete=models.CASCADE,
+    )
+
+    connection_type = models.CharField(
+        max_length=20,
+        choices=PowerConnectionType.choices,
+    )
+
+    quantity = models.PositiveIntegerField(default=1)
+
+    # ✅ Generator approval workflow
+    generator_status = models.CharField(
+        max_length=20,
+        choices=GeneratorApprovalStatus.choices,
+        default=GeneratorApprovalStatus.NOT_REQUIRED,
+    )
+
+    generator_approved_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="approved_generators",
+    )
+
+    generator_approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    generator_notes = models.TextField(blank=True)
+
+    def __str__(self):
+        return f"{self.registration} - {self.connection_type} x {self.quantity}"
+
+    def requires_approval(self):
+        return self.connection_type == PowerConnectionType.GENERATOR_REQUEST
+
+    def save(self, *args, **kwargs):
+
+        if self.connection_type == PowerConnectionType.GENERATOR_REQUEST:
+            if self.generator_status == GeneratorApprovalStatus.NOT_REQUIRED:
+                self.generator_status = GeneratorApprovalStatus.PENDING
+        else:
+            self.generator_status = GeneratorApprovalStatus.NOT_REQUIRED
+
+        super().save(*args, **kwargs)
 
 
 class CommentType(models.Model):
