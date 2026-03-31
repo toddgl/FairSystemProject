@@ -4,6 +4,8 @@
 
     <h5>Electricity Use and Supply</h5>
 
+    <pre>{{ registrationform.errors }}</pre>
+
     <!-- Electrical Equipment -->
     <div class="mb-3 form-check">
         {{ registrationform.uses_electrical_equipment }}
@@ -34,11 +36,21 @@
                 <div class="mb-2">
                     {{ registrationform.caravan_socket_16a.label_tag }}
                     {{ registrationform.caravan_socket_16a }}
+                    {% if registrationform.caravan_socket_16a.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ registrationform.caravan_socket_16a.errors|striptags }}
+                    </div>
+                    {% endif %}
                 </div>
 
                 <div class="mb-2">
                     {{ registrationform.three_pin_15a.label_tag }}
                     {{ registrationform.three_pin_15a }}
+                    {% if registrationform.three_pin_15a.errors %}
+                        <div class="invalid-feedback d-block">
+                        {{ registrationform.three_pin_15a.errors|striptags }}
+                        </div>
+                    {% endif %}
 
                     <div class="form-text">
                         Maximum 3 connections allowed.

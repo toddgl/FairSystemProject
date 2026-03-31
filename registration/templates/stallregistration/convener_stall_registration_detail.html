@@ -86,7 +86,7 @@
           </ul>
           <hr>
           <ul class="list-group list-group-flush">
-            <li class="list-group-item"><strong>Power Required:</strong> {{ stall_data.power_required|yesno:"Yes,No" }}</li>
+            <li class="list-group-item"><strong>Power Source:</strong> {{ stall_data.power_source }}</li>
             {% if stall_data.trestle_required %}
               <li class="list-group-item"><strong>Number of Trestles Required:</strong> {{ stall_data.trestle_quantity }}</li>
             {% endif %}

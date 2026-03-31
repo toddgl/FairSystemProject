@@ -1,7 +1,8 @@
 # registration/services/registration_update.py
 
-from django.http import HttpResponseRedirect, HttpResponse
+from django.http import HttpResponseRedirect, HttpResponse, HttpResponsePermanentRedirect
 from django.shortcuts import redirect
+from django.urls import reverse_lazy, reverse
 
 
 from registration.models import (
@@ -22,6 +23,7 @@ from registration.forms import (
     AdditionalSiteReqForm,
 )
 
+from registration.services.billing import RegistrationBillingService
 
 def build_update_context(request, registration):
 
@@ -64,7 +66,6 @@ def build_update_context(request, registration):
 
 
 def handle_successful_update(request, form, obj, success_url):
-
     form = StallRegistrationForm(
         request.POST or None,
         request.FILES or None,
@@ -73,8 +74,7 @@ def handle_successful_update(request, form, obj, success_url):
 
     billing = None
 
-    if form.is_bound and form.is_valid():
-        billing = form.calculate_cost()
+    billing = form.calculate_cost()
 
     registration = form.save(commit=False)
     registration.stallholder = obj.stallholder
@@ -85,15 +85,19 @@ def handle_successful_update(request, form, obj, success_url):
     ensure_food_registration(registration)
 
     if registration.selling_food:
-        return redirect(
-            "registration:food-registration",
-            registration.id,
-        )
+        # 1. Manually resolve the URL path
+        target_url = reverse("registration:food-registration", args=[registration.id])
 
-    response = HttpResponse()
-    response["HX-Redirect"] = success_url
+        # 2. Create an empty response and add the HTMX header
+        response = HttpResponse()
+        response["HX-Redirect"] = target_url
+        return response
 
-    return response
+    if request.htmx:
+        return HttpResponseRedirect(reverse("registration:stallregistration-dashboard"))
+
+    return redirect(success_url)
+
 
 def ensure_food_registration(registration):
 
@@ -109,3 +113,22 @@ def ensure_food_registration(registration):
             "is_valid": False,
         },
     )
+
+def update_registration(form, instance):
+
+    # form already validated
+    registration = form.save(commit=False)
+    print("Got to update_registration")
+
+    billing_service = RegistrationBillingService(
+        registration.fair
+    )
+
+    billing = billing_service.calculate(registration)
+
+    registration.total_charge = billing["total"]
+
+    registration.save()
+    form.save_m2m()
+
+    return registration, billing

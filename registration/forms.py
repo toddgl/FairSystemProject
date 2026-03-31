@@ -340,6 +340,9 @@ class StallRegistrationForm(ModelForm):
             "class": "form-control",
             "max": 5,
             "style": "max-width:120px;",
+            "hx-trigger": "change",
+            "hx-post": ".",
+            "hx-target": "#stallregistration_data",
         }),
     )
 
@@ -351,6 +354,9 @@ class StallRegistrationForm(ModelForm):
         widget=NumberInput(attrs={
             "class": "form-control",
             "style": "max-width:120px;",
+            "hx-trigger": "change",
+            "hx-post": ".",
+            "hx-target": "#stallregistration_data",
         }),
     )
 
@@ -435,6 +441,9 @@ class StallRegistrationForm(ModelForm):
                 'min': '0',
                 'max': '10',
                 'step': '0.1',
+                'hx-trigger': 'change',
+                'hx-post': '.',
+                'hx-target': '#stallregistration_data',
             }),
             'vehicle_width': NumberInput(attrs={
                 'class': "form_control",
@@ -460,6 +469,16 @@ class StallRegistrationForm(ModelForm):
         }),
         }
 
+    def build_registration_preview(self):
+        """
+        Returns an UNSAVED model instance using cleaned_data.
+        Safe for billing previews.
+        """
+        if not self.is_valid():
+            raise ValueError("Form must be valid")
+
+        return StallRegistration(**self.cleaned_data)
+
     def clean_vehicle_image(self):
         allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
         thefile = self.cleaned_data.get("vehicle_image", None)
@@ -477,6 +496,10 @@ class StallRegistrationForm(ModelForm):
         cleaned_data = super().clean()
 
         stall_category = cleaned_data.get('stall_category')
+        vehicle_on_site = cleaned_data.get('vehicle_on_site')
+        vehicle_width = cleaned_data.get('vehicle_width')
+        vehicle_length = cleaned_data.get('vehicle_length')
+
         selling_food = cleaned_data.get('selling_food')
         uses_power = cleaned_data.get("uses_electrical_equipment")
         source = cleaned_data.get("power_source")
@@ -532,15 +555,23 @@ class StallRegistrationForm(ModelForm):
         # -------------------------------
         if source == PowerSource.FAIR:
             if caravan + three_pin == 0:
-                raise ValidationError(
-                    "You must request at least one power connection."
-                )
+                msg = "You must request at least one power connection."
+                self.add_error("caravan_socket_16a", msg)
+                self.add_error("three_pin_15a", msg)
 
-        if three_pin > 3:
-            raise ValidationError(
-                "three_pin_15a",
-                "Maximum of 3 connections allowed."
-            )
+            if caravan + three_pin > 3:
+                msg = "Maximum of 3 connections allowed."
+                self.add_error("caravan_socket_16a", msg)
+                self.add_error("three_pin_15a", msg)
+
+            if caravan > 1:
+                msg = "Maximum of 1 connections allowed."
+                self.add_error("caravan_socket_16a", msg)
+
+
+            if three_pin > 3:
+                msg = "Maximum of 3 connections allowed."
+                self.add_error("three_pin_15a", msg)
 
         return cleaned_data  # never forget this!
 
