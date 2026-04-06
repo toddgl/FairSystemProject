@@ -555,7 +555,10 @@ class StallRegistration(models.Model):
 
     @transition(field=booking_status, source=["Invoiced", "Payment Completed", "Booked"], target="Amended")
     def to_booking_status_amended(self):
-        pass
+        """
+            Moves the status to Amended and resets the invoicing flag.
+        """
+        self.is_invoiced = False
 
     @transition(field=booking_status, source=["Invoiced", "Amended"], target="Payment Completed")
     def to_booking_status_payment_completed(self):

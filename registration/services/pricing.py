@@ -9,6 +9,8 @@ def get_registration_costs(registration):
     - unsaved registrations (create preview)
     - saved registration (update/invoice)
     """
+
+    print("Got to get_registration_costs in pricing.py")
     if not registration.fair:
         return 0, []
     billing = RegistrationBillingService(registration.fair)

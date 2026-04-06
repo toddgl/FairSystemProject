@@ -89,6 +89,7 @@ from registration.services.power import sync_legacy_power_flag
 from registration.services.pricing import get_registration_costs
 from registration.services.billing import RegistrationBillingService
 from registration.services.registration_update import build_update_context, update_registration
+from registration.controllers.convener_registration import ConvenerRegistrationController
 
 # Global Variables
 current_year = datetime.now().year
@@ -418,7 +419,6 @@ def stall_registration_create(request):
     # -------------------------
     #if request.headers.get("HX-Request"):
     if request.htmx and "save_application" not in request.POST:
-        print("HTMX recalculation")
         return TemplateResponse(
             request,
             dynamic_template,
@@ -434,7 +434,6 @@ def stall_registration_create(request):
     if request.method == "POST":
 
         if form.is_valid():
-            print("Got a valid form")
 
             stall_registration = form.save(commit=False)
             stall_registration.stallholder = stallholder
@@ -644,9 +643,13 @@ def stall_registration_update_view(request, pk):
         context["billing"] = billing
 
     # ---------- HTMX PREVIEW ----------
-    if request.htmx and form.is_bound and form.is_valid() and "update_application" not in request.POST:
+    if request.htmx and form.is_bound and "update_application" not in request.POST:
 
-        preview = form.build_registration_preview()
+        if form.is_valid():
+            preview = form.build_registration_preview()
+        else:
+            # fallback to instance + partial cleaned data
+            preview = form.instance
 
         billing = RegistrationBillingService(
             preview.fair
@@ -1234,8 +1237,36 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
     }
     return render(request, "stallregistration/delete.html", context)
 
-
 def convener_stall_registration_detail_view(request, id):
+    controller = ConvenerRegistrationController(request, id)
+    return controller.dispatch()
+
+class StallRegistrationSaveView(UpdateView):
+    model = StallRegistration
+    form_class = StallRegistrtionConvenerEditForm
+
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+
+        form = self.form_class(
+            request.POST,
+            instance=self.object,
+        )
+
+        if form.is_valid():
+            form.save()
+
+            response = HttpResponse()
+            response["HX-Trigger"] = "registrationUpdated"
+            return response
+
+        return render(
+            request,
+            "stallregistration/model_form.html",
+            {"form": form},
+        )
+
+def old_convener_stall_registration_detail_view(request, id):
     """
     Display the details of the stall and food application data provided by the stallholder
     Includes functionality to update details that have an impact on pricing

@@ -273,6 +273,8 @@ def paymenthistory_listview(request):
         # Update session filters
         request.session["paymenthistory_filters"] = paymenthistory_filter_dict
 
+        print("FILTER DICT:", paymenthistory_filter_dict)
+
     # Query filtered data
     payment_history_list = PaymentHistory.paymenthistorycurrentmgr.filter(
         **paymenthistory_filter_dict

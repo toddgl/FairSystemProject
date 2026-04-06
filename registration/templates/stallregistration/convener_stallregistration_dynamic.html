@@ -1,0 +1,112 @@
+<!--registration/templates/stallregistration/convener_stall_registration_dynamic.html -->
+
+
+<div id="convener_stall_registration_data">
+
+    {{ registrationform.non_field_errors }}
+    <hr>
+    <div class="mb-3">
+        {{ registrationform.stall_category.label_tag }}
+        {{ registrationform.stall_category }}
+    </div>
+
+    <div class="mb-3 form-check">
+        {{ registrationform.selling_food }}
+        {{ registrationform.selling_food.label_tag }}
+    </div>
+
+    <hr>
+    <div class="form-check">
+        {{ registrationform.trestle_required }}
+        {{ registrationform.trestle_required.label_tag }}
+    </div>
+
+    {{ registrationform.trestle_quantity.label_tag }}
+    {{ registrationform.trestle_quantity }}
+
+
+    <hr>
+    <div class="mb-3">
+        {{ registrationform.site_size.label_tag }}
+        {{ registrationform.site_size }}
+    </div>
+
+    <hr>
+    <h5>Vehicle on Site and its Size</h5>
+
+    <div class="form-check">
+        {{ registrationform.vehicle_on_site }}
+        {{ registrationform.vehicle_on_site.label_tag }}
+    </div>
+
+    {{ registrationform.vehicle_width.label_tag }}
+    {{ registrationform.vehicle_width }}
+
+    {{ registrationform.vehicle_length.label_tag }}
+    {{ registrationform.vehicle_length }}
+
+    <hr>
+    <h5>Electricity Use and Supply</h5>
+
+    <pre>{{ registrationform.errors }}</pre>
+
+    <!-- Electrical Equipment -->
+    <div class="mb-3 form-check">
+        {{ registrationform.uses_electrical_equipment }}
+        {{ registrationform.uses_electrical_equipment.label_tag }}
+        {{ registrationform.uses_electrical_equipment.errors }}
+    </div>
+
+
+    <!-- =============================== -->
+    <!-- CONDITIONAL POWER SOURCE -->
+    <!-- =============================== -->
+
+    {% if registrationform.uses_electrical_equipment.value %}
+
+        <div class="mb-3">
+            <label class="form-label">
+                What is your intended power source?
+            </label>
+
+            {{ registrationform.power_source }}
+            {{ registrationform.power_source.errors }}
+        </div>
+
+        {% if registrationform.power_source.value == "fair" %}
+
+            <div class="card card-body bg-light mb-3">
+
+                <div class="mb-2">
+                    {{ registrationform.caravan_socket_16a.label_tag }}
+                    {{ registrationform.caravan_socket_16a }}
+                    {% if registrationform.caravan_socket_16a.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ registrationform.caravan_socket_16a.errors|striptags }}
+                    </div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-2">
+                    {{ registrationform.three_pin_15a.label_tag }}
+                    {{ registrationform.three_pin_15a }}
+                    {% if registrationform.three_pin_15a.errors %}
+                        <div class="invalid-feedback d-block">
+                        {{ registrationform.three_pin_15a.errors|striptags }}
+                        </div>
+                    {% endif %}
+
+                    <div class="form-text">
+                        Maximum 3 connections allowed.
+                    </div>
+                </div>
+
+            </div>
+
+        {% endif %}
+
+    {% endif %}
+
+    {{ registrationupdateform.as_p }}
+    {{ foodregistrationupdateform.as_p }}
+</div>

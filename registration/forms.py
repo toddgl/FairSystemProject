@@ -474,6 +474,7 @@ class StallRegistrationForm(ModelForm):
         Returns an UNSAVED model instance using cleaned_data.
         Safe for billing previews.
         """
+        print("Got to stallregistration form build registration preview")
         if not self.is_valid():
             raise ValueError("Form must be valid")
 
@@ -688,6 +689,45 @@ class StallRegistrtionConvenerEditForm(ModelForm):
         })
     )
 
+    uses_electrical_equipment = BooleanField(
+        required=False,
+        label="Tick if you are using electrical equipment to Prepare, Cook, Warm or Chill products?",
+        widget=CheckboxInput(attrs={
+            "class": "form-check-input",
+        }),
+    )
+
+    power_source = ChoiceField(
+        choices=PowerSource.choices,
+        required=False,
+        widget=Select(attrs={
+            "class": "form-select",
+            "style": "max-width: 300px;",
+        })
+    )
+
+    caravan_socket_16a = IntegerField(
+        required=False,
+        min_value=0,
+        initial=1,
+        label="16A Caravan Socket supply",
+        widget=NumberInput(attrs={
+            "class": "form-control",
+            "max": 5,
+            "style": "max-width:120px;",
+        }),
+    )
+
+    three_pin_15a = IntegerField(
+        required=False,
+        min_value=0,
+        max_value=3,
+        label="15A Three pin socket connections",
+        widget=NumberInput(attrs={
+            "class": "form-control",
+            "style": "max-width:120px;",
+        }),
+    )
     class Meta:
         model = StallRegistration
         fields = [
@@ -698,13 +738,20 @@ class StallRegistrtionConvenerEditForm(ModelForm):
             'vehicle_on_site',
             'vehicle_length',
             'vehicle_width',
-            'power_required',
+            # NEW POWER SECTION
+            'uses_electrical_equipment',
+            'power_source',
+            'caravan_socket_16a',
+            'three_pin_15a',
             'multi_site',
             'selling_food'
         ]
         labels = {
             'multi-site': 'Tick checkbox if you want more than a single site with this application?',
             'selling_food': 'Tick checkbox if you are selling any food?',
+            'vehicle_on_site': 'Tick checkbox if its intended to have a Food truck / Caravan or trailer set up on the site?',
+            'vehicle_length': 'Vehicle length (metres)',
+            'vehicle_width': 'Vehicle width (metres)',
             'power_required': 'Tick checkbox if you require power for your site',
         }
         widgets = {
@@ -716,9 +763,6 @@ class StallRegistrtionConvenerEditForm(ModelForm):
                 'min': '0',
                 'max': '4',
                 'step': '1',
-                'hx-trigger': 'change',
-                'hx-post': '.',
-                'hx-target': '#stallregistration_data',
             }),
             'vehicle_on_site': CheckboxInput(attrs={
                 'class': 'form-check-input'
@@ -735,9 +779,6 @@ class StallRegistrtionConvenerEditForm(ModelForm):
                 'max': '10',
                 'step': '0.1',
             }),
-            'power_required': CheckboxInput(attrs={
-                'class': 'form-check-input',
-            }),
             'multi-site': CheckboxInput(attrs={
                 'class': 'form-check-input'
             }),
@@ -745,6 +786,24 @@ class StallRegistrtionConvenerEditForm(ModelForm):
                 'class': 'form-check-input',
             }),
         }
+
+    def build_registration_preview(self):
+        """
+        Build a NON-PERSISTED StallRegistration instance
+        using submitted form data.
+        """
+
+        if not self.is_valid():
+            raise ValueError("Form must be valid before building preview")
+
+        # create object WITHOUT saving
+        registration = self.save(commit=False)
+
+        # IMPORTANT:
+        # ensure PK exists so relations still work
+        registration.pk = self.instance.pk
+
+        return registration
 
 class StallRegistrationUpdateForm(ModelForm):
     """
@@ -1038,7 +1097,7 @@ class FoodRegistrationForm(ModelForm):
 
 class FoodRegistrationStallholderEditForm(ModelForm):
     """
-    Form for tall holder to update non-financial items  releated to Food Application
+    Form for tall holder to update non-financial items related to Food Application
     """
 
     class Meta:

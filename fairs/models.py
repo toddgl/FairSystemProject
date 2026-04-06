@@ -154,9 +154,10 @@ class Fair(models.Model):
 
     @cached_property
     def current_event(self):
+        print(type(self.events))
         return (
-            Event.events
-            .filter(fair=self)
+            self.events
+            .all()
             .active()
             .with_actual_date()
             .last()
