@@ -16,7 +16,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('email', 'username', 'first_name', 'last_name')
 
     # Explicitly define searchfields to avoid MRO issues in Python 3.14
-    search_fields = ('email', 'usename', 'first_name', 'last_name')
+    search_fields = ('email', 'username', 'first_name', 'last_name')
     ordering = ('email',)
 
     fieldsets = (
