@@ -335,6 +335,8 @@ class PowerBox(models.Model):
     )
     power_box_description = models.TextField()
     socket_count = models.IntegerField()
+    caravan_socket_16a = models.PositiveSmallIntegerField(default=0)
+    three_pin_15a = models.PositiveSmallIntegerField(default=0)
     max_load = models.DecimalField(max_digits=10, decimal_places=4)
     zone = models.ForeignKey(
         Zone,

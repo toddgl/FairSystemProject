@@ -1,12 +1,35 @@
+/* 1. Default Page Settings (Portrait) */
 @page {
- height: 29.7cm;
- width: 21cm;
- font-family: Arial, Helvetica, sans-serif;
- font-size: 14px;
+  size: A4 portrait;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  margin: 1cm; /* Standard print margin recommended */
+  @bottom-center {
+    content: "Page " counter(page) " of " counter(pages);
+  }
+}
 
- @bottom-center {
-        content: "Page " counter(page) " of " counter(pages);
-    }
+/* 2. Named Landscape Page Settings */
+@page landscape_page {
+  size: A4 landscape;
+  margin: 1cm;
+  /* You can override or add specific headers/footers for landscape here */
+}
+
+/* 3. Class Triggers */
+.landscape {
+  page: landscape_page; /* Links this element to the landscape page setup */
+  /* Do NOT fix explicit cm widths/heights here so content flows naturally */
+  width: 100%;
+}
+
+/* 4. General Styles */
+body {
+  color: #001028;
+  background: #FFFFFF;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 14px;
+  /* REMOVED fixed width/height so portrait and landscape pages scale fluidly */
 }
 
 .clearfix:after {
@@ -16,18 +39,7 @@
 }
 
 h5.uppercase {
-    text-transform: uppercase;
-}
-
-body {
-  position: relative;
-  width: 21cm;  
-  height: 29.7cm; 
-  margin: 0 auto; 
-  color: #001028;
-  background: #FFFFFF; 
-  font-family: Arial, Helvetica, sans-serif;
-  font-size: 14px;
+  text-transform: uppercase;
 }
 
 header {
@@ -36,8 +48,8 @@ header {
 }
 
 h1 {
-  border-top: 1px solid  #5D6975;
-  border-bottom: 1px solid  #5D6975;
+  border-top: 1px solid #5D6975;
+  border-bottom: 1px solid #5D6975;
   color: #5D6975;
   font-size: 2.4em;
   line-height: 1.4em;
@@ -46,14 +58,25 @@ h1 {
   margin: 0 0 20px 0;
 }
 
-.blue,
-.red {
+.blue, .red {
   height: 100px;
 }
 
 .blue {
   background-color: blue;
 }
+
 .red {
   background-color: red;
+}
+
+/* Enhanced Table Break Protection */
+tr {
+  break-inside: avoid;
+  page-break-inside: avoid; /* Legacy fallback */
+}
+
+thead {
+  break-after: avoid;
+  page-break-after: avoid; /* Prevents header from separating from the first row */
 }

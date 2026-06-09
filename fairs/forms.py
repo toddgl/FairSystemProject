@@ -859,7 +859,14 @@ class PowerBoxCreateForm(ModelForm):
 
     class Meta:
         model = PowerBox
-        fields = ['power_box_name', 'power_box_description', 'socket_count', 'max_load', 'zone']
+        fields = [
+            'power_box_name',
+            'power_box_description',
+            'socket_count',
+            'caravan_socket_16a',
+            'three_pin_15a',
+            'max_load',
+            'zone']
         widgets = {
             'power_box_name': TextInput(attrs={
                 'class': "form-control",
@@ -875,6 +882,16 @@ class PowerBoxCreateForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 100px;',
                 'placeholder': 'Number'
+            }),
+            'caravan_socket_16a': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Caravan 16a Socket Quantity'
+            }),
+            'three_pin_15a': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Three Pin 15a Socket Quantity'
             }),
             'max_load': NumberInput(attrs={
                 'class': 'form-control',
@@ -905,7 +922,14 @@ class PowerBoxUpdateDetailForm(ModelForm):
 
     class Meta:
         model = PowerBox
-        fields = ['power_box_name', 'power_box_description', 'socket_count', 'max_load', 'zone']
+        fields = [
+            'power_box_name',
+            'power_box_description',
+            'socket_count',
+            'caravan_socket_16a',
+            'three_pin_15a',
+            'max_load',
+            'zone']
         widgets = {
             'power_box_name': TextInput(attrs={
                 'class': "form-control",
@@ -921,6 +945,16 @@ class PowerBoxUpdateDetailForm(ModelForm):
                 'class': "form-control",
                 'style': 'max-width: 100px;',
                 'placeholder': 'Number'
+            }),
+            'caravan_socket_16a': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Caravan 16a Socket Quantity'
+            }),
+            'three_pin_15a': NumberInput(attrs={
+                'class': "form-control",
+                'style': 'max-width: 100px;',
+                'placeholder': 'Three Pin 15a Socket Quantity'
             }),
             'max_load': NumberInput(attrs={
                 'class': 'form-control',

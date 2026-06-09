@@ -22,6 +22,10 @@
         <th scope="col">Total Sockets</th>
         <th scope="col">Connected Sites</th>
         <th scope="col">Free Sockets</th>
+        <th scope="col">Used Caravan Sockets</th>
+        <th scope="col">Used Three Pin Sockets</th>
+        <th scope="col">Free Caravan Sockets</th>
+        <th scope="col">Free Three Pin Sockets</th>
         <th scope="col">Max Allowable Load Amps</th>
         <th scope="col">Total Power Load Amps</th>
       </tr>
@@ -34,6 +38,10 @@
         <td>{{ connection.site_allocation__event_site__site__powerbox__socket_count }}</td>
         <td>{{ connection.connected_sites }}</td>
         <td>{{ connection.free_sockets }}</td>
+        <td>{{ connection.used_caravan }}</td>
+        <td>{{ connection.used_three_pin }}</td>
+        <td>{{ connection.free_caravan }}</td>
+        <td>{{ connection.free_three_pin }}</td>
         <td>{{ connection.max_load|floatformat:2 }}</td>
         <td>{{ connection.total_power_load_amps }}</td>
       </tr>

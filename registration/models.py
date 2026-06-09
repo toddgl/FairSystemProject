@@ -187,12 +187,16 @@ class RegistrationCurrentManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(fair__fair_year__in=[current_year, next_year],
                                              fair__is_activated=True).exclude(is_cancelled=True)
+    def fair_power(self):
+        # returns all registrations that have fair power
+        return self.get_queryset().filter(power_source=PowerSource.FAIR)
 
     def has_trestles(self, registration_id):
         return self.get_queryset().filter(id=registration_id, trestle_required=True).exists()
 
     def has_power(self, registration_id):
-        return self.get_queryset().filter(id=registration_id, power_required=True).exists()
+        # Returns whether as stallholder has fair provided power
+        return self.get_queryset().filter(id=registration_id, power_source=PowerSource.FAIR).exists()
 
 
 class RegistrationSellingFoodManager(models.Manager):
@@ -372,7 +376,6 @@ class IsMultiSiteRegistrationManager(models.Manager):
     def filter_by_stallregistration(self, stallregistration_id):
         return self.get_queryset().filter(stallholder=stallregistration_id).exists()
 
-
 class StallRegistration(models.Model):
     """
     Description: Model to capture stall registrations
@@ -527,6 +530,19 @@ class StallRegistration(models.Model):
     @property
     def booking_id(self):
         return self.id
+
+    @property
+    def uses_fair_power(self):
+        return self.power_source == PowerSource.FAIR
+
+    @property
+    def requested_fair_power(self):
+        return (
+            self.uses_fair_power and (
+                self.caravan_socket_16a > 0 or
+                self.three_pin_15a > 0
+            )
+        )
 
     def save(self, *args, **kwargs):
         # Identify whether a new file has been uploaded

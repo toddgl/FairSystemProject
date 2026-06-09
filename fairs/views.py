@@ -21,7 +21,8 @@ from weasyprint import HTML
 from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
-from django.db.models import F, Q, Sum
+from django.db.models import F, Q, Sum, Value, IntegerField, Window
+from django.db.models.functions import Coalesce
 from django.db import transaction
 from django.contrib.auth import get_user_model
 from django.views.generic import (
@@ -119,6 +120,11 @@ from emails.forms import (
 from emails.backend import (
     bulk_registration_emails
 )
+
+from .services.powerbox_service import (
+    PowerboxReportService
+)
+
 
 
 # Global Variables
@@ -2147,16 +2153,16 @@ def stallregistration_search_dashboard_view(request):
 
 def stallregistrations_without_power_view(request):
     # Query the data with required annotations
-    stallregistrations = StallRegistration.registrationcurrentmgr.filter(
-        power_required=True,
-        site_allocation__event_site__site__has_power=False
+    stallregistrations = (StallRegistration.registrationcurrentmgr.fair_power()
+        .filter(
+            site_allocation__event_site__site__has_power=False
     ).annotate(
         site_name=F('site_allocation__event_site__site__site_name'),
         zone_name=F('site_allocation__event_site__site__zone__zone_name'),
         has_power=F('site_allocation__event_site__site__has_power')
     ).values(
         'id', 'stallholder__id', 'power_required', 'site_name', 'zone_name', 'has_power'
-    )
+    ))
     # Pass data to the template
     context = {
         'stallregistrations': stallregistrations,
@@ -2166,20 +2172,36 @@ def stallregistrations_without_power_view(request):
     return render(request, 'dashboards/dashboard_sites_without_power.html', context)
 
 
-from django.db.models import Sum
 
 def powerbox_connections_view(request):
     # Base query to fetch powerbox data
-    powerbox_connections = StallRegistration.registrationcurrentmgr.filter(
-        power_required=True,
-        site_allocation__event_site__site__powerbox__isnull=False
+    request.session['powerbox_stallregistration'] = (
+        'fair:powerbox-stallregistration-list'
+    )
+    powerbox_connections = (
+        StallRegistration.registrationcurrentmgr.fair_power()
+        .filter(
+            site_allocation__event_site__site__has_power=True
+        )
     ).values(
         'site_allocation__event_site__event__event_name',
         'site_allocation__event_site__site__powerbox__power_box_name',
         'site_allocation__event_site__site__powerbox__socket_count',
         'site_allocation__event_site__site__powerbox__id',
+        'site_allocation__event_site__site__powerbox__caravan_socket_16a',
+        'site_allocation__event_site__site__powerbox__three_pin_15a',
     ).annotate(
-        max_load=F('site_allocation__event_site__site__powerbox__max_load'),  # Alias the field
+        max_load=F('site_allocation__event_site__site__powerbox__max_load'),
+        used_caravan=Coalesce(Sum('caravan_socket_16a'), Value(0)),
+        used_three_pin=Coalesce(Sum('three_pin_15a'), Value(0)),
+    ).annotate(
+        free_caravan=
+            F('site_allocation__event_site__site__powerbox__caravan_socket_16a')
+            - F('used_caravan'),
+
+        free_three_pin=
+            F('site_allocation__event_site__site__powerbox__three_pin_15a')
+            - F('used_three_pin'),
         connected_sites=Count('id'),
         free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
     )
@@ -2247,81 +2269,28 @@ def stallregistrations_by_powerbox_view(request):
             data = [item for item in data if item.get('stallholderid') == int(filters['stallholderid'])]
         return data
 
-    query_filters = {k: v for k, v in filter_params.items() if v}
+    query_filters = {
+        k: v
+        for k, v in filter_params.items()
+        if v
+    }
 
-    # Pre-aggregate connected sites per powerbox and event
-    aggregated = (
-        StallRegistration.registrationcurrentmgr.filter(
-            power_required=True,
-            site_allocation__event_site__site__powerbox__isnull=False
-        )
-        .values(
-            'site_allocation__event_site__site__powerbox__id',
-            'site_allocation__event_site__event__event_name',
-            'site_allocation__event_site__event__id',
-            'site_allocation__event_site__site__powerbox__power_box_name',
-            'site_allocation__event_site__site__powerbox__socket_count',
-        )
-        .annotate(
-            connected_sites=Count('id'),  # Total connected registrations for each powerbox
-            free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
-        )
-        .order_by('site_allocation__event_site__site__powerbox__power_box_name')
+    stallregistrations_by_powerbox = (
+        PowerboxReportService.get_report_data()
     )
 
-    # Add stall registration-specific details for display
-    detailed_stallregistrations = StallRegistration.registrationcurrentmgr.filter(
-        power_required=True,
-        site_allocation__event_site__site__powerbox__isnull=False
-    ).annotate(
-        power_box_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
-        event_name=F('site_allocation__event_site__event__event_name'),
-        allocated_site_name=F('site_allocation__event_site__site__site_name'),
-        stallholderid=F('stallholder__id')
-    ).values(
-        'id',  # StallRegistration ID
-        'stallholderid',
-        'allocated_site_name',
-        'power_box_name',
-        'event_name',
-        'site_allocation__event_site__event__id',
-        'site_allocation__event_site__site__powerbox__id',
+    filtered_data = (
+        PowerboxReportService.apply_filters(
+            stallregistrations_by_powerbox,
+            query_filters
+        )
     )
-
-    # Combine aggregated counts with detailed registrations for final data
-    stallregistrations_by_powerbox = [
-        {
-            **sr,
-            'connected_sites': next(
-                (agg['connected_sites'] for agg in aggregated if
-                 agg['site_allocation__event_site__site__powerbox__id'] == sr[
-                     'site_allocation__event_site__site__powerbox__id']),
-                0
-            ),
-            'free_sockets': next(
-                (agg['free_sockets'] for agg in aggregated if
-                 agg['site_allocation__event_site__site__powerbox__id'] == sr[
-                     'site_allocation__event_site__site__powerbox__id']),
-                0
-            ),
-            # Calculate total power load amps
-            'total_power_load_amps': math.ceil(
-                FoodPrepEquipReq.objects.filter(
-                    food_registration__registration__site_allocation__event_site__event_id=sr['site_allocation__event_site__event__id'],
-                    food_registration__registration__site_allocation__event_site__site__powerbox__id=sr['site_allocation__event_site__site__powerbox__id'],
-                    food_registration__registration__stallholder_id=sr['stallholderid']
-                )
-                .aggregate(
-                    total_amps=Sum(F('equipment_quantity') * F('food_prep_equipment__power_load_amps'))
-                )['total_amps'] or 0
-            ) # use math.ceil to round up
-        }
-        for sr in detailed_stallregistrations
-    ]
-
 
      # Apply filters
-    filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+    filtered_data = PowerboxReportService.apply_filters(
+        stallregistrations_by_powerbox,
+        query_filters
+    )
 
     if request.htmx:
         template_name = 'powerboxes/powerbox_siteallocations_list_partial.html'
@@ -2333,7 +2302,10 @@ def stallregistrations_by_powerbox_view(request):
             request.session['powerbox_stallregistration_filters'] = filter_params # Save to session
             query_filters = {k: v for k, v in filter_params.items() if v}
             # Apply filters
-            filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+            filtered_data = PowerboxReportService.apply_filters(
+                stallregistrations_by_powerbox,
+                query_filters
+            )
 
         if request.POST.get('form_purpose') == 'filter':
             if filterform.is_valid():
@@ -2346,7 +2318,10 @@ def stallregistrations_by_powerbox_view(request):
 
                 query_filters = {k: v for k, v in filter_params.items() if v}
                 # Apply filters
-                filtered_data = apply_filters(stallregistrations_by_powerbox, query_filters)
+                filtered_data = PowerboxReportService.apply_filters(
+                    stallregistrations_by_powerbox,
+                    query_filters
+                )
 
         page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
 
@@ -2493,95 +2468,87 @@ def update_site_history(request, id):
 
 def generate_powerbox_pdf(request):
     """
-    Generates a PDF of the powerbox site allocations without pagination.
+    Generate Powerbox Allocation PDF.
     """
-    filter_params = request.session.get('powerbox_stallregistration_filters', {})
-    query_filters = {k: v for k, v in filter_params.items() if v}
 
-    # Fetch all stall registrations without pagination
-    aggregated = (
-        StallRegistration.objects.filter(
-            power_required=True,
-            site_allocation__event_site__site__powerbox__isnull=False
-        )
-        .values(
-            'site_allocation__event_site__site__powerbox__id',
-            'site_allocation__event_site__event__event_name',
-            'site_allocation__event_site__event__id',
-            'site_allocation__event_site__site__powerbox__power_box_name',
-            'site_allocation__event_site__site__powerbox__socket_count',
-        )
-        .annotate(
-            connected_sites=Count('id'),
-            free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
-        )
-        .order_by('site_allocation__event_site__site__powerbox__power_box_name')
+    filter_params = request.session.get(
+        "powerbox_stallregistration_filters",
+        {}
     )
 
-    detailed_stallregistrations = StallRegistration.objects.filter(
-        power_required=True,
-        site_allocation__event_site__site__powerbox__isnull=False
-    ).annotate(
-        power_box_name=F('site_allocation__event_site__site__powerbox__power_box_name'),
-        event_name=F('site_allocation__event_site__event__event_name'),
-        allocated_site_name=F('site_allocation__event_site__site__site_name'),
-        stallholderid=F('stallholder__id')
-    ).values(
-        'id', 'stallholderid', 'allocated_site_name', 'power_box_name',
-        'event_name', 'site_allocation__event_site__event__id',
-        'site_allocation__event_site__site__powerbox__id',
-    )
-
-    stallregistrations_by_powerbox = [
-        {
-            **sr,
-            'connected_sites': next(
-                (agg['connected_sites'] for agg in aggregated if
-                 agg['site_allocation__event_site__site__powerbox__id'] == sr['site_allocation__event_site__site__powerbox__id']),
-                0
-            ),
-            'free_sockets': next(
-                (agg['free_sockets'] for agg in aggregated if
-                 agg['site_allocation__event_site__site__powerbox__id'] == sr['site_allocation__event_site__site__powerbox__id']),
-                0
-            ),
-            'total_power_load_amps': math.ceil(
-            FoodPrepEquipReq.objects.filter(
-                food_registration__registration__id=sr['id'],  # Ensure this relationship exists
-                food_registration__registration__site_allocation__event_site__event__id=sr['site_allocation__event_site__event__id'],  # Correct link to Event
-            ).aggregate(total_amps=Sum('food_prep_equipment__power_load_amps'))['total_amps'] or 0
-            )  # Use math.ceil to round up
-        }
-        for sr in detailed_stallregistrations
-    ]
-    context = {
-        'stallregistrations_by_powerbox': stallregistrations_by_powerbox
-
+    query_filters = {
+        k: v
+        for k, v in filter_params.items()
+        if v
     }
-    # Render the template with all data
-    html_template = get_template('powerboxes/powerbox_siteallocations_pdf.html').render(context)
-    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'inline; filename="poowerbox_allocation.pdf"'
+
+    report_data = (
+        PowerboxReportService.get_report_data()
+    )
+
+    filtered_data = (
+        PowerboxReportService.apply_filters(
+            report_data,
+            query_filters
+        )
+    )
+
+    context = {
+        "stallregistrations_by_powerbox": filtered_data
+    }
+
+    html_template = get_template(
+        "powerboxes/powerbox_siteallocations_pdf.html"
+    ).render(context)
+
+    pdf_file = HTML(
+        string=html_template,
+        base_url=request.build_absolute_uri()
+    ).write_pdf()
+
+    response = HttpResponse(
+        pdf_file,
+        content_type="application/pdf"
+    )
+
+    response[
+        "Content-Disposition"
+    ] = 'inline; filename="powerbox_allocation.pdf"'
+
     return response
 
 
 def powerbox_connections_pdf_view(request):
     # Fetch the same data as the dashboard view
-    powerbox_connections = StallRegistration.registrationcurrentmgr.filter(
-        power_required=True,
-        site_allocation__event_site__site__powerbox__isnull=False
+    powerbox_connections = (
+        StallRegistration.registrationcurrentmgr.fair_power()
+        .filter(
+            site_allocation__event_site__site__has_power=True
+        )
     ).values(
         'site_allocation__event_site__event__event_name',
         'site_allocation__event_site__site__powerbox__power_box_name',
         'site_allocation__event_site__site__powerbox__socket_count',
-        'site_allocation__event_site__site__powerbox__id'
+        'site_allocation__event_site__site__powerbox__id',
+        'site_allocation__event_site__site__powerbox__caravan_socket_16a',
+        'site_allocation__event_site__site__powerbox__three_pin_15a',
     ).annotate(
         max_load=F('site_allocation__event_site__site__powerbox__max_load'),
+        used_caravan=Coalesce(Sum('caravan_socket_16a'), Value(0)),
+        used_three_pin=Coalesce(Sum('three_pin_15a'), Value(0)),
+    ).annotate(
+        free_caravan=
+        F('site_allocation__event_site__site__powerbox__caravan_socket_16a')
+        - F('used_caravan'),
+
+        free_three_pin=
+        F('site_allocation__event_site__site__powerbox__three_pin_15a')
+        - F('used_three_pin'),
         connected_sites=Count('id'),
         free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
     )
 
+    # Calculate total_power_load_amps for each powerbox
     powerbox_connections_with_amps = []
     for powerbox in powerbox_connections:
         total_power_load_amps = FoodPrepEquipReq.objects.filter(
@@ -2589,6 +2556,7 @@ def powerbox_connections_pdf_view(request):
             food_registration__registration__site_allocation__event_site__event__event_name=powerbox['site_allocation__event_site__event__event_name'],
         ).aggregate(total_amps=Sum('food_prep_equipment__power_load_amps'))['total_amps'] or 0
 
+        # Apply math.ceil to total_power_load_amps
         total_power_load_amps = math.ceil(total_power_load_amps)
 
         powerbox_connections_with_amps.append({

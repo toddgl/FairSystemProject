@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/reports.css' %}" media="all" />
 </head>
 <body>
-<div class="container mt-4">
+<div class="landscape">
     <h1 class="mb-4">Powerbox Connections</h1>
     <div class="row">
         <div class="col">
@@ -31,6 +31,8 @@
                 <th>PowerBox</th>
                 <th>Total Sockets</th>
                 <th>Connected Sites</th>
+                <th>Free Caravan Sockets</th>
+                <th>Free Three Pin Sockets</th>
                 <th>Free Sockets</th>
                 <th>Max Allowable Load (Amps)</th>
                 <th>Total Power Load (Amps)</th>
@@ -43,7 +45,8 @@
                 <td>{{ connection.site_allocation__event_site__site__powerbox__power_box_name }}</td>
                 <td>{{ connection.site_allocation__event_site__site__powerbox__socket_count }}</td>
                 <td>{{ connection.connected_sites }}</td>
-                <td>{{ connection.free_sockets }}</td>
+                <td>{{ connection.free_caravan }}</td>
+                <td>{{ connection.free_three_pin }}</td>
                 <td>{{ connection.max_load|floatformat:2 }}</td>
                 <td>{{ connection.total_power_load_amps }}</td>
             </tr>

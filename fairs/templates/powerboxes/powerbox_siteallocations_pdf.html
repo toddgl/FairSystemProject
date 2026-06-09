@@ -16,7 +16,7 @@
     <link rel="stylesheet" href="{% static 'css/reports.css' %}" media="all" />
 </head>
 <body>
-<div class="container mt-4">
+<div class="landscape">
     <h1 class="mb-4">Powerbox Site Allocations</h1>
     <div class="row">
         <div class="col">
@@ -30,6 +30,8 @@
                 <th>Powerbox Name</th>
                 <th>Event Name</th>
                 <th>Connected Sites</th>
+                <th>Free Caravan Sockets</th>
+                <th>Free Three Pin Sockets</th>
                 <th>Free Sockets</th>
                 <th>Total Power Load Amps</th>
                 <th>Allocated Site Name</th>
@@ -41,6 +43,8 @@
                 <td>{{ reg.power_box_name }}</td>
                 <td>{{ reg.event_name }}</td>
                 <td>{{ reg.connected_sites }}</td>
+                <td>{{ reg.free_caravan }}</td>
+                <td>{{ reg.free_three_pin }}</td>
                 <td>{{ reg.free_sockets }}</td>
                 <td>{{ reg.total_power_load_amps }}</td>
                 <td>{{ reg.allocated_site_name }}</td>

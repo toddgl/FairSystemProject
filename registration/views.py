@@ -475,7 +475,8 @@ def stall_registration_create(request):
             return response
 
         else:
-            print("Form Errors", form.errors.as_data())
+            db_logger.error('There was an error updating the stall application: ' + form.errors.as_data(),
+                            extra={'custom_category': 'Stall Applicationi Update'})
 
     # -------------------------
     # Comments (display only)
@@ -533,83 +534,6 @@ def stall_registration_cancel_view(request, pk):
                         extra={'custom_category': 'Stall Application'})
 
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
-
-
-def old_get_registration_costs(request, fair_id, parent_id=None, site_size=None, stall_category=None, trestle_num=None, vehicle_length=None, power_req=None):
-    total_additional_site_costs = decimal.Decimal(0.00)
-    total_vehicle_cost = decimal.Decimal(0.00)
-
-    # check to see if this a stall application update
-    if parent_id:
-        # Check to see if there are additional sites required
-        if AdditionalSiteRequirement.objects.filter(stall_registration_id=parent_id).exists():
-            additional_site_list = AdditionalSiteRequirement.objects.filter(stall_registration_id=parent_id)
-            for additional_site in additional_site_list:
-                site_price = InventoryItemFair.objects.get(fair=fair_id,
-                                                           inventory_item__id=additional_site.site_size.id).price
-                price_rate = InventoryItemFair.objects.get(fair=fair_id,
-                                                           inventory_item__id=additional_site.site_size.id).price_rate
-                additional_site_costs = price_rate * site_price * additional_site.site_quantity
-                total_additional_site_costs = total_additional_site_costs + additional_site_costs
-
-    if stall_category:
-        db_logger.debug(f"Stall category ID: {stall_category}")
-        category = StallCategory.objects.get(pk=stall_category)
-        if category.has_inventory_item:
-            category_price = InventoryItemFair.objects.get(fair=fair_id,
-                                                           inventory_item_id=category.inventory_item.id).price
-            price_rate = InventoryItemFair.objects.get(fair=fair_id,
-                                                       inventory_item_id=category.inventory_item.id).price_rate
-            category_price = category_price * price_rate
-        else:
-            category_price = decimal.Decimal(0.00)
-    else:
-        category_price = decimal.Decimal(0.00)
-
-    if site_size:
-        site_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price
-        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__id=site_size).price_rate
-        site_price = price_rate * site_price
-    else:
-        site_price = decimal.Decimal(0.00)
-
-
-    if trestle_num:
-        trestle_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price
-        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Trestle Table').price_rate
-        total_trestle_cost = price_rate * trestle_price * decimal.Decimal(trestle_num)
-    else:
-        total_trestle_cost = decimal.Decimal(0.00)
-
-    if vehicle_length:
-        try:
-            # Attempt to convert the vehicle length to a float
-            vehicle_length = float(vehicle_length)
-
-            # Check if the vehicle length is greater than 6
-            if vehicle_length > 6:
-                vehicle_price = InventoryItemFair.objects.get(fair=fair_id,
-                                                              inventory_item__item_name='Over 6m vehicle on site').price
-                price_rate = InventoryItemFair.objects.get(fair=fair_id,
-                                                           inventory_item__item_name='Over 6m vehicle on site').price_rate
-                total_vehicle_cost = price_rate * vehicle_price
-            else:
-                total_vehicle_cost = decimal.Decimal(0.00)
-
-        except ValueError:
-            # If conversion to float fails, handle the error (e.g., log or return an appropriate message)
-            total_vehicle_cost = decimal.Decimal(0.00)
-
-    if power_req:
-        power_price = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price
-        price_rate = InventoryItemFair.objects.get(fair=fair_id, inventory_item__item_name='Power Point').price_rate
-        power_price = price_rate * power_price
-    else:
-        power_price = decimal.Decimal(0.00)
-
-    total_cost = (category_price + site_price + total_trestle_cost + total_vehicle_cost + power_price +
-                  total_additional_site_costs)
-    return total_cost
 
 
 @login_required
