@@ -123,6 +123,7 @@
           <div class="card-body">
             {% if has_current_siteallocations %}
               <p class="card-text">Site Allocations have been created</p>
+            <a class="btn btn-primary" href="{% url 'reports:site-allocation-audit-report' %}" role="button">View the site allocation audit report</a>
             {% elif latest_fair_name and not has_current_siteallocations %}
               <p class="card-text">There are no site allocations setup for {{ latest_fair_name }}.</p>
               <form method="post">

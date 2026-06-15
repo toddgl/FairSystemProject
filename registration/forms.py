@@ -310,7 +310,7 @@ class StallRegistrationForm(ModelForm):
 
     uses_electrical_equipment = BooleanField(
         required=False,
-        label="Tick if you are using electrical equipment to Prepare, Cook, Warm or Chill products?",
+        label="Tick if you are using electrical equipment to Display, Prepare, Cook, Warm or Chill products?",
         widget=CheckboxInput(attrs={
             "class": "form-check-input",
             "hx-trigger": "change",

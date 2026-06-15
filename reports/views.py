@@ -6,7 +6,7 @@ from django.db.models import F, Q, Subquery, OuterRef, Value, Count
 from django.db.models.functions import Coalesce
 from weasyprint import HTML
 from django.contrib.sites.shortcuts import get_current_site
-from django.template.loader import get_template
+from django.template.loader import get_template, render_to_string
 from django.template.response import TemplateResponse
 from django.http import HttpResponse
 from django.db.models import Max, Case, When, Value, IntegerField, BooleanField
@@ -34,6 +34,9 @@ from fairs.models import (
 
 from registration.models import(
     StallRegistration
+)
+from .services.site_allocation_audit_service import (
+    SiteAllocationAuditService
 )
 
 
@@ -704,3 +707,78 @@ def stall_validation_report(request):
 
     # Pass data to template
     return render(request, 'unallocated_stalls.html', {'validation_report': validation_report})
+
+
+def site_allocation_audit_report(request):
+    """Provides a listing of Sites that changed hands compared with the previous fair allocation cycle."""
+
+    rows = SiteAllocationAuditService.get_changed_allocations()
+
+    return render(request, 'site_allocation_audit_list.html', {'rows': rows})
+
+
+def export_site_allocation_audit_csv(request):
+
+    rows = SiteAllocationAuditService.get_changed_allocations()
+
+    response = HttpResponse(
+        content_type="text/csv"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="site-allocation-audit.csv"'
+    )
+
+    writer = csv.writer(response)
+
+    writer.writerow([
+        "Zone",
+        "Site",
+        "Current Stallholder",
+        "Site Size",
+        "Last Held Year",
+        "Count years occupied",
+        "Previous Stallholder",
+    ])
+
+    for row in rows:
+
+        writer.writerow([
+            row["zone_name"],
+            row["site_name"],
+            row["current_stallholder_id"],
+            row["site_size"],
+            row["last_year_occupied"],
+            row["count_years_occupied"],
+            row["previous_stallholder_id"],
+        ])
+
+    return response
+
+
+def export_site_allocation_audit_pdf(request):
+
+    rows = SiteAllocationAuditService.get_changed_allocations()
+
+    html = render_to_string(
+        "site_allocation_audit_pdf.html",
+        {
+            "rows": rows,
+        }
+    )
+
+    pdf = HTML(
+        string=html,
+        base_url=request.build_absolute_uri("/")
+    ).write_pdf()
+
+    response = HttpResponse(
+        pdf,
+        content_type="application/pdf"
+    )
+
+    response["Content-Disposition"] = (
+        'attachment; filename="site-allocation-audit.pdf"'
+    )
+
+    return response

@@ -1,0 +1,63 @@
+<!--reports/templates/site_allocated_review.html -->
+{% extends 'dashboard_base.html' %}
+{% load static %}
+
+{% block body %}
+
+<main class="col-md-9 ml-sm-auto col-lg-10 px-4 p-1 my-container active-cont">
+    <!-- Top Nav -->
+    <nav class="navbar top-navbar navbar-light justify-content-start px-5">
+        <a class="btn border-0" id="menu-btn"><i class="bi bi-menu-button"></i></a>
+    </nav>
+    <!--End     Top Nav -->
+    <hr>
+    <a href="{% url 'reports:site-allocation-audit-pdf' %}" target="_blank" class="btn btn-primary">Generate PDF</a>
+    <a href="{% url 'reports:site-allocation-audit-csv' %}" target="_blank" class="btn btn-primary">Generate CSV File</a>
+    <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
+    <hr>
+    <div class="container mt-4">
+
+        <h2>Site Allocation Audit Report</h2>
+
+        {% regroup rows by zone_name as zone_list %}
+
+        {% for zone in zone_list %}
+
+            <h2>{{ zone.grouper }}</h2>
+
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered table-striped">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Site</th>
+                            <th>Current Stallholder</th>
+                            <th>Site Size</th>
+                            <th>Last Year Occupied</th>
+                            <th>Years Held</th>
+                            <th>Previous Stallholder</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    {% for row in zone.list %}
+
+                        <tr>
+                            <td>{{ row.site_name }}</td>
+                            <td>{{ row.current_stallholder_id }}</td>
+                            <td>{{ row.site_size }}</td>
+                            <td>{{ row.last_year_occupied }}</td>
+                            <td>{{ row.count_years_occupied }}</td>
+                            <td>{{ row.previous_stallholder_id }}</td>
+                        </tr>
+
+                    {% endfor %}
+
+                    </tbody>
+
+                </table>
+            </div>
+        {% endfor %}
+    </div>
+    {% endblock %}
+</main>

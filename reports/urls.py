@@ -7,7 +7,10 @@ from reports.views import (
     marshall_zone_report,
     reports_listview,
     fair_passpack_generator,
-    stall_validation_report
+    stall_validation_report,
+    site_allocation_audit_report,
+    export_site_allocation_audit_pdf,
+    export_site_allocation_audit_csv,
 )
 
 
@@ -19,4 +22,7 @@ urlpatterns = [
     path('reports/passpack/<int:stallregistration>', fair_passpack_generator, name='stallholder-passpack'),
     path('reports/unallocated-stalls/', stall_validation_report, name='unallocated_stalls_report'),
     path('reports/allocated-site-numbers/', site_allocation_numbers_report, name='allocated-site-numbers-report'),
+    path('reports/site-allocations-review-list/', site_allocation_audit_report, name='site-allocation-audit-report'),
+    path('reports/site-allocations-audit-pdf/', export_site_allocation_audit_pdf, name='site-allocation-audit-pdf'),
+    path('reports/site-allocations-audit-csv/', export_site_allocation_audit_csv, name='site-allocation-audit-csv'),
 ]
