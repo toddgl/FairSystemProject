@@ -57,7 +57,7 @@ def populate_site_history():
 
         # Determine if the site size is half-size (or other conditions)
         if site_size:
-            if site_size.item_name == 'Half Size Fair Site':
+            if site_size.item_name == 'Half Size 3x3 Fair Site':
                 is_half_size = True
             else:
                 is_half_size = False
