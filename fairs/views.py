@@ -1900,7 +1900,7 @@ def stallholder_history_dashboard_view(request):
             zone_filter_dict = {
                 attr_zone: zone.id
             }
-            site_histories =  SiteHistory.fouryearhistorymgr.all().filter(**zone_filter_dict).order_by('year','site')
+            site_histories =  SiteHistory.fouryearhistorymgr.all().filter(**zone_filter_dict)
             for site_history in site_histories:
                 site_histories_transposed[site_history.site].append((site_history.year, site_history.stallholder.id,
                                                                      site_history.is_half_size,

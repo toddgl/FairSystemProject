@@ -1,6 +1,7 @@
 # fairs/model.py
 from datetime import datetime
-from django.db.models import Q, Case, F, When, DateField
+from django.db.models import Q, Case, F, When, DateField, IntegerField
+from django.db.models.functions import Cast, Substr
 from django.db import models
 from django.urls import reverse
 from accounts.models import CustomUser
@@ -646,17 +647,38 @@ class FourYearHistoryManager(models.Manager):
     Manager that returns all the site history for the past four years of stallholder who are currently active
     SiteHistory.fouryearhistorymgr.all()
     """
+
     def get_queryset(self):
-        return super().get_queryset().filter(year__lte=current_year,
-                                             year__gte=four_years_past).order_by('year')
+        return (
+            super().get_queryset()
+            .filter(year__lte=current_year, year__gte=four_years_past)
+            # 1. Extract the text prefix (first 2 characters)
+            .annotate(site_prefix=Substr('site__site_name', 1, 2))
+            # 2. Extract the remaining characters and cast them to an Integer
+            .annotate(site_number=Cast(Substr('site__site_name', 3), output_field=IntegerField()))
+            # 3. Order by year first, then the alpha prefix, then the true number
+            .order_by( 'site_prefix', 'site_number', 'year')
+        )
+
 
 class CurrentFairSiteHistoryManager(models.Manager):
     """
-    Manager that returns the site histy for the current Fair - SiteHistory.currentsitehistorymgr.all()
+    Manager that returns the site history for the current Fair - SiteHistory.currentsitehistorymgr.all()
     """
+
     def get_queryset(self):
-        current_fair_year = Fair.currentfairmgr.first().fair_year
-        return super().get_queryset().filter(year=current_fair_year).order_by('site')
+        # Prevent breaking if no current fair exists
+        current_fair = Fair.currentfairmgr.first()
+        current_fair_year = current_fair.fair_year if current_fair else current_year
+
+        return (
+            super().get_queryset()
+            .filter(year=current_fair_year)
+            # Annotate for natural alphanumeric sorting
+            .annotate(site_prefix=Substr('site__site_name', 1, 2))
+            .annotate(site_number=Cast(Substr('site__site_name', 3), output_field=IntegerField()))
+            .order_by('site_prefix', 'site_number')
+        )
 
 
 class SiteHistory(models.Model):
