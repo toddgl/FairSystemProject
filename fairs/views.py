@@ -1893,24 +1893,36 @@ def stallholder_history_dashboard_view(request):
                 'historyfilterform': historyfilterform,
                 'stallholder_histories_transposed': dict(stallholder_histories_transposed),
             })
+
         if historyfilterform.is_valid():
             zone = historyfilterform.cleaned_data['zone']
-            attr_zone = 'site__zone'
-            site_filter_message = 'Showing stallholder ID allocation histories for zone ' + str(zone)
-            zone_filter_dict = {
-                attr_zone: zone.id
-            }
-            site_histories =  SiteHistory.fouryearhistorymgr.all().filter(**zone_filter_dict)
+            site_histories = SiteHistory.fouryearhistorymgr.all()
+
+            if zone is not None:
+                site_filter_message = (
+                    f'Showing stallholder allocation histories for zone {zone}'
+                )
+                site_histories = site_histories.filter(site__zone=zone)
+            else:
+                site_filter_message = 'Showing stallholder allocation histories for all zones'
+
             for site_history in site_histories:
-                site_histories_transposed[site_history.site].append((site_history.year, site_history.stallholder.id,
-                                                                     site_history.is_half_size,
-                                                                     site_history.stallholder.is_active))
-            template = 'dashboards/dashboard_site_history.html'
-            return TemplateResponse(request, template, {
-                'site_filter': site_filter_message,
-                'historyfilterform': historyfilterform,
-                'site_histories_transposed': dict(site_histories_transposed),
-            })
+                site_histories_transposed[site_history.site].append(
+                    (
+                        site_history.year,
+                        site_history.stallholder.id,
+                        site_history.is_half_size,
+                        site_history.stallholder.is_active,
+                    )
+                )
+            return TemplateResponse(request,
+                  'dashboards/dashboard_site_history.html',
+                 {
+                    'site_filter': site_filter_message,
+                    'historyfilterform': historyfilterform,
+                    'site_histories_transposed': dict(site_histories_transposed),
+                }
+            )
     return TemplateResponse(request, template, {
         'site_filter': site_filter_message,
         'stallholder_filter': stallholder_filter_message,

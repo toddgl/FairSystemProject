@@ -11,6 +11,8 @@ from django.core.validators import MinValueValidator, MaxValueValidator
 from django.utils.functional import cached_property
 from fairs.querysets.event import EventQuerySet
 
+from django.db.models import Func, Value, CharField
+
 
 # Global Variables
 current_year = datetime.now().year
@@ -642,22 +644,53 @@ class EventPower(models.Model):
     class Meta:
         unique_together = ('event', 'power_box')
 
+
+class RegexpReplace(Func):
+    function = "REGEXP_REPLACE"
+    output_field = CharField()
+
+
 class FourYearHistoryManager(models.Manager):
     """
     Manager that returns all the site history for the past four years of stallholder who are currently active
     SiteHistory.fouryearhistorymgr.all()
+    Note it handles site names in the following format SD12, SDE12, SD12a, SDE123a
     """
 
     def get_queryset(self):
         return (
-            super().get_queryset()
-            .filter(year__lte=current_year, year__gte=four_years_past)
-            # 1. Extract the text prefix (first 2 characters)
-            .annotate(site_prefix=Substr('site__site_name', 1, 2))
-            # 2. Extract the remaining characters and cast them to an Integer
-            .annotate(site_number=Cast(Substr('site__site_name', 3), output_field=IntegerField()))
-            # 3. Order by year first, then the alpha prefix, then the true number
-            .order_by( 'site_prefix', 'site_number', 'year')
+            super()
+            .get_queryset()
+            .filter(
+                year__lte=current_year,
+                year__gte=four_years_past,
+            )
+            .annotate(
+                site_prefix=RegexpReplace(
+                    F("site__site_name"),
+                    Value(r"^([A-Za-z]+).*"),
+                    Value(r"\1"),
+                ),
+                site_number=Cast(
+                    RegexpReplace(
+                        F("site__site_name"),
+                        Value(r"^[A-Za-z]+([0-9]+).*"),
+                        Value(r"\1"),
+                    ),
+                    IntegerField(),
+                ),
+                site_suffix=RegexpReplace(
+                    F("site__site_name"),
+                    Value(r"^[A-Za-z]+[0-9]+([A-Za-z]*)$"),
+                    Value(r"\1"),
+                ),
+            )
+            .order_by(
+                "site_prefix",
+                "site_number",
+                "site_suffix",
+                "year",
+            )
         )
 
 
