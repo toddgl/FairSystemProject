@@ -4,6 +4,7 @@ from django import forms
 from django.forms import (
     CharField,
     Form,
+    IntegerField,
     ModelForm,
     ModelChoiceField,
     Select,
@@ -60,23 +61,29 @@ class CreateStallholderEmailForm(Form):
 
     form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='email')
 
+class EmailHistoryFilterForm(forms.Form):
+    """
+    Filter form for listing emails sent by Fair.
+    """
 
-class EmailHistoryFilterForm(Form):
-    """
-    Filter form for listing emails sent  by Fair
-    """
-    fair = ModelChoiceField(
+    fair = forms.ModelChoiceField(
         queryset=Fair.objects.all(),
-        empty_label='Show All',
-        label='Fairs',
+        empty_label="Show All",
+        label="Fairs",
         required=False,
-        widget=Select(attrs={
-            'class': 'form-control',
-            'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#email_history_data',
-        })
+        widget=forms.Select(
+            attrs={
+                "class": "form-control",
+                "style": "max-width: 300px;",
+            }
+        ),
     )
-    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
 
+    selected_stallholder = IntegerField(
+        required=False,
+        widget=forms.HiddenInput(
+            attrs={
+                "id":"selected_stallholder",
+            }
+        ),
+    )

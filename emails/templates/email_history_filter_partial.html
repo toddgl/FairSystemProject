@@ -8,9 +8,10 @@
         <span><strong>Email History Filters</strong></span>
         <span class="hr"></span>
       </div>
-      <form action="." hx-trigger="change" method="post"  hx-post="." hx-target="#email_history_data">
-        {% csrf_token %}
+      <form id="email-filter-form" method="get" hx-get="{% url 'emails:email-list' %}" hx-trigger="change" hx-target="#email_history_data">
+
         {{ filterform.as_p }}
+
         <a type="button" class="btn btn-secondary" href="javascript:window.history.back()">Cancel</a>
       </form>
     <hr>

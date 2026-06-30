@@ -18,6 +18,8 @@ from fairs.models import (
 
 from django.db.models import Count
 
+from emails.services.email_history_service import EmailHistoryService
+
 def pagination_data(cards_per_page, filtered_data, request):
     """
     Refactored pagination code that is available to all views that included pagination
@@ -72,60 +74,64 @@ def email_history_dashboard_view(request):
     })
 
 
+def parse_int(value):
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return None
+
+
 @login_required
 @permission_required('emails.view_email', raise_exception=True)
 def email_history_listview(request):
     """
-    List emails sent to stallholders, filtered by subject_type and stallholder.
+    List emails sent to stallholders.
+
+    Filtering is performed entirely from GET parameters so that
+    pagination naturally preserves the current filter state.
     """
+
+    filterform = EmailHistoryFilterForm(request.GET or None)
     current_fair = Fair.currentfairmgr.last()
-    cards_per_page = 30
-    template_name = 'email_history_list.html'
-    filterform = EmailHistoryFilterForm(request.POST or None)
+    cards_per_page = 5
 
-    # Get filters from the request
-    subject_type = request.GET.get('subject_type', '')
-    stallholder_id = request.POST.get('selected_stallholder' or None)
-    form_purpose = filterform.data.get('form_purpose', '') if filterform.is_bound else None
-    email_filter_dict = {}
+    template_name = (
+        "email_history_list_partial.html"
+        if request.htmx
+        else "email_history_list.html"
+    )
 
-    # Subject type filtering
-    if subject_type:
-        email_filter_dict['subject_type_id'] = subject_type
-        alert_message = f'There are no email messages of type {subject_type} created yet.'
-    else:
-        alert_message = 'There are no emails created yet.'
+    fair = None
+    selected_stallholder = None
 
-    # Stallholder and fair filtering
-    if request.htmx and form_purpose == 'filter' and filterform.is_valid():
-        fair = filterform.cleaned_data.get('fair')
-        if stallholder_id:
-            email_filter_dict['stallholder'] = stallholder_id
-            alert_message = f'There are no emails where the stallholder ID is {stallholder_id}.'
-        if fair:
-            email_filter_dict['fair'] = fair
-            alert_message = f'There are no emails where the fair is {fair}.'
+    if filterform.is_valid():
+        fair = filterform.cleaned_data["fair"]
+        selected_stallholder = filterform.cleaned_data["selected_stallholder"]
 
-    elif stallholder_id:
-            # Append stallholder if only stallholder is selected without form filtering
-            email_filter_dict['stallholder'] = stallholder_id
-            alert_message = f'There are no emails where the stallholder ID is {stallholder_id} at the current fair.'
-    else:
-        email_filter_dict['fair'] = current_fair
+    filter_data = EmailHistoryService.get_filters(
+        fair=fair,
+        stallholder_id=selected_stallholder,
+        subject_type=request.GET.get("subject_type"),
+        current_fair=current_fair,
+    )
 
-    # Fetch filtered data
-    filtered_data = Email.emailhistorycurrentmgr.filter(**email_filter_dict).order_by('-date_sent')
-    page_list, page_range = pagination_data(cards_per_page, filtered_data, request)
-    email_list = page_list
+    queryset = EmailHistoryService.get_queryset(filter_data)
 
-    # Adjust template for HTMX requests
-    if request.htmx:
-        template_name = 'email_history_list_partial.html'
+    email_list, page_range = pagination_data(
+        cards_per_page,
+        queryset,
+        request,
+    )
 
-    return TemplateResponse(request, template_name, {
-        'filterform': filterform,
-        'email_list': email_list,
-        'page_range': page_range,
-        'alert_message': alert_message,
-        'subject_type': subject_type,
-    })
+    return TemplateResponse(
+        request,
+        template_name,
+        {
+            "filterform": filterform,
+            "email_list": email_list,
+            "page_range": page_range,
+            "alert_message": filter_data.alert_message,
+            "subject_type": filter_data.subject_type,
+            "selected_stallholder": filter_data.selected_stallholder,
+        },
+    )

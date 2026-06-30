@@ -19,7 +19,8 @@ class EmailHistoryCurrentManager(models.Manager):
         current_year = datetime.datetime.now().year
         next_year = current_year + 1
         return super().get_queryset().filter(
-            fair__fair_year__in=[current_year, next_year]
+            fair__fair_year__in=[current_year, next_year],
+            fair__is_activated = True
         )
 
 class Email(models.Model):
