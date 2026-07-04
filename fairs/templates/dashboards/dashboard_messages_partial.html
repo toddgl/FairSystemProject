@@ -2,16 +2,17 @@
 
 <div id="message_data">
     <div class="badge bg-info text-dark text-wrap" style="width: auto;">
-        {{ filter }}
+        {{ alert_filter }}
+        {{ message_filter }}
     </div>
     <hr>
-    {% for comment in page_obj %}
+    {% for comment in message_list %}
         <div class="w-100">
             {% if comment.is_active %}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> <i class="bi bi-cart-check-fill text-secondary">Under Action</i> </div> <small>{{ comment.date_created|timesince }} ago</small>
                 </div>
-            {% elif comment.is_done %}
+            {% elif comment.is_resolved %}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> <i class="bi  bi-bookmark-check-fill text-success">Resolved</i> </div> <small>{{ comment.date_created|timesince }} ago</small>
                 </div>
@@ -37,7 +38,7 @@
                     <div class="d-flex flex-row user-feed">
                         <a class="icon ms-3" href="{% url 'fair:is-done' comment.id %}"><span><i class="bi  bi-bookmark-check-fill text-success" style="font-size:1.7rem;" ></i>Mark as Resolved</span></a>
                     </div>
-                {% elif comment.is_done %}
+                {% elif comment.is_resolved %}
                     <div class="d-flex flex-row user-feed">
                         <a class="icon ms-3" href="{% url 'fair:is-active' comment.id %}"><span><i class="bi bi-cart-check-fill text-secondary" style="font-size:1.7rem;" ></i>Mark as Under Action</span></a>
                     </div>
@@ -89,45 +90,62 @@
             <div class="alert alert-info" role="alert">There are no messages yet.</div>
         {% endfor %}
 
-    <!-- Pagination controls -->
+    {% if message_list.has_other_pages %}
     <nav aria-label="Page navigation">
         <ul class="pagination">
-            {% if page_obj.has_previous %}
-                <li class="page-item">
-                    <a class="page-link"
-                       hx-get="{% url 'fair:messages-dashboard' %}?{{ filters_query }}&page={{ page_obj.previous_page_number }}"
-                       hx-trigger="click"
-                       hx-target="#message_data">&laquo;</a>
-                </li>
+            {% if message_list.has_previous %}
+            <li class="page-item">
+                <a class="page-link"
+                   hx-get="{% url 'fair:messages-dashboard' %}?page={{ message_list.previous_page_number }}
+                       {% if request.GET.fair %}&fair={{ request.GET.fair }}{% endif %}
+                       {% if request.GET.selected_stallholder %}&selected_stallholder={{ request.GET.selected_stallholder }}{% endif %}
+                       {% if request.GET.comment_type %}&comment_type={{ request.GET.comment_type }}{% endif %}
+                       {% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}
+                       {% if request.GET.is_resolved %}&is_resolved={{ request.GET.is_resolved }}{% endif %}
+                       {% if request.GET.is_archived %}&is_archived={{ request.GET.is_archived }}{% endif %}"
+                   hx-trigger="click"
+                   hx-include="#message-filter-form"
+                   hx-target="#message_data">&laquo;</a>
+            </li>
             {% else %}
-                <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
+            <li class="disabled page-item"><span class="page-link">&laquo;</span></li>
             {% endif %}
-            {% for i in page_range|default_if_none:page_obj.paginator.get_elided_page_range %}
-                {% if page_obj.number == i %}
-                    <li class="active page-item"><span class="page-link">{{ i }}</span></li>
-                {% else %}
-                    {% if i == page_obj.paginator.ELLIPSIS %}
-                        <li class="page-item"><span class="page-link">{{ i }}</span></li>
-                    {% else %}
-                        <li class="page-item">
-                            <a class="page-link"
-                               hx-get="{% url 'fair:messages-dashboard' %}?{{ filters_query }}&page={{ i }}"
-                               hx-trigger="click"
-                               hx-target="#message_data">{{ i }}</a>
-                        </li>
-                    {% endif %}
-                {% endif %}
-            {% endfor %}
-            {% if page_obj.has_next %}
-                <li class="page-item">
-                    <a class="page-link"
-                       hx-get="{% url 'fair:messages-dashboard' %}?{{ filters_query }}&page={{ page_obj.next_page_number }}"
-                       hx-trigger="click"
-                       hx-target="#message_data">&raquo;</a>
-                </li>
+            {% for i in page_range %}
+            {% if message_list.number == i %}
+            <li class="active page-item"><span class="page-link">{{ i }}</span></li>
             {% else %}
-                <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
+            <li class="page-item">
+                <a class="page-link"
+                   hx-get="{% url 'fair:messages-dashboard' %}?page={{ i }}
+                               {% if request.GET.fair %}&fair={{ request.GET.fair }}{% endif %}
+                               {% if request.GET.selected_stallholder %}&selected_stallholder={{ request.GET.selected_stallholder }}{% endif %}
+                               {% if request.GET.comment_type %}&comment_type={{ request.GET.comment_type }}{% endif %}
+                               {% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}
+                               {% if request.GET.is_resolved %}&is_resolved={{ request.GET.is_resolved }}{% endif %}
+                               {% if request.GET.is_archived %}&is_archived={{ request.GET.is_archived }}{% endif %}"
+                   hx-trigger="click"
+                   hx-include="#message-filter-form"
+                   hx-target="#message_data">{{ i }}</a>
+            </li>
+            {% endif %}
+            {% endfor %}
+            {% if message_list.has_next %}
+            <li class="page-item">
+                <a class="page-link"
+                   hx-get="{% url 'fair:messages-dashboard' %}?page={{ message_list.next_page_number }}
+                       {% if request.GET.fair %}&fair={{ request.GET.fair }}{% endif %}
+                       {% if request.GET.selected_stallholder %}&selected_stallholder={{ request.GET.selected_stallholder }}{% endif %}
+                       {% if request.GET.comment_type %}&comment_type={{ request.GET.comment_type }}{% endif %}
+                       {% if request.GET.is_active %}&is_active={{ request.GET.is_active }}{% endif %}
+                       {% if request.GET.is_resolved %}&is_resolved={{ request.GET.is_resolved }}{% endif %}
+                       {% if request.GET.is_archived %}&is_archived={{ request.GET.is_archived }}{% endif %}"
+                   hx-trigger="click"
+                   hx-include="#message-filter-form"
+                   hx-target="#message_data">&raquo;</a>
+            </li>
+            <li class="disabled page-item"><span class="page-link">&raquo;</span></li>
             {% endif %}
         </ul>
     </nav>
+    {% endif %}
 </div>

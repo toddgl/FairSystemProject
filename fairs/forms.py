@@ -1275,64 +1275,57 @@ class MessageFilterForm(Form):
     """
     fair = ModelChoiceField(
         queryset=Fair.objects.all(),
+        empty_label="Show All",
         required=False,
-        label = 'Select Fairs',
+        label = "Select Fairs",
         widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#message_data',
-        })
+        }),
     )
     comment_type = ModelChoiceField(
         queryset=CommentType.objects.all(),
+        empty_label="Show All",
         required=False,
         label = 'Select Message Type',
         widget=Select(attrs={
             'class': 'form-select',
             'style': 'max-width: 300px;',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#message_data',
-        })
+        }),
     )
     is_active = BooleanField(
         required=False,
         label = 'Show messages under action',
         widget=CheckboxInput(attrs={
             'class': 'form-check-input',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#message_data',
             'checked': False
-        })
+        }),
     )
     is_done = BooleanField(
         required=False,
         label = 'Show messages that have been resolved',
         widget=CheckboxInput(attrs={
             'class': 'form-check-input',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#message_data',
             'checked': False
-        })
+        }),
     )
     is_archived = BooleanField(
         required=False,
         label = 'Show Archived Comments',
         widget=CheckboxInput(attrs={
             'class': 'form-check-input',
-            'hx-trigger': 'change',
-            'hx-post': '.',
-            'hx-target': '#message_data',
             'checked': False
-        })
+        }),
     )
 
-    form_purpose = forms.CharField(widget=forms.HiddenInput(), initial='filter')
-
+    selected_stallholder = IntegerField(
+        required=False,
+        widget=forms.HiddenInput(
+            attrs={
+                "id":"selected_stallholder",
+            }
+        ),
+    )
     class Meta:
         fields = [
             'fair',

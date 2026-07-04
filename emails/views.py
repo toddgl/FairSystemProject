@@ -74,13 +74,6 @@ def email_history_dashboard_view(request):
     })
 
 
-def parse_int(value):
-    try:
-        return int(value)
-    except (TypeError, ValueError):
-        return None
-
-
 @login_required
 @permission_required('emails.view_email', raise_exception=True)
 def email_history_listview(request):

@@ -32,6 +32,7 @@ from django.views.generic import (
     UpdateView,
     DeleteView,
 )
+from weasyprint.css.validation.descriptors import NOT_PRINT_MEDIA
 
 from fairs.models import (
     Fair,
@@ -125,6 +126,9 @@ from .services.powerbox_service import (
     PowerboxReportService
 )
 
+from .services.message_dashboard_service import (
+    MessageDashboardService
+)
 
 
 # Global Variables
@@ -143,7 +147,24 @@ site_status_dict = {
 db_logger = logging.getLogger('db')
 
 
-# Create your views here.
+def pagination_data(cards_per_page, filtered_data, request):
+    """
+    Refactored pagination code that is available to all views that included pagination
+    It takes request, cards per page, and filtered_data and returns the page_list and page_range
+    """
+    paginator = Paginator(filtered_data, per_page=cards_per_page)
+    page_number = request.GET.get('page', 1)
+    page_range = paginator.get_elided_page_range(number=page_number)
+    try:
+        page_list = paginator.get_page(page_number)
+    except PageNotAnInteger:
+        # If page is not an integer deliver the first page
+        page_list = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range deliver last page of results
+        page_list = paginator.get_page(paginator.num_pages)
+    return page_list, page_range
+
 
 class LocationCreateView(PermissionRequiredMixin, CreateView):
     """
@@ -1656,127 +1677,80 @@ def messages_dashboard_view(request):
     """
     A dashboard that allows the convener to monitor and respond to stallholder messages.
     """
-    template = "dashboards/dashboard_messages_filter.html"
-    template_partial = "dashboards/dashboard_messages_partial.html"
-    current_fair = Fair.currentfairmgr.all().last()
+    filterform = MessageFilterForm(request.GET or None)
+    reply_form = MessageReplyForm(request.POST or None)
+    current_fair = Fair.currentfairmgr.last()
     cards_per_page = 6
 
-    message_filter_form = MessageFilterForm(request.POST or None)
-    reply_form = MessageReplyForm(request.POST or None)
-
-    comments = RegistrationComment.objects.filter(
-        comment_parent__isnull=True,
-        fair=current_fair.id
-    ).order_by('-date_created')
-
-    if request.htmx:
-        return handle_htmx_request(request, message_filter_form, current_fair, comments, template_partial,
-                                   cards_per_page)
-    elif request.method == 'POST':
-        return handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair)
-
-    return render_dashboard(
-        request,
-        template,
-        comments,
-        message_filter_form,
-        reply_form,
-        "Showing current messages of the current fair",
-        cards_per_page
+    template_name = (
+        'dashboards/dashboard_messages_partial.html'
+        if request.htmx
+        else "dashboards/dashboard_messages.html"
     )
 
-def handle_htmx_request(request, message_filter_form, current_fair, comments, template_partial, cards_per_page):
-    """
-    Handles HTMX requests for filtering or updating comments, including pagination.
-    """
-    filter_message = "Showing current messages of the current fair"
-    filters = {'comment_parent__isnull': True, 'fair': current_fair.id}
+    fair = None
+    selected_stallholder = None
+    comment_type = None
+    is_active = False
+    is_done= False
+    is_archived = False
 
-    # Retrieve filter parameters from GET or POST
-    stallholder_id = request.GET.get('selected_stallholder') or request.POST.get('selected_stallholder')
-    is_archived = request.GET.get('is_archived') == 'on' or request.POST.get('is_archived') == 'on'
-    comment_type_id = request.GET.get('comment_type')
-
-    # Apply stallholder filter if provided
-    if stallholder_id:
-        filters['stallholder'] = stallholder_id
-        filter_message = f"Showing messages for Stallholder ID {stallholder_id}"
-
-    # Apply archived filter if provided
-    if is_archived:
-        filters['is_archived'] = True
-        filter_message = "Showing archived messages for the current fair"
-    else:
-        filters['is_archived'] = False
-
-    # Apply comment_type filter
-    if comment_type_id:
-        try:
-            comment_type = CommentType.objects.get(pk=comment_type_id)
-            filters['comment_type'] = comment_type
-            filter_message += f", comment type {comment_type}"
-        except CommentType.DoesNotExist:
-            filters['comment_type'] = None
-
-    if message_filter_form.data.get('form_purpose') == 'filter' and message_filter_form.is_valid():
-        filters, filter_message = build_filters(message_filter_form, current_fair)
-
-    # Apply filters and paginate the results
-    filtered_comments = comments.filter(**filters).order_by('-date_created')
-    paginator = Paginator(filtered_comments, cards_per_page)
-    page_number = request.GET.get('page', 1)
-    page_list = paginator.get_page(page_number)
-
-    # Include the current filters in the pagination query parameters
-    query_params = urlencode({key: value.id if key == 'comment_type' and value else value
-                              for key, value in filters.items()})
-
-    return TemplateResponse(request, template_partial, {
-        'messagefilterform': message_filter_form,
-        'replyform': MessageReplyForm(),
-        'page_obj': page_list,
-        'page_range': paginator.get_elided_page_range(page_list.number),
-        'filter': filter_message,
-        'filters_query': query_params,  # Pass to template for appending in pagination links
-    })
+    if filterform.is_valid():
+        fair = filterform.cleaned_data["fair"]
+        selected_stallholder = filterform.cleaned_data["selected_stallholder"]
+        comment_type = filterform.cleaned_data["comment_type"]
+        is_active = filterform.cleaned_data["is_active"]
+        is_done = filterform.cleaned_data["is_done"]
+        is_archived = filterform.cleaned_data["is_archived"]
 
 
-def build_filters(form, current_fair):
-    """
-    Builds the filter dictionary based on form data.
-    """
-    filters = {'fair': current_fair.id}
-    filter_message = "Showing current messages of the current fair"
+    filter_data = MessageDashboardService.get_filters(
+        fair=fair,
+        stallholder_id=selected_stallholder,
+        comment_type=comment_type,
+        current_fair=current_fair,
+        is_active=is_active,
+        is_done=is_done,
+        is_archived=is_archived,
+    )
 
-    fair = form.cleaned_data.get('fair')
-    comment_type = form.cleaned_data.get('comment_type')
-    is_active = form.cleaned_data.get('is_active')
-    is_resolved = form.cleaned_data.get('is_done')
-    is_archived = form.cleaned_data.get('is_archived')
+    filterform = MessageFilterForm(
+        initial={
+            "fair": filter_data.selected_fair,
+            "comment_type": filter_data.comment_type,
+            "is_active": filter_data.is_active,
+            "is_done": filter_data.is_done,
+            "is_archived": filter_data.is_archived,
+            "selected_stallholder": filter_data.selected_stallholder,
+        }
+    )
 
-    if fair:
-        filters['fair'] = fair
-        filters['is_archived'] = False
-        filter_message = f"Showing active messages for fair {fair}"
-    if comment_type:
-        filters['comment_type'] = comment_type
-        filter_message += f", comment type {comment_type}"
-    if is_active:
-        filters['is_active'] = True
-        filters['is_archived'] = False
-        filter_message += ", under action"
-    if is_resolved:
-        filters['is_done'] = True
-        filters['is_archived'] = False
-        filter_message += ", resolved"
-    if is_archived:
-        filters['is_archived'] = True
-        filter_message += ", archived"
-    else:
-        filters['is_archived'] = False
-        filter_message += ", not archived"
+    queryset = MessageDashboardService.get_queryset(filter_data)
 
-    return filters, filter_message
+    message_list, page_range = pagination_data(
+        cards_per_page,
+        queryset,
+        request,
+    )
+
+    return TemplateResponse(
+        request,
+        template_name,
+        {
+            "filterform":filterform,
+            "reply_form": reply_form,
+            "message_list": message_list,
+            "page_range": page_range,
+            "alert_message": filter_data.alert_message,
+            "filter_message": filter_data.filter_message,
+            "comment_type": filter_data.comment_type,
+            "is_active": filter_data.is_active,
+            "is_done": filter_data.is_done,
+            "is_archived": filter_data.is_archived,
+        }
+    )
+
+
 
 def handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair):
     """

@@ -20,7 +20,20 @@
             <tbody>
                 {% for stallholder in results %}
                 <tr>
-                    <td><input type="radio" name="selected_stallholder" value= "{{ stallholder.id }}"  hx-post="{% url 'fair:messages-dashboard' %}" hx-trigger="click" hx-target="#message_data"></td>
+                    <td><input type="radio"
+                               name="selected_stallholder"
+                               value= "{{ stallholder.id }}"
+                               hx-get="{% url 'fair:messages-dashboard' %}"
+                               hx-trigger="click"
+                               hx-target="#message_data"
+                               {% if selected_stallholder == stallholder.id %}
+                               checked
+                               {% endif %}
+                               onclick="
+                                    document.getElementById('selected_stallholder').value=this.value;
+                                    htmx.trigger('#message-filter-form', 'change');
+                               ">
+                    </td>
                     <td>{{ stallholder.id }}</td>
                     <td>{{ stallholder.first_name }}</td>
                     <td>{{ stallholder.last_name }}</td>
