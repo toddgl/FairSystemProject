@@ -16,9 +16,9 @@ class MessageFilters:
     selected_stallholder: int | None
     selected_fair: object | None
     comment_type: str | None
-    is_active: bool | False
-    is_done: bool | False
-    is_archived: bool | False
+    is_active: bool
+    is_done: bool
+    is_archived: bool
     alert_message: str
     filter_message: str
 
