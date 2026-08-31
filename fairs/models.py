@@ -1,10 +1,11 @@
 # fairs/model.py
 from datetime import datetime
 from django.db.models import Q, Case, F, When, DateField, IntegerField
-from django.db.models.functions import Cast, Substr
+from django.db.models.functions import Cast, Substr, Coalesce
 from django.db import models
 from django.urls import reverse
 from accounts.models import CustomUser
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 
@@ -12,7 +13,6 @@ from django.utils.functional import cached_property
 from fairs.querysets.event import EventQuerySet
 
 from django.db.models import Func, Value, CharField
-
 
 # Global Variables
 current_year = datetime.now().year
@@ -157,10 +157,8 @@ class Fair(models.Model):
 
     @cached_property
     def current_event(self):
-        print(type(self.events))
         return (
-            self.events
-            .all()
+            Event.events.filter(fair=self)
             .active()
             .with_actual_date()
             .last()
@@ -505,7 +503,6 @@ class Event(models.Model):
 
     def get_absolute_url(self):
         return reverse('fairs:event-detail', args=[self.id])
-
 
 class EventSiteCurrentManager(models.Manager):
     def get_queryset(self):
