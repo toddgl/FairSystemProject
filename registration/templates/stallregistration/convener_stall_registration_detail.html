@@ -358,11 +358,23 @@
         <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form method="post">
-          {% csrf_token %}
-          {{ applydiscountform.as_p }}
-          <button type="submit" name="discount" class="btn btn-primary" data-bs-dismiss="modal">Save Discount</button>
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <form method="post"
+              hx-post="{% url 'registration:convener-stall-food-registration-detail' stall_registration.pk %}">
+            {% csrf_token %}
+            {{ applydiscountform.as_p }}
+
+            <button type="submit"
+                    name="discount"
+                    class="btn btn-primary"
+                    data-bs-dismiss="modal">
+                Save Discount
+            </button>
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                Close
+            </button>
         </form>
       </div>
     </div>
@@ -378,11 +390,23 @@
         <button  class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form method="post">
-          {% csrf_token %}
-          {{ createstallholderemailform.as_p }}
-          <button type="submit" name="stallholderemail" class="btn btn-primary" data-bs-dismiss="modal">Send Email</button>
-          <button class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        <form method="post"
+              hx-post="{% url 'registration:convener-stall-food-registration-detail' stall_registration.pk %}">
+            {% csrf_token %}
+            {{ createstallholderemailform.as_p }}
+
+            <button type="submit"
+                    name="stallholderemail"
+                    class="btn btn-primary"
+                    data-bs-dismiss="modal">
+                Send Email
+            </button>
+
+            <button type="button"
+                    class="btn btn-secondary"
+                    data-bs-dismiss="modal">
+                Close
+            </button>
         </form>
       </div>
     </div>
