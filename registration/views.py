@@ -473,10 +473,12 @@ def stall_registration_create(request):
             response = HttpResponse()
             response["HX-Redirect"] = success_url
             return response
-
         else:
-            db_logger.error('There was an error updating the stall application: ' + form.errors.as_data(),
-                            extra={'custom_category': 'Stall Applicationi Update'})
+            db_logger.error(
+                'There was an error creating the stall application: %s',
+                form.errors.as_data(),
+                extra={'custom_category': 'Stall Application Create'}
+            )
 
     # -------------------------
     # Comments (display only)
@@ -530,8 +532,11 @@ def stall_registration_cancel_view(request, pk):
                 siteallocation.stall_registration = None
                 siteallocation.save(update_fields=['stall_registration'])
     except Exception as e:
-        db_logger.error('There was an error cancelling the stall application: ' + str(e),
-                        extra={'custom_category': 'Stall Application'})
+        db_logger.error(
+            'There was an error cancelling the stall application: %s',
+            e,
+             extra={'custom_category': 'Stall Application'}
+        )
 
     return HTTPResponseHXRedirect(redirect_to=reverse_lazy("registration:stallregistration-dashboard"))
 
@@ -1107,8 +1112,10 @@ def comments_view_add(request):
                 # save
                 new_comment.save()
             except Exception:
-                db_logger.error(f'There was an error with saving the comment form. {commentform.errors.as_data()}',
-                                extra={'custom_category': 'Comments'}
+                db_logger.error(
+                    'There was an error with saving the comment form. %s',
+                    commentform.errors.as_data(),
+                    extra={'custom_category': 'Comments'}
                 )
             return redirect(request.META.get('HTTP_REFERER'))
         if replyform.is_valid():
@@ -1373,8 +1380,9 @@ def stallholder_stall_registration_detail_view(request, id):
 
         else:
             db_logger.error(
-                f'There was an error with updating the stall Application. {registrationupdateform.errors.as_data()}',
-                            extra={'custom_category': 'Stall Application'}
+                'There was an error with updating the stall Application. %s',
+                registrationupdateform.errors.as_data(),
+                 extra={'custom_category': 'Stall Application'}
             )
             return TemplateResponse(request, template, context)
 
@@ -1424,9 +1432,12 @@ def reinvoice_stall_registration(request, id):
         stallregistration.is_invoiced = True
         stallregistration.save()
     else:
-        db_logger.error('There was an error with the creation of the re-invoice and payment history for '
-                        'stallregistration ID ' + str(stallregistration.id),
-                        extra={'custom_category': 'Stall Application Invoicing'})
+        db_logger.error(
+            'There was an error with the creation of the invoice and payment history for '
+            'stallregistration ID %s',
+            stallregistration.id,
+            extra={'custom_category': 'Stall Registration Invoicing'}
+        )
 
     return redirect(request.META.get('HTTP_REFERER'))
 
@@ -1481,10 +1492,11 @@ def invoice_stall_registration(request, id):
         stallregistration.is_invoiced = True
         stallregistration.save()
     else:
-        db_logger.error('There was an error with the creation of the invoice and payment history for '
-                        'stallregistration ID '
-                        + stallregistration.id,
-                        extra={'custom_category': 'Stall Registration Invoicing'})
+        db_logger.error(
+            'There was an error with the creation of the invoice and payment history for '
+            'stallregistration ID %s',
+            stallregistration.id,
+            extra={'custom_category': 'Stall Registration Invoicing'})
 
     return HttpResponseRedirect(success_url)
 
