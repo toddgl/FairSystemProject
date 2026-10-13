@@ -2,8 +2,8 @@
 
 <div id="message_data">
     <div class="badge bg-info text-dark text-wrap" style="width: auto;">
-        {{ alert_filter }}
-        {{ message_filter }}
+        {{ alert_message }}
+        {{ message_message }}
     </div>
     <hr>
     {% for comment in message_list %}
@@ -12,7 +12,7 @@
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> <i class="bi bi-cart-check-fill text-secondary">Under Action</i> </div> <small>{{ comment.date_created|timesince }} ago</small>
                 </div>
-            {% elif comment.is_resolved %}
+            {% elif comment.is_done %}
                 <div class="d-flex justify-content-between align-items-center">
                     <div class="d-flex flex-row align-items-center"> <span class="me-4">{{ comment.created_by }}</span> <small class="badge bg-dark text-white me-4">{{ comment.comment_type }}</small> <i class="bi  bi-bookmark-check-fill text-success">Resolved</i> </div> <small>{{ comment.date_created|timesince }} ago</small>
                 </div>
@@ -38,7 +38,7 @@
                     <div class="d-flex flex-row user-feed">
                         <a class="icon ms-3" href="{% url 'fair:is-done' comment.id %}"><span><i class="bi  bi-bookmark-check-fill text-success" style="font-size:1.7rem;" ></i>Mark as Resolved</span></a>
                     </div>
-                {% elif comment.is_resolved %}
+                {% elif comment.is_done %}
                     <div class="d-flex flex-row user-feed">
                         <a class="icon ms-3" href="{% url 'fair:is-active' comment.id %}"><span><i class="bi bi-cart-check-fill text-secondary" style="font-size:1.7rem;" ></i>Mark as Under Action</span></a>
                     </div>
@@ -73,7 +73,7 @@
                     <div class="modal-body">
                         <form action="." method="post">
                             {% csrf_token %}
-                            {{ replyform.as_p }}
+                            {{ reply_form.as_p }}
                             <!-- Hidden input for parent comment.id -->
                             <input type="hidden" name="parent_id" value="{{ comment.id }}">
                              <div class="modal-footer">

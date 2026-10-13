@@ -1672,38 +1672,79 @@ def setup_process_dashboard_view(request):
 
 
 @login_required
-@permission_required('fairs.view_fair', raise_exception=True)
+@permission_required("fairs.view_fair", raise_exception=True)
 def messages_dashboard_view(request):
     """
-    A dashboard that allows the convener to monitor and respond to stallholder messages.
+    Display the message dashboard and save convener replies.
     """
-    filterform = MessageFilterForm(request.GET or None)
-    reply_form = MessageReplyForm(request.POST or None)
     current_fair = Fair.currentfairmgr.last()
     cards_per_page = 6
 
     template_name = (
-        'dashboards/dashboard_messages_partial.html'
+        "dashboards/dashboard_messages_partial.html"
         if request.htmx
         else "dashboards/dashboard_messages.html"
     )
+
+    # Filters are submitted using GET.
+    filterform = MessageFilterForm(request.GET or None)
 
     fair = None
     selected_stallholder = None
     comment_type = None
     is_active = False
-    is_done= False
+    is_done = False
     is_archived = False
 
     if filterform.is_valid():
         fair = filterform.cleaned_data["fair"]
-        selected_stallholder = filterform.cleaned_data["selected_stallholder"]
+        selected_stallholder = (
+            filterform.cleaned_data["selected_stallholder"]
+        )
         comment_type = filterform.cleaned_data["comment_type"]
         is_active = filterform.cleaned_data["is_active"]
         is_done = filterform.cleaned_data["is_done"]
         is_archived = filterform.cleaned_data["is_archived"]
 
+    # Handle reply submissions before rendering the dashboard.
+    reply_form = MessageReplyForm(
+        request.POST if request.method == "POST" else None
+    )
 
+    if request.method == "POST":
+        parent_id = request.POST.get("parent_id")
+
+        parent_obj = (
+            RegistrationComment.objects.filter(pk=parent_id).first()
+            if parent_id
+            else None
+        )
+
+        if not parent_obj:
+            reply_form.add_error(
+                None,
+                "The original message could not be found. "
+                "Please try again.",
+            )
+
+        elif reply_form.is_valid():
+            reply_comment = reply_form.save(commit=False)
+
+            reply_comment.comment_parent = parent_obj
+            reply_comment.comment_type = parent_obj.comment_type
+            reply_comment.created_by = request.user
+
+            # Keep the reply associated with its parent message's fair.
+            reply_comment.fair = parent_obj.fair
+
+            reply_comment.save()
+
+            messages.success(request, "Reply submitted successfully.")
+
+            # Reset the form after saving.
+            reply_form = MessageReplyForm()
+
+    # Rebuild the dashboard using the existing service.
     filter_data = MessageDashboardService.get_filters(
         fair=fair,
         stallholder_id=selected_stallholder,
@@ -1737,7 +1778,7 @@ def messages_dashboard_view(request):
         request,
         template_name,
         {
-            "filterform":filterform,
+            "filterform": filterform,
             "reply_form": reply_form,
             "message_list": message_list,
             "page_range": page_range,
@@ -1747,10 +1788,8 @@ def messages_dashboard_view(request):
             "is_active": filter_data.is_active,
             "is_done": filter_data.is_done,
             "is_archived": filter_data.is_archived,
-        }
+        },
     )
-
-
 
 def handle_reply_submission(request, reply_form, comments, message_filter_form, template, current_fair):
     """

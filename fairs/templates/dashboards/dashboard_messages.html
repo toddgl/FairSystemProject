@@ -27,7 +27,7 @@
                         <span><strong>Message Filters</strong></span>
                         <span class="hr"></span>
                     </div>
-                    <form id=messages-filter-form" method="get" hx-get="{% url 'fair:messages-dashboard' %}" hx-trigger="change" hx-include="#message-filter-form" hx-target="#message_data">
+                    <form id=messages-filter-form" method="get" hx-get="{% url 'fair:messages-dashboard' %}" hx-trigger="change"  hx-target="#message_data">
                         {{ filterform.as_p }}
                     </form>
                     <hr>

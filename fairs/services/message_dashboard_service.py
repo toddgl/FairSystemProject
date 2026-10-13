@@ -96,10 +96,15 @@ class MessageDashboardService:
         #
         # Default Fair
         #
-        if not queryset_filters:
+        if not fair:
+            # No fair was explicitly selected, so use the current fair.
             queryset_filters["fair"] = current_fair
-            queryset_filters["is_active"] = True
-            queryset_filters["is_archived"] = False
+
+            # Apply default status filters only when the convener
+            # has not explicitly selected a status.
+            if not (is_active or is_done or is_archived):
+                queryset_filters["is_active"] = True
+                queryset_filters["is_archived"] = False
 
         return MessageFilters(
             queryset_filters=queryset_filters,
