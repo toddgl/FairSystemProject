@@ -65,6 +65,11 @@ class MessageDashboardService:
         #
         if stallholder_id is not None:
             queryset_filters["stallholder_id"] = stallholder_id
+            alert_message = (
+                "There are no messages matching "
+                "the selected stallholder."
+            )
+            filter_message += f", stallholder ID {stallholder_id}"
 
         #
         # Comment Type
