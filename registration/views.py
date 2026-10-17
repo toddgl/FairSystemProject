@@ -4,6 +4,7 @@ import logging
 from django.utils import timezone
 from datetime import datetime, timedelta
 
+from django.db import transaction
 from django.contrib.auth.decorators import login_required, permission_required
 from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core.exceptions import ObjectDoesNotExist
@@ -90,6 +91,10 @@ from registration.services.pricing import get_registration_costs
 from registration.services.billing import RegistrationBillingService
 from registration.services.registration_update import build_update_context, update_registration
 from registration.controllers.convener_registration import ConvenerRegistrationController
+
+from registration.services.power_connections import (
+    sync_power_connections,
+)
 
 # Global Variables
 current_year = datetime.now().year
@@ -447,8 +452,11 @@ def stall_registration_create(request):
                 stall_registration.selling_food = True
 
             stall_registration.save()
+
             sync_legacy_power_flag(stall_registration)
             stall_registration.save(update_fields=["power_required"])
+
+            sync_power_connections(stall_registration)
 
             # attach preallocations
             if allocation_item:
@@ -600,6 +608,9 @@ def stall_registration_update_view(request, pk):
             form,
             obj,
         )
+
+        sync_power_connections(registration)
+
         if registration.selling_food:
             # 1. Manually resolve the URL path
             target_url = reverse("registration:food-registration", args=[registration.id])
@@ -1171,6 +1182,39 @@ def food_equipment_delete_view(request, parent_id=None, id=None):
 def convener_stall_registration_detail_view(request, id):
     controller = ConvenerRegistrationController(request, id)
     return controller.dispatch()
+
+
+class StallRegistrationSaveView(UpdateView):
+    model = StallRegistration
+    form_class = StallRegistrtionConvenerEditForm
+    template_name = "stallregistration/model_form.html"
+
+    def form_valid(self, form):
+        try:
+            with transaction.atomic():
+                self.object = form.save()
+                sync_power_connections(self.object)
+
+        except Exception:
+            db_logger.error(
+                'Failed to save registration or sync power connections form. %s',
+                form.errors.as_data(),
+                extra={'custom_category': 'Power'}
+            )
+            raise
+
+        response = HttpResponse()
+        response["HX-Trigger"] = "registrationUpdated"
+        return response
+
+    def form_invalid(self, form):
+        return render(
+            self.request,
+            self.template_name,
+            {"form": form},
+            status=400,
+        )
+
 
 class StallRegistrationSaveView(UpdateView):
     model = StallRegistration

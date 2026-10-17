@@ -500,6 +500,27 @@ class StallRegistration(models.Model):
         return str(self.booking_id)
 
     def clean(self):
+        super().clean()
+
+        caravan_quantity = self.caravan_socket_16a or 0
+        three_pin_quantity = self.three_pin_15a or 0
+
+        if caravan_quantity > 1:
+            raise ValidationError({
+                "caravan_socket_16a":
+                    "Only one 16A caravan socket connection is permitted."
+            })
+
+        if three_pin_quantity > 3:
+            raise ValidationError({
+                "three_pin_15a":
+                    "A maximum of three 15A connections is allowed."
+            })
+
+        if caravan_quantity + three_pin_quantity > 3:
+            raise ValidationError(
+                "A maximum of three fair-supplied connections is allowed."
+            )
 
         if not self.uses_electrical_equipment:
             self.power_source = PowerSource.NONE
@@ -511,11 +532,6 @@ class StallRegistration(models.Model):
         if self.power_source != PowerSource.FAIR:
             self.caravan_socket_16a = 0
             self.three_pin_15a = 0
-
-        if self.three_pin_15a > 3:
-            raise ValidationError(
-                {"three_pin_15a": "Maximum of 3 connections allowed."}
-            )
 
         if self.power_source == PowerSource.GENERATOR:
             self.generator_approval_requested = True
@@ -660,12 +676,24 @@ class PowerConnection(models.Model):
         return self.connection_type == PowerConnectionType.GENERATOR_REQUEST
 
     def save(self, *args, **kwargs):
-
-        if self.connection_type == PowerConnectionType.GENERATOR_REQUEST:
-            if self.generator_status == GeneratorApprovalStatus.NOT_REQUIRED:
-                self.generator_status = GeneratorApprovalStatus.PENDING
+        if (
+                self.connection_type
+                == PowerConnectionType.GENERATOR_REQUEST
+        ):
+            if (
+                    self.generator_status
+                    == GeneratorApprovalStatus.NOT_REQUIRED
+            ):
+                self.generator_status = (
+                    GeneratorApprovalStatus.PENDING
+                )
         else:
-            self.generator_status = GeneratorApprovalStatus.NOT_REQUIRED
+            self.generator_status = (
+                GeneratorApprovalStatus.NOT_REQUIRED
+            )
+            self.generator_approved_by = None
+            self.generator_approved_at = None
+            self.generator_notes = ""
 
         super().save(*args, **kwargs)
 

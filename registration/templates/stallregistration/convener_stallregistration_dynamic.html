@@ -105,6 +105,36 @@
 
         {% endif %}
 
+        {% if registrationform.power_source.value == "generator" %}
+
+            <div class="alert alert-warning mt-3" role="alert">
+                <h6 class="alert-heading">
+                    Generator use requires approval
+                </h6>
+
+                <p>
+                    This stallholder intends to use a generator.
+                    Fair-supplied electrical connections are not
+                    available for this selection.
+                </p>
+
+                <p class="mb-0">
+                    Review the generator approval section on the
+                    main registration detail page to approve or
+                    decline generator use and record any conditions.
+                </p>
+            </div>
+
+        {% elif registrationform.power_source.value == "battery" %}
+
+            <div class="alert alert-info mt-3" role="alert">
+                The stallholder has selected a solid-state power
+                source. Fair-supplied electrical connection fields
+                are not applicable to this selection.
+            </div>
+
+        {% endif %}
+
     {% endif %}
 
     {{ registrationupdateform.as_p }}

@@ -2,6 +2,14 @@
 
 import decimal
 
+from django.contrib import messages
+from django.contrib.auth.decorators import (
+    login_required,
+    permission_required,
+)
+from django.utils import timezone
+from django.views.decorators.http import require_POST
+
 from django.http import HttpResponse
 from django.template.response import TemplateResponse
 from django.shortcuts import get_object_or_404
@@ -9,11 +17,15 @@ from django.shortcuts import get_object_or_404
 from django_fsm import can_proceed
 
 from registration.models import (
+    GeneratorApprovalStatus,
     StallRegistration,
     FoodRegistration,
     AdditionalSiteRequirement,
     FoodPrepEquipReq,
     RegistrationComment,
+    PowerConnection,
+    PowerConnectionType,
+
 )
 
 from payment.models import (
@@ -209,6 +221,14 @@ class ConvenerRegistrationController:
             food_registration=food_registration
         ).first()
 
+    def build_power_connections(self):
+        return (
+            PowerConnection.objects
+            .filter(registration=self.registration)
+            .select_related("generator_approved_by")
+            .order_by("id")
+        )
+
     # ==================================================
     # EMAIL
     # ==================================================
@@ -340,6 +360,13 @@ class ConvenerRegistrationController:
             )
 
         # ----------------------------------------------
+        # Power Connections
+        # ----------------------------------------------
+
+        power_connections = self.build_power_connections()
+
+
+        # ----------------------------------------------
         # Data
         # ----------------------------------------------
 
@@ -463,6 +490,18 @@ class ConvenerRegistrationController:
 
             "additionalsiteform":
                 additionalsiteform,
+
+            "power_connections": power_connections,
+
+            "generator_connection_type": (
+                PowerConnectionType.GENERATOR_REQUEST
+            ),
+
+            "generator_status_choices": [
+                choice
+                for choice in GeneratorApprovalStatus.choices
+                if choice[0] != GeneratorApprovalStatus.NOT_REQUIRED
+            ],
         }
 
         # The existing template uses this separately
@@ -486,6 +525,10 @@ class ConvenerRegistrationController:
         # ----------------------------------------------
 
         if self.request.method == "POST":
+
+            # Power / generator
+            if "save_generator_approval" in self.request.POST:
+                return self.handle_generator_approval()
 
             # Registration / food update
             if "update" in self.request.POST:
@@ -791,6 +834,63 @@ class ConvenerRegistrationController:
 
         response["HX-Refresh"] = "true"
 
+        return response
+
+    # ==================================================
+    # SAVE GENERATOR APPROVAL
+    # ==================================================
+
+    def handle_generator_approval(self):
+        connection_id = self.request.POST.get("connection_id")
+        status = self.request.POST.get("generator_status")
+        notes = self.request.POST.get("generator_notes", "").strip()
+
+        # Only permit a connection belonging to this registration.
+        connection = get_object_or_404(
+            PowerConnection,
+            pk=connection_id,
+            registration=self.registration,
+            connection_type=PowerConnectionType.GENERATOR_REQUEST,
+        )
+
+        # Never accept NOT_REQUIRED for a generator request.
+        allowed_statuses = {
+            GeneratorApprovalStatus.PENDING,
+            GeneratorApprovalStatus.APPROVED,
+            GeneratorApprovalStatus.DECLINED,
+        }
+
+        if status not in allowed_statuses:
+            messages.error(
+                self.request,
+                "Please select a valid generator approval status.",
+            )
+            return self.render()
+
+        # Save the decision and its associated notes together.
+        connection.generator_status = status
+        connection.generator_notes = notes
+
+        if status in {
+            GeneratorApprovalStatus.APPROVED,
+            GeneratorApprovalStatus.DECLINED,
+        }:
+            connection.generator_approved_by = self.request.user
+            connection.generator_approved_at = timezone.now()
+        else:
+            # Pending means no current final decision.
+            connection.generator_approved_by = None
+            connection.generator_approved_at = None
+
+        connection.save()
+
+        messages.success(
+            self.request,
+            "Generator approval details have been saved.",
+        )
+
+        response = HttpResponse()
+        response["HX-Refresh"] = "true"
         return response
 
     # ==================================================

@@ -92,6 +92,136 @@
               <li class="list-group-item"><strong>Number of Trestles Required:</strong> {{ stall_registration.trestle_quantity }}</li>
             {% endif %}
           </ul>
+            {% if power_connections %}
+            <hr>
+
+            <div class="card mb-3">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0 text-primary">
+                        Power Connections and Generator Approval
+                    </h5>
+                </div>
+
+                <div class="card-body">
+                    {% for connection in power_connections %}
+
+                        {% if connection.connection_type == generator_connection_type %}
+
+                            <div class="card mb-3 border-warning">
+                                <div class="card-header bg-warning-subtle">
+                                    <strong>Generator Approval Required</strong>
+                                    <span class="badge
+                                        {% if connection.generator_status == 'approved' %}
+                                            bg-success
+                                        {% elif connection.generator_status == 'declined' %}
+                                            bg-danger
+                                        {% else %}
+                                            bg-warning text-dark
+                                        {% endif %}">
+                                        {{ connection.get_generator_status_display }}
+                                    </span>
+                                </div>
+
+                                <div class="card-body">
+                                    <p>
+                                        <strong>Quantity:</strong>
+                                        {{ connection.quantity }}
+                                    </p>
+
+                                    {% if connection.generator_approved_by %}
+                                        <p>
+                                            <strong>Last decision by:</strong>
+                                            {{ connection.generator_approved_by }}
+                                        </p>
+                                    {% endif %}
+
+                                    {% if connection.generator_approved_at %}
+                                        <p>
+                                            <strong>Decision date:</strong>
+                                            {{ connection.generator_approved_at|date:"d M Y H:i" }}
+                                        </p>
+                                    {% endif %}
+
+                                    {% if connection.generator_notes %}
+                                        <div class="alert alert-light border">
+                                            <strong>Approval notes / conditions:</strong>
+                                            <p class="mb-0">
+                                                {{ connection.generator_notes|linebreaksbr }}
+                                            </p>
+                                        </div>
+                                    {% endif %}
+
+                                    <form method="post"
+                                          hx-post="{% url 'registration:convener-stall-food-registration-detail' stall_registration.pk %}"
+                                          hx-swap="none">
+
+                                        {% csrf_token %}
+
+                                        <input type="hidden"
+                                               name="connection_id"
+                                               value="{{ connection.pk }}">
+
+                                        <div class="mb-3">
+                                            <label class="form-label"
+                                                   for="generator_status_{{ connection.pk }}">
+                                                Approval decision
+                                            </label>
+
+                                            <select class="form-select"
+                                                    name="generator_status"
+                                                    id="generator_status_{{ connection.pk }}"
+                                                    required>
+                                                {% for value, label in generator_status_choices %}
+                                                    <option value="{{ value }}"
+                                                        {% if connection.generator_status == value %}
+                                                            selected
+                                                        {% endif %}>
+                                                        {{ label }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+
+                                        <div class="mb-3">
+                                            <label class="form-label"
+                                                   for="generator_notes_{{ connection.pk }}">
+                                                Approval notes / conditions
+                                            </label>
+
+                                            <textarea class="form-control"
+                                                      name="generator_notes"
+                                                      id="generator_notes_{{ connection.pk }}"
+                                                      rows="4"
+                                                      placeholder="Record approval conditions or reasons for declining">{{ connection.generator_notes }}</textarea>
+                                        </div>
+
+                                        <button type="submit"
+                                                name="save_generator_approval"
+                                                value="1"
+                                                class="btn btn-primary">
+                                            Save Generator Decision
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+
+                        {% else %}
+
+                            <div class="list-group-item">
+                                <strong>Connection:</strong>
+                                {{ connection.get_connection_type_display }}
+                                &mdash;
+                                <strong>Quantity:</strong>
+                                {{ connection.quantity }}
+                            </div>
+
+                        {% endif %}
+
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
           <hr>
           {% if stall_registration.vehicle_on_site %}
           <ul class="list-group list-group-flush">

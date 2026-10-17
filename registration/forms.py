@@ -526,7 +526,6 @@ class StallRegistrationForm(ModelForm):
             cleaned_data["power_source"] = PowerSource.NONE
             cleaned_data["caravan_socket_16a"] = 0
             cleaned_data["three_pin_15a"] = 0
-            return cleaned_data
 
         # -------------------------------
         # Not Fair power
@@ -709,11 +708,13 @@ class StallRegistrtionConvenerEditForm(ModelForm):
     caravan_socket_16a = IntegerField(
         required=False,
         min_value=0,
+        max_value=1,
         initial=1,
         label="16A Caravan Socket supply",
         widget=NumberInput(attrs={
             "class": "form-control",
-            "max": 5,
+            "min": 0,
+            "max": 1,
             "style": "max-width:120px;",
         }),
     )
@@ -786,6 +787,53 @@ class StallRegistrtionConvenerEditForm(ModelForm):
                 'class': 'form-check-input',
             }),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        uses_electrical_equipment = cleaned_data.get(
+            "uses_electrical_equipment", False
+        )
+        power_source = cleaned_data.get("power_source")
+
+        caravan_quantity = cleaned_data.get("caravan_socket_16a") or 0
+        three_pin_quantity = cleaned_data.get("three_pin_15a") or 0
+
+        if (
+                not uses_electrical_equipment
+                or power_source == PowerSource.NONE
+        ):
+            cleaned_data["uses_electrical_equipment"] = False
+            cleaned_data["power_source"] = PowerSource.NONE
+            cleaned_data["caravan_socket_16a"] = 0
+            cleaned_data["three_pin_15a"] = 0
+            return cleaned_data
+
+        if power_source == PowerSource.FAIR:
+            if caravan_quantity > 1:
+                self.add_error(
+                    "caravan_socket_16a",
+                    "Only one 16A caravan socket connection is permitted.",
+                )
+
+            if caravan_quantity + three_pin_quantity < 1:
+                raise forms.ValidationError(
+                    "Select at least one fair-supplied power connection."
+                )
+
+            if caravan_quantity + three_pin_quantity > 3:
+                raise forms.ValidationError(
+                    "A maximum of three fair-supplied connections is allowed."
+                )
+        else:
+            cleaned_data["caravan_socket_16a"] = 0
+            cleaned_data["three_pin_15a"] = 0
+
+        # Ensure blank optional integer fields are saved as zero.
+        cleaned_data["caravan_socket_16a"] = caravan_quantity
+        cleaned_data["three_pin_15a"] = three_pin_quantity
+
+        return cleaned_data
 
     def build_registration_preview(self):
         """
