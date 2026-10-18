@@ -2,6 +2,9 @@
 
 import decimal
 
+from django.db import transaction
+from registration.services.power_connections import sync_power_connections
+
 from django.contrib import messages
 from django.contrib.auth.decorators import (
     login_required,
@@ -804,23 +807,28 @@ class ConvenerRegistrationController:
         # Save registration and M2M data
         # ----------------------------------------------
 
-        registration.save()
+        with transaction.atomic():
+            registration.save()
 
-        form.save_m2m()
+            form.save_m2m()
 
-        # ----------------------------------------------
-        # Save food registration
-        # ----------------------------------------------
+            # Synchronise PowerConnection records with the
+            # saved registration selections.
+            sync_power_connections(registration)
 
-        if food_form:
+            # ----------------------------------------------
+            # Save food registration
+            # ----------------------------------------------
 
-            if food_form.is_valid():
+            if food_form:
 
-                food_form.save()
+                if food_form.is_valid():
 
-            else:
+                    food_form.save()
 
-                return self.render_partial(
+                else:
+
+                    return self.render_partial(
                     form,
                     None,
                     food_form
