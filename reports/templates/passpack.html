@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+https://martinboroughfair.org.nz/terms-and-conditions/<!DOCTYPE html>
 {% load static %}
 {% load getpower_trestle_tag %}
 
@@ -47,6 +47,7 @@
     <tbody>
     {% get_has_trestles stall_registration.id as has_trestles_result %}
     {% get_has_power stall_registration.id as has_power_result %}
+    {% get_is_generator stall_registration.id as is_generator %}
     {% for site in site_list %}
       <tr>
         <td>Site {{ site.allocated_site_name }}, {{ site.allocated_site_location }} ({{ site.allocated_site_size }})</td>
@@ -93,15 +94,55 @@
     {% endif %}
     </div>
   {% endif %}
-  {%if has_power_result %}
-    <h5>Power</h5>
+  {% if has_power_result %}
+  <h5>Power</h5>
+
+  {% if is_generator %}
+    <p><strong>Power source:</strong> Generator</p>
+
+    {% if generator_approval_record_missing %}
+      <p><strong>Approval status:</strong>
+        No generator approval record found. Please contact the Fair.
+      </p>
+    {% else %}
+      {% for generator in generator_requests %}
+        <p>
+          <strong>Approval status:</strong>
+          {{ generator.generator_status }}
+        </p>
+      {% endfor %}
+    {% endif %}
+
+  {% elif is_fair_power %}
     <p>
-      Note: Please ensure you have read the terms and conditions relating to use of power points, the protection of cables and site safety.
+      <strong>Power supply:</strong>
+      {{ powerbox_description }}
     </p>
-    <p>
-      Your power will be supplied from the {{ powerbox_description }}
-    </p>
+
+    <table class="power-table">
+      <thead>
+        <tr>
+          <th>Connection type</th>
+          <th>Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for connection in power_connection_details %}
+          <tr>
+            <td>{{ connection.connection_type }}</td>
+            <td>{{ connection.quantity }}</td>
+          </tr>
+        {% empty %}
+          <tr>
+            <td colspan="2">
+              No Fair-supplied connection details recorded.
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
   {% endif %}
+{% endif %}
   {% if stall_registration.selling_food %}
   <h5>Selling Food Products</h5>
   <p>
@@ -112,10 +153,10 @@
   </p>
   {% endif %}
   <p class="mb-4">
-    <a href="https://martinboroughfair.org.nz/files/16/Information-sheets/22/Stallholder-information.pdf?preview=1" target="_blank">Teams and Conditions</a>
+    <a href="https://martinboroughfair.org.nz/terms-and-conditions/" target="_blank">Teams and Conditions</a>
   </p>
   <p class="mb-4">
-    <a href="https://martinboroughfair.org.nz/files/24/Marking-out-maps/115/MB-Overview-2025.pdf" target="_blank">View the Fair Layout here</a>
+    <a href="https://martinboroughfair.org.nz/fair-layout-and-maps/" target="_blank">View the Fair Layout here</a>
   </p>
 
   <p>See you at the Fair!</p>

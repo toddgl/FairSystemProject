@@ -401,51 +401,84 @@ def trestle_distribution_report(request, event):
     return response
 
 
-
-
 def fair_passpack_generator(request, stallregistration):
     """
-    Generate a fair passpack PDF for a stallregistration
+    Generate a fair passpack PDF for a stall registration,
+    including power connection details and generator approval.
     """
-
     report_date = datetime.datetime.now()
-
     current_fair = Fair.currentfairmgr.last()
 
-    # ✅ fetch registration object
+    # Fetch the registration.
     stall_registration = get_object_or_404(
         StallRegistration,
-        id=stallregistration
+        id=stallregistration,
     )
 
-    # ✅ build optimized passpack data
+    # Determine the power source.
+    power_source = stall_registration.power_source
+    is_generator = power_source == "generator"
+    is_fair_power = power_source == "fair"
+
+    # Retrieve associated power connection records.
+    power_connections = (
+        stall_registration.power_connections
+        .all()
+        .order_by("id")
+    )
+
+    power_connection_details = []
+    generator_requests = []
+
+    # Process power connections ONLY in this loop.
+    for connection in power_connections:
+        connection_type = connection.get_connection_type_display()
+
+        if connection.connection_type == "generator":
+            generator_requests.append({
+                "connection_type": connection_type,
+                "quantity": connection.quantity,
+                "is_generator": True,
+                "generator_status":
+                    connection.get_generator_status_display(),
+                "generator_status_code":
+                    connection.generator_status,
+                "generator_notes": connection.generator_notes,
+            })
+
+        elif is_fair_power:
+            power_connection_details.append({
+                "connection_type": connection_type,
+                "quantity": connection.quantity,
+                "is_generator": False,
+            })
+
+    # Build passpack site data ONCE, outside the loop.
     site_list = StallRegistration.passpack.build_passpack(
         stallregistration,
-        current_fair
+        current_fair,
     )
 
     current_event = current_fair.current_event
 
     current_event_site = next(
         (
-            s for s in site_list
-            if s["allocated_event_name"] == current_event.event_name
+            site for site in site_list
+            if site["allocated_event_name"] == current_event.event_name
         ),
-        None
+        None,
     )
 
-    # ✅ fetch profile (required by template)
+    # Fetch the stallholder profile.
     profile = get_object_or_404(
         Profile,
-        user=stall_registration.stallholder
+        user=stall_registration.stallholder,
     )
 
-    # -----------------------------
-    # Build zone map URLs
-    # -----------------------------
+    # Build zone map URLs.
     current_site = get_current_site(request)
     domain = current_site.domain
-    protocol = 'https' if request.is_secure() else 'http'
+    protocol = "https" if request.is_secure() else "http"
 
     for site in site_list:
         if site["zone_map_path"]:
@@ -455,94 +488,76 @@ def fair_passpack_generator(request, stallregistration):
         else:
             site["zone_map_url"] = None
 
-    # -----------------------------
-    # Extract shared logistics
-    # -----------------------------
+    # Extract shared logistics.
     powerbox_description = next(
-        (s["powerbox_description"] for s in site_list if s["powerbox_description"]),
+        (
+            site["powerbox_description"]
+            for site in site_list
+            if site["powerbox_description"]
+        ),
         None,
     )
 
     trestle_source = next(
-        (s["trestle_source"] for s in site_list if s["trestle_source"]),
+        (
+            site["trestle_source"]
+            for site in site_list
+            if site["trestle_source"]
+        ),
         None,
     )
 
-    # -----------------------------
-    # TEMPLATE CONTEXT  ✅ (missing piece)
-    # -----------------------------
+    # Build template context.
     context = {
         "report_date": report_date,
         "stall_registration": stall_registration,
         "site_list": site_list,
         "profile": profile,
         "current_fair": current_fair,
-        "powerbox_description":
+
+        "powerbox_description": (
             current_event_site["powerbox_description"]
-            if current_event_site else None,
-        "trestle_source":
+            if current_event_site else None
+        ),
+        "trestle_source": (
             current_event_site["trestle_source"]
-            if current_event_site else None,
+            if current_event_site else None
+        ),
+
+        # Power information.
+        "power_source": power_source,
+        "is_generator": is_generator,
+        "is_fair_power": is_fair_power,
+        "power_connection_details": power_connection_details,
+        "generator_requests": generator_requests,
+        "generator_approval_record_missing": (
+            is_generator and not generator_requests
+        ),
     }
 
-    # -----------------------------
-    # Render PDF
-    # -----------------------------
-    filename = f"fair_passpack_for_stallregid{stallregistration}.pdf"
+    # Render PDF ONCE.
+    filename = (
+        f"fair_passpack_for_stallregid{stallregistration}.pdf"
+    )
 
     html_template = get_template("passpack.html").render(context)
 
     pdf_file = HTML(
         string=html_template,
-        base_url=request.build_absolute_uri()
+        base_url=request.build_absolute_uri(),
     ).write_pdf()
 
-    response = HttpResponse(pdf_file, content_type="application/pdf")
-    response["Content-Disposition"] = f'inline; filename="{filename}"'
-
-    return response
-
-
-
-def food_stall_site_report(request, event):
-    """
-    Report to produce a listing of the food stallholders and their site for a specific fair event.
-    Required the event to be selected
-    """
-    current_fair = Fair.currentfairmgr.all().last()
-    event_data = Event.objects.get(id=event)
-    # Queryset for StallRegistration
-    site_information = StallRegistration.registrationcurrentallmgr.filter(
-        site_allocation__event_site__event__fair=current_fair,
-        site_allocation__event_site__event=event,
-        selling_food=True,
-        booking_status='Booked'
-    ).select_related('stallholder').annotate(
-        allocated_zone_name=F('site_allocation__event_site__site__zone__zone_name'),
-        allocated_site_name=F('site_allocation__event_site__site__site_name'),
-    ).values(
-        'stallholder__first_name',
-        'stallholder__last_name',
-        'allocated_zone_name',
-        'allocated_site_name',
-        'stall_description',
-        'products_on_site',
-    ).order_by(
-        'allocated_site_name'
+    response = HttpResponse(
+        pdf_file,
+        content_type="application/pdf",
+    )
+    response["Content-Disposition"] = (
+        f'inline; filename="{filename}"'
     )
 
-    context ={
-        'site_information': site_information,
-        'event_data': event_data
-    }
-
-    filename= f'food_stall_{event_data.event_name}_report.pdf'
-
-    html_template = get_template('foodstalllist.html').render(context)
-    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = f'filename="{filename}"'
     return response
+
+
 
 def stall_search_report(request, event):
     """
