@@ -135,17 +135,47 @@
                  {{ site.stall_manager_name }}
              </div>
          </div>
-         {% if site.power_required %}
-         <div class="row">
-             <!-- Site Notes -->
-             <div class="col-2">
-                 <h6>PowerBox Name:</h6>
-             </div>
-             <div class="col-10">
-                 {{ site.allocated_powerbox_name}} - {{ site.allocated_powerbox_description }}
-             </div>
-         </div>
-         {% endif %}
+        {% if site.power_required %}
+        <div class="row">
+            <div class="col-2">
+                <h6>Powerbox:</h6>
+            </div>
+            <div class="col-10">
+                {{ site.allocated_powerbox_name }}
+                - {{ site.allocated_powerbox_description }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if site.power_source %}
+        <div class="row">
+            <div class="col-2">
+                <h6>Power:</h6>
+            </div>
+
+            <div class="col-10">
+                {{ site.power_summary }}
+
+                {% if site.power_source == "fair" %}
+                    {% for connection in site.fair_power_connections %}
+                        {% if not forloop.first %}; {% endif %}
+                        {{ connection.quantity }} x {{ connection.connection_type }}
+                    {% endfor %}
+                {% endif %}
+
+                {% if site.power_source == "generator" %}
+                    {% if site.generator_approval_status %}
+                        - <strong>{{ site.generator_approval_status }}</strong>
+                    {% endif %}
+
+                    {% if site.generator_approval_notes %}
+                        <br>
+                        Approval note: {{ site.generator_approval_notes }}
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
         <div class="row">
             <!-- Site Notes -->
             <div class="col-2">

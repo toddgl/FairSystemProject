@@ -33,12 +33,12 @@ from fairs.models import (
 )
 
 from registration.models import(
-    StallRegistration
+    StallRegistration,
+    PowerConnection
 )
 from .services.site_allocation_audit_service import (
     SiteAllocationAuditService
 )
-
 
 def reports_listview(request):
     """
@@ -326,6 +326,7 @@ def marshall_zone_report(request, zone, event):
         'selling_food',
         'vehicle_on_site',
         'power_required',
+        'power_source',
         'stall_manager_name',
         'allocated_site_name',
         'allocated_site_size',
@@ -347,6 +348,120 @@ def marshall_zone_report(request, zone, event):
     ).order_by(
         'allocated_site_name'
     )
+
+    # Evaluate the existing site query once.
+    site_information = list(site_information)
+
+    # Build a lookup of connection-type and generator-status display labels.
+    connection_type_labels = dict(
+        PowerConnection._meta.get_field('connection_type').choices
+    )
+
+    generator_status_labels = dict(
+        PowerConnection._meta.get_field('generator_status').choices
+    )
+
+    # Get the IDs of the registrations included in this report.
+    registration_ids = [site['id'] for site in site_information]
+
+    # Retrieve all power connections for these registrations in one query.
+    power_connections = PowerConnection.objects.filter(
+        registration_id__in=registration_ids
+    ).values(
+        'registration_id',
+        'connection_type',
+        'quantity',
+        'generator_status',
+        'generator_notes',
+    ).order_by('registration_id', 'id')
+
+    # Group the power connections by registration.
+    connections_by_registration = {}
+
+    for connection in power_connections:
+        registration_id = connection['registration_id']
+
+        connections_by_registration.setdefault(
+            registration_id, []
+        ).append(connection)
+
+    # Add presentation-ready power information to each site dictionary.
+    for site in site_information:
+        power_source = site.get('power_source')
+        connections = connections_by_registration.get(site['id'], [])
+
+        site['power_summary'] = ''
+        site['generator_approval_status'] = ''
+        site['generator_approval_notes'] = ''
+        site['fair_power_connections'] = []
+
+        if power_source == 'none':
+            site['power_summary'] = 'No electrical equipment'
+
+        elif power_source == 'battery':
+            site['power_summary'] = 'Battery power'
+
+        elif power_source == 'fair':
+            site['power_summary'] = 'Fair-supplied power'
+
+            # Only show actual fair-supplied connection types.
+            fair_connections = [
+                connection
+                for connection in connections
+                if connection['connection_type'] in ('fair_16a', 'fair_15a')
+            ]
+
+            for connection in fair_connections:
+                connection_type = connection['connection_type']
+                connection_label = connection_type_labels.get(
+                    connection_type,
+                    connection_type,
+                )
+
+                site['fair_power_connections'].append({
+                    'connection_type': connection_label,
+                    'quantity': connection['quantity'],
+                })
+
+            # Highlight registrations whose connection records are missing.
+            if not site['fair_power_connections']:
+                site['power_summary'] = (
+                    'FAIR POWER REQUESTED - NO CONNECTION DETAILS RECORDED'
+                )
+
+        elif power_source == 'generator':
+            site['power_summary'] = 'Generator'
+
+            # Find the generator request, if one exists.
+            generator_connections = [
+                connection
+                for connection in connections
+                if connection['connection_type'] == 'generator'
+            ]
+
+            if generator_connections:
+                generator = generator_connections[0]
+
+                status = generator['generator_status']
+                site['generator_approval_status'] = (
+                    generator_status_labels.get(status, status or '')
+                )
+
+                site['generator_approval_notes'] = (
+                    generator['generator_notes'] or ''
+                )
+
+            else:
+                # Missing data must not be interpreted as approval.
+                site['generator_approval_status'] = (
+                    'APPROVAL RECORD MISSING'
+                )
+
+    context = {
+        'site_information': site_information,
+        'zone_data': zone_data,
+        'event_data': event_data,
+    }
 
     context ={
         'site_information': site_information,
@@ -795,5 +910,46 @@ def export_site_allocation_audit_pdf(request):
     response["Content-Disposition"] = (
         'attachment; filename="site-allocation-audit.pdf"'
     )
+
+    return response
+
+def food_stall_site_report(request, event):
+    """
+    Report to produce a listing of the food stallholders and their site for a specific fair event.
+    Required the event to be selected
+    """
+    current_fair = Fair.currentfairmgr.all().last()
+    event_data = Event.objects.get(id=event)
+    # Queryset for StallRegistration
+    site_information = StallRegistration.registrationcurrentallmgr.filter(
+        site_allocation__event_site__event__fair=current_fair,
+        site_allocation__event_site__event=event,
+        selling_food=True,
+        booking_status='Booked'
+    ).select_related('stallholder').annotate(
+        allocated_zone_name=F('site_allocation__event_site__site__zone__zone_name'),
+        allocated_site_name=F('site_allocation__event_site__site__site_name'),
+    ).values(
+        'stallholder__first_name',
+        'stallholder__last_name',
+        'allocated_zone_name',
+        'allocated_site_name',
+        'stall_description',
+        'products_on_site',
+    ).order_by(
+        'allocated_site_name'
+    )
+
+    context ={
+        'site_information': site_information,
+        'event_data': event_data
+    }
+
+    filename= f'food_stall_{event_data.event_name}_report.pdf'
+
+    html_template = get_template('foodstalllist.html').render(context)
+    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    response = HttpResponse(pdf_file, content_type='application/pdf')
+    response['Content-Disposition'] = f'filename="{filename}"'
 
     return response
