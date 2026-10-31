@@ -1016,3 +1016,93 @@ def remove_food_registration(sender, instance, **kwargs):
             FoodRegistration.objects.create(registration=instance)
         elif original_instance.selling_food and not instance.selling_food:
             FoodRegistration.objects.filter(registration=instance).delete()
+
+
+class ReviewErrorType(models.Model):
+    """
+    Configurable catalogue of issues that may be identified
+    when a convener reviews a stall registration.
+    """
+
+    name = models.CharField(
+        max_length=100,
+        unique=True,
+        verbose_name="Issue name",
+    )
+
+    abbreviation = models.CharField(
+        max_length=5,
+        unique=True,
+        verbose_name="Abbreviation",
+        help_text="Short code displayed on the registration list.",
+    )
+
+    description = models.TextField(
+        blank=True,
+        verbose_name="Description",
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        verbose_name="Active",
+        help_text="Inactive issue types are hidden from new selections.",
+    )
+
+    class Meta:
+        ordering = ["name"]
+        verbose_name = "Review issue type"
+        verbose_name_plural = "Review issue types"
+
+    def __str__(self):
+        return f"{self.name} ({self.abbreviation})"
+
+
+class RegistrationReview(models.Model):
+    """
+    Current convener review decision for a stall registration.
+    """
+
+    class ReviewStatus(models.TextChoices):
+        NOT_REVIEWED = "not_reviewed", "Not reviewed"
+        OK = "ok", "OK"
+        ISSUES = "issues", "Issues to resolve"
+
+    registration = models.OneToOneField(
+        "registration.StallRegistration",
+        on_delete=models.CASCADE,
+        related_name="application_review",
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=ReviewStatus.choices,
+        default=ReviewStatus.NOT_REVIEWED,
+        db_index=True,
+    )
+
+    issue_types = models.ManyToManyField(
+        ReviewErrorType,
+        blank=True,
+        related_name="registration_reviews",
+    )
+
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="stall_registration_reviews",
+    )
+
+    reviewed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    updated_at = models.DateTimeField(
+        auto_now=True,
+    )
+
+    class Meta:
+        verbose_name = "Registration review"
+        verbose_name_plural = "Registration reviews"

@@ -18,6 +18,41 @@
                     </div>
                     <ul class="list-group list-group-flush">
                         <li class="list-group-item"><strong>Application ID:</strong> {{ item.id }}</li>
+                        <li class="list-group-item">
+                            <strong>Review:</strong>
+
+                            {% if item.application_review %}
+
+                                {% if item.application_review.status == "ok" %}
+
+                                    <span class="badge bg-success">OK</span>
+
+                                {% elif item.application_review.status == "issues" %}
+
+                                    <span class="badge bg-danger">Issues</span>
+
+                                    {% for issue in item.application_review.issue_types.all %}
+                                        <span class="badge bg-danger">
+                                            {{ issue.abbreviation }}
+                                        </span>
+                                    {% endfor %}
+
+                                {% else %}
+
+                                    <span class="badge bg-secondary">
+                                        Not reviewed
+                                    </span>
+
+                                {% endif %}
+
+                            {% else %}
+
+                                <span class="badge bg-secondary">
+                                    Not reviewed
+                                </span>
+
+                            {% endif %}
+                        </li>
                         <li class="list-group-item"><strong>Created Date:</strong> {{ item.date_created }}</li>
                         <li class="list-group-item"><strong>Stall Category:</strong> {{ item.stall_category }}</li>
                         <li class="list-group-item"><strong>Site Size:</strong> {{ item.site_size }}</li>

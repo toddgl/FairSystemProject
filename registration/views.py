@@ -299,10 +299,14 @@ def stall_registration_listview(request):
         base_qs
         .filter(**query_filters)
         .order_by("stall_category")
+        .select_related(
+            "application_review",
+        )
         .prefetch_related(
-            'site_allocation',
-            'additional_sites_required',
-            'food_registration__food_licence',
+            "site_allocation",
+            "additional_sites_required",
+            "food_registration__food_licence",
+            "application_review__issue_types",
         )
     )
 
@@ -335,7 +339,14 @@ def stall_registration_listview(request):
                 StallRegistration.objects
                 .filter(**query_filters)
                 .order_by("stall_category")
-                .prefetch_related('site_allocation', 'additional_sites_required')
+                .select_related(
+                    "application_review",
+                )
+                .prefetch_related(
+                    "site_allocation",
+                    "additional_sites_required",
+                    "application_review__issue_types",
+                )
             )
             filtered_data = apply_special_filters(filtered_data, filter_params)
 

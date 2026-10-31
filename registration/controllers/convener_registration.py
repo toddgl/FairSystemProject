@@ -28,7 +28,8 @@ from registration.models import (
     RegistrationComment,
     PowerConnection,
     PowerConnectionType,
-
+    RegistrationReview,
+    ReviewErrorType
 )
 
 from payment.models import (
@@ -50,6 +51,7 @@ from registration.forms import (
     CommentReplyForm,
     RegistrationDiscountForm,
     AdditionalSiteReqForm,
+    RegistrationReviewForm,
 )
 
 from accounts.models import Profile
@@ -292,6 +294,28 @@ class ConvenerRegistrationController:
         )
 
     # ==================================================
+    # APPLICATION REVIEW
+    # ==================================================
+
+    def build_review_data(self):
+        """
+        Return the current review record, if one exists,
+        together with a form for creating or updating it.
+        """
+
+        review = (
+            RegistrationReview.objects
+            .filter(registration=self.registration)
+            .first()
+        )
+
+        form = RegistrationReviewForm(
+            instance=review,
+        )
+
+        return review, form
+
+    # ==================================================
     # CONTEXT
     # ==================================================
 
@@ -361,6 +385,14 @@ class ConvenerRegistrationController:
             additionalsiteform = (
                 self.build_additional_site_form()
             )
+
+        # ----------------------------------------------
+        # Application Review
+        # ----------------------------------------------
+
+        application_review, review_form = (
+            self.build_review_data()
+        )
 
         # ----------------------------------------------
         # Power Connections
@@ -505,6 +537,11 @@ class ConvenerRegistrationController:
                 for choice in GeneratorApprovalStatus.choices
                 if choice[0] != GeneratorApprovalStatus.NOT_REQUIRED
             ],
+
+            # Application Review
+            "application_review": application_review,
+            "review_form": review_form,
+            "review_status_choices": RegistrationReview.ReviewStatus.choices,
         }
 
         # The existing template uses this separately
@@ -528,6 +565,10 @@ class ConvenerRegistrationController:
         # ----------------------------------------------
 
         if self.request.method == "POST":
+
+            # Application review
+            if "save_application_review" in self.request.POST:
+                return self.handle_application_review()
 
             # Power / generator
             if "save_generator_approval" in self.request.POST:
@@ -750,6 +791,63 @@ class ConvenerRegistrationController:
             billing,
             food_form
         )
+
+    # ==================================================
+    # SAVE APPLICATION REVIEW
+    # ==================================================
+
+    def handle_application_review(self):
+        """
+        Create or update the current review decision.
+
+        This operation does not alter the registration's
+        booking status, invoice, or site allocations.
+        """
+
+        review, _ = self.build_review_data()
+
+        form = RegistrationReviewForm(
+            self.request.POST,
+            instance=review,
+        )
+
+        if not form.is_valid():
+            return TemplateResponse(
+                self.request,
+                "stallregistration/application_review_form_partial.html",
+                {
+                    "review_form": form,
+                    "stall_registration": self.registration,
+                },
+                status=400,
+            )
+
+        review = form.save(commit=False)
+
+        review.registration = self.registration
+
+        if review.status == "not_reviewed":
+            review.reviewed_by = None
+            review.reviewed_at = None
+        else:
+            review.reviewed_by = self.request.user
+            review.reviewed_at = timezone.now()
+
+        review.save()
+
+        # Update the many-to-many issue types.
+        # An OK or Not Reviewed decision clears existing issues.
+        form.save_m2m()
+
+        messages.success(
+            self.request,
+            "Application review has been saved.",
+        )
+
+        response = HttpResponse()
+        response["HX-Refresh"] = "true"
+
+        return response
 
     # ==================================================
     # SAVE REGISTRATION

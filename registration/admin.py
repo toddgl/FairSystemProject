@@ -11,6 +11,8 @@ from .models import (
     CommentType,
     RegistrationComment,
     PowerConnection,
+    RegistrationReview,
+    ReviewErrorType
 )
 
 # Register your models here.
@@ -24,6 +26,8 @@ myModels = [
     CommentType,
     RegistrationComment,
     PowerConnection,
+    RegistrationReview,
+    ReviewErrorType
 ]
 # iterable list
 admin.site.register(myModels)

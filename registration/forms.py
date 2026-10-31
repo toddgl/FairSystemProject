@@ -39,6 +39,8 @@ from registration.models import (
     CommentType,
     AdditionalSiteRequirement,
     PowerSource,
+    RegistrationReview,
+    ReviewErrorType,
 )
 
 from registration.services.pricing import get_registration_costs
@@ -1468,5 +1470,54 @@ class RegistrationDiscountForm(ModelForm):
                 'placeholder': 'Discount Amount'
             })
         }
+
+
+class RegistrationReviewForm(forms.ModelForm):
+
+    class Meta:
+        model = RegistrationReview
+
+        fields = (
+            "status",
+            "issue_types",
+        )
+
+        widgets = {
+            "status": forms.RadioSelect(),
+            "issue_types": forms.CheckboxSelectMultiple(),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields["status"].label = "Review outcome"
+
+        self.fields["issue_types"].label = (
+            "Issues requiring resolution"
+        )
+
+        self.fields["issue_types"].queryset = (
+            ReviewErrorType.objects.filter(is_active=True)
+            .order_by("name")
+        )
+
+        self.fields["issue_types"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        status = cleaned_data.get("status")
+        issue_types = cleaned_data.get("issue_types")
+
+        if status == "issues" and not issue_types:
+            self.add_error(
+                "issue_types",
+                "Please select at least one issue when the outcome is Issues."
+            )
+
+        if status in ("ok", "not_reviewed"):
+            cleaned_data["issue_types"] = []
+
+        return cleaned_data
 
 

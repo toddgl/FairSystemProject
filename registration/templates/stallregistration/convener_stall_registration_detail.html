@@ -49,6 +49,62 @@
 
 <div>
     <h3>Booking Status: {{ stall_registration.booking_status }}</h3>
+    <div class="mb-3">
+    <strong>Application Review:</strong>
+
+    {% if application_review %}
+
+        {% if application_review.status == "ok" %}
+            <span class="badge bg-success">OK</span>
+
+        {% elif application_review.status == "issues" %}
+            <span class="badge bg-danger">Issues</span>
+
+        {% else %}
+            <span class="badge bg-secondary">Not reviewed</span>
+        {% endif %}
+
+        {% if application_review.status == "issues" %}
+            <div class="mt-2">
+                {% for issue in application_review.issue_types.all %}
+                    <span class="badge bg-danger">
+                        {{ issue.abbreviation }}
+                    </span>
+                {% empty %}
+                    <span class="text-muted">
+                        No issue types recorded.
+                    </span>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        {% if application_review.reviewed_by %}
+            <small class="text-muted d-block mt-1">
+                Last reviewed by {{ application_review.reviewed_by }}
+                {% if application_review.reviewed_at %}
+                    on {{ application_review.reviewed_at|date:"d M Y H:i" }}
+                {% endif %}
+            </small>
+        {% endif %}
+
+    {% else %}
+        <span class="badge bg-secondary">Not reviewed</span>
+    {% endif %}
+
+    <button
+        type="button"
+        class="btn btn-sm btn-outline-primary ms-2"
+        data-bs-toggle="modal"
+        data-bs-target="#applicationReviewModal">
+
+        {% if application_review %}
+            Update Review
+        {% else %}
+            Review Application
+        {% endif %}
+
+    </button>
+    </div>
     {% if foodlicence_data %}
       <h3>Food Licence Status: {{ foodlicence_data.licence_status }}</h3>
     {% endif %}
@@ -542,14 +598,92 @@
     </div>
   </div>
 </div>
+
+
+<!-- Application Review Modal -->
+<div
+    class="modal fade"
+    id="applicationReviewModal"
+    tabindex="-1"
+    aria-labelledby="applicationReviewModalLabel"
+    aria-hidden="true">
+
+    <div class="modal-dialog modal-dialog-scrollable">
+        <div class="modal-content">
+
+            <div class="modal-header bg-info text-dark">
+                <h5
+                    class="modal-title"
+                    id="applicationReviewModalLabel">
+                    Application Review
+                </h5>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                    aria-label="Close">
+                </button>
+            </div>
+
+            <div class="modal-body">
+
+                <p>
+                    <strong>Application ID:</strong>
+                    {{ stall_registration.id }}
+                </p>
+
+                <p>
+                    Record the review outcome for this application.
+                    This will not change its booking status.
+                </p>
+
+                <form
+                    id="applicationReviewForm"
+                    method="post"
+                    hx-post="{% url 'registration:convener-stall-food-registration-detail' stall_registration.pk %}"
+                    hx-target="#applicationReviewFormContents"
+                    hx-swap="innerHTML">
+
+                    {% csrf_token %}
+
+                    <div id="applicationReviewFormContents">
+                        {% include "stallregistration/application_review_form_partial.html" %}
+                    </div>
+
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
 <script>
 document.body.addEventListener("registrationUpdated", function () {
-    const modal = bootstrap.Modal.getInstance(
-        document.getElementById("registrationModal")
-    );
-    modal.hide();
+    const modalElement = document.getElementById("registrationModal");
+
+    if (modalElement) {
+        const modal = bootstrap.Modal.getInstance(modalElement);
+
+        if (modal) {
+            modal.hide();
+        }
+    }
 
     htmx.trigger("#registration-table", "refresh");
+});
+
+
+document.body.addEventListener("htmx:beforeSwap", function (event) {
+    const target = event.detail.target;
+
+    if (
+        event.detail.xhr.status === 400 &&
+        target &&
+        target.id === "applicationReviewFormContents"
+    ) {
+        event.detail.shouldSwap = true;
+        event.detail.isError = false;
+    }
 });
 </script>
 {% endblock %}

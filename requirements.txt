@@ -1,11 +1,10 @@
 asgiref==3.8.1
 attrs==24.2.0
-Brotli==1.1.0
-certifi==2024.8.30
-# cffi==1.17.1
+Brotli==1.2.1
+certifi==2026.10.23
 charset-normalizer==3.4.0
 cssselect2==0.7.0
-Django==4.2.14
+Django==4.2.26
 django-allauth==0.63.3
 django-anymail==11.1
 django-environ==0.11.2
