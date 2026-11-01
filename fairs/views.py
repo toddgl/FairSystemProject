@@ -21,7 +21,7 @@ from weasyprint import HTML
 from django.shortcuts import get_object_or_404,redirect, render
 from django.urls import reverse_lazy, reverse
 from collections import defaultdict
-from django.db.models import F, Q, Sum, Value, IntegerField, Window
+from django.db.models import Count, F, Q, Sum, Value, IntegerField, Window
 from django.db.models.functions import Coalesce
 from django.db import transaction
 from django.contrib.auth import get_user_model
@@ -55,7 +55,9 @@ from registration.models import (
     StallRegistration,
     RegistrationComment,
     AdditionalSiteRequirement,
-    FoodPrepEquipReq
+    FoodPrepEquipReq,
+    PowerConnection,
+    PowerConnectionType
 )
 
 from utils.site_allocation_tools import (
@@ -1957,6 +1959,7 @@ def stallregistration_siteallocation_view(request, id):
     site_filter_message = 'Select a Zone to see available sites for allocation'
 
     if request.htmx:
+        available_sites = EventSite.site_available.none()
         if sitefilterform.is_valid():
             zone = sitefilterform.cleaned_data.get('zone')
             event = sitefilterform.cleaned_data.get('event')
@@ -1980,21 +1983,29 @@ def stallregistration_siteallocation_view(request, id):
 
             powerbox_lookup = get_powerbox_free_sockets_by_event()
 
-            # Ensure powerboxes with zero connections still appear in lookup
+            # Ensure every powerbox/event combination appears, including
+            # powerboxes with no existing connections.
             for es in available_sites:
                 if es.site.has_power and es.site.powerbox:
                     pb = es.site.powerbox
                     key = (pb.id, es.event_id)
 
-                    # Insert default if missing (meaning 0 connected sites)
                     if key not in powerbox_lookup:
                         powerbox_lookup[key] = {
                             "powerbox": pb.power_box_name,
-                            "free": pb.socket_count,  # all sockets available
-                            "total": pb.socket_count,
+                            "fair_16a": {
+                                "used": 0,
+                                "free": pb.caravan_socket_16a,
+                                "total": pb.caravan_socket_16a,
+                            },
+                            "fair_15a": {
+                                "used": 0,
+                                "free": pb.three_pin_15a,
+                                "total": pb.three_pin_15a,
+                            },
                         }
 
-            # Annotate each site
+            # Attach availability information to each available site.
             for es in available_sites:
                 if es.site.has_power and es.site.powerbox:
                     key = (es.site.powerbox_id, es.event_id)
@@ -2196,19 +2207,162 @@ def stallregistrations_without_power_view(request):
 
     return render(request, 'dashboards/dashboard_sites_without_power.html', context)
 
-
-
 def powerbox_connections_view(request):
+
+    request.session['powerbox_stallregistration'] = (
+        'fair:powerbox-stallregistration-list'
+    )
+
+    current_fair = Fair.currentfairmgr.last()
+
+    if current_fair is None:
+        return render(
+            request,
+            'dashboards/dashboard_powerbox_connection.html',
+            {'powerbox_connections': []},
+        )
+
+    # Only include fair-power registrations for the current fair.
+    registrations = (
+        StallRegistration.registrationcurrentmgr
+        .fair_power()
+        .filter(
+            fair=current_fair,
+            site_allocation__event_site__site__has_power=True,
+            site_allocation__event_site__site__powerbox__isnull=False,
+        )
+    )
+
+    # Group registrations by event and powerbox.
+    powerbox_connections = (
+        registrations
+        .values(
+            event_id=F(
+                'site_allocation__event_site__event_id'
+            ),
+            event_name=F(
+                'site_allocation__event_site__event__event_name'
+            ),
+            powerbox_id=F(
+                'site_allocation__event_site__site__powerbox_id'
+            ),
+            power_box_name=F(
+                'site_allocation__event_site__site__powerbox__power_box_name'
+            ),
+            socket_count=F(
+                'site_allocation__event_site__site__powerbox__socket_count'
+            ),
+            caravan_capacity=F(
+                'site_allocation__event_site__site__powerbox__caravan_socket_16a'
+            ),
+            three_pin_capacity=F(
+                'site_allocation__event_site__site__powerbox__three_pin_15a'
+            ),
+            max_load=F(
+                'site_allocation__event_site__site__powerbox__max_load'
+            ),
+        )
+        .annotate(
+            # Actual Caravan 16A connections allocated.
+            used_caravan=Coalesce(
+                Sum(
+                    'power_connections__quantity',
+                    filter=Q(
+                        power_connections__connection_type='fair_16a'
+                    ),
+                ),
+                Value(0),
+            ),
+
+            # Actual Three Pin 15A connections allocated.
+            used_three_pin=Coalesce(
+                Sum(
+                    'power_connections__quantity',
+                    filter=Q(
+                        power_connections__connection_type='fair_15a'
+                    ),
+                ),
+                Value(0),
+            ),
+
+            # Number of distinct stall registrations.
+            connected_sites=Count('pk', distinct=True),
+        )
+        .annotate(
+            # Physical sockets used by fair power connections.
+            used_sockets=(
+                F('used_caravan') + F('used_three_pin')
+            ),
+
+            free_caravan=(
+                F('caravan_capacity') - F('used_caravan')
+            ),
+
+            free_three_pin=(
+                F('three_pin_capacity') - F('used_three_pin')
+            ),
+
+            free_sockets=(
+                F('socket_count') - F('used_sockets')
+            ),
+        )
+        .order_by('event_id', 'power_box_name')
+    )
+
+    powerbox_connections_with_amps = []
+
+    for powerbox in powerbox_connections:
+
+        total_power_load_amps = (
+            FoodPrepEquipReq.objects
+            .filter(
+                food_registration__registration__site_allocation__event_site__site__powerbox_id=(
+                    powerbox['powerbox_id']
+                ),
+                food_registration__registration__site_allocation__event_site__event_id=(
+                    powerbox['event_id']
+                ),
+            )
+            .aggregate(
+                total_amps=Sum(
+                    'food_prep_equipment__power_load_amps'
+                )
+            )['total_amps']
+            or 0
+        )
+
+        total_power_load_amps = math.ceil(
+            total_power_load_amps
+        )
+
+        powerbox_connections_with_amps.append({
+            **powerbox,
+            'total_power_load_amps': total_power_load_amps,
+        })
+
+    return render(
+        request,
+        'dashboards/dashboard_powerbox_connection.html',
+        {
+            'powerbox_connections': powerbox_connections_with_amps,
+        },
+    )
+
+def old_powerbox_connections_view(request):
     # Base query to fetch powerbox data
     request.session['powerbox_stallregistration'] = (
         'fair:powerbox-stallregistration-list'
     )
+    current_fair = Fair.currentfairmgr.last()
+
     powerbox_connections = (
-        StallRegistration.registrationcurrentmgr.fair_power()
+        StallRegistration.registrationcurrentmgr
+        .fair_power_for(current_fair)
         .filter(
-            site_allocation__event_site__site__has_power=True
+            site_allocation__event_site__site__has_power=True,
         )
     ).values(
+        'site_allocation__event_site__event_id',
         'site_allocation__event_site__event__event_name',
         'site_allocation__event_site__site__powerbox__power_box_name',
         'site_allocation__event_site__site__powerbox__socket_count',
@@ -2603,32 +2757,84 @@ def powerbox_connections_pdf_view(request):
     response['Content-Disposition'] = 'inline; filename="powerbox_connections.pdf"'
     return response
 
+
 def get_powerbox_free_sockets_by_event():
+    """
+    Return available Fair-supplied power connections grouped by
+    powerbox and event.
+
+    Connection types:
+        fair_16a = 16A Caravan socket
+        fair_15a = 15A Three-pin socket
+
+    Only current registrations requesting fair power are counted.
+    Quantities are summed rather than counting connection records.
+    """
+
+    current_fair_registrations = (
+        StallRegistration.registrationcurrentmgr
+        .filter(power_source="fair")
+    )
+
     qs = (
-        StallRegistration.registrationcurrentmgr.filter(
-            power_required=True,
-            site_allocation__event_site__site__powerbox__isnull=False
+        PowerConnection.objects
+        .filter(
+            registration__in=current_fair_registrations,
+            registration__site_allocation__event_site__site__powerbox__isnull=False,
         )
         .values(
-            "site_allocation__event_site__event_id",
-            "site_allocation__event_site__site__powerbox_id",
-            "site_allocation__event_site__site__powerbox__socket_count",
-            "site_allocation__event_site__site__powerbox__power_box_name",
+            "registration__site_allocation__event_site__event_id",
+            "registration__site_allocation__event_site__site__powerbox_id",
+            "registration__site_allocation__event_site__site__powerbox__power_box_name",
+            "registration__site_allocation__event_site__site__powerbox__caravan_socket_16a",
+            "registration__site_allocation__event_site__site__powerbox__three_pin_15a",
         )
         .annotate(
-            connected_sites=Count("id"),
-            free_sockets=F("site_allocation__event_site__site__powerbox__socket_count") - Count("id")
+            caravan_used=Sum(
+                "quantity",
+                filter=Q(connection_type="fair_16a"),
+            ),
+            three_pin_used=Sum(
+                "quantity",
+                filter=Q(connection_type="fair_15a"),
+            ),
         )
     )
 
     lookup = {}
+
     for row in qs:
-        key = (row["site_allocation__event_site__site__powerbox_id"], row["site_allocation__event_site__event_id"])
-        lookup[key] = {
-            "powerbox": row["site_allocation__event_site__site__powerbox__power_box_name"],
-            "free": row["free_sockets"],
-            "total": row["site_allocation__event_site__site__powerbox__socket_count"],
+        powerbox_id = (
+            row["registration__site_allocation__event_site__site__powerbox_id"]
+        )
+        event_id = (
+            row["registration__site_allocation__event_site__event_id"]
+        )
+
+        caravan_total = (
+            row["registration__site_allocation__event_site__site__powerbox__caravan_socket_16a"]
+        )
+        three_pin_total = (
+            row["registration__site_allocation__event_site__site__powerbox__three_pin_15a"]
+        )
+
+        caravan_used = row["caravan_used"] or 0
+        three_pin_used = row["three_pin_used"] or 0
+
+        lookup[(powerbox_id, event_id)] = {
+            "powerbox": (
+                row["registration__site_allocation__event_site__site__powerbox__power_box_name"]
+            ),
+            "fair_16a": {
+                "used": caravan_used,
+                "total": caravan_total,
+                "free": max(caravan_total - caravan_used, 0),
+            },
+            "fair_15a": {
+                "used": three_pin_used,
+                "total": three_pin_total,
+                "free": max(three_pin_total - three_pin_used, 0),
+            },
         }
 
     return lookup
-

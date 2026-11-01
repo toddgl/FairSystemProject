@@ -191,6 +191,9 @@ class RegistrationCurrentManager(models.Manager):
         # returns all registrations that have fair power
         return self.get_queryset().filter(power_source=PowerSource.FAIR)
 
+    def fair_power_for(self, fair):
+        return self.fair_power().filter(fair=fair)
+
     def has_trestles(self, registration_id):
         return self.get_queryset().filter(id=registration_id, trestle_required=True).exists()
 
