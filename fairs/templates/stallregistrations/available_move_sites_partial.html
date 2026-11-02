@@ -28,18 +28,39 @@
                             <td>{{ site.site.site_size }}</td>
                             <td>
                                 {% if site.site.has_power and site.powerbox_info %}
-                                {% if site.powerbox_info.free > 0 %}
-                                <span class="badge bg-success">
-                                            ⚡ {{ site.powerbox_info.free }} / {{ site.powerbox_info.total }}
-                                        </span>
+                                    <div>
+                                        <strong>16A Caravan:</strong>
+                                        {% if site.powerbox_info.fair_16a.free > 0 %}
+                                            <span class="badge bg-success">
+                                                {{ site.powerbox_info.fair_16a.free }} /
+                                                {{ site.powerbox_info.fair_16a.total }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                0 / {{ site.powerbox_info.fair_16a.total }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <div>
+                                        <strong>15A Three-pin:</strong>
+                                        {% if site.powerbox_info.fair_15a.free > 0 %}
+                                            <span class="badge bg-success">
+                                                {{ site.powerbox_info.fair_15a.free }} /
+                                                {{ site.powerbox_info.fair_15a.total }}
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-danger">
+                                                0 / {{ site.powerbox_info.fair_15a.total }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <small class="text-muted d-block">
+                                        {{ site.powerbox_info.powerbox }}
+                                    </small>
                                 {% else %}
-                                <span class="badge bg-danger">
-                                            ⚡ 0 / {{ site.powerbox_info.total }}
-                                        </span>
-                                {% endif %}
-                                <small class="text-muted d-block">{{ site.powerbox_info.powerbox }}</small>
-                                {% else %}
-                                <span class="badge bg-secondary">No Power</span>
+                                    <span class="badge bg-secondary">No Power</span>
                                 {% endif %}
                             </td>
                             <td>{{ site.notes }}</td>
