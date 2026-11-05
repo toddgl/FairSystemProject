@@ -38,17 +38,23 @@
                 <th>Total Power Load (Amps)</th>
             </tr>
         </thead>
+
         <tbody>
             {% for connection in powerbox_connections %}
             <tr>
-                <td>{{ connection.site_allocation__event_site__event__event_name }}</td>
-                <td>{{ connection.site_allocation__event_site__site__powerbox__power_box_name }}</td>
-                <td>{{ connection.site_allocation__event_site__site__powerbox__socket_count }}</td>
+                <td>{{ connection.event_name }}</td>
+                <td>{{ connection.powerbox_name }}</td>
+                <td>{{ connection.socket_count }}</td>
                 <td>{{ connection.connected_sites }}</td>
                 <td>{{ connection.free_caravan }}</td>
                 <td>{{ connection.free_three_pin }}</td>
+                <td>{{ connection.free_sockets }}</td>
                 <td>{{ connection.max_load|floatformat:2 }}</td>
                 <td>{{ connection.total_power_load_amps }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="9">No powerbox connections found.</td>
             </tr>
             {% endfor %}
         </tbody>

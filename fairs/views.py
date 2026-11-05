@@ -2697,64 +2697,195 @@ def generate_powerbox_pdf(request):
     return response
 
 
-def powerbox_connections_pdf_view(request):
-    # Fetch the same data as the dashboard view
-    powerbox_connections = (
-        StallRegistration.registrationcurrentmgr.fair_power()
-        .filter(
-            site_allocation__event_site__site__has_power=True
-        )
-    ).values(
-        'site_allocation__event_site__event__event_name',
-        'site_allocation__event_site__site__powerbox__power_box_name',
-        'site_allocation__event_site__site__powerbox__socket_count',
-        'site_allocation__event_site__site__powerbox__id',
-        'site_allocation__event_site__site__powerbox__caravan_socket_16a',
-        'site_allocation__event_site__site__powerbox__three_pin_15a',
-    ).annotate(
-        max_load=F('site_allocation__event_site__site__powerbox__max_load'),
-        used_caravan=Coalesce(Sum('caravan_socket_16a'), Value(0)),
-        used_three_pin=Coalesce(Sum('three_pin_15a'), Value(0)),
-    ).annotate(
-        free_caravan=
-        F('site_allocation__event_site__site__powerbox__caravan_socket_16a')
-        - F('used_caravan'),
 
-        free_three_pin=
-        F('site_allocation__event_site__site__powerbox__three_pin_15a')
-        - F('used_three_pin'),
-        connected_sites=Count('id'),
-        free_sockets=F('site_allocation__event_site__site__powerbox__socket_count') - Count('id')
+
+
+def powerbox_connections_pdf_view(request):
+    """
+    Generate the electrician Powerbox Connections PDF.
+
+    Fair-supplied connection demand is obtained from PowerConnection:
+        fair_16a = Caravan 16A
+        fair_15a = Three-pin 15A
+
+    Generator connections do not consume Fair powerbox sockets.
+    """
+
+    powerboxes = {}
+
+    # Only current registrations requesting Fair-supplied power.
+    registrations = (
+        StallRegistration.registrationcurrentmgr
+        .filter(
+            power_source="fair",
+            site_allocation__event_site__site__has_power=True,
+            site_allocation__event_site__site__powerbox__isnull=False,
+        )
+        .select_related("stallholder")
+        .prefetch_related(
+            "power_connections",
+            "site_allocation__event_site__site__powerbox",
+            "site_allocation__event_site__event",
+        )
+        .distinct()
     )
 
-    # Calculate total_power_load_amps for each powerbox
-    powerbox_connections_with_amps = []
-    for powerbox in powerbox_connections:
-        total_power_load_amps = FoodPrepEquipReq.objects.filter(
-            food_registration__registration__site_allocation__event_site__site__powerbox__id=powerbox['site_allocation__event_site__site__powerbox__id'],
-            food_registration__registration__site_allocation__event_site__event__event_name=powerbox['site_allocation__event_site__event__event_name'],
-        ).aggregate(total_amps=Sum('food_prep_equipment__power_load_amps'))['total_amps'] or 0
+    for registration in registrations:
 
-        # Apply math.ceil to total_power_load_amps
-        total_power_load_amps = math.ceil(total_power_load_amps)
+        # A registration may have multiple allocations.
+        for allocation in registration.site_allocation.all():
+
+            event_site = allocation.event_site
+            site = event_site.site
+            powerbox = site.powerbox
+            event = event_site.event
+
+            if not site.has_power or not powerbox:
+                continue
+
+            key = (powerbox.id, event.id)
+
+            # Initialise each powerbox/event combination.
+            if key not in powerboxes:
+                powerboxes[key] = {
+                    "powerbox_name": powerbox.power_box_name,
+                    "event_name": event.event_name,
+                    "powerbox_id": powerbox.id,
+                    "event_id": event.id,
+
+                    "connected_registration_ids": set(),
+                    "allocated_site_names": set(),
+
+                    "used_caravan": 0,
+                    "used_three_pin": 0,
+
+                    "total_caravan": powerbox.caravan_socket_16a,
+                    "total_three_pin": powerbox.three_pin_15a,
+
+                    "total_sockets": powerbox.socket_count,
+                    "max_load": powerbox.max_load,
+                }
+
+            data = powerboxes[key]
+
+            # Count registrations once per powerbox/event.
+            data["connected_registration_ids"].add(
+                registration.id
+            )
+
+            data["allocated_site_names"].add(
+                str(site)
+            )
+
+            # Sum actual Fair-supplied connection quantities.
+            for connection in registration.power_connections.all():
+
+                if connection.connection_type == "fair_16a":
+                    data["used_caravan"] += connection.quantity
+
+                elif connection.connection_type == "fair_15a":
+                    data["used_three_pin"] += connection.quantity
+
+                # Generator records intentionally ignored.
+
+    # Prepare rows for the PDF.
+    powerbox_connections_with_amps = []
+
+    for data in powerboxes.values():
+
+        # Calculate available sockets.
+        free_caravan = max(
+            data["total_caravan"] - data["used_caravan"],
+            0,
+        )
+
+        free_three_pin = max(
+            data["total_three_pin"] - data["used_three_pin"],
+            0,
+        )
+
+        free_sockets = max(
+            data["total_sockets"]
+            - data["used_caravan"]
+            - data["used_three_pin"],
+            0,
+        )
+
+        # Calculate total food preparation equipment load.
+        total_power_load_amps = (
+            FoodPrepEquipReq.objects
+            .filter(
+                food_registration__registration__site_allocation__event_site__site__powerbox_id=data["powerbox_id"],
+                food_registration__registration__site_allocation__event_site__event_id=data["event_id"],
+            )
+            .aggregate(
+                total_amps=Sum(
+                    "food_prep_equipment__power_load_amps"
+                )
+            )["total_amps"]
+            or 0
+        )
+
+        total_power_load_amps = math.ceil(
+            total_power_load_amps
+        )
 
         powerbox_connections_with_amps.append({
-            **powerbox,
-            'total_power_load_amps': total_power_load_amps
+            "powerbox_name": data["powerbox_name"],
+            "event_name": data["event_name"],
+
+            "connected_sites": len(
+                data["connected_registration_ids"]
+            ),
+
+            "used_caravan": data["used_caravan"],
+            "free_caravan": free_caravan,
+            "total_caravan": data["total_caravan"],
+
+            "used_three_pin": data["used_three_pin"],
+            "free_three_pin": free_three_pin,
+            "total_three_pin": data["total_three_pin"],
+
+            "free_sockets": free_sockets,
+            "total_sockets": data["total_sockets"],
+
+            "total_power_load_amps": total_power_load_amps,
+
+            "allocated_site_name": ", ".join(
+                sorted(data["allocated_site_names"])
+            ),
         })
 
-    # Prepare the context for the PDF
-    context = {'powerbox_connections': powerbox_connections_with_amps}
+    # Sort report by powerbox and event.
+    powerbox_connections_with_amps.sort(
+        key=lambda row: (
+            row["powerbox_name"],
+            row["event_name"],
+        )
+    )
 
-    # Render the template to HTML
-    html_template = get_template('dashboards/powerbox_connections_pdf.html').render(context)
+    context = {
+        "powerbox_connections": powerbox_connections_with_amps
+    }
 
-    # Generate PDF
-    pdf_file = HTML(string=html_template, base_url=request.build_absolute_uri()).write_pdf()
+    html_template = get_template(
+        "dashboards/powerbox_connections_pdf.html"
+    ).render(context)
 
-    # Create response
-    response = HttpResponse(pdf_file, content_type='application/pdf')
-    response['Content-Disposition'] = 'inline; filename="powerbox_connections.pdf"'
+    pdf_file = HTML(
+        string=html_template,
+        base_url=request.build_absolute_uri(),
+    ).write_pdf()
+
+    response = HttpResponse(
+        pdf_file,
+        content_type="application/pdf",
+    )
+
+    response["Content-Disposition"] = (
+        'inline; filename="powerbox_connections.pdf"'
+    )
+
     return response
 
 
