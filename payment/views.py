@@ -449,7 +449,7 @@ def financial_performance_view(request):
     ]
 
     # Step 6: Compute total income
-    total_income = sum(item["total_cost"] for item in inventory_summary_list)
+    total_income = sum(item["total_paid"] for item in inventory_summary_list)
 
     # Expenses Summary
     total_discounts = DiscountItem.discountitemcurrentmgr.aggregate(total_discount=Coalesce(Sum("discount_amount"), 0, output_field=DecimalField()))["total_discount"]

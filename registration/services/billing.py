@@ -4,7 +4,10 @@ from decimal import Decimal
 from dataclasses import dataclass
 
 from fairs.models import InventoryItem, InventoryItemFair, SiteAllocation
-from registration.models import AdditionalSiteRequirement
+from registration.models import (
+    AdditionalSiteRequirement,
+    PowerConnection,
+)
 
 
 @dataclass
@@ -123,19 +126,24 @@ class RegistrationBillingService:
                 )
             )
 
+
         # ---------------- POWER ----------------
 
         power_qty = 0
 
         if (
-           registration.uses_electrical_equipment
-           and registration.power_source == "fair"
+            registration.uses_electrical_equipment
+            and registration.power_source == "fair"
         ):
-            power_qty = (
-                    (registration.caravan_socket_16a or 0)
-                    + (registration.three_pin_15a or 0)
+            power_qty = sum(
+                connection.quantity
+                for connection in registration.power_connections.filter(
+                    connection_type__in=[
+                        "fair_16a",
+                        "fair_15a",
+                    ]
+                )
             )
-
 
         if power_qty:
             item, price = self._price_by_name("Power Point")
