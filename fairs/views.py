@@ -1854,7 +1854,7 @@ def set_message_to_done(request, pk):
             reply.is_active = False
             reply.save()
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return redirect_back(request)
 
 
 def set_message_to_active(request, pk):
@@ -1875,7 +1875,8 @@ def set_message_to_active(request, pk):
             reply.is_done = False
             reply.save()
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return redirect_back(request)
+
 
 def stallholder_history_dashboard_view(request):
     """
@@ -2969,3 +2970,15 @@ def get_powerbox_free_sockets_by_event():
         }
 
     return lookup
+
+def redirect_back(request, fallback='fairs:messages-dashboard'):
+    """
+    Redirect to the referring page if available,
+    otherwise use the supplied fallback URL name.
+    """
+    referer = request.META.get('HTTP_REFERER')
+
+    if referer:
+        return redirect(referer)
+
+    return redirect(fallback)

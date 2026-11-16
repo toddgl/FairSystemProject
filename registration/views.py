@@ -874,7 +874,7 @@ def archive_comments(request, pk):
             reply.is_archived = True
             reply.save()
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return redirect_back(request)
 
 
 @login_required
@@ -991,9 +991,9 @@ def add_site_requirement(request, pk):
                 'site_requirement_list': site_requirement_list,
             })
         else:
-            return redirect(request.META.get('HTTP_REFERER'))
+            return redirect_back(request)
     else:
-        return redirect(request.META.get('HTTP_REFERER'))
+        return redirect_back(request)
 
 
 def add_food_prep_equipment(request):
@@ -1023,9 +1023,9 @@ def add_food_prep_equipment(request):
                 'equipment_list': equipment_list,
             })
         else:
-            return redirect(request.META.get('HTTP_REFERER'))
+            return redirect_back(request)
     else:
-        return redirect(request.META.get('HTTP_REFERER'))
+        return redirect_back(request)
 
 
 @require_POST
@@ -1139,7 +1139,7 @@ def comments_view_add(request):
                     commentform.errors.as_data(),
                     extra={'custom_category': 'Comments'}
                 )
-            return redirect(request.META.get('HTTP_REFERER'))
+            return redirect_back(request)
         if replyform.is_valid():
             parent_obj = None
             # get parent comment id from hidden input
@@ -1165,7 +1165,7 @@ def comments_view_add(request):
                     reply_comment.fair_id = current_fair.id
                     # save
                     reply_comment.save()
-            return redirect(request.META.get('HTTP_REFERER'))
+            return redirect_back(request)
 
 
 @login_required
@@ -1251,120 +1251,6 @@ class StallRegistrationSaveView(UpdateView):
             "stallregistration/model_form.html",
             {"form": form},
         )
-
-def old_convener_stall_registration_detail_view(request, id):
-    """
-    Display the details of the stall and food application data provided by the stallholder
-    Includes functionality to update details that have an impact on pricing
-    """
-    template = "stallregistration/convener_stall_registration_detail.html"
-    comment_filter_message = 'Showing current comments of the current fair'
-    commentfilterform = CommentFilterForm(request.POST or None)
-    commentform = RegistrationCommentForm(request.POST or None)
-    createstallholderemailform = CreateStallholderEmailForm(request.POST or None)
-    replyform = CommentReplyForm(request.POST or None)
-    current_fair = Fair.currentfairmgr.all().last()
-    stall_registration = StallRegistration.objects.get(id=id)
-
-    # Determine if there are any discounts, if so sum them and add it to the context
-    discounts = DiscountItem.objects.filter(stall_registration=stall_registration)
-    total_discount = sum(discounts.values_list('discount_amount', flat=True)) if discounts else decimal.Decimal(0.00)
-
-    request.session['stallholder_id'] = stall_registration.stallholder.id
-    stallholder_detail = Profile.objects.get(user=stall_registration.stallholder)
-    additionalsiteform = AdditionalSiteReqForm(request.POST or None)
-    registrationupdateform = StallRegistrtionConvenerEditForm(instance=stall_registration)
-    applydiscountform = RegistrationDiscountForm(request.POST or None)
-    comments = RegistrationComment.objects.filter(stallholder=stall_registration.stallholder.id, is_archived=False,
-                                                  convener_only_comment=False, comment_parent__isnull=True,
-                                                  fair=current_fair.id)
-    payment_history_list = PaymentHistory.paymenthistorycurrentmgr.get_stallholder_payment_history(
-        stallholder=stall_registration.stallholder.id)
-
-    # Initialize food_registration to avoid UnboundLocalError
-    food_registration = None
-    foodregistrtionupdateform = None
-
-    if stall_registration.selling_food:
-        food_registration = FoodRegistration.objects.get(registration=stall_registration)
-        foodregistrtionupdateform = FoodRegistrationConvenerEditForm(instance=food_registration)
-
-    context = {
-        'registrationupdateform': registrationupdateform,
-        'additionalsiteform': additionalsiteform,
-        'applydiscountform': applydiscountform,
-        'createstallholderemailform': createstallholderemailform,
-        'payment_histories': payment_history_list,
-        'stallholder_detail': stallholder_detail,
-        'stall_data': stall_registration,
-        'commentfilterform': commentfilterform,
-        'comments': comments,
-        'commentform': commentform,
-        'replyform': replyform,
-        'comment_filter': comment_filter_message,
-        'discounts': discounts,
-        'total_discount': total_discount,
-    }
-
-    # Add food form and additional food-related data if applicable
-    if foodregistrtionupdateform:
-        context['foodregistrationupdateform'] = foodregistrtionupdateform
-
-    additional_sites = AdditionalSiteRequirement.objects.filter(stall_registration=stall_registration)
-    if additional_sites:
-        context['site_requirement_list'] = additional_sites
-
-    if stall_registration.multi_site:
-        context['additional_sites'] = AdditionalSiteRequirement.objects.filter(stall_registration_id=stall_registration.id)
-
-    if FoodRegistration.objects.filter(registration=stall_registration.id).exists():
-        food_registration = FoodRegistration.objects.get(registration=stall_registration.id)
-        context["food_data"] = food_registration
-        context["equipment_list"] = FoodPrepEquipReq.objects.filter(food_registration=food_registration)
-        if FoodLicence.objects.filter(food_registration=food_registration.id).exists():
-            context["foodlicence_data"] = FoodLicence.objects.get(food_registration=food_registration.id)
-
-    if request.method == 'POST':
-        registrationupdateform = StallRegistrtionConvenerEditForm(request.POST, request.FILES or None,
-                                                                  instance=stall_registration)
-        foodregistrtionupdateform = FoodRegistrationConvenerEditForm(request.POST, request.FILES or None,
-                                                                     instance=food_registration) if food_registration else None
-        applydiscountform = RegistrationDiscountForm(request.POST or None)
-
-        if 'discount' in request.POST and applydiscountform.is_valid():
-            new_discount = applydiscountform.save(commit=False)
-            new_discount.stall_registration = stall_registration
-            new_discount.created_by = request.user
-            new_discount.save()
-            stall_registration.is_invoiced = False
-            stall_registration.save()
-            # revert the registration to amended so that obvious to the convener that it needs to be reinvoiced
-            if can_proceed(stall_registration.to_booking_status_amended):
-                stall_registration.to_booking_status_amended()
-                stall_registration.save()
-            return redirect(request.META.get('HTTP_REFERER'))
-
-        if 'update' in request.POST and registrationupdateform.is_valid():
-            stall_registration = registrationupdateform.save(commit=False)
-            stall_registration.is_invoiced = False
-            stall_registration.save()
-            # revert the registration to amended so that obvious to the convener that it needs to be reinvoiced
-            if can_proceed(stall_registration.to_booking_status_amended):
-                stall_registration.to_booking_status_amended()
-                stall_registration.save()
-
-            if foodregistrtionupdateform and foodregistrtionupdateform.is_valid():
-                food_registration = foodregistrtionupdateform.save(commit=False)
-                food_registration.save()
-
-        if 'stallholderemail' in request.POST and createstallholderemailform.is_valid():
-            subject_type = createstallholderemailform.cleaned_data['subject_type']
-            body = createstallholderemailform.cleaned_data['body']
-            subject = f'Martinborough Fair { stall_registration.fair.fair_year } - { subject_type}'
-            recipient = stallholder_detail.user.email
-            single_registration_email(stall_registration.stallholder.id, subject_type, recipient, subject, body)
-
-    return TemplateResponse(request, template, context)
 
 
 def stallholder_stall_registration_detail_view(request, id):
@@ -1494,7 +1380,7 @@ def reinvoice_stall_registration(request, id):
             extra={'custom_category': 'Stall Registration Invoicing'}
         )
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return redirect_back(request)
 
 
 def invoice_stall_registration(request, id):
@@ -1650,4 +1536,17 @@ def transition_booking_status(request, stall_registration_id, target_status):
             stall_registration.save()
             break
 
-    return redirect(request.META.get('HTTP_REFERER'))
+    return redirect_back(request)
+
+
+def redirect_back(request, fallback='fairs:registration-dashboard'):
+    """
+    Redirect to the referring page if available,
+    otherwise use the supplied fallback URL name.
+    """
+    referer = request.META.get('HTTP_REFERER')
+
+    if referer:
+        return redirect(referer)
+
+    return redirect(fallback)
