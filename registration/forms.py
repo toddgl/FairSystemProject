@@ -582,26 +582,36 @@ class StallRegistrationForm(ModelForm):
         Calculate pricing using unsaved instance state.
         """
 
-        # ----------------------------
-        # Decide data source
-        # ----------------------------
-
         if self.is_bound and self.is_valid():
             registration = self.save(commit=False)
+
+            power_quantities = {
+                "fair_16a": self.cleaned_data.get(
+                    "caravan_socket_16a", 0
+                ) or 0,
+                "fair_15a": self.cleaned_data.get(
+                    "three_pin_15a", 0
+                ) or 0,
+            }
+
         else:
             registration = self.instance
+            power_quantities = None
 
         if not registration:
             return None
 
         billing = RegistrationBillingService(registration.fair)
-        total, breakdown = billing.calculate_total(registration)
+
+        total, breakdown = billing.calculate_total(
+            registration,
+            power_quantities=power_quantities,
+        )
 
         return {
             "total": total,
             "breakdown": breakdown,
         }
-
 
 class StallRegistrationStallholderEditForm(ModelForm):
     """

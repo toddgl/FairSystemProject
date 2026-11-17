@@ -75,7 +75,7 @@ class RegistrationBillingService:
     # main builder
     # -----------------------------
 
-    def build_items(self, registration):
+    def build_items(self, registration, power_quantities=None):
         items = []
 
         # ---------------- SITE ----------------
@@ -126,24 +126,31 @@ class RegistrationBillingService:
                 )
             )
 
-
         # ---------------- POWER ----------------
 
         power_qty = 0
 
         if (
-            registration.uses_electrical_equipment
-            and registration.power_source == "fair"
+                registration.uses_electrical_equipment
+                and registration.power_source == "fair"
         ):
-            power_qty = sum(
-                connection.quantity
-                for connection in registration.power_connections.filter(
-                    connection_type__in=[
-                        "fair_16a",
-                        "fair_15a",
-                    ]
+            if power_quantities is not None:
+                # New registration: use quantities supplied by the form.
+                power_qty = sum(
+                    power_quantities.values()
                 )
-            )
+
+            elif self._is_persisted(registration):
+                # Existing registration: use saved PowerConnection records.
+                power_qty = sum(
+                    connection.quantity
+                    for connection in registration.power_connections.filter(
+                        connection_type__in=[
+                            "fair_16a",
+                            "fair_15a",
+                        ]
+                    )
+                )
 
         if power_qty:
             item, price = self._price_by_name("Power Point")
@@ -179,8 +186,8 @@ class RegistrationBillingService:
     # total calculator
     # -----------------------------
 
-    def calculate_total(self, registration):
-        items = self.build_items(registration)
+    def calculate_total(self, registration, power_quantities=None):
+        items = self.build_items(registration, power_quantities)
         return sum(i.total for i in items), items
 
     def calculate(self, registration):
