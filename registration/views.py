@@ -496,8 +496,21 @@ def stall_registration_create(request):
             db_logger.error(
                 'There was an error creating the stall application: %s',
                 form.errors.as_data(),
-                extra={'custom_category': 'Stall Application Create'}
+                extra={'custom_category': 'Stall Application'}
             )
+
+            # An invalid HTMX submission must return only the
+            # dynamic section, not the complete page.
+            if request.htmx:
+                return TemplateResponse(
+                    request,
+                    dynamic_template,
+                    {
+                        "registrationform": form,
+                        "allocation_item": allocation_item,
+                        "billing": None,
+                    },
+                )
 
     # -------------------------
     # Comments (display only)

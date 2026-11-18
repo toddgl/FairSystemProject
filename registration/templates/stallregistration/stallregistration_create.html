@@ -58,7 +58,8 @@
         hx-post="."
         hx-encoding="multipart/form-data"
         hx-target="#stallregistration_data"
-        hx-swap="outerHTML">
+        hx-swap="outerHTML"
+        hx-include="closest form">
 
         {% csrf_token %}
 
