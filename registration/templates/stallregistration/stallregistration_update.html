@@ -2,6 +2,7 @@
 
 {% extends 'base.html' %}
 {% load static %}
+{% load file_tags %}
 
 {% block body %}
 <div class="container">
@@ -97,7 +98,25 @@
         {{ registrationform.vehicle_width.label_tag }}
         {{ registrationform.vehicle_width }}
 
-        {{ registrationform.vehicle_image.label_tag }}
+        {% if stallregistration.vehicle_image %}
+            <div class="alert alert-info mt-2">
+                <strong>Currently uploaded image:</strong>
+
+                <a href="{{ stallregistration.vehicle_image.url }}" target="_blank">
+                    {{ stallregistration.vehicle_image.name|basename }}
+                </a>
+
+                <p class="mb-0 mt-1">
+                    Your image is currently saved. Select a new file below
+                    only if you want to replace it.
+                </p>
+            </div>
+        {% else %}
+            <div class="alert alert-warning mt-2">
+                No vehicle image has been uploaded yet.
+            </div>
+        {% endif %}
+
         {{ registrationform.vehicle_image }}
 
         <hr>

@@ -1,23 +1,75 @@
-<!--registration/templates/stallregistration/food_form_partial.html -->
+<!-- registration/templates/stallregistration/food_form_partial.html -->
 
-<div id='food-container'>
-<form action='.' method="POST" hx-post='.' hx-swap='outerHTML' hx-trigger='{% if form.instance.id %}change delay:500ms,{% endif %} submit'>
-   {% csrf_token %}
+{% load file_tags %}
 
-   {% for field in form %}
-   <div class='{% if field.field.required %}{{ form.required_css_class }}{%endif%}'>
-    {{ field.errors }}
-    {{ field.label_tag }} {{ field }}
-    {% if field.help_text %}
-        <p class="help">{{ field.help_text|safe }}</p>
-    {% endif %}
-    </div>
-   {% endfor %}
+<div id="food-container">
 
-    <div class='htmx-indicator'>Loading...</div>
-    <button class='htmx-inverted-indicator btn btn-primary' style='margin-top:10px;' type='submit' >Save</button>
-    {% if message %}
-    <p>{{ message }}</p>
-    {% endif %}
-</form>
+    <form action="."
+          method="POST"
+          enctype="multipart/form-data"
+          hx-post="."
+          hx-encoding="multipart/form-data"
+          hx-swap="outerHTML"
+          hx-trigger="{% if form.instance.id %}change delay:500ms,{% endif %} submit">
+
+        {% csrf_token %}
+
+        {% for field in form %}
+
+            <div class="{% if field.field.required %}{{ form.required_css_class }}{% endif %} mb-3">
+
+                {{ field.errors }}
+                {{ field.label_tag }}
+
+                {% if field.name == "food_registration_certificate" %}
+
+                    {% if form.instance.food_registration_certificate %}
+                        <div class="alert alert-info mt-2">
+
+                            <strong>Currently uploaded certificate:</strong>
+
+                            <a href="{{ form.instance.food_registration_certificate.url }}"
+                               target="_blank">
+                                {{ form.instance.food_registration_certificate.name|basename }}
+                            </a>
+
+                            <p class="mb-0 mt-1">
+                                Your certificate is currently saved.
+                                Upload another file below only if you wish
+                                to replace it.
+                            </p>
+
+                        </div>
+                    {% else %}
+                        <div class="alert alert-warning mt-2">
+                            No food certificate has been uploaded.
+                        </div>
+                    {% endif %}
+
+                {% endif %}
+
+                {{ field }}
+
+                {% if field.help_text %}
+                    <p class="help">{{ field.help_text|safe }}</p>
+                {% endif %}
+
+            </div>
+
+        {% endfor %}
+
+        <div class="htmx-indicator">Loading...</div>
+
+        <button class="htmx-inverted-indicator btn btn-primary"
+                style="margin-top:10px;"
+                type="submit">
+            Save
+        </button>
+
+        {% if message %}
+            <p>{{ message }}</p>
+        {% endif %}
+
+    </form>
+
 </div>

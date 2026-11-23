@@ -18,6 +18,7 @@ from django.forms import (
     DateInput,
     RadioSelect,
     Select,
+    ClearableFileInput,
 )
 from fairs.models import (
     Fair,
@@ -1010,18 +1011,25 @@ class StallRegistrationUpdateForm(ModelForm):
         }
 
     def clean_vehicle_image(self):
-        allowed_filetypes = [ 'image/jpeg', 'image/jpg', 'image/png']
-        thefile = self.cleaned_data.get("vehicle_image", None)
-        if thefile is not None:
-            mime = magic.from_buffer(thefile.read(), mime=True)
-            print(mime)
-            if mime not in allowed_filetypes:
-                raise forms.ValidationError('File must be a png or jpg image')
-            else:
-                return thefile
-        else:
-            # Handle the case where no file was uploaded
-            return None
+        allowed_filetypes = ['image/jpeg', 'image/jpg', 'image/png']
+
+        thefile = self.cleaned_data.get("vehicle_image")
+
+        if thefile:
+            if hasattr(thefile, 'read') and hasattr(thefile, 'name'):
+                mime = magic.from_buffer(thefile.read(), mime=True)
+
+                if hasattr(thefile, 'seek'):
+                    thefile.seek(0)
+
+                if mime not in allowed_filetypes:
+                    raise forms.ValidationError(
+                        'File must be a png or jpg image'
+                    )
+
+            return thefile
+
+        return None
 
     def clean(self):
         cleaned_data = super().clean()
@@ -1238,16 +1246,23 @@ class FoodRegistrationStallholderEditForm(ModelForm):
     def clean_food_registration_certificate(self):
         allowed_filetypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png']
         thefile = self.cleaned_data.get("food_registration_certificate", None)
-        if thefile is not None:
-            mime = magic.from_buffer(thefile.read(), mime=True)
-            print(mime)
-            if mime not in allowed_filetypes:
-                raise forms.ValidationError('File must be a pdf, png or jpg document')
-            else:
-                return thefile
-        else:
-            # Handle the case where no file was uploaded
-            return None
+
+        if thefile:
+            if hasattr(thefile, 'read') and hasattr(thefile, 'name'):
+                mime = magic.from_buffer(thefile.read(), mime=True)
+
+                if hasattr(thefile, 'seek'):
+                    thefile.seek(0)
+
+                if mime not in allowed_filetypes:
+                    raise forms.ValidationError(
+                        'File must be a pdf, png or jpg image'
+                    )
+
+            return thefile
+
+        return None
+
 
 class FoodRegistrationConvenerEditForm(ModelForm):
     """

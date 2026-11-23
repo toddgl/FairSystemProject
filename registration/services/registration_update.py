@@ -28,7 +28,6 @@ from registration.services.billing import RegistrationBillingService
 
 def build_update_context(request, registration):
 
-    print("Got to build in registration_update")
     stallholder = registration.stallholder
     fair = registration.fair
 
@@ -68,8 +67,6 @@ def build_update_context(request, registration):
 
 
 def handle_successful_update(request, form, obj, success_url):
-
-    print("Got tp handle_successful_update in registration_update")
     form = StallRegistrationForm(
         request.POST or None,
         request.FILES or None,
@@ -122,7 +119,6 @@ def update_registration(form, instance):
 
     # form already validated
     registration = form.save(commit=False)
-    print("Got to update_registration")
 
     billing_service = RegistrationBillingService(
         registration.fair

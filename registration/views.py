@@ -892,53 +892,96 @@ def archive_comments(request, pk):
 
 @login_required
 def food_registration_create_view(request, pk):
+
     template_name = 'stallregistration/food_registration.html'
-    success_url = reverse_lazy('registration:stallregistration-dashboard')
+    success_url = reverse_lazy(
+        'registration:stallregistration-dashboard'
+    )
+
     commentfilterform = CommentFilterForm(request.POST or None)
     commentform = RegistrationCommentForm(request.POST or None)
     replyform = CommentReplyForm(request.POST or None)
-    comment_filter_message = 'Showing current comments of the current fair'
-    # list of active parent comments
+
+    comment_filter_message = (
+        'Showing current comments of the current fair'
+    )
+
     current_fair = Fair.currentfairmgr.all().last()
-    comments = RegistrationComment.objects.filter(stallholder=request.user, is_archived=False,
-                                                  convener_only_comment=False, comment_parent__isnull=True,
-                                                  fair=current_fair.id)
-    foodregistration = get_object_or_404(FoodRegistration, registration=pk)
-    food_form = FoodRegistrationForm(instance=foodregistration)
+
+    comments = RegistrationComment.objects.filter(
+        stallholder=request.user,
+        is_archived=False,
+        convener_only_comment=False,
+        comment_parent__isnull=True,
+        fair=current_fair.id,
+    )
+
+    foodregistration = get_object_or_404(
+        FoodRegistration,
+        registration=pk
+    )
+
     equipment_form = FoodPrepEquipReqForm(request.POST or None)
-    equipment_list = FoodPrepEquipReq.objects.filter(food_registration_id=foodregistration.id)
-    if equipment_list:
-        context = {
-            'food_form': food_form,
-            'equipment_form': equipment_form,
-            'foodregistration': foodregistration,
-            'equipment_list': equipment_list,
-            'commentfilterform': commentfilterform,
-            'comments': comments,
-            'commentform': commentform,
-            'replyform': replyform,
-            'filter': comment_filter_message,
-        }
-    else:
-        context = {
-            'food_form': food_form,
-            'equipment_form': equipment_form,
-            'foodregistration': foodregistration,
-            'commentfilterform': commentfilterform,
-            'comments': comments,
-            'commentform': commentform,
-            'replyform': replyform,
-            'filter': comment_filter_message,
-        }
+
+    equipment_list = FoodPrepEquipReq.objects.filter(
+        food_registration_id=foodregistration.id
+    )
+
+    # -----------------------------
+    # Food registration form
+    # -----------------------------
 
     if request.method == 'POST':
-        food_form = FoodRegistrationForm(request.POST, request.FILES or None, instance=foodregistration)
+        food_form = FoodRegistrationForm(
+            request.POST,
+            request.FILES,
+            instance=foodregistration
+        )
+    else:
+        food_form = FoodRegistrationForm(
+            instance=foodregistration
+        )
+
+    # -----------------------------
+    # Context
+    # -----------------------------
+
+    context = {
+        'food_form': food_form,
+        'equipment_form': equipment_form,
+        'foodregistration': foodregistration,
+        'equipment_list': equipment_list,
+        'commentfilterform': commentfilterform,
+        'comments': comments,
+        'commentform': commentform,
+        'replyform': replyform,
+        'filter': comment_filter_message,
+    }
+
+    # -----------------------------
+    # Process POST
+    # -----------------------------
+
+    if request.method == 'POST':
+
         if food_form.is_valid():
+
             obj = food_form.save(commit=False)
             obj.is_valid = True
             obj.save()
+
             return HttpResponseRedirect(success_url)
-    return TemplateResponse(request, template_name, context)
+
+    # -----------------------------
+    # Return response (GET or
+    # invalid POST)
+    # -----------------------------
+
+    return TemplateResponse(
+        request,
+        template_name,
+        context
+    )
 
 
 @login_required
